@@ -10,6 +10,7 @@ using System;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.FrontendServer;
 
 namespace BrowserGameEngine.Server {
 	public class Startup {
@@ -30,7 +31,8 @@ namespace BrowserGameEngine.Server {
 		}
 
 		private void ConfigureGameServices(IServiceCollection services) {
-			services.AddSingleton(new GameDefFactory().CreateStarcraftOnline());
+			services.AddSingleton(GameDefFactory.CreateStarcraftOnline());
+			services.AddSingleton(CurrentUserContext.Create(playerId: "asdf", playerTypeId: "terran")); // for dev purposes only.
 			services.AddGameServer(DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
 		}
 

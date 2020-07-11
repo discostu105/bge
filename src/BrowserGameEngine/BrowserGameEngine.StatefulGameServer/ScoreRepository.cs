@@ -6,10 +6,10 @@ using BrowserGameEngine.GameModel;
 namespace BrowserGameEngine.StatefulGameServer {
 
 	public class ScoreRepository {
-		private readonly PlayerReadApi playerReadApi;
+		private readonly PlayerRepository playerReadApi;
 		private readonly GameDef gameDef;
 
-		public ScoreRepository(PlayerReadApi playerReadApi, GameDef gameDef) {
+		public ScoreRepository(PlayerRepository playerReadApi, GameDef gameDef) {
 			this.playerReadApi = playerReadApi;
 			this.gameDef = gameDef;
 		}

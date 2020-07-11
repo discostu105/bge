@@ -1,0 +1,36 @@
+﻿@page "/playerprofile"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Units</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (playerProfile == null) {
+    <p><em>Loading...</em></p>
+} else {
+    <div>
+        <EditForm Model="@playerProfile" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <InputText id="PlayerName" @bind-Value="playerProfile.PlayerName" />
+
+            <button type="submit">Submit</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private PlayerProfileViewModel? playerProfile;
+
+    protected override async Task OnInitializedAsync() {
+        playerProfile = await Http.GetFromJsonAsync<PlayerProfileViewModel>("PlayerProfile");
+    }
+
+    private async Task HandleValidSubmit() {
+        if (playerProfile == null) return;
+        await Http.PostAsJsonAsync("PlayerProfile/changename", playerProfile);
+    }
+
+}

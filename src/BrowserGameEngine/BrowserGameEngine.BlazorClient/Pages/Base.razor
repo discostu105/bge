@@ -1,0 +1,43 @@
+﻿@page "/base"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Basis</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (assets == null) {
+    <p><em>Loading...</em></p>
+} else {
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Kosten</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (assets.Assets != null) {
+            @foreach (var item in assets.Assets) {
+                <tr>
+                    <td>@item.Definition?.Name</td>
+                    <td>@item.Definition</td>
+
+                    <td>@item.Count</td>
+                    <td>@item.Cost?.Cost</td>
+                </tr>
+            }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private AssetsViewModel? assets;
+
+    protected override async Task OnInitializedAsync() {
+        assets = await Http.GetFromJsonAsync<AssetsViewModel>("Assets");
+    }
+
+}

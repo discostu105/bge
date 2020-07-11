@@ -34,7 +34,7 @@
 }
 
 @code {
-    private UnitDefinitionViewModel[] unitDefinitions;
+    private UnitDefinitionViewModel[]? unitDefinitions;
 
     protected override async Task OnInitializedAsync() {
         unitDefinitions = await Http.GetFromJsonAsync<UnitDefinitionViewModel[]>("UnitDefinitions");

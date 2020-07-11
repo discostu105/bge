@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameDefinition {
-	public class GameDefFactory {
-		public GameDef CreateStarcraftOnline() {
+	public static class GameDefFactory {
+		public static GameDef CreateStarcraftOnline() {
 			var gameDefinition = new GameDef();
 
 			gameDefinition.PlayerTypes = new List<PlayerTypeDef> {
-				new PlayerTypeDef { Id = "terrans", Name = "Terraner" },
+				new PlayerTypeDef { Id = "terran", Name = "Terraner" },
 				new PlayerTypeDef { Id = "protoss", Name = "Protoss" },
 				new PlayerTypeDef { Id = "zerg", Name = "Zerg" }
 			};
@@ -23,7 +23,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new AssetDef {
 					Id = "commandcenter",
 					Name = "Kommandozentrale",
-					PlayerTypeRestriction = "terrans",
+					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 400 } },
 					Attack = 0,
 					Defense = 0,
@@ -34,7 +34,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new AssetDef {
 					Id = "barracks",
 					Name = "Kaserne",
-					PlayerTypeRestriction = "terrans",
+					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 150 } },
 					Attack = 0,
 					Defense = 0,
@@ -45,7 +45,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new AssetDef {
 					Id = "factory",
 					Name = "Fabrik",
-					PlayerTypeRestriction = "terrans",
+					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 200 }, { "gas", 100 } },
 					Attack = 0,
 					Defense = 0,
@@ -59,7 +59,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new UnitDef {
 					Id = "wbf",
 					Name = "WBF",
-					PlayerTypeRestriction = "terrans",
+					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 50 } },
 					Attack = 0,
 					Defense = 1,
@@ -69,7 +69,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new UnitDef {
 					Id = "marine",
 					Name = "Space Marine",
-					PlayerTypeRestriction = "terrans",
+					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 45 } },
 					Attack = 2,
 					Defense = 4,
@@ -80,7 +80,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new UnitDef {
 					Id = "siegetank",
 					Name = "Belagerungspanzer",
-					PlayerTypeRestriction = "terrans",
+					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 125 }, { "gas", 100 } },
 					Attack = 10,
 					Defense = 40,

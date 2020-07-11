@@ -10,23 +10,23 @@ using BrowserGameEngine.StatefulGameServer;
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
 	[Route("[controller]")]
-	public class PlayerRanking : ControllerBase {
-		private readonly ILogger<UnitDefinitions> logger;
+	public class PlayerRankingController : ControllerBase {
+		private readonly ILogger<PlayerRankingController> logger;
 		private readonly ScoreRepository scoreRepository;
-		private readonly PlayerReadApi playerReadApi;
+		private readonly PlayerRepository playerRepository;
 
-		public PlayerRanking(ILogger<UnitDefinitions> logger
+		public PlayerRankingController(ILogger<PlayerRankingController> logger
 				, ScoreRepository scoreRepository
-				, PlayerReadApi playerReadApi
+				, PlayerRepository playerRepository
 			) {
 			this.logger = logger;
 			this.scoreRepository = scoreRepository;
-			this.playerReadApi = playerReadApi;
+			this.playerRepository = playerRepository;
 		}
 
 		[HttpGet]
 		public IEnumerable<PlayerRankingViewModel> Get() {
-			return playerReadApi.GetAll().Select(p => new PlayerRankingViewModel {
+			return playerRepository.GetAll().Select(p => new PlayerRankingViewModel {
 				PlayerId = p.PlayerId.Id,
 				PlayerName = p.Name,
 				Score = scoreRepository.GetScore(p.PlayerId)

@@ -1,4 +1,6 @@
-﻿namespace BrowserGameEngine.GameModel {
+﻿using System;
+
+namespace BrowserGameEngine.GameModel {
 	public class PlayerId {
 		public string Id { get; }
 		public PlayerId(string id) { Id = id; }
@@ -15,5 +17,6 @@
 		}
 
 		public static bool operator !=(PlayerId obj1, PlayerId obj2) => !(obj1 == obj2);
+		public static PlayerId Create(string playerId) => new PlayerId(playerId);
 	}
 }

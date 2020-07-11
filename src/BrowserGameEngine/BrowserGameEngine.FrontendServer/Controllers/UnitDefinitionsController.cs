@@ -10,11 +10,11 @@ using BrowserGameEngine.GameDefinition;
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
 	[Route("[controller]")]
-	public class UnitDefinitions : ControllerBase {
-		private readonly ILogger<UnitDefinitions> logger;
+	public class UnitDefinitionsController : ControllerBase {
+		private readonly ILogger<UnitDefinitionsController> logger;
 		private readonly GameDef gameDefinition;
 
-		public UnitDefinitions(ILogger<UnitDefinitions> logger
+		public UnitDefinitionsController(ILogger<UnitDefinitionsController> logger
 				, GameDef gameDefinition
 			) {
 			this.logger = logger;
