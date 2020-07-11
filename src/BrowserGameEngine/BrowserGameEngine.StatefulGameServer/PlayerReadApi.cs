@@ -10,15 +10,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public Player Get(PlayerId playerId) {
-			return null;
+			return playerRepository.Players[playerId];
 		}
 
 		public IEnumerable<Player> GetAll() {
-			return null;
+			return playerRepository.Players.Values;
 		}
 
 		public void Add(Player player) {
-
+			playerRepository.Players.Add(player.PlayerId, player);
 		}
 	}
 }

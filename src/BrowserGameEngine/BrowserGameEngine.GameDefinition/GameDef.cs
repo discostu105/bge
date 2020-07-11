@@ -9,5 +9,6 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<UnitDef> Units { get; set; }
 		public IEnumerable<AssetDef> Assets { get; set; }
 		public IEnumerable<ResourceDef> Resources { get; set; }
+		public string ScoreResource { get; set; } // player ranking is based on this resource
 	}
 }
