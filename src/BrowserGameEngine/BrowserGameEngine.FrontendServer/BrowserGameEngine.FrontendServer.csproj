@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BrowserGameEngine.BlazorClient\BrowserGameEngine.BlazorClient.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.Shared\BrowserGameEngine.Shared.csproj" />
+    <ProjectReference Include="..\BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj" />
   </ItemGroup>
 
 

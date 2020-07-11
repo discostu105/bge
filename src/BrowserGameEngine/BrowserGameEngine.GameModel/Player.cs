@@ -7,10 +7,6 @@ namespace BrowserGameEngine.GameModel {
 		public PlayerId PlayerId { get; set; }
 		public string Name { get; set; }
 		public DateTime Created { get; set; }
-
-	}
-
-	public class PlayerId {
-
+		public PlayerState State { get; set; }
 	}
 }

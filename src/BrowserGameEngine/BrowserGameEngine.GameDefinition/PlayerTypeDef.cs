@@ -1,5 +1,5 @@
 ﻿namespace BrowserGameEngine.GameDefinition {
-	public class ResourceDefinition {
+	public class PlayerTypeDef {
 		public string Name { get; set; }
 		public string Id { get; internal set; }
 	}

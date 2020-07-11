@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using System.Linq;
 using System;
 using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.GameModel;
 
 namespace BrowserGameEngine.Server {
 	public class Startup {
@@ -28,7 +30,8 @@ namespace BrowserGameEngine.Server {
 		}
 
 		private void ConfigureGameServices(IServiceCollection services) {
-			services.AddSingleton<GameDefinition.GameDefinition>(new GameDefinitionFactory().CreateStarcraftOnline());
+			services.AddSingleton(new GameDefFactory().CreateStarcraftOnline());
+			services.AddGameServer(DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

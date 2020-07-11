@@ -11,11 +11,11 @@ namespace BrowserGameEngine.Server.Controllers {
 	[Route("[controller]")]
 	public class UnitDefinitions : ControllerBase {
 		private readonly ILogger<UnitDefinitions> logger;
-		private readonly GameDefinition.GameDefinition gameDefinition;
+		private readonly GameDefinition.GameDef gameDefinition;
 
 		public UnitDefinitions(
 			ILogger<UnitDefinitions> logger,
-			GameDefinition.GameDefinition gameDefinition
+			GameDefinition.GameDef gameDefinition
 			) {
 			this.logger = logger;
 			this.gameDefinition = gameDefinition;

@@ -15,7 +15,7 @@ namespace BrowserGameEngine.Shared {
 		public int Speed { get; set; }
 		public List<string> Prerequisites { get; set; }
 
-		public static UnitDefinitionViewModel Create(UnitDefinition unitDefinition) {
+		public static UnitDefinitionViewModel Create(UnitDef unitDefinition) {
 			return new UnitDefinitionViewModel {
 				Id = unitDefinition.Id,
 				Name = unitDefinition.Name,

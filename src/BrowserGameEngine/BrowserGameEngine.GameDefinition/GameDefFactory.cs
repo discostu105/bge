@@ -1,24 +1,24 @@
 ﻿using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameDefinition {
-	public class GameDefinitionFactory {
-		public GameDefinition CreateStarcraftOnline() {
-			var gameDefinition = new GameDefinition();
+	public class GameDefFactory {
+		public GameDef CreateStarcraftOnline() {
+			var gameDefinition = new GameDef();
 
-			gameDefinition.PlayerTypes = new List<PlayerTypeDefinition> {
-				new PlayerTypeDefinition { Id = "terrans", Name = "Terraner" },
-				new PlayerTypeDefinition { Id = "protoss", Name = "Protoss" },
-				new PlayerTypeDefinition { Id = "zerg", Name = "Zerg" }
+			gameDefinition.PlayerTypes = new List<PlayerTypeDef> {
+				new PlayerTypeDef { Id = "terrans", Name = "Terraner" },
+				new PlayerTypeDef { Id = "protoss", Name = "Protoss" },
+				new PlayerTypeDef { Id = "zerg", Name = "Zerg" }
 			};
 
-			gameDefinition.Resources = new List<ResourceDefinition> {
-				new ResourceDefinition { Id = "land", Name = "Land" },
-				new ResourceDefinition { Id = "minerals", Name = "Mineralien" },
-				new ResourceDefinition { Id = "gas", Name = "Gas" }
+			gameDefinition.Resources = new List<ResourceDef> {
+				new ResourceDef { Id = "land", Name = "Land" },
+				new ResourceDef { Id = "minerals", Name = "Mineralien" },
+				new ResourceDef { Id = "gas", Name = "Gas" }
 			};
 
-			gameDefinition.Assets = new List<AssetDefinition> {
-				new AssetDefinition {
+			gameDefinition.Assets = new List<AssetDef> {
+				new AssetDef {
 					Id = "commandcenter",
 					Name = "Kommandozentrale",
 					PlayerTypeRestriction = "terrans",
@@ -29,7 +29,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Buildtime = 30,
 					Prerequisites = new List<string> { }
 				},
-				new AssetDefinition {
+				new AssetDef {
 					Id = "barracks",
 					Name = "Kaserne",
 					PlayerTypeRestriction = "terrans",
@@ -40,7 +40,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Buildtime = 10,
 					Prerequisites = new List<string> { "commandcenter" }
 				},
-				new AssetDefinition {
+				new AssetDef {
 					Id = "factory",
 					Name = "Fabrik",
 					PlayerTypeRestriction = "terrans",
@@ -53,8 +53,8 @@ namespace BrowserGameEngine.GameDefinition {
 				}
 			};
 
-			gameDefinition.Units = new List<UnitDefinition> {
-				new UnitDefinition {
+			gameDefinition.Units = new List<UnitDef> {
+				new UnitDef {
 					Id = "wbf",
 					Name = "WBF",
 					PlayerTypeRestriction = "terrans",
@@ -64,7 +64,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Hitpoints = 60,
 					Speed = 8
 				},
-				new UnitDefinition {
+				new UnitDef {
 					Id = "marine",
 					Name = "Space Marine",
 					PlayerTypeRestriction = "terrans",
@@ -75,7 +75,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Speed = 7,
 					Prerequisites = new List<string> { "barracks" }
 				},
-				new UnitDefinition {
+				new UnitDef {
 					Id = "siegetank",
 					Name = "Belagerungspanzer",
 					PlayerTypeRestriction = "terrans",

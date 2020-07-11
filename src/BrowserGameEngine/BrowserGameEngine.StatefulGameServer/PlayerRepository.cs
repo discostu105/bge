@@ -3,25 +3,13 @@ using System.Collections.Generic;
 using BrowserGameEngine.GameModel;
 
 namespace BrowserGameEngine.StatefulGameServer {
-    internal class PlayerRepository {
-        public Player Get(PlayerId playerId) {
-            return null;
-        }
 
-        public IEnumerable<Player> GetAll() {
-            return null;
-        }
+	public class PlayerRepository {
+		private readonly WorldState worldState;
+		public IDictionary<PlayerId, Player> Players { get => worldState.Players; }
 
-        public void Add(Player player) {
-
-        }
-    }
-
-    public class PlayerReadApi {
-
-	}
-
-    public class PlayerWriteApi {
-
+		public PlayerRepository(WorldState worldState) {
+			this.worldState = worldState;
+		}
 	}
 }

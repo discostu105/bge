@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameDefinition {
-	public class UnitDefinition {
+	public class UnitDef {
 		public string Id { get; internal set; }
 		public string Name { get; set; }
 		public string PlayerTypeRestriction { get; internal set; }
