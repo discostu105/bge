@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepository {
@@ -11,11 +12,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.world = world;
 		}
 
-		public IEnumerable<UnitState> Get(PlayerId playerId) {
+		public IEnumerable<UnitStateImmutable> Get(PlayerId playerId) {
 			if (Units.TryGetValue(playerId, out List<UnitState> result)) {
-				return result;
+				return result.Select(x => x.ToImmutable());
 			}
-			return Enumerable.Empty<UnitState>();
+			return Enumerable.Empty<UnitStateImmutable>();
 		}
 	}
 }

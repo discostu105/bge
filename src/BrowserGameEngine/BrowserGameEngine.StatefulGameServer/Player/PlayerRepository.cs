@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class PlayerRepository {
@@ -10,12 +12,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.world = world;
 		}
 
-		public Player Get(PlayerId playerId) {
-			return Players[playerId];
+		public PlayerImmutable Get(PlayerId playerId) {
+			return Players[playerId].ToImmutable();
 		}
 
-		public IEnumerable<Player> GetAll() {
-			return Players.Values;
+		public IEnumerable<PlayerImmutable> GetAll() {
+			return Players.Values.Select(x => x.ToImmutable());
 		}
 	}
 }

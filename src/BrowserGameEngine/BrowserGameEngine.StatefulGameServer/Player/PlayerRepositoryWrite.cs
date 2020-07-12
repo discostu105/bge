@@ -1,5 +1,6 @@
 ﻿using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {

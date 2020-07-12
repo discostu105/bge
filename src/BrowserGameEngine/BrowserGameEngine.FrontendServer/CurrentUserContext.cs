@@ -12,7 +12,7 @@ namespace BrowserGameEngine.FrontendServer {
 
 		public static CurrentUserContext Create(string playerId, string playerTypeId) {
 			return new CurrentUserContext {
-				PlayerId = PlayerId.Create(playerId),
+				PlayerId = PlayerIdFactory.Create(playerId),
 				PlayerTypeId = playerTypeId
 			};
 		}

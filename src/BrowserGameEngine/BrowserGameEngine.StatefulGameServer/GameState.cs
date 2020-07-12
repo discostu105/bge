@@ -3,9 +3,9 @@ using System;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	internal class GameState {
-		private readonly WorldState worldState;
+		private readonly WorldStateImmutable worldState;
 
-		public GameState(WorldState worldState) {
+		public GameState(WorldStateImmutable worldState) {
 			this.worldState = worldState;
 		}
 	}

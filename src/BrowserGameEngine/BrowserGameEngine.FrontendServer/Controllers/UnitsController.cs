@@ -45,7 +45,7 @@ namespace BrowserGameEngine.Server.Controllers {
 			};
 		}
 
-		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetState> playerAssets) {
+		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetStateImmutable> playerAssets) {
 			var playerAsset = playerAssets.SingleOrDefault(x => x.AssetId == assetDef.Id);
 
 			if (playerAsset == null) {

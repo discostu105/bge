@@ -44,7 +44,7 @@ namespace BrowserGameEngine.Server.Controllers {
 			};
 		}
 
-		private UnitViewModel CreateUnitViewModel(UnitState unit) {
+		private UnitViewModel CreateUnitViewModel(UnitStateImmutable unit) {
 			var unitDef = gameDef.GetUnit(unit.UnitId);
 
 			return new UnitViewModel {

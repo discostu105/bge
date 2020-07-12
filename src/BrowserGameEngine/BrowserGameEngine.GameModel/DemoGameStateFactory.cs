@@ -5,16 +5,16 @@ using System.Text;
 
 namespace BrowserGameEngine.GameModel {
 	public class DemoWorldStateFactory {
-		public static WorldState CreateStarCraftOnlineDemoWorldState1() {
-			var worldState = new WorldState();
+		public static WorldStateImmutable CreateStarCraftOnlineDemoWorldState1() {
+			var worldState = new WorldStateImmutable();
 
-			var playerId = PlayerId.Create("discostu");
+			var playerId = PlayerIdFactory.Create("discostu");
 			worldState.Players.Add(playerId,
-				new Player {
+				new PlayerImmutable {
 					PlayerId = playerId,
 					Name = "Commander Discostu",
 					Created = DateTime.Now,
-					State = new PlayerState {
+					State = new PlayerStateImmutable {
 						LastUpdate = DateTime.Now,
 						Resources = new Dictionary<string, decimal> {
 							{ "land", 50 },
@@ -26,28 +26,28 @@ namespace BrowserGameEngine.GameModel {
 			);
 
 			worldState.Assets.Add(playerId,
-				new List<AssetState> {
-					new AssetState {
+				new List<AssetStateImmutable> {
+					new AssetStateImmutable {
 						AssetId = "commandcenter",
 						Level = 1
 					},
-					new AssetState {
+					new AssetStateImmutable {
 						AssetId = "factory",
 						Level = 1
 					}
 				});
 
 			worldState.Units.Add(playerId,
-				new List<UnitState> {
-					new UnitState {
+				new List<UnitStateImmutable> {
+					new UnitStateImmutable {
 						UnitId = "wbf",
 						Count = 10
 					},
-					new UnitState {
+					new UnitStateImmutable {
 						UnitId = "marine",
 						Count = 25
 					},
-					new UnitState {
+					new UnitStateImmutable {
 						UnitId = "siegetank",
 						Count = 3
 					},
