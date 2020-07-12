@@ -13,6 +13,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<ScoreRepository>();
 			services.AddSingleton<AssetRepository>();
 			services.AddSingleton<AssetRepositoryWrite>();
+			services.AddSingleton<UnitRepository>();
+			services.AddSingleton<UnitRepositoryWrite>();
 		}
 	}
 }

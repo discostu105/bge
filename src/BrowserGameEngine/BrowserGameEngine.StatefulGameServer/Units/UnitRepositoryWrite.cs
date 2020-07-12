@@ -3,11 +3,11 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {
-	public class AssetRepositoryWrite {
+	public class UnitRepositoryWrite {
 		private readonly WorldState world;
-		private IDictionary<PlayerId, List<AssetState>> Assets => world.Assets;
+		private IDictionary<PlayerId, List<UnitState>> Units => world.Units;
 
-		public AssetRepositoryWrite(WorldState world) {
+		public UnitRepositoryWrite(WorldState world) {
 			this.world = world;
 		}
 	}

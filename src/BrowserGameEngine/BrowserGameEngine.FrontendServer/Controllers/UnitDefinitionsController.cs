@@ -23,7 +23,7 @@ namespace BrowserGameEngine.Server.Controllers {
 
 		[HttpGet]
 		public IEnumerable<UnitDefinitionViewModel> Get() {
-			return gameDefinition.Units.Select(x => UnitDefinitionViewModel.Create(x)).ToArray();
+			return gameDefinition.Units.Select(x => UnitDefinitionViewModel.Create(x, true /* TODO */)).ToArray();
 		}
 	}
 }

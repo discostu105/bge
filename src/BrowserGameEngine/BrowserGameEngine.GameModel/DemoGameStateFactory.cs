@@ -8,10 +8,10 @@ namespace BrowserGameEngine.GameModel {
 		public static WorldState CreateStarCraftOnlineDemoWorldState1() {
 			var worldState = new WorldState();
 
-			worldState.Players.Add(
-				new PlayerId("asdf"),
+			var playerId = PlayerId.Create("discostu");
+			worldState.Players.Add(playerId,
 				new Player {
-					PlayerId = new PlayerId("asdf"),
+					PlayerId = playerId,
 					Name = "Commander Discostu",
 					Created = DateTime.Now,
 					State = new PlayerState {
@@ -20,34 +20,38 @@ namespace BrowserGameEngine.GameModel {
 							{ "land", 50 },
 							{ "minerals", 500 },
 							{ "gas", 300 }
-						},
-						Assets = new List<AssetState> {
-							new AssetState {
-								AssetId = "commandcenter",
-								Level = 1
-							},
-							new AssetState {
-								AssetId = "factory",
-								Level = 1
-							}
-						},
-						Units = new List<UnitState> {
-							new UnitState {
-								UnitId = "wbf",
-								Count = 10
-							},
-							new UnitState {
-								UnitId = "marine",
-								Count = 25
-							},
-							new UnitState {
-								UnitId = "siegetank",
-								Count = 3
-							},
 						}
 					}
 				}
 			);
+
+			worldState.Assets.Add(playerId,
+				new List<AssetState> {
+					new AssetState {
+						AssetId = "commandcenter",
+						Level = 1
+					},
+					new AssetState {
+						AssetId = "factory",
+						Level = 1
+					}
+				});
+
+			worldState.Units.Add(playerId,
+				new List<UnitState> {
+					new UnitState {
+						UnitId = "wbf",
+						Count = 10
+					},
+					new UnitState {
+						UnitId = "marine",
+						Count = 25
+					},
+					new UnitState {
+						UnitId = "siegetank",
+						Count = 3
+					},
+				});
 
 			return worldState;
 		}

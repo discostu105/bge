@@ -5,17 +5,18 @@ using System.Text;
 
 namespace BrowserGameEngine.Shared {
 	public class UnitDefinitionViewModel {
-		public string Id { get; set; }
-		public string Name { get; set; }
-		public string PlayerTypeRestriction { get; set; }
-		public IDictionary<string, decimal> Cost { get; set; }
+		public string? Id { get; set; }
+		public string? Name { get; set; }
+		public string? PlayerTypeRestriction { get; set; }
+		public IDictionary<string, decimal>? Cost { get; set; }
 		public int Attack { get; set; }
 		public int Defense { get; set; }
 		public int Hitpoints { get; set; }
 		public int Speed { get; set; }
-		public List<string> Prerequisites { get; set; }
+		public List<string>? Prerequisites { get; set; }
+		public bool PrerequisitesMet { get; set; }
 
-		public static UnitDefinitionViewModel Create(UnitDef unitDefinition) {
+		public static UnitDefinitionViewModel Create(UnitDef unitDefinition, bool prerequisitesMet) {
 			return new UnitDefinitionViewModel {
 				Id = unitDefinition.Id,
 				Name = unitDefinition.Name,
@@ -25,7 +26,8 @@ namespace BrowserGameEngine.Shared {
 				Defense = unitDefinition.Defense,
 				Hitpoints = unitDefinition.Hitpoints,
 				Speed = unitDefinition.Speed,
-				Prerequisites = unitDefinition.Prerequisites
+				Prerequisites = unitDefinition.Prerequisites,
+				PrerequisitesMet = prerequisitesMet
 			};
 		}
 	}
