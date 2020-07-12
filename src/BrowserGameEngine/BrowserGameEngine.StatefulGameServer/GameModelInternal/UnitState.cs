@@ -10,10 +10,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal
 
 	internal static class UnitStateExtensions {
 		internal static UnitStateImmutable ToImmutable(this UnitState unitState) {
-			return new UnitStateImmutable {
-				UnitId = unitState.UnitId,
-				Count = unitState.Count
-			};
+			return new UnitStateImmutable (
+				UnitId: unitState.UnitId,
+				Count: unitState.Count
+			);
 		}
 
 		internal static UnitState ToMutable(this UnitStateImmutable unitStateImmutable) {

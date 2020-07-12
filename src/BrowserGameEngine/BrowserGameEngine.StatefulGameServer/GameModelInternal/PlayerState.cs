@@ -12,10 +12,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal
 
 	internal static class PlayerStateExtensions {
 		internal static PlayerStateImmutable ToImmutable(this PlayerState playerState) {
-			return new PlayerStateImmutable {
-				Resources = new Dictionary<string, decimal>(playerState.Resources),
-				LastUpdate = playerState.LastUpdate
-			};
+			return new PlayerStateImmutable (
+				Resources: new Dictionary<string, decimal>(playerState.Resources),
+				LastUpdate: playerState.LastUpdate
+			);
 		}
 
 		internal static PlayerState ToMutable(this PlayerStateImmutable playerStateImmutable) {
