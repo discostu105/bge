@@ -40,11 +40,11 @@ namespace BrowserGameEngine.Server.Controllers {
 		[HttpGet]
 		public UnitsViewModel Get() {
 			return new UnitsViewModel {
-				Units = unitRepository.Get(currentUserContext.PlayerId).Select(x => CreateUnitViewModel(x)).ToList()
+				Units = unitRepository.GetAll(currentUserContext.PlayerId).Select(x => CreateUnitViewModel(x)).ToList()
 			};
 		}
 
-		private UnitViewModel CreateUnitViewModel(UnitStateImmutable unit) {
+		private UnitViewModel CreateUnitViewModel(UnitImmutable unit) {
 			var unitDef = gameDef.GetUnit(unit.UnitDefId);
 
 			return new UnitViewModel {

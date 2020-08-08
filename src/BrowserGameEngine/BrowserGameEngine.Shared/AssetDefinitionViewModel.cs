@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BrowserGameEngine.Shared {
 	public class AssetDefinitionViewModel {
-		public AssetDefId? Id { get; set; }
+		public string? Id { get; set; }
 		public string? Name { get; set; }
 		public string? PlayerTypeRestriction { get; set; }
 		public Dictionary<string, decimal>? Cost { get; set; }
@@ -17,7 +17,7 @@ namespace BrowserGameEngine.Shared {
 
 		public static AssetDefinitionViewModel Create(AssetDef assetDefinition) {
 			return new AssetDefinitionViewModel {
-				Id = assetDefinition.Id,
+				Id = assetDefinition.Id.Id,
 				Name = assetDefinition.Name,
 				PlayerTypeRestriction = assetDefinition.PlayerTypeRestriction,
 				Cost = assetDefinition.Cost,

@@ -45,7 +45,7 @@ namespace BrowserGameEngine.Server.Controllers {
 			};
 		}
 
-		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetStateImmutable> playerAssets) {
+		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetImmutable> playerAssets) {
 			var playerAsset = playerAssets.SingleOrDefault(x => x.AssetDefId == assetDef.Id);
 
 			if (playerAsset == null) {
@@ -70,7 +70,7 @@ namespace BrowserGameEngine.Server.Controllers {
 
 		private bool PrerequisitesMet(AssetDef assetDef) {
 			foreach(var prereq in assetDef.Prerequisites) {
-				if (!assetRepository.HasAsset(currentUserContext.PlayerId, Id.Asset(prereq))) return false;
+				if (!assetRepository.HasAsset(currentUserContext.PlayerId, Id.AssetDef(prereq))) return false;
 			}
 			return true;
 		}

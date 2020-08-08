@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace BrowserGameEngine.GameModel {
-	public class DemoWorldStateFactory {
+	public static partial class DemoWorldStateFactory {
 		public static WorldStateImmutable CreateStarCraftOnlineDemoWorldState1() {
 			var worldState = new WorldStateImmutable();
 
@@ -18,38 +18,41 @@ namespace BrowserGameEngine.GameModel {
 					State: new PlayerStateImmutable(
 						LastUpdate: DateTime.Now,
 						Resources: new Dictionary<ResourceDefId, decimal> {
-							{ Id.Res("land"), 50 },
-							{ Id.Res("minerals"), 500 },
-							{ Id.Res("gas"), 300 }
+							{ Id.ResDef("land"), 50 },
+							{ Id.ResDef("minerals"), 500 },
+							{ Id.ResDef("gas"), 300 }
 						}
 					)
 				)
 			);
 
 			worldState.Assets.Add(playerId,
-				new List<AssetStateImmutable> {
-					new AssetStateImmutable(
-						AssetDefId: Id.Asset("commandcenter"),
+				new List<AssetImmutable> {
+					new AssetImmutable(
+						AssetDefId: Id.AssetDef("commandcenter"),
 						Level: 1
 					),
-					new AssetStateImmutable(
-						AssetDefId: Id.Asset("factory"),
+					new AssetImmutable(
+						AssetDefId: Id.AssetDef("factory"),
 						Level: 1
 					)
 				});
 
 			worldState.Units.Add(playerId,
-				new List<UnitStateImmutable> {
-					new UnitStateImmutable (
-						UnitDefId: Id.Unit("wbf"),
+				new List<UnitImmutable> {
+					new UnitImmutable (
+						UnitId: Id.NewUnitId(),
+						UnitDefId: Id.UnitDef("wbf"),
 						Count: 10
 					),
-					new UnitStateImmutable (
-						UnitDefId: Id.Unit("spacemarine"),
+					new UnitImmutable (
+						UnitId: Id.NewUnitId(),
+						UnitDefId: Id.UnitDef("spacemarine"),
 						Count: 25
 					),
-					new UnitStateImmutable (
-						UnitDefId: Id.Unit("siegetank"),
+					new UnitImmutable (
+						UnitId: Id.NewUnitId(),
+						UnitDefId: Id.UnitDef("siegetank"),
 						Count: 3
 					),
 				});

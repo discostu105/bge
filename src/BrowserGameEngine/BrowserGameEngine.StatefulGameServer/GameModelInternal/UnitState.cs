@@ -2,23 +2,25 @@
 using BrowserGameEngine.GameModel;
 using System;
 
-namespace BrowserGameEngine.StatefulGameServer.GameModelInternal
-{
-	internal class UnitState {
+namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
+
+	internal class Unit {
+		public UnitId UnitId { get; init; }
 		public UnitDefId UnitDefId { get; init; }
 		public int Count { get; set; }
 	}
 
-	internal static class UnitStateExtensions {
-		internal static UnitStateImmutable ToImmutable(this UnitState unitState) {
-			return new UnitStateImmutable (
+	internal static class UnitExtensions {
+		internal static UnitImmutable ToImmutable(this Unit unitState) {
+			return new UnitImmutable(
+				UnitId: unitState.UnitId,
 				UnitDefId: unitState.UnitDefId,
 				Count: unitState.Count
 			);
 		}
 
-		internal static UnitState ToMutable(this UnitStateImmutable unitStateImmutable) {
-			return new UnitState {
+		internal static Unit ToMutable(this UnitImmutable unitStateImmutable) {
+			return new Unit {
 				UnitDefId = unitStateImmutable.UnitDefId,
 				Count = unitStateImmutable.Count
 			};

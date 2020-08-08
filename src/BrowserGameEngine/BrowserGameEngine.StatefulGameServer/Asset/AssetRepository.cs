@@ -15,11 +15,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		// returns all assets from one player
-		public IEnumerable<AssetStateImmutable> Get(PlayerId playerId) {
+		public IEnumerable<AssetImmutable> Get(PlayerId playerId) {
 			if (Assets.TryGetValue(playerId, out List<AssetState> result)) {
 				return result.Select(x => x.ToImmutable());
 			}
-			return Enumerable.Empty<AssetStateImmutable>();
+			return Enumerable.Empty<AssetImmutable>();
 		}
 
 		public bool HasAsset(PlayerId playerId, AssetDefId assetDefId) {

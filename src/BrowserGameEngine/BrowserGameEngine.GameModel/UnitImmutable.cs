@@ -2,7 +2,10 @@
 using System;
 
 namespace BrowserGameEngine.GameModel {
-	public record UnitStateImmutable(
+	public record UnitId(Guid Id);
+
+	public record UnitImmutable(
+		UnitId UnitId,
 		UnitDefId UnitDefId,
 		int Count
 	);

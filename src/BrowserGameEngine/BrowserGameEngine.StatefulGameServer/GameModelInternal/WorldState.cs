@@ -8,7 +8,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
 		internal IDictionary<PlayerId, Player> Players { get; set; } = new Dictionary<PlayerId, Player>();
 		internal IDictionary<PlayerId, List<AssetState>> Assets { get; set; } = new Dictionary<PlayerId, List<AssetState>>();
-		internal IDictionary<PlayerId, List<UnitState>> Units { get; set; } = new Dictionary<PlayerId, List<UnitState>>();
+		internal IDictionary<PlayerId, List<Unit>> Units { get; set; } = new Dictionary<PlayerId, List<Unit>>();
 	}
 
 	internal static class WorldStateImmutableExtensions {

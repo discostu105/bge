@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BrowserGameEngine.Shared {
 	public class UnitDefinitionViewModel {
-		public UnitDefId Id { get; set; }
+		public string Id { get; set; }
 		public string Name { get; set; }
 		public string PlayerTypeRestriction { get; set; }
 		public IDictionary<string, decimal>? Cost { get; set; }
@@ -18,7 +18,7 @@ namespace BrowserGameEngine.Shared {
 
 		public static UnitDefinitionViewModel Create(UnitDef unitDefinition, bool prerequisitesMet) {
 			return new UnitDefinitionViewModel {
-				Id = unitDefinition.Id,
+				Id = unitDefinition.Id.Id,
 				Name = unitDefinition.Name,
 				PlayerTypeRestriction = unitDefinition.PlayerTypeRestriction,
 				Cost = unitDefinition.Cost,

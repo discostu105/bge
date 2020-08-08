@@ -11,14 +11,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	}
 
 	internal static class AssetStateExtensions {
-		internal static AssetStateImmutable ToImmutable(this AssetState assetState) {
-			return new AssetStateImmutable (
+		internal static AssetImmutable ToImmutable(this AssetState assetState) {
+			return new AssetImmutable (
 				AssetDefId: assetState.AssetDefId,
 				Level: assetState.Level
 			);
 		}
 
-		internal static AssetState ToMutable(this AssetStateImmutable assetStateImmutable) {
+		internal static AssetState ToMutable(this AssetImmutable assetStateImmutable) {
 			return new AssetState {
 				AssetDefId = assetStateImmutable.AssetDefId,
 				Level = assetStateImmutable.Level
