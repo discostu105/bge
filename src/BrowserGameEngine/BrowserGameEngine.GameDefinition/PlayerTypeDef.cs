@@ -1,6 +1,7 @@
 ﻿namespace BrowserGameEngine.GameDefinition {
+	public record PlayerTypeDefId(string Id);
 	public record PlayerTypeDef(
-		string Id,
+		PlayerTypeDefId Id,
 		string Name
 	);
 }

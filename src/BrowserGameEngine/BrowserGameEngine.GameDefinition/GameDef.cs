@@ -23,16 +23,16 @@ namespace BrowserGameEngine.GameDefinition {
 			return gameDef.Assets.Where(x => x.PlayerTypeRestriction == playerTypeId);
 		}
 
-		public static UnitDef? GetUnit(this GameDef gameDef, string unitId) {
-			return gameDef.Units.SingleOrDefault(x => x.Id == unitId);
+		public static UnitDef? GetUnit(this GameDef gameDef, UnitDefId unitDefId) {
+			return gameDef.Units.SingleOrDefault(x => x.Id == unitDefId);
 		}
 
 		public static IEnumerable<UnitDef> GetUnitsByPlayerType(this GameDef gameDef, string playerTypeId) {
 			return gameDef.Units.Where(x => x.PlayerTypeRestriction == playerTypeId);
 		}
 
-		public static ResourceDef? GetResource(this GameDef gameDef, string resourceId) {
-			return gameDef.Resources.SingleOrDefault(x => x.Id == resourceId);
+		public static ResourceDef? GetResource(this GameDef gameDef, ResourceDefId resourceDefId) {
+			return gameDef.Resources.SingleOrDefault(x => x.Id == resourceDefId);
 		}
 		
 	}

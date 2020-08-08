@@ -6,22 +6,22 @@ namespace BrowserGameEngine.GameDefinition {
 			var gameDefinition = new GameDef();
 
 			gameDefinition.PlayerTypes = new List<PlayerTypeDef> {
-				new PlayerTypeDef("terran", "Terraner"),
-				new PlayerTypeDef("protoss", "Protoss"),
-				new PlayerTypeDef("zerg",  "Zerg")
+				new PlayerTypeDef(Id.PlayerType("terran"), "Terraner"),
+				new PlayerTypeDef(Id.PlayerType("protoss"), "Protoss"),
+				new PlayerTypeDef(Id.PlayerType("zerg"),  "Zerg")
 			};
 
 			gameDefinition.Resources = new List<ResourceDef> {
-				new ResourceDef { Id = "land", Name = "Land" },
-				new ResourceDef { Id = "minerals", Name = "Mineralien" },
-				new ResourceDef { Id = "gas", Name = "Gas" }
+				new ResourceDef(Id.Res("land"), "Land"),
+				new ResourceDef(Id.Res("minerals"), "Mineralien"),
+				new ResourceDef(Id.Res("gas"), "Gas")
 			};
 
 			gameDefinition.ScoreResource = "land";
 
 			gameDefinition.Assets = new List<AssetDef> {
 				new AssetDef {
-					Id = new AssetDefId("commandcenter"),
+					Id = Id.Asset("commandcenter"),
 					Name = "Kommandozentrale",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 400 } },
@@ -32,7 +32,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { }
 				},
 				new AssetDef {
-					Id = new AssetDefId("barracks"),
+					Id = Id.Asset("barracks"),
 					Name = "Kaserne",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 150 } },
@@ -43,7 +43,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "commandcenter" }
 				},
 				new AssetDef {
-					Id = new AssetDefId("factory"),
+					Id = Id.Asset("factory"),
 					Name = "Fabrik",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 200 }, { "gas", 100 } },
@@ -54,7 +54,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "barracks" }
 				},
 				new AssetDef {
-					Id = new AssetDefId("armory"),
+					Id = Id.Asset("armory"),
 					Name = "Waffenfabrik",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 100 }, { "gas", 50 } },
@@ -65,7 +65,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "factory" }
 				},
 				new AssetDef {
-					Id = new AssetDefId("spaceport"),
+					Id = Id.Asset("spaceport"),
 					Name = "Raumhafen",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 150 }, { "gas", 100 } },
@@ -76,7 +76,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "factory" }
 				},
 				new AssetDef {
-					Id = new AssetDefId("academy"),
+					Id = Id.Asset("academy"),
 					Name = "Akademie",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 150 }, { "gas", 0 } },
@@ -87,7 +87,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "barracks" }
 				},
 				new AssetDef {
-					Id = new AssetDefId("sciencefacility"),
+					Id = Id.Asset("sciencefacility"),
 					Name = "Wissenschaftliches Institut",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 100 }, { "gas", 150 } },
@@ -101,7 +101,7 @@ namespace BrowserGameEngine.GameDefinition {
 
 			gameDefinition.Units = new List<UnitDef> {
 				new UnitDef {
-					Id = "wbf",
+					Id = Id.Unit("wbf"),
 					Name = "WBF",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 50 } },
@@ -111,7 +111,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Speed = 8
 				},
 				new UnitDef {
-					Id = "spacemarine",
+					Id = Id.Unit("spacemarine"),
 					Name = "Space Marine",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 45 } },
@@ -122,7 +122,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "barracks" }
 				},
 				new UnitDef {
-					Id = "firebat",
+					Id = Id.Unit("firebat"),
 					Name = "Feuerfresser",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 50 }, { "gas", 25 } },
@@ -133,7 +133,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "barracks" }
 				},
 				new UnitDef {
-					Id = "siegetank",
+					Id = Id.Unit("siegetank"),
 					Name = "Belagerungspanzer",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 125 }, { "gas", 100 } },
@@ -144,7 +144,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "factory" }
 				},
 				//new UnitDef {
-				//	Id = "ghost",
+				//	Id = Id.Unit("ghost",
 				//	Name = "Geist",
 				//	PlayerTypeRestriction = "terran",
 				//	Cost = new Dictionary<string, decimal> { { "minerals", 666 }, { "gas", 666 } },
@@ -155,7 +155,7 @@ namespace BrowserGameEngine.GameDefinition {
 				//	Prerequisites = new List<string> { "todo" }
 				//},
 				new UnitDef {
-					Id = "vulture",
+					Id = Id.Unit("vulture"),
 					Name = "Adler",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 75 } },
@@ -166,7 +166,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "armory" }
 				},
 				//new UnitDef {
-				//	Id = "goliath",
+				//	Id = Id.Unit("goliath",
 				//	Name = "Goliath",
 				//	PlayerTypeRestriction = "terran",
 				//	Cost = new Dictionary<string, decimal> { { "minerals", 666 }, { "gas", 666 } },
@@ -177,7 +177,7 @@ namespace BrowserGameEngine.GameDefinition {
 				//	Prerequisites = new List<string> { "todo" }
 				//},
 				new UnitDef {
-					Id = "wraith",
+					Id = Id.Unit("wraith"),
 					Name = "Raumjäger",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 200 }, { "gas", 100 } },
@@ -188,7 +188,7 @@ namespace BrowserGameEngine.GameDefinition {
 					Prerequisites = new List<string> { "spaceport" }
 				},
 				new UnitDef {
-					Id = "battlecruiser",
+					Id = Id.Unit("battlecruiser"),
 					Name = "Schwerer Kreuzer",
 					PlayerTypeRestriction = "terran",
 					Cost = new Dictionary<string, decimal> { { "minerals", 300 }, { "gas", 300 } },

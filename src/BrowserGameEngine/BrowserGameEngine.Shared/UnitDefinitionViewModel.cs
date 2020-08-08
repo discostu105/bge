@@ -5,9 +5,9 @@ using System.Text;
 
 namespace BrowserGameEngine.Shared {
 	public class UnitDefinitionViewModel {
-		public string? Id { get; set; }
-		public string? Name { get; set; }
-		public string? PlayerTypeRestriction { get; set; }
+		public UnitDefId Id { get; set; }
+		public string Name { get; set; }
+		public string PlayerTypeRestriction { get; set; }
 		public IDictionary<string, decimal>? Cost { get; set; }
 		public int Attack { get; set; }
 		public int Defense { get; set; }

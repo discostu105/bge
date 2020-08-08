@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameDefinition {
+	public record UnitDefId(string Id);
 	public class UnitDef {
-		public string Id { get; internal set; }
+		public UnitDefId Id { get; internal set; }
 		public string Name { get; set; }
 		public string PlayerTypeRestriction { get; internal set; }
 		public IDictionary<string, decimal> Cost { get; internal set; }

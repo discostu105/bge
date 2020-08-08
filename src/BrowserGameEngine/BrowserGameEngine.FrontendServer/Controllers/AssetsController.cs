@@ -70,7 +70,7 @@ namespace BrowserGameEngine.Server.Controllers {
 
 		private bool PrerequisitesMet(AssetDef assetDef) {
 			foreach(var prereq in assetDef.Prerequisites) {
-				if (!assetRepository.HasAsset(currentUserContext.PlayerId, new AssetDefId(prereq))) return false;
+				if (!assetRepository.HasAsset(currentUserContext.PlayerId, Id.Asset(prereq))) return false;
 			}
 			return true;
 		}

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using BrowserGameEngine.GameDefinition;
+using System;
 
 namespace BrowserGameEngine.GameModel {
 	public record UnitStateImmutable(
-		string UnitId,
+		UnitDefId UnitDefId,
 		int Count
 	);
 }

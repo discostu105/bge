@@ -29,11 +29,11 @@ namespace BrowserGameEngine.GameModel {
 			worldState.Assets.Add(playerId,
 				new List<AssetStateImmutable> {
 					new AssetStateImmutable(
-						AssetDefId: new AssetDefId("commandcenter"),
+						AssetDefId: Id.Asset("commandcenter"),
 						Level: 1
 					),
 					new AssetStateImmutable(
-						AssetDefId: new AssetDefId("factory"),
+						AssetDefId: Id.Asset("factory"),
 						Level: 1
 					)
 				});
@@ -41,15 +41,15 @@ namespace BrowserGameEngine.GameModel {
 			worldState.Units.Add(playerId,
 				new List<UnitStateImmutable> {
 					new UnitStateImmutable (
-						UnitId: "wbf",
+						UnitDefId: Id.Unit("wbf"),
 						Count: 10
 					),
 					new UnitStateImmutable (
-						UnitId: "spacemarine",
+						UnitDefId: Id.Unit("spacemarine"),
 						Count: 25
 					),
 					new UnitStateImmutable (
-						UnitId: "siegetank",
+						UnitDefId: Id.Unit("siegetank"),
 						Count: 3
 					),
 				});
