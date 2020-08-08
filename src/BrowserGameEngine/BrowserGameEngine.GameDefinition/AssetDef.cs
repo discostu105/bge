@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameDefinition {
+
 	public record AssetDefId(string Id);
 
 	public class AssetDef {
