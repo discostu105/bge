@@ -11,14 +11,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.world = world;
 		}
 
-		private IList<Unit> GetUnits(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
+		private IList<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
 
 		public IEnumerable<UnitImmutable> GetAll(PlayerId playerId) {
-			return GetUnits(playerId).Select(x => x.ToImmutable());
+			return Units(playerId).Select(x => x.ToImmutable());
 		}
 
 		public IEnumerable<UnitImmutable> GetById(PlayerId playerId, UnitId unitId) {
-			return GetUnits(playerId)
+			return Units(playerId)
 				.Where(x => x.UnitId == unitId)
 				.Select(x => x.ToImmutable());
 		}

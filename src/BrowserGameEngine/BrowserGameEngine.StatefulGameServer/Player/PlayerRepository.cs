@@ -13,7 +13,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public PlayerImmutable Get(PlayerId playerId) {
-			return Players[playerId].ToImmutable();
+			return world.GetPlayer(playerId).ToImmutable();
 		}
 
 		public IEnumerable<PlayerImmutable> GetAll() {

@@ -6,7 +6,6 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepository {
 		private readonly WorldState world;
-		private IDictionary<PlayerId, Player> Players => world.Players;
 
 		internal ResourceRepository(WorldState world) {
 			this.world = world;

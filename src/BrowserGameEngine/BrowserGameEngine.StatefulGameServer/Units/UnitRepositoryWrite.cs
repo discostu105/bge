@@ -12,10 +12,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.world = world;
 		}
 
-		private List<Unit> GetUnits(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
+		private List<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
 
-		public void AddUnit(PlayerId playerId, UnitDefId unitDefId, int count) {
-			GetUnits(playerId).Add(new Unit {
+		private void AddUnit(PlayerId playerId, UnitDefId unitDefId, int count) {
+			Units(playerId).Add(new Unit {
 				UnitId = Id.NewUnitId(),
 				UnitDefId = unitDefId,
 				Count = count

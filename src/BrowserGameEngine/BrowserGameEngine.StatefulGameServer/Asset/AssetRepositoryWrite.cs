@@ -11,7 +11,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly AssetRepository assetRepository;
 		private readonly GameDef gameDef;
 
-
 		public AssetRepositoryWrite(
 					WorldState world,
 					AssetRepository assetRepository,
@@ -22,18 +21,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.gameDef = gameDef;
 		}
 
-		private IList<Asset> GetAssets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
+		private IList<Asset> Assets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
 
 		public void BuildAsset(BuildAssetCommand command) {
 			var assetDef = gameDef.GetAssetDef(command.AssetDefId);
 			if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
 			if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
 
-			AddToBuildQueue(command.AssetDefId, command.Count);
+			AddAsset(command.PlayerId, command.AssetDefId);
 		}
 
-		private void AddToBuildQueue(AssetDefId assetDefId, int count) {
-			throw new NotImplementedException();
+		private void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
+			Assets(playerId).Add(new Asset {
+				AssetDefId = assetDefId,
+				Level = 1
+			});
 		}
 	}
 }
