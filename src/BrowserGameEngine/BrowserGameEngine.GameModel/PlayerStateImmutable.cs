@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace BrowserGameEngine.GameModel {
-	public record PlayerStateImmutable (
+	public record PlayerStateImmutable(
+		DateTime? LastUpdate,
 		IDictionary<ResourceDefId, decimal> Resources,
-		DateTime? LastUpdate
+		List<AssetImmutable> Assets,
+		List<UnitImmutable> Units
 	);
 }

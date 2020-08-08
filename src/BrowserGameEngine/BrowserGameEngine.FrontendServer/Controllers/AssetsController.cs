@@ -53,7 +53,7 @@ namespace BrowserGameEngine.Server.Controllers {
 				return new AssetViewModel {
 					Definition = AssetDefinitionViewModel.Create(assetDef),
 					Count = 0,
-					PrerequisitesMet = PrerequisitesMet(assetDef),
+					PrerequisitesMet = assetRepository.PrerequisitesMet(currentUserContext.PlayerId, assetDef),
 					Cost = CostViewModel.Create(assetDef.Cost)
 				};
 			} else {
@@ -62,17 +62,10 @@ namespace BrowserGameEngine.Server.Controllers {
 					Definition = AssetDefinitionViewModel.Create(assetDef),
 					Count = 1,
 					Level = playerAsset.Level,
-					PrerequisitesMet = PrerequisitesMet(assetDef),
+					PrerequisitesMet = assetRepository.PrerequisitesMet(currentUserContext.PlayerId, assetDef),
 					Cost = CostViewModel.Create(assetDef.Cost)
 				};
 			}
-		}
-
-		private bool PrerequisitesMet(AssetDef assetDef) {
-			foreach(var prereq in assetDef.Prerequisites) {
-				if (!assetRepository.HasAsset(currentUserContext.PlayerId, Id.AssetDef(prereq))) return false;
-			}
-			return true;
 		}
 	}
 }

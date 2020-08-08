@@ -2,17 +2,17 @@
 using BrowserGameEngine.StatefulGameServer;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BrowserGameEngine.GameModel {
 	public static partial class DemoWorldStateFactory {
 		public static WorldStateImmutable CreateStarCraftOnlineDemoWorldState1() {
-			var worldState = new WorldStateImmutable();
+			var players = new List<PlayerImmutable>();
 
-			var playerId = PlayerIdFactory.Create("discostu");
-			worldState.Players.Add(playerId,
+			players.Add(
 				new PlayerImmutable(
-					PlayerId: playerId,
+					PlayerId: PlayerIdFactory.Create("discostu"),
 					Name: "Commander Discostu",
 					Created: DateTime.Now,
 					State: new PlayerStateImmutable(
@@ -21,43 +21,39 @@ namespace BrowserGameEngine.GameModel {
 							{ Id.ResDef("land"), 50 },
 							{ Id.ResDef("minerals"), 500 },
 							{ Id.ResDef("gas"), 300 }
+						},
+						Assets: new List<AssetImmutable> {
+							new AssetImmutable(
+								AssetDefId: Id.AssetDef("commandcenter"),
+								Level: 1
+							),
+							new AssetImmutable(
+								AssetDefId: Id.AssetDef("factory"),
+								Level: 1
+							)
+						},
+						Units: new List<UnitImmutable> {
+							new UnitImmutable (
+								UnitId: Id.NewUnitId(),
+								UnitDefId: Id.UnitDef("wbf"),
+								Count: 10
+							),
+							new UnitImmutable (
+								UnitId: Id.NewUnitId(),
+								UnitDefId: Id.UnitDef("spacemarine"),
+								Count: 25
+							),
+							new UnitImmutable (
+								UnitId: Id.NewUnitId(),
+								UnitDefId: Id.UnitDef("siegetank"),
+								Count: 3
+							),
 						}
 					)
 				)
 			);
 
-			worldState.Assets.Add(playerId,
-				new List<AssetImmutable> {
-					new AssetImmutable(
-						AssetDefId: Id.AssetDef("commandcenter"),
-						Level: 1
-					),
-					new AssetImmutable(
-						AssetDefId: Id.AssetDef("factory"),
-						Level: 1
-					)
-				});
-
-			worldState.Units.Add(playerId,
-				new List<UnitImmutable> {
-					new UnitImmutable (
-						UnitId: Id.NewUnitId(),
-						UnitDefId: Id.UnitDef("wbf"),
-						Count: 10
-					),
-					new UnitImmutable (
-						UnitId: Id.NewUnitId(),
-						UnitDefId: Id.UnitDef("spacemarine"),
-						Count: 25
-					),
-					new UnitImmutable (
-						UnitId: Id.NewUnitId(),
-						UnitDefId: Id.UnitDef("siegetank"),
-						Count: 3
-					),
-				});
-
-			return worldState;
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId));
 		}
 	}
 }
