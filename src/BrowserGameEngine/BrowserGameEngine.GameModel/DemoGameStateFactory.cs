@@ -17,10 +17,10 @@ namespace BrowserGameEngine.GameModel {
 					Created: DateTime.Now,
 					State: new PlayerStateImmutable(
 						LastUpdate: DateTime.Now,
-						Resources: new Dictionary<string, decimal> {
-							{ "land", 50 },
-							{ "minerals", 500 },
-							{ "gas", 300 }
+						Resources: new Dictionary<ResourceDefId, decimal> {
+							{ Id.Res("land"), 50 },
+							{ Id.Res("minerals"), 500 },
+							{ Id.Res("gas"), 300 }
 						}
 					)
 				)

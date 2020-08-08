@@ -17,7 +17,7 @@ namespace BrowserGameEngine.GameDefinition {
 				new ResourceDef(Id.Res("gas"), "Gas")
 			};
 
-			gameDefinition.ScoreResource = "land";
+			gameDefinition.ScoreResource = Id.Res("land");
 
 			gameDefinition.Assets = new List<AssetDef> {
 				new AssetDef {

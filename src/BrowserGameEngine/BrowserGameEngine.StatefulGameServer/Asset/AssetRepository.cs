@@ -24,7 +24,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public bool HasAsset(PlayerId playerId, AssetDefId assetDefId) {
 			if (Assets.TryGetValue(playerId, out List<AssetState> result)) {
-				return result.Any(x => x.AssetDefId == assetDefId);
+				return result.Any(x => x.AssetDefId.Equals(assetDefId));
 			}
 			return false;
 		}
