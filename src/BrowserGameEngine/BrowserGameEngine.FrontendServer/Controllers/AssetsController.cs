@@ -14,47 +14,65 @@ using BrowserGameEngine.GameDefinition;
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
 	[Route("[controller]")]
-	public class UnitsController : ControllerBase {
-		private readonly ILogger<UnitsController> logger;
+	public class AssetsController : ControllerBase {
+		private readonly ILogger<AssetsController> logger;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly PlayerRepository playerRepository;
-		private readonly UnitRepository unitRepository;
-		private readonly UnitRepositoryWrite unitRepositoryWrite;
+		private readonly AssetRepository assetRepository;
+		private readonly AssetRepositoryWrite assetRepositoryWrite;
 		private readonly GameDef gameDef;
 
-		public UnitsController(ILogger<UnitsController> logger
+		public AssetsController(ILogger<AssetsController> logger
 				, CurrentUserContext currentUserContext
 				, PlayerRepository playerRepository
-				, UnitRepository unitRepository
-				, UnitRepositoryWrite unitRepositoryWrite
+				, AssetRepository assetRepository
+				, AssetRepositoryWrite assetRepositoryWrite
 				, GameDef gameDef
 			) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.playerRepository = playerRepository;
-			this.unitRepository = unitRepository;
-			this.unitRepositoryWrite = unitRepositoryWrite;
+			this.assetRepository = assetRepository;
+			this.assetRepositoryWrite = assetRepositoryWrite;
 			this.gameDef = gameDef;
 		}
 
 		[HttpGet]
-		public UnitsViewModel Get() {
-			return new UnitsViewModel {
-				Units = unitRepository.Get(currentUserContext.PlayerId).Select(x => CreateUnitViewModel(x)).ToList()
+		public AssetsViewModel Get() {
+			var playerAssets = assetRepository.Get(currentUserContext.PlayerId);
+			return new AssetsViewModel {
+				Assets = gameDef.GetAssetsByPlayerType(currentUserContext.PlayerTypeId).Select(x => CreateAssetViewModel(x, playerAssets)).ToList()
 			};
 		}
 
-		private UnitViewModel CreateUnitViewModel(UnitStateImmutable unit) {
-			var unitDef = gameDef.GetUnit(unit.UnitId);
+		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetStateImmutable> playerAssets) {
+			var playerAsset = playerAssets.SingleOrDefault(x => x.AssetDefId == assetDef.Id);
 
-			return new UnitViewModel {
-				Definition = UnitDefinitionViewModel.Create(unitDef, PrerequisitesMet(unitDef)),
-				Count = unit.Count
-			};
+			if (playerAsset == null) {
+				// not built yet
+				return new AssetViewModel {
+					Definition = AssetDefinitionViewModel.Create(assetDef),
+					Count = 0,
+					PrerequisitesMet = PrerequisitesMet(assetDef),
+					Cost = CostViewModel.Create(assetDef.Cost)
+				};
+			} else {
+				// already built
+				return new AssetViewModel {
+					Definition = AssetDefinitionViewModel.Create(assetDef),
+					Count = 1,
+					Level = playerAsset.Level,
+					PrerequisitesMet = PrerequisitesMet(assetDef),
+					Cost = CostViewModel.Create(assetDef.Cost)
+				};
+			}
 		}
 
-		private bool PrerequisitesMet(UnitDef unitDef) {
-			return true; // TODO
+		private bool PrerequisitesMet(AssetDef assetDef) {
+			foreach(var prereq in assetDef.Prerequisites) {
+				if (!assetRepository.HasAsset(currentUserContext.PlayerId, new AssetDefId(prereq))) return false;
+			}
+			return true;
 		}
 	}
 }

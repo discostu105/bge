@@ -7,13 +7,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.FrontendS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.BlazorClient", "BrowserGameEngine.BlazorClient\BrowserGameEngine.BlazorClient.csproj", "{DF22E9D9-B918-4701-9A27-B856E99DCDB6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.Shared", "BrowserGameEngine.Shared\BrowserGameEngine.Shared.csproj", "{74702CE3-F8D3-42F6-B007-E89E1B5D96BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.ViewModels", "BrowserGameEngine.Shared\BrowserGameEngine.ViewModels.csproj", "{74702CE3-F8D3-42F6-B007-E89E1B5D96BD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.StatefulGameServer", "BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj", "{9185C862-041D-4818-A105-94B99427C76E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.GameModel", "BrowserGameEngine.GameModel\BrowserGameEngine.GameModel.csproj", "{D8221E45-47F3-471D-B4F3-D4A0709D020E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserGameEngine.GameDefinition", "BrowserGameEngine.GameDefinition\BrowserGameEngine.GameDefinition.csproj", "{736EBF1E-75F3-4385-BBEC-0468E5ED60CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.GameDefinition", "BrowserGameEngine.GameDefinition\BrowserGameEngine.GameDefinition.csproj", "{736EBF1E-75F3-4385-BBEC-0468E5ED60CF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_Browser", "3_Browser", "{0B8AB66B-A89F-41F3-9A35-E41EB76E9762}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1_Backend", "1_Backend", "{1A926FDC-FA86-4965-97DB-B6DC2143BCEF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2_Frontend", "2_Frontend", "{4490CE4F-7BEB-4EBA-B8D9-0EDFE5BF242E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Shared", "0_Shared", "{4227BBC6-ACC6-4E28-A9E6-23D9B6144911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +56,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7886BEF1-87C7-45E9-8C78-4748BD1541FE} = {4490CE4F-7BEB-4EBA-B8D9-0EDFE5BF242E}
+		{DF22E9D9-B918-4701-9A27-B856E99DCDB6} = {0B8AB66B-A89F-41F3-9A35-E41EB76E9762}
+		{74702CE3-F8D3-42F6-B007-E89E1B5D96BD} = {4490CE4F-7BEB-4EBA-B8D9-0EDFE5BF242E}
+		{9185C862-041D-4818-A105-94B99427C76E} = {1A926FDC-FA86-4965-97DB-B6DC2143BCEF}
+		{D8221E45-47F3-471D-B4F3-D4A0709D020E} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
+		{736EBF1E-75F3-4385-BBEC-0468E5ED60CF} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F18177E3-6123-4901-ADC2-32D1D2B9EC5B}

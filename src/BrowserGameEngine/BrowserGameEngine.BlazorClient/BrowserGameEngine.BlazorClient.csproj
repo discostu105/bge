@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BrowserGameEngine.Shared\BrowserGameEngine.Shared.csproj" />
+    <ProjectReference Include="..\BrowserGameEngine.Shared\BrowserGameEngine.ViewModels.csproj" />
   </ItemGroup>
 
   <ItemGroup>

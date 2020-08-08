@@ -10,13 +10,13 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<UnitDef>? Units { get; set; }
 		public IEnumerable<AssetDef>? Assets { get; set; }
 		public IEnumerable<ResourceDef>? Resources { get; set; }
-		public string? ScoreResource { get; set; } // player ranking is based on this resource
+		public string ScoreResource { get; set; } // player ranking is based on this resource
 
 	}
 
 	public static class GameDefExtensions {
-		public static AssetDef? GetAsset(this GameDef gameDef, string assetId) {
-			return gameDef.Assets.SingleOrDefault(x => x.Id == assetId);
+		public static AssetDef? GetAssetDef(this GameDef gameDef, AssetDefId assetDefId) {
+			return gameDef.Assets.SingleOrDefault(x => x.Id == assetDefId);
 		}
 
 		public static IEnumerable<AssetDef> GetAssetsByPlayerType(this GameDef gameDef, string playerTypeId) {
@@ -36,4 +36,10 @@ namespace BrowserGameEngine.GameDefinition {
 		}
 		
 	}
+}
+
+
+// workaround for roslyn bug: https://stackoverflow.com/questions/62648189/testing-c-sharp-9-0-in-vs2019-cs0518-isexternalinit-is-not-defined-or-imported
+namespace System.Runtime.CompilerServices {
+	public class IsExternalInit { }
 }

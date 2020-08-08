@@ -1,0 +1,14 @@
+﻿<div>
+    @foreach(var c in Cost.Cost) {
+        <div>
+            @c.Key: @c.Value
+        </div>
+    }
+    
+</div>
+
+
+@code {
+    [Parameter]
+    public BrowserGameEngine.Shared.CostViewModel Cost { get; set; }
+}

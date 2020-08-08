@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.FrontendServer {
 	public class CurrentUserContext {
-		public PlayerId? PlayerId { get; set; }
-		public string? PlayerTypeId { get; set; }
+		public PlayerId PlayerId { get; set; }
+		public string PlayerTypeId { get; set; }
 
 		public static CurrentUserContext Create(string playerId, string playerTypeId) {
 			return new CurrentUserContext {

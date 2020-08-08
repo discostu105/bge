@@ -12,9 +12,8 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
                 <th>Name</th>
-                <th>Kosten</th>
+                <th>Eigenschaften</th>
             </tr>
         </thead>
         <tbody>
@@ -22,7 +21,7 @@
             @foreach (var item in units.Units) {
                 <tr>
                     <td>@item.Definition?.Name</td>
-                    <td>@item.Count</td>
+                    <td>@item.</td>
                 </tr>
             }
             }

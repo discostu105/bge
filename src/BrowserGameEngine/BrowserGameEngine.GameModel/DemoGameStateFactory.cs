@@ -1,4 +1,5 @@
-﻿using BrowserGameEngine.StatefulGameServer;
+﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.StatefulGameServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,11 +29,11 @@ namespace BrowserGameEngine.GameModel {
 			worldState.Assets.Add(playerId,
 				new List<AssetStateImmutable> {
 					new AssetStateImmutable(
-						AssetId: "commandcenter",
+						AssetDefId: new AssetDefId("commandcenter"),
 						Level: 1
 					),
 					new AssetStateImmutable(
-						AssetId: "factory",
+						AssetDefId: new AssetDefId("factory"),
 						Level: 1
 					)
 				});
@@ -44,7 +45,7 @@ namespace BrowserGameEngine.GameModel {
 						Count: 10
 					),
 					new UnitStateImmutable (
-						UnitId: "marine",
+						UnitId: "spacemarine",
 						Count: 25
 					),
 					new UnitStateImmutable (

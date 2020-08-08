@@ -1,0 +1,12 @@
+﻿<div>
+    <div>Hitpoints: @UnitDef.Hitpoints</div>
+    <div>Angriff: @UnitDef.Attack</div>
+    <div>Verteidigung: @UnitDef.Defense</div>
+
+</div>
+
+
+@code {
+    [Parameter]
+    public BrowserGameEngine.Shared.UnitDefinitionViewModel UnitDef { get; set; }
+}
