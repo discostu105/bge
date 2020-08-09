@@ -10,6 +10,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<WorldState>(worldStateImmutable.ToMutable());
 			services.AddSingleton<PlayerRepository>();
 			services.AddSingleton<PlayerRepositoryWrite>();
+			services.AddSingleton<ResourceRepository>();
+			services.AddSingleton<ResourceRepositoryWrite>();
 			services.AddSingleton<ScoreRepository>();
 			services.AddSingleton<AssetRepository>();
 			services.AddSingleton<AssetRepositoryWrite>();

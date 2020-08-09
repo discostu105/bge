@@ -25,11 +25,13 @@ namespace BrowserGameEngine.GameModel {
 						Assets: new List<AssetImmutable> {
 							new AssetImmutable(
 								AssetDefId: Id.AssetDef("commandcenter"),
-								Level: 1
+								Level: 1,
+								FinishedGameTick: new GameTick(0)
 							),
 							new AssetImmutable(
 								AssetDefId: Id.AssetDef("factory"),
-								Level: 1
+								Level: 1,
+								FinishedGameTick: new GameTick(0)
 							)
 						},
 						Units: new List<UnitImmutable> {
@@ -53,7 +55,7 @@ namespace BrowserGameEngine.GameModel {
 				)
 			);
 
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId));
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), new GameTick(0));
 		}
 	}
 }

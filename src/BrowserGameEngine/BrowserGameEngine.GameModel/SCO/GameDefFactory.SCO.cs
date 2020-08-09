@@ -1,5 +1,7 @@
 ﻿using BrowserGameEngine.GameDefinition;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BrowserGameEngine.GameModel {
 	public static partial class GameDefFactory {
@@ -25,77 +27,77 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.AssetDef("commandcenter"),
 					Name = "Kommandozentrale",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 400 } },
+					Cost = CostHelper.Create(("minerals", 400)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 1200,
-					Buildtime = 30,
+					BuildTimeTicks = new GameTick(30),
 					Prerequisites = new List<string> { }
 				},
 				new AssetDef {
 					Id = Id.AssetDef("barracks"),
 					Name = "Kaserne",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 150 } },
+					Cost = CostHelper.Create(("minerals", 150)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 500, // TODO
-					Buildtime = 10,
+					BuildTimeTicks = new GameTick( 10),
 					Prerequisites = new List<string> { "commandcenter" }
 				},
 				new AssetDef {
 					Id = Id.AssetDef("factory"),
 					Name = "Fabrik",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 200 }, { "gas", 100 } },
+					Cost = CostHelper.Create(("minerals", 200), ("gas", 100)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 500, // TODO
-					Buildtime = 40,
+					BuildTimeTicks = new GameTick( 40),
 					Prerequisites = new List<string> { "barracks" }
 				},
 				new AssetDef {
 					Id = Id.AssetDef("armory"),
 					Name = "Waffenfabrik",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 100 }, { "gas", 50 } },
+					Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 500, // TODO
-					Buildtime = 30,
+					BuildTimeTicks = new GameTick( 30),
 					Prerequisites = new List<string> { "factory" }
 				},
 				new AssetDef {
 					Id = Id.AssetDef("spaceport"),
 					Name = "Raumhafen",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 150 }, { "gas", 100 } },
+					Cost = CostHelper.Create(("minerals", 150), ("gas", 100)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 500, // TODO
-					Buildtime = 40,
+					BuildTimeTicks = new GameTick( 40),
 					Prerequisites = new List<string> { "factory" }
 				},
 				new AssetDef {
 					Id = Id.AssetDef("academy"),
 					Name = "Akademie",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 150 }, { "gas", 0 } },
+					Cost = CostHelper.Create(("minerals", 150),("gas", 0)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 500, // TODO
-					Buildtime = 30,
+					BuildTimeTicks = new GameTick( 30),
 					Prerequisites = new List<string> { "barracks" }
 				},
 				new AssetDef {
 					Id = Id.AssetDef("sciencefacility"),
 					Name = "Wissenschaftliches Institut",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 100 }, { "gas", 150 } },
+					Cost = CostHelper.Create(("minerals", 100),("gas", 150)),
 					Attack = 0,
 					Defense = 0,
 					Hitpoints = 500, // TODO
-					Buildtime = 50,
+					BuildTimeTicks = new GameTick( 50),
 					Prerequisites = new List<string> { "spaceport" }
 				}
 			};
@@ -105,7 +107,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("wbf"),
 					Name = "WBF",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 50 } },
+					Cost = CostHelper.Create(( "minerals", 50 )),
 					Attack = 0,
 					Defense = 1,
 					Hitpoints = 60,
@@ -115,7 +117,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("spacemarine"),
 					Name = "Space Marine",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 45 } },
+					Cost = CostHelper.Create(("minerals", 45)),
 					Attack = 2,
 					Defense = 4,
 					Hitpoints = 60,
@@ -126,7 +128,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("firebat"),
 					Name = "Feuerfresser",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 50 }, { "gas", 25 } },
+					Cost = CostHelper.Create(("minerals", 50), ("gas", 25)),
 					Attack = 9,
 					Defense = 6,
 					Hitpoints = 50,
@@ -137,7 +139,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("siegetank"),
 					Name = "Belagerungspanzer",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 125 }, { "gas", 100 } },
+					Cost = CostHelper.Create(("minerals", 125), ("gas", 100)),
 					Attack = 10,
 					Defense = 40,
 					Hitpoints = 130,
@@ -148,7 +150,7 @@ namespace BrowserGameEngine.GameModel {
 				//	Id = Id.Unit("ghost",
 				//	Name = "Geist",
 				//	PlayerTypeRestriction = "terran",
-				//	Cost = new Dictionary<string, decimal> { { "minerals", 666 }, { "gas", 666 } },
+				//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 				//	Attack = 66,
 				//	Defense = 66,
 				//	Hitpoints = 666,
@@ -159,7 +161,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("vulture"),
 					Name = "Adler",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 75 } },
+					Cost = CostHelper.Create(( "minerals", 75 )),
 					Attack = 8,
 					Defense = 2,
 					Hitpoints = 70,
@@ -170,7 +172,7 @@ namespace BrowserGameEngine.GameModel {
 				//	Id = Id.Unit("goliath",
 				//	Name = "Goliath",
 				//	PlayerTypeRestriction = "terran",
-				//	Cost = new Dictionary<string, decimal> { { "minerals", 666 }, { "gas", 666 } },
+				//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 				//	Attack = 66,
 				//	Defense = 66,
 				//	Hitpoints = 666,
@@ -181,7 +183,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("wraith"),
 					Name = "Raumjäger",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 200 }, { "gas", 100 } },
+					Cost = CostHelper.Create(("minerals", 200), ("gas", 100 )),
 					Attack = 36,
 					Defense = 14,
 					Hitpoints = 230,
@@ -192,7 +194,7 @@ namespace BrowserGameEngine.GameModel {
 					Id = Id.UnitDef("battlecruiser"),
 					Name = "Schwerer Kreuzer",
 					PlayerTypeRestriction = "terran",
-					Cost = new Dictionary<string, decimal> { { "minerals", 300 }, { "gas", 300 } },
+					Cost = CostHelper.Create(("minerals", 300 ), ("gas", 300)),
 					Attack = 70,
 					Defense = 45,
 					Hitpoints = 500,
@@ -203,7 +205,7 @@ namespace BrowserGameEngine.GameModel {
 				//	Id = "valkyrie",
 				//	Name = "Walküre",
 				//	PlayerTypeRestriction = "terran",
-				//	Cost = new Dictionary<string, decimal> { { "minerals", 666 }, { "gas", 666 } },
+				//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 				//	Attack = 66,
 				//	Defense = 66,
 				//	Hitpoints = 666,
@@ -214,7 +216,7 @@ namespace BrowserGameEngine.GameModel {
 				//	Id = "todo",
 				//	Name = "todo",
 				//	PlayerTypeRestriction = "terran",
-				//	Cost = new Dictionary<string, decimal> { { "minerals", 666 }, { "gas", 666 } },
+				//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 				//	Attack = 66,
 				//	Defense = 66,
 				//	Hitpoints = 666,

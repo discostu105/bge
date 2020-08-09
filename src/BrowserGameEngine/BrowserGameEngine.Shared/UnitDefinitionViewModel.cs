@@ -1,6 +1,7 @@
 ﻿using BrowserGameEngine.GameDefinition;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BrowserGameEngine.Shared {
@@ -21,7 +22,7 @@ namespace BrowserGameEngine.Shared {
 				Id = unitDefinition.Id.Id,
 				Name = unitDefinition.Name,
 				PlayerTypeRestriction = unitDefinition.PlayerTypeRestriction,
-				Cost = unitDefinition.Cost,
+				Cost = unitDefinition.Cost.ToPlainDictionary(),
 				Attack = unitDefinition.Attack,
 				Defense = unitDefinition.Defense,
 				Hitpoints = unitDefinition.Hitpoints,

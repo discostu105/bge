@@ -6,7 +6,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public UnitDefId Id { get; init; }
 		public string Name { get; init; }
 		public string PlayerTypeRestriction { get; init; }
-		public IDictionary<string, decimal> Cost { get; init; }
+		public Cost Cost { get; init; }
 		public int Attack { get; init; }
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }

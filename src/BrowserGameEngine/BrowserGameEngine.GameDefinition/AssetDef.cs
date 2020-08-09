@@ -8,11 +8,11 @@ namespace BrowserGameEngine.GameDefinition {
 		public AssetDefId Id { get; init; }
 		public string Name { get; init; }
 		public string PlayerTypeRestriction { get; init; }
-		public Dictionary<string, decimal> Cost { get; init; } = new Dictionary<string, decimal>();
+		public Cost Cost { get; init; }
 		public int Attack { get; init; }
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }
 		public List<string> Prerequisites { get; init; } = new List<string>();
-		public int Buildtime { get; init; }
+		public GameTick BuildTimeTicks { get; init; }
 	}
 }
