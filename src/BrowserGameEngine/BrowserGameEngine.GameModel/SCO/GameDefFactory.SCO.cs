@@ -8,6 +8,13 @@ namespace BrowserGameEngine.GameModel {
 		public static GameDef CreateStarcraftOnline() {
 			var gameDefinition = new GameDef();
 
+			gameDefinition.OAuth = new OAuthDef() {
+				UrlTemplate = "https://discord.com/api/oauth2/authorize?client_id={client_id}&redirect_uri={redirect_url}&response_type=code&scope=identify",
+				ClientId = "-",
+				ClientSecret = "-",
+				RedirectUrl = "https://localhost:44328/login"
+			};
+
 			gameDefinition.PlayerTypes = new List<PlayerTypeDef> {
 				new PlayerTypeDef(Id.PlayerType("terran"), "Terraner"),
 				new PlayerTypeDef(Id.PlayerType("protoss"), "Protoss"),

@@ -21,15 +21,15 @@
         </thead>
         <tbody>
             @if (assets.Assets != null) {
-            @foreach (var item in assets.Assets) {
-            <tr>
-                <td>@item.Count</td>
-                <td>@item.Definition?.Name</td>
-                <td><_Cost Cost="@item.Cost" /></td>
-                <td>@item.PrerequisitesMet</td>
-                <td><button name="Bauen" value="Bauen" /></td>
-            </tr>
-            }
+                @foreach (var item in assets.Assets) {
+                    <tr>
+                        <td>@item.Count</td>
+                        <td>@item.Definition?.Name</td>
+                        <td><_Cost Cost="@item.Cost" /></td>
+                        <td>@item.PrerequisitesMet</td>
+                        <td><button name="Bauen" value="Bauen" /></td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
@@ -39,7 +39,7 @@
     private AssetsViewModel? assets;
 
     protected override async Task OnInitializedAsync() {
-        assets = await Http.GetFromJsonAsync<AssetsViewModel>("Assets");
+        assets = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
     }
 
 }

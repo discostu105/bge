@@ -10,6 +10,8 @@ namespace BrowserGameEngine.FrontendServer {
 		public PlayerId PlayerId { get; set; }
 		public string PlayerTypeId { get; set; }
 
+		public bool ValidAuth { get; set; }
+
 		public static CurrentUserContext Create(string playerId, string playerTypeId) {
 			return new CurrentUserContext {
 				PlayerId = PlayerIdFactory.Create(playerId),

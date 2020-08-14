@@ -1,0 +1,1 @@
+﻿based on https://github.com/RogueException/Discord.OAuth2

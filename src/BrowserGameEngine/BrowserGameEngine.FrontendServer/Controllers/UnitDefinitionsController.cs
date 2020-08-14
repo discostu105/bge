@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using BrowserGameEngine.GameDefinition;
 
-namespace BrowserGameEngine.Server.Controllers {
+namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class UnitDefinitionsController : ControllerBase {
 		private readonly ILogger<UnitDefinitionsController> logger;
 		private readonly GameDef gameDefinition;

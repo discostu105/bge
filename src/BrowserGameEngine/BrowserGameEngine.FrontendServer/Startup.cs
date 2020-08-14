@@ -11,8 +11,14 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.FrontendServer;
+using BrowserGameEngine.DiscordOAuth;
+using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-namespace BrowserGameEngine.Server {
+namespace BrowserGameEngine.FrontendServer {
 	public class Startup {
 		public Startup(IConfiguration configuration) {
 			Configuration = configuration;
@@ -25,14 +31,29 @@ namespace BrowserGameEngine.Server {
 		public void ConfigureServices(IServiceCollection services) {
 
 			services.AddControllersWithViews();
-			services.AddRazorPages();
+			services.AddRazorPages(options => {
+				options.Conventions.AuthorizeFolder("/base");
+				options.Conventions.AllowAnonymousToPage("/login");
+			});
+			services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+			services.AddScoped<SignOutSessionStateManager>();
 
-			ConfigureGameServices(services);
+			var gameDef = GameDefFactory.CreateStarcraftOnline();
+			var gameState = DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1();
+			ConfigureGameServices(services, gameDef, gameState);
+
+			services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+				.AddDiscord(x => {
+					x.ClientId = gameDef.OAuth.ClientId;
+					x.ClientSecret = gameDef.OAuth.ClientSecret;
+					x.SaveTokens = true;
+				}).AddJwtBearer(options => {
+				});
 		}
 
-		private void ConfigureGameServices(IServiceCollection services) {
-			services.AddSingleton(GameDefFactory.CreateStarcraftOnline());
-			services.AddGameServer(DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
+		private void ConfigureGameServices(IServiceCollection services, GameDef gameDef, WorldStateImmutable gameState) {
+			services.AddSingleton(gameDef);
+			services.AddGameServer(gameState);
 			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu", playerTypeId: "terran")); // for dev purposes only.
 		}
 
@@ -53,10 +74,13 @@ namespace BrowserGameEngine.Server {
 
 			app.UseRouting();
 
+			app.UseAuthentication();
+			app.UseAuthorization();
+
 			app.UseEndpoints(endpoints => {
 				endpoints.MapRazorPages();
 				endpoints.MapControllers();
-				endpoints.MapFallbackToFile("index.html");
+				endpoints.MapFallbackToFile("/index.html");
 			});
 		}
 	}

@@ -18,12 +18,12 @@
         </thead>
         <tbody>
             @if (units.Units != null) {
-            @foreach (var item in units.Units) {
-                <tr>
-                    <td>@item.Definition?.Name</td>
-                    <td>@item.</td>
-                </tr>
-            }
+                @foreach (var item in units.Units) {
+                    <tr>
+                        <td>@item.Definition?.Name</td>
+                        <td>@item.</td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
@@ -33,7 +33,7 @@
     private UnitsViewModel? units;
 
     protected override async Task OnInitializedAsync() {
-        units = await Http.GetFromJsonAsync<UnitsViewModel>("Units");
+        units = await Http.GetFromJsonAsync<UnitsViewModel>("api/units");
     }
 
 }

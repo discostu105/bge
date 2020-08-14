@@ -21,13 +21,13 @@
         </thead>
         <tbody>
             @foreach (var unitDef in unitDefinitions) {
-            <tr>
-                <td>@unitDef.Id</td>
-                <td>@unitDef.Name</td>
-                <td>@unitDef.Attack</td>
-                <td>@unitDef.Defense</td>
-                <td>@unitDef.Cost</td>
-            </tr>
+                <tr>
+                    <td>@unitDef.Id</td>
+                    <td>@unitDef.Name</td>
+                    <td>@unitDef.Attack</td>
+                    <td>@unitDef.Defense</td>
+                    <td>@unitDef.Cost</td>
+                </tr>
             }
         </tbody>
     </table>
@@ -37,7 +37,7 @@
     private UnitDefinitionViewModel[]? unitDefinitions;
 
     protected override async Task OnInitializedAsync() {
-        unitDefinitions = await Http.GetFromJsonAsync<UnitDefinitionViewModel[]>("UnitDefinitions");
+        unitDefinitions = await Http.GetFromJsonAsync<UnitDefinitionViewModel[]>("api/unitdefinitions");
     }
 
 }

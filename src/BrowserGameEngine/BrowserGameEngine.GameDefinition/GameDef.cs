@@ -11,6 +11,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<AssetDef> Assets { get; set; }
 		public IEnumerable<ResourceDef> Resources { get; set; }
 		public ResourceDefId ScoreResource { get; set; } // player ranking is based on this resource
+		public OAuthDef OAuth { get; set; }
 	}
 
 	public static class GameDefExtensions {

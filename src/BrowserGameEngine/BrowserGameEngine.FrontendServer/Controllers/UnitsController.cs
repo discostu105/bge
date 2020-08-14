@@ -10,10 +10,12 @@ using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.GameDefinition;
+using Microsoft.AspNetCore.Authorization;
 
-namespace BrowserGameEngine.Server.Controllers {
+namespace BrowserGameEngine.FrontendServer.Controllers {
+	[Authorize]
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class UnitsController : ControllerBase {
 		private readonly ILogger<UnitsController> logger;
 		private readonly CurrentUserContext currentUserContext;

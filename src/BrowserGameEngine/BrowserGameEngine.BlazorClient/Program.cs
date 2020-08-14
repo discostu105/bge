@@ -1,13 +1,10 @@
 using System;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using BrowserGameEngine.BlazorClient;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BrowserGameEngine.BlazorClient {
 	public class Program {
@@ -15,10 +12,25 @@ namespace BrowserGameEngine.BlazorClient {
 			var builder = WebAssemblyHostBuilder.CreateDefault(args);
 			builder.RootComponents.Add<App>("app");
 
-			// .net 3.1 template:
-			//builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-			// .net 5.0 template:
 			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+			//builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+			//builder.Services.AddOptions();
+			//builder.Services.AddAuthorizationCore();
+
+			builder.Services.AddOidcAuthentication<RemoteAuthenticationState,
+				CustomUserAccount>(options => {
+
+				})
+				.AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, CustomUserAccount, CustomAccountFactory>();
+
+
+			//builder.Services.AddHttpClient("BrowserGameEngine.BlazorClient", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+			//	.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+
+			//// Supply HttpClient instances that include access tokens when making requests to the server project
+			//builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("BrowserGameEngine.BlazorClient"));
+
+			//builder.Services.AddApiAuthorization();
 
 
 			await builder.Build().RunAsync();
