@@ -2,37 +2,4 @@
 
 <h1>Hello, world!</h1>
 
-<button @onclick="LogUsername">Log username</button>
-
-<p>@_authMessage</p>
-
-
-<AuthorizeView>
-    <Authorized>
-        <h1>Hello, @context.User.Identity.Name!</h1>
-        <p>You can only see this content if you're authenticated.</p>
-    </Authorized>
-    <NotAuthorized>
-        <h1>Authentication Failure!</h1>
-        <p>You're not signed in.</p>
-    </NotAuthorized>
-</AuthorizeView>
-
-
-@code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
-
-    private string _authMessage;
-
-    private async Task LogUsername() {
-        var authState = await authenticationStateTask;
-        var user = authState.User;
-
-        if (user.Identity.IsAuthenticated) {
-            _authMessage = $"{user.Identity.Name} is authenticated.";
-        } else {
-            _authMessage = "The user is NOT authenticated.";
-        }
-    }
-}
+Welcome to your new app.

@@ -19,11 +19,11 @@
         </thead>
         <tbody>
             @foreach (var item in playerRanking) {
-                <tr>
-                    <td>@item.PlayerId</td>
-                    <td>@item.PlayerName</td>
-                    <td>@item.Score</td>
-                </tr>
+            <tr>
+                <td>@item.PlayerId</td>
+                <td>@item.PlayerName</td>
+                <td>@item.Score</td>
+            </tr>
             }
         </tbody>
     </table>
@@ -33,7 +33,7 @@
     private PlayerRankingViewModel[]? playerRanking;
 
     protected override async Task OnInitializedAsync() {
-        playerRanking = await Http.GetFromJsonAsync<PlayerRankingViewModel[]>("api/playerranking");
+        playerRanking = await Http.GetFromJsonAsync<PlayerRankingViewModel[]>("PlayerRanking");
     }
 
 }
