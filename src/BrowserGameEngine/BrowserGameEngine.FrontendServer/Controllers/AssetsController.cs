@@ -11,11 +11,12 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.GameDefinition;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
 	[Authorize]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class AssetsController : ControllerBase {
 		private readonly ILogger<AssetsController> logger;
 		private readonly CurrentUserContext currentUserContext;
@@ -40,8 +41,9 @@ namespace BrowserGameEngine.Server.Controllers {
 		}
 
 		[HttpGet]
-		public AssetsViewModel Get() {
+		public async Task<AssetsViewModel> Get() {
 			var playerAssets = assetRepository.Get(currentUserContext.PlayerId);
+
 			return new AssetsViewModel {
 				Assets = gameDef.GetAssetsByPlayerType(currentUserContext.PlayerTypeId).Select(x => CreateAssetViewModel(x, playerAssets)).ToList()
 			};

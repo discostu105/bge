@@ -11,7 +11,7 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class PlayerProfileController : ControllerBase {
 		private readonly ILogger<PlayerProfileController> logger;
 		private readonly CurrentUserContext currentUserContext;
@@ -32,6 +32,10 @@ namespace BrowserGameEngine.Server.Controllers {
 		[HttpGet]
 		public PlayerProfileViewModel Get() {
 			var player = playerRepository.Get(currentUserContext.PlayerId);
+
+			// discord access token
+			// var accessToken = await HttpContext.GetTokenAsync("access_token");
+
 			return new PlayerProfileViewModel { 
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name

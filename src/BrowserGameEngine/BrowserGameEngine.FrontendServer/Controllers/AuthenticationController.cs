@@ -2,13 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Mvc.Client.Extensions;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	public class AuthenticationController : Controller {
+		private readonly PlayerRepositoryWrite playerRepositoryWrite;
+
+		public AuthenticationController(ILogger<AuthenticationController> logger
+				, PlayerRepositoryWrite playerRepositoryWrite
+			) {
+			this.playerRepositoryWrite = playerRepositoryWrite;
+		}
+
+
 		[HttpGet("~/signin")]
 		public async Task<IActionResult> SignIn() => View("SignIn", await HttpContext.GetExternalProvidersAsync());
 

@@ -33,7 +33,7 @@
     private UnitsViewModel? units;
 
     protected override async Task OnInitializedAsync() {
-        units = await Http.GetFromJsonAsync<UnitsViewModel>("Units");
+        units = await Http.GetFromJsonAsync<UnitsViewModel>("api/units");
     }
 
 }

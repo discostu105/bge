@@ -13,7 +13,7 @@ using BrowserGameEngine.GameDefinition;
 
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class UnitsController : ControllerBase {
 		private readonly ILogger<UnitsController> logger;
 		private readonly CurrentUserContext currentUserContext;

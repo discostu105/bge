@@ -33,7 +33,7 @@
     private PlayerRankingViewModel[]? playerRanking;
 
     protected override async Task OnInitializedAsync() {
-        playerRanking = await Http.GetFromJsonAsync<PlayerRankingViewModel[]>("PlayerRanking");
+        playerRanking = await Http.GetFromJsonAsync<PlayerRankingViewModel[]>("api/playerranking");
     }
 
 }

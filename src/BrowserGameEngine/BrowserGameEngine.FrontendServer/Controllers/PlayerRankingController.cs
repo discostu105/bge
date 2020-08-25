@@ -9,7 +9,7 @@ using BrowserGameEngine.StatefulGameServer;
 
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class PlayerRankingController : ControllerBase {
 		private readonly ILogger<PlayerRankingController> logger;
 		private readonly ScoreRepository scoreRepository;

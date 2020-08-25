@@ -25,7 +25,7 @@
     private PlayerProfileViewModel? playerProfile;
 
     protected override async Task OnInitializedAsync() {
-        playerProfile = await Http.GetFromJsonAsync<PlayerProfileViewModel>("PlayerProfile");
+        playerProfile = await Http.GetFromJsonAsync<PlayerProfileViewModel>("api/playerprofile");
     }
 
     private async Task HandleValidSubmit() {
