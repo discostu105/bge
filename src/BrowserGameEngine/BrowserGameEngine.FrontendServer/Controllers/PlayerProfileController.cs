@@ -8,9 +8,11 @@ using Microsoft.Extensions.Logging;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
+	[Authorize]
 	[Route("api/[controller]")]
 	public class PlayerProfileController : ControllerBase {
 		private readonly ILogger<PlayerProfileController> logger;

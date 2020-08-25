@@ -17,35 +17,16 @@ namespace BrowserGameEngine.BlazorClient {
 			var builder = WebAssemblyHostBuilder.CreateDefault(args);
 			builder.RootComponents.Add<App>("app");
 
-			builder.Services.AddHttpClient("ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
-				.AddHttpMessageHandler<LoggingHandler>();
+			builder.Services.AddScoped<RedirectIfUnauthorizedHandler>();
+			builder.Services.AddHttpClient("ServerAPI", client => {
+					client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+					client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest"); // required to force ASP.NET Core to return 401 instead of redirect
+				})
+				.AddHttpMessageHandler<RedirectIfUnauthorizedHandler>();
 
 			builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
 
-			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-			builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-			builder.Services.AddOptions();
-			builder.Services.AddAuthorizationCore();
 			await builder.Build().RunAsync();
 		}
 	}
-
-	class LoggingHandler : DelegatingHandler {
-
-		public LoggingHandler() {
-		}
-
-		protected override async Task<HttpResponseMessage> SendAsync(
-			HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) {
-			var response = await base.SendAsync(request, cancellationToken);
-
-			//if (!response.IsSuccessStatusCode) {
-				Console.WriteLine("{0}\t{1}\t{2}", request.RequestUri,
-					(int)response.StatusCode, response.Headers.Date);
-			//}
-
-			return response;
-		}
-	}
-
 }

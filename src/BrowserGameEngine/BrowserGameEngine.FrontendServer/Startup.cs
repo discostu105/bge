@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 
 namespace BrowserGameEngine.Server {
 	public class Startup {
@@ -62,20 +63,12 @@ namespace BrowserGameEngine.Server {
 				//	return Task.CompletedTask;
 				//};
 			});
-			services.ConfigureApplicationCookie(o => {
-				o.Events = new CookieAuthenticationEvents() {
-					OnRedirectToLogin = (ctx) => {
-						if (ctx.Request.Path.StartsWithSegments("/api") && ctx.Response.StatusCode == 200) {
-							ctx.Response.StatusCode = 401;
-						}
-						return Task.CompletedTask;
-					},
-					OnRedirectToAccessDenied = (ctx) => {
-						if (ctx.Request.Path.StartsWithSegments("/api") && ctx.Response.StatusCode == 200) {
-							ctx.Response.StatusCode = 403;
-						}
-						return Task.CompletedTask;
-					}
+
+			services.ConfigureApplicationCookie(options => {
+				options.Events.OnRedirectToLogin = context => {
+					context.Response.Headers["Location"] = context.RedirectUri;
+					context.Response.StatusCode = 401;
+					return Task.CompletedTask;
 				};
 			});
 

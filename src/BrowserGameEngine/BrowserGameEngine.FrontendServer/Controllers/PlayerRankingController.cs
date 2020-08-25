@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using BrowserGameEngine.StatefulGameServer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
+	[Authorize]
 	[Route("api/[controller]")]
 	public class PlayerRankingController : ControllerBase {
 		private readonly ILogger<PlayerRankingController> logger;
