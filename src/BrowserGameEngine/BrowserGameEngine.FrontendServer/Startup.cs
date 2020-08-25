@@ -11,6 +11,8 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.FrontendServer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BrowserGameEngine.Server {
 	public class Startup {
@@ -26,6 +28,20 @@ namespace BrowserGameEngine.Server {
 
 			services.AddControllersWithViews();
 			services.AddRazorPages();
+
+			services.AddAuthentication(options => {
+				options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+				options.RequireAuthenticatedSignIn = true;
+			})
+			.AddCookie(options => {
+				options.LoginPath = "/signin";
+				options.LogoutPath = "/signout";
+			})
+			.AddDiscord(options => {
+				options.ClientId = "743803200787709953";
+				options.ClientSecret = "JgcbikjBvxVuUNrgTQWark-VCbrIcrym";
+			});
+			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
 
 			ConfigureGameServices(services);
 		}
@@ -53,7 +69,11 @@ namespace BrowserGameEngine.Server {
 
 			app.UseRouting();
 
+			app.UseAuthentication();
+			app.UseAuthorization();
+
 			app.UseEndpoints(endpoints => {
+				endpoints.MapDefaultControllerRoute();
 				endpoints.MapRazorPages();
 				endpoints.MapControllers();
 				endpoints.MapFallbackToFile("index.html");
