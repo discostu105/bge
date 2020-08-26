@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace BrowserGameEngine.GameModel {
+
 	public static partial class GameDefFactory {
 		public static GameDef CreateStarcraftOnline() {
 			var gameDefinition = new GameDef() {

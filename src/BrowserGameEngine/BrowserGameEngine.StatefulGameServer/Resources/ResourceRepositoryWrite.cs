@@ -30,5 +30,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 				playerRes[res.Key] -= res.Value;
 			}
 		}
+
+		internal decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
+			var playerRes = Res(playerId);
+			if (!playerRes.ContainsKey(resourceDefId)) {
+				playerRes.Add(resourceDefId, 0);
+			} else {
+				playerRes[resourceDefId] += value;
+			}
+			return playerRes[resourceDefId];
+		}
 	}
 }

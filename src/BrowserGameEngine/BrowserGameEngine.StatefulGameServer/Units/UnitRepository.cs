@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
@@ -21,6 +22,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return Units(playerId)
 				.Where(x => x.UnitId == unitId)
 				.Select(x => x.ToImmutable());
+		}
+
+		public int CountByUnitDefId(PlayerId playerId, UnitDefId unitDefId) {
+			return Units(playerId)
+				.Count(x => x.UnitDefId == unitDefId);
 		}
 	}
 }

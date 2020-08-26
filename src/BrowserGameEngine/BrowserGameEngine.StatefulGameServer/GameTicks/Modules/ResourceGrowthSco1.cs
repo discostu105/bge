@@ -1,5 +1,6 @@
 ﻿using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 	/// </summary>
 	public class ResourceGrowthSco1 : IGameTickModule {
 		public string Name => "resource-growth-sco:1";
+
+		private readonly ILogger<ResourceGrowthSco1> logger;
 		private readonly GameDef gameDef;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
@@ -23,12 +26,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private ResourceDefId growthResource;
 		private ResourceDefId constraintResource;
 
-		public ResourceGrowthSco1(GameDef gameDef
+		public ResourceGrowthSco1(ILogger<ResourceGrowthSco1> logger
+				, GameDef gameDef
 				, ResourceRepository resourceRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
 				, AssetRepository assetRepository
 				, UnitRepository unitRepository
 			) {
+			this.logger = logger;
 			this.gameDef = gameDef;
 			this.resourceRepository = resourceRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
@@ -56,7 +61,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		}
 		
 		public void CalculateTick(PlayerId playerId) {
-			//Console.WriteLine("yay");
+			int workerCount = unitRepository.CountByUnitDefId(playerId, workerUnit);
+			decimal resourcesToAdd = workerCount * 1.2m; // TODO this just a dummy logic
+			decimal newValue = resourceRepositoryWrite.AddResources(playerId, growthResource, resourcesToAdd);
+			logger.LogInformation("Added {Value} {Resource} to player {PlayerName}. New value: {NewValue}", resourcesToAdd, growthResource, playerId, newValue);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace BrowserGameEngine.GameModel {
 	public record PlayerId(string Id) {
-		public override string ToString() => $"PlayerId{Id}";
+		public override string ToString() => Id;
 	}
 
 	public static class PlayerIdFactory {
