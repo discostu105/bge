@@ -11,7 +11,7 @@ namespace BrowserGameEngine.GameModel {
 				PlayerTypes = new List<PlayerTypeDef> {
 					new PlayerTypeDef(Id.PlayerType("terran"), "Terraner"),
 					new PlayerTypeDef(Id.PlayerType("protoss"), "Protoss"),
-					new PlayerTypeDef(Id.PlayerType("zerg"),  "Zerg")
+					new PlayerTypeDef(Id.PlayerType("zerg"), "Zerg")
 				},
 
 				Resources = new List<ResourceDef> {
@@ -21,6 +21,8 @@ namespace BrowserGameEngine.GameModel {
 				},
 
 				ScoreResource = Id.ResDef("land"),
+
+				TickDuration = TimeSpan.FromSeconds(20),
 
 				GameTickModules = new List<GameTickModuleDef> {
 					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {

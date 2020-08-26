@@ -58,7 +58,7 @@ namespace BrowserGameEngine.GameModel {
 				)
 			);
 
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick);
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick, DateTime.Now - TimeSpan.FromHours(1));
 		}
 	}
 }

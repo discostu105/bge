@@ -8,5 +8,7 @@ namespace BrowserGameEngine.GameDefinition {
 	public record GameTickModuleDef(
 		string Name,
 		IDictionary<string, string> Properties
-	);
+	) {
+		public override string ToString() => $"GameTickModuleDef:{Name}";
+	}
 }

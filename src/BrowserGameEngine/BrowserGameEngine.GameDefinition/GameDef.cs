@@ -12,6 +12,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<ResourceDef> Resources { get; init; }
 		public ResourceDefId ScoreResource { get; init; } // player ranking is based on this resource
 		public IEnumerable<GameTickModuleDef> GameTickModules { get; init; }
+		public TimeSpan TickDuration { get; init; }
 	}
 
 	public static class GameDefExtensions {

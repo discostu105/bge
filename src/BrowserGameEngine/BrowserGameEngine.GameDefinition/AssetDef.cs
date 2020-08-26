@@ -2,7 +2,9 @@
 
 namespace BrowserGameEngine.GameDefinition {
 
-	public record AssetDefId(string Id);
+	public record AssetDefId(string Id) {
+		public override string ToString() => Id;
+	}
 
 	public record AssetDef {
 		public AssetDefId Id { get; init; }
@@ -14,5 +16,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public int Hitpoints { get; init; }
 		public List<string> Prerequisites { get; init; } = new List<string>();
 		public GameTick BuildTimeTicks { get; init; }
+
+		public override string ToString() => Id.Id;
 	}
 }

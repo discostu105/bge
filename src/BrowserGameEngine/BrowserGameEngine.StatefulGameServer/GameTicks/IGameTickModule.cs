@@ -1,4 +1,5 @@
-﻿using BrowserGameEngine.GameModel;
+﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 	public interface IGameTickModule {
 		public string Name { get; }
 		void SetProperty(string name, string value);
-		Task CalculateTick(PlayerId playerId);
+		void CalculateTick(PlayerId playerId);
 	}
 }

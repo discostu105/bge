@@ -8,7 +8,7 @@ namespace BrowserGameEngine.GameDefinition {
 	/// <summary>
 	/// Indicates a Game Tick (Round)
 	/// </summary>
-	public record GameTick (
-		int Tick
-	);
+	public record GameTick(int Tick) {
+		public override string ToString() => Tick.ToString();
+	}
 }

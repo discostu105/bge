@@ -55,8 +55,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			}
 		}
 		
-		public async Task CalculateTick(PlayerId playerId) {
-			Console.WriteLine("yay");
+		public void CalculateTick(PlayerId playerId) {
+			//Console.WriteLine("yay");
 		}
 	}
 }

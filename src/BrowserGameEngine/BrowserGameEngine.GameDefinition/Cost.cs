@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 namespace BrowserGameEngine.GameDefinition {
 	public record Cost(
 		IDictionary<ResourceDefId, decimal> Resources
-	);
+	) {
+		public override string ToString() => string.Join(", ", this.ToPlainDictionary().Select(x => $"{x.Key}:{x.Value}"));
+	}
 
 	public static class CostExtensions {
 		public static IDictionary<string, decimal> ToPlainDictionary(this Cost cost) {

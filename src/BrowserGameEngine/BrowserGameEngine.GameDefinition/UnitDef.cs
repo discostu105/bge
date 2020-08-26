@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameDefinition {
-	public record UnitDefId(string Id);
+	public record UnitDefId(string Id) {
+		public override string ToString() => Id;
+	}
 	public record UnitDef {
 		public UnitDefId Id { get; init; }
 		public string Name { get; init; }
@@ -12,5 +14,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public int Hitpoints { get; init; }
 		public int Speed { get; init; }
 		public List<string> Prerequisites { get; init; }
+
+		public override string ToString() => Id.Id;
 	}
 }

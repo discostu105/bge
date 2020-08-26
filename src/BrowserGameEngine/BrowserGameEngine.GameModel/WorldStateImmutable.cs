@@ -7,6 +7,7 @@ using System.Collections.Generic;
 namespace BrowserGameEngine.StatefulGameServer {
 	public record WorldStateImmutable(
 		IDictionary<PlayerId, PlayerImmutable> Players,
-		GameTick CurrentGameTick
+		GameTick CurrentGameTick,
+		DateTime LastUpdate
 	);
 }

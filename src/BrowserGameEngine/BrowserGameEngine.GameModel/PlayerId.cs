@@ -1,8 +1,9 @@
 ﻿using System;
 
-namespace BrowserGameEngine.GameModel
-{
-	public record PlayerId(string Id);
+namespace BrowserGameEngine.GameModel {
+	public record PlayerId(string Id) {
+		public override string ToString() => $"PlayerId{Id}";
+	}
 
 	public static class PlayerIdFactory {
 		public static PlayerId Create(string id) {

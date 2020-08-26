@@ -1,6 +1,8 @@
-﻿using BrowserGameEngine.GameModel;
+﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using System;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {
@@ -14,6 +16,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void ChangePlayerName(ChangePlayerNameCommand command) {
 			Players[command.PlayerId].Name = command.NewName;
+		}
+
+		internal GameTick IncrementTick(PlayerId playerId) {
+			var player = world.GetPlayer(playerId);
+			player.State.CurrentGameTick = player.State.CurrentGameTick with { Tick = player.State.CurrentGameTick.Tick + 1 };
+			return player.State.CurrentGameTick;
 		}
 	}
 }
