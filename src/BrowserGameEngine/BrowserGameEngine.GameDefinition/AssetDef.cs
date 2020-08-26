@@ -4,7 +4,7 @@ namespace BrowserGameEngine.GameDefinition {
 
 	public record AssetDefId(string Id);
 
-	public class AssetDef {
+	public record AssetDef {
 		public AssetDefId Id { get; init; }
 		public string Name { get; init; }
 		public string PlayerTypeRestriction { get; init; }

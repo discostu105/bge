@@ -2,7 +2,7 @@
 
 namespace BrowserGameEngine.GameDefinition {
 	public record UnitDefId(string Id);
-	public class UnitDef {
+	public record UnitDef {
 		public UnitDefId Id { get; init; }
 		public string Name { get; init; }
 		public string PlayerTypeRestriction { get; init; }

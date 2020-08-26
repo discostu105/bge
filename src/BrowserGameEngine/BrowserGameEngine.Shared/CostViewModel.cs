@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 namespace BrowserGameEngine.Shared {
-	public class CostViewModel {
+	public record CostViewModel {
 		public IDictionary<string, decimal> Cost { get; init; }
 
 		public static CostViewModel Create(Cost cost) {

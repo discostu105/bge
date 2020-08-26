@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace BrowserGameEngine.Shared {
-	public class AssetsViewModel {
+	public record AssetsViewModel {
 		public List<AssetViewModel>? Assets { get; set; }
 	}
 
-	public class AssetViewModel {
+	public record AssetViewModel {
 		public AssetDefinitionViewModel? Definition { get; set; }
 		public int Level { get; set; }
 		public int Count { get; set; }

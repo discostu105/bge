@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 namespace BrowserGameEngine.Shared {
-	public class UnitDefinitionViewModel {
+	public record UnitDefinitionViewModel {
 		public string Id { get; set; }
 		public string Name { get; set; }
 		public string PlayerTypeRestriction { get; set; }
