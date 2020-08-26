@@ -2,6 +2,7 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {

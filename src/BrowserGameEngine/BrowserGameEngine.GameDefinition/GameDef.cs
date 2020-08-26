@@ -6,11 +6,12 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace BrowserGameEngine.GameDefinition {
 	public record GameDef {
-		public IEnumerable<PlayerTypeDef> PlayerTypes { get; set; }
-		public IEnumerable<UnitDef> Units { get; set; }
-		public IEnumerable<AssetDef> Assets { get; set; }
-		public IEnumerable<ResourceDef> Resources { get; set; }
-		public ResourceDefId ScoreResource { get; set; } // player ranking is based on this resource
+		public IEnumerable<PlayerTypeDef> PlayerTypes { get; init; }
+		public IEnumerable<UnitDef> Units { get; init; }
+		public IEnumerable<AssetDef> Assets { get; init; }
+		public IEnumerable<ResourceDef> Resources { get; init; }
+		public ResourceDefId ScoreResource { get; init; } // player ranking is based on this resource
+		public IEnumerable<GameTickModuleDef> GameTickModules { get; init; }
 	}
 
 	public static class GameDefExtensions {
@@ -32,6 +33,16 @@ namespace BrowserGameEngine.GameDefinition {
 
 		public static ResourceDef? GetResource(this GameDef gameDef, ResourceDefId resourceDefId) {
 			return gameDef.Resources.SingleOrDefault(x => x.Id.Equals(resourceDefId));
+		}
+
+		public static void ValidateUnitDefId(this GameDef gameDef, UnitDefId unitDefId) {
+			// TODO: throw if unit does not exists
+		}
+		public static void ValidateResourceDefId(this GameDef gameDef, ResourceDefId resourceDefId) {
+			// TODO: throw if res does not exists
+		}
+		public static void ValidateAssetDefId(this GameDef gameDef, AssetDefId assetDefId) {
+			// TODO: throw if asset does not exists
 		}
 	}
 }

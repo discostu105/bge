@@ -10,13 +10,16 @@ namespace BrowserGameEngine.GameModel {
 		public static WorldStateImmutable CreateStarCraftOnlineDemoWorldState1() {
 			var players = new List<PlayerImmutable>();
 
+			var gameTick = new GameTick(0);
+
 			players.Add(
 				new PlayerImmutable(
 					PlayerId: PlayerIdFactory.Create("discostu"),
 					Name: "Commander Discostu",
 					Created: DateTime.Now,
 					State: new PlayerStateImmutable(
-						LastUpdate: DateTime.Now,
+						LastGameTickUpdate: DateTime.Now,
+						CurrentGameTick: gameTick,
 						Resources: new Dictionary<ResourceDefId, decimal> {
 							{ Id.ResDef("land"), 50 },
 							{ Id.ResDef("minerals"), 500 },
@@ -55,7 +58,7 @@ namespace BrowserGameEngine.GameModel {
 				)
 			);
 
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), new GameTick(0));
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick);
 		}
 	}
 }

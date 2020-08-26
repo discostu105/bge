@@ -1,4 +1,6 @@
 ﻿using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.GameTicks;
+using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<AssetRepositoryWrite>();
 			services.AddSingleton<UnitRepository>();
 			services.AddSingleton<UnitRepositoryWrite>();
+
+			services.AddSingleton<IGameTickModule, UnitReturn>();
+			services.AddSingleton<IGameTickModule, ResourceGrowthSco1>();
+			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
+			services.AddSingleton<GameTickEngine>();
+
 		}
 	}
 }

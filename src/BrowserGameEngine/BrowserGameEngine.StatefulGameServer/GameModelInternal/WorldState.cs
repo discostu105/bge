@@ -20,6 +20,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		internal GameTick GetTargetGameTick(GameTick gameTicks) {
 			throw new NotImplementedException();
 		}
+
+		internal PlayerId[] GetPlayersForGameTick() {
+			// TODO read lock players
+			return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
+		}
 	}
 
 	internal static class WorldStateImmutableExtensions {
