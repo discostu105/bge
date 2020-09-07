@@ -17,6 +17,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
+using BrowserGameEgnine.Persistence;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace BrowserGameEngine.Server {
 	public class Startup {
@@ -76,17 +79,22 @@ namespace BrowserGameEngine.Server {
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
 
-			ConfigureGameServices(services);
+			ConfigureGameServices(services).Wait();
 		}
 
-		private void ConfigureGameServices(IServiceCollection services) {
-			services.AddSingleton(GameDefFactory.CreateStarcraftOnline());
-			services.AddGameServer(DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
+		private async Task ConfigureGameServices(IServiceCollection services) {
+			services.AddSingleton<GameDef>(GameDefFactory.CreateStarcraftOnline());
+			var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
+			await services.AddGameServer(storage, DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
 			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1", playerTypeId: "terran")); // for dev purposes only.
+
+			services.Configure<HostOptions>(opts =>
+				opts.ShutdownTimeout = TimeSpan.FromMinutes(10) // large shutdown timeout to allow persistance to save gamestate
+			);
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider, GameTickModuleRegistry gameTickModuleRegistry) {
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime) {
 			if (env.IsDevelopment()) {
 				app.UseDeveloperExceptionPage();
 				app.UseWebAssemblyDebugging();

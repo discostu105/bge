@@ -64,7 +64,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			int workerCount = unitRepository.CountByUnitDefId(playerId, workerUnit);
 			decimal resourcesToAdd = workerCount * 1.2m; // TODO this just a dummy logic
 			decimal newValue = resourceRepositoryWrite.AddResources(playerId, growthResource, resourcesToAdd);
-			logger.LogInformation("Added {Value} {Resource} to player {PlayerName}. New value: {NewValue}", resourcesToAdd, growthResource, playerId, newValue);
+			logger.LogDebug("Added {Value} {Resource} to player {PlayerName}. New value: {NewValue}", resourcesToAdd, growthResource, playerId, newValue);
 		}
 	}
 }

@@ -35,6 +35,7 @@ namespace BrowserGameEngine.Server {
 				})
 				.ConfigureServices(services => {
 					services.AddHostedService<GameTickTimerService>();
+					services.AddHostedService<PersistenceHostedService>();
 				});
 	}
 }

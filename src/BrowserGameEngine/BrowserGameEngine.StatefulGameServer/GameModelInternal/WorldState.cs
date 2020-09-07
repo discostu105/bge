@@ -1,9 +1,11 @@
-﻿using BrowserGameEngine.GameDefinition;
+﻿using BrowserGameEgnine.Persistence;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
@@ -30,13 +32,22 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		}
 	}
 
-	internal static class WorldStateImmutableExtensions {
-		internal static WorldState ToMutable(this WorldStateImmutable worldStateImmutable) {
+	public static class WorldStateImmutableExtensions {
+		public static WorldStateImmutable ToImmutable(this WorldState worldState) {
+			return new WorldStateImmutable(
+				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
+				CurrentGameTick: worldState.CurrentGameTick,
+				LastUpdate: worldState.LastUpdate
+			);
+		}
+
+		public static WorldState ToMutable(this WorldStateImmutable worldStateImmutable) {
 			return new WorldState {
 				Players = worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable()),
 				CurrentGameTick = worldStateImmutable.CurrentGameTick,
 				LastUpdate = worldStateImmutable.LastUpdate
 			};
 		}
+
 	}
 }

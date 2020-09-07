@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2_Frontend", "2_Frontend", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Shared", "0_Shared", "{4227BBC6-ACC6-4E28-A9E6-23D9B6144911}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserGameEgnine.Persistence", "BrowserGameEgnine.Persistence\BrowserGameEgnine.Persistence.csproj", "{5C801793-EC99-48C9-9163-F33ACEA7B192}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{736EBF1E-75F3-4385-BBEC-0468E5ED60CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{736EBF1E-75F3-4385-BBEC-0468E5ED60CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{736EBF1E-75F3-4385-BBEC-0468E5ED60CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C801793-EC99-48C9-9163-F33ACEA7B192}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C801793-EC99-48C9-9163-F33ACEA7B192}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C801793-EC99-48C9-9163-F33ACEA7B192}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C801793-EC99-48C9-9163-F33ACEA7B192}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{9185C862-041D-4818-A105-94B99427C76E} = {1A926FDC-FA86-4965-97DB-B6DC2143BCEF}
 		{D8221E45-47F3-471D-B4F3-D4A0709D020E} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
 		{736EBF1E-75F3-4385-BBEC-0468E5ED60CF} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
+		{5C801793-EC99-48C9-9163-F33ACEA7B192} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F18177E3-6123-4901-ADC2-32D1D2B9EC5B}

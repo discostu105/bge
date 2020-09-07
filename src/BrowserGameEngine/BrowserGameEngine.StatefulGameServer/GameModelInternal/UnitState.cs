@@ -21,6 +21,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		internal static Unit ToMutable(this UnitImmutable unitStateImmutable) {
 			return new Unit {
+				UnitId = unitStateImmutable.UnitId,
 				UnitDefId = unitStateImmutable.UnitDefId,
 				Count = unitStateImmutable.Count
 			};

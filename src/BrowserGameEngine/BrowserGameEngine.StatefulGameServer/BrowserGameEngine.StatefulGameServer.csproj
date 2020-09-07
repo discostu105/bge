@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BrowserGameEgnine.Persistence\BrowserGameEgnine.Persistence.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.GameDefinition\BrowserGameEngine.GameDefinition.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.GameModel\BrowserGameEngine.GameModel.csproj" />
   </ItemGroup>

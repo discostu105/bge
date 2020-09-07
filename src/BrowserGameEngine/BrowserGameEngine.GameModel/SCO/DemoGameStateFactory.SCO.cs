@@ -12,7 +12,7 @@ namespace BrowserGameEngine.GameModel {
 
 			var gameTick = new GameTick(0);
 
-			int playerCount = 5;
+			int playerCount = 5000;
 			for (int i = 0; i < playerCount; i++) {
 				players.Add(
 					new PlayerImmutable(
