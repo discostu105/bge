@@ -82,7 +82,7 @@ namespace BrowserGameEngine.Server {
 		private void ConfigureGameServices(IServiceCollection services) {
 			services.AddSingleton(GameDefFactory.CreateStarcraftOnline());
 			services.AddGameServer(DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
-			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu", playerTypeId: "terran")); // for dev purposes only.
+			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1", playerTypeId: "terran")); // for dev purposes only.
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
