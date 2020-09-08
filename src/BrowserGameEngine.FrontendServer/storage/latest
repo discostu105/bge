@@ -12,11 +12,11 @@
       "State": {
         "LastGameTickUpdate": "2020-09-08T21:34:47.1723575+02:00",
         "CurrentGameTick": {
-          "Tick": 0
+          "Tick": 268
         },
         "Resources": {
           "land": 50,
-          "minerals": 500,
+          "minerals": 821.6,
           "gas": 300
         },
         "Assets": [
@@ -82,11 +82,11 @@
       "State": {
         "LastGameTickUpdate": "2020-09-08T21:34:47.173461+02:00",
         "CurrentGameTick": {
-          "Tick": 0
+          "Tick": 268
         },
         "Resources": {
           "land": 50,
-          "minerals": 500,
+          "minerals": 821.6,
           "gas": 300
         },
         "Assets": [
@@ -152,11 +152,11 @@
       "State": {
         "LastGameTickUpdate": "2020-09-08T21:34:47.1734661+02:00",
         "CurrentGameTick": {
-          "Tick": 0
+          "Tick": 268
         },
         "Resources": {
           "land": 50,
-          "minerals": 500,
+          "minerals": 821.6,
           "gas": 300
         },
         "Assets": [
@@ -222,11 +222,11 @@
       "State": {
         "LastGameTickUpdate": "2020-09-08T21:34:47.1734702+02:00",
         "CurrentGameTick": {
-          "Tick": 0
+          "Tick": 268
         },
         "Resources": {
           "land": 50,
-          "minerals": 500,
+          "minerals": 821.6,
           "gas": 300
         },
         "Assets": [
@@ -292,11 +292,11 @@
       "State": {
         "LastGameTickUpdate": "2020-09-08T21:34:47.1734727+02:00",
         "CurrentGameTick": {
-          "Tick": 0
+          "Tick": 268
         },
         "Resources": {
           "land": 50,
-          "minerals": 500,
+          "minerals": 821.6,
           "gas": 300
         },
         "Assets": [
@@ -352,7 +352,7 @@
     }
   },
   "CurrentGameTick": {
-    "Tick": 0
+    "Tick": 268
   },
-  "LastUpdate": "2020-09-08T21:24:47.1741753+02:00"
+  "LastUpdate": "2020-09-08T22:54:07.1741753+02:00"
 }

@@ -2,6 +2,7 @@
 	public record PlayerTypeDefId(string Id) {
 		public override string ToString() => Id;
 	}
+
 	public record PlayerTypeDef(
 		PlayerTypeDefId Id,
 		string Name

@@ -25,7 +25,7 @@ namespace BrowserGameEngine.Shared {
 				Attack = assetDefinition.Attack,
 				Defense = assetDefinition.Defense,
 				Hitpoints = assetDefinition.Hitpoints,
-				Prerequisites = assetDefinition.Prerequisites,
+				Prerequisites = assetDefinition.Prerequisites.Select(x => x.Id).ToList(),
 				BuildTimeTicks = assetDefinition.BuildTimeTicks.Tick
 			};
 		}

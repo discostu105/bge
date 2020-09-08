@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 
 namespace BrowserGameEngine.GameDefinition.SCO {
-	public class StarcraftOnlineStateFactory : IGameStateFactory {
-		public WorldStateImmutable CreateInitialGameState() {
+	public class StarcraftOnlineWorldStateFactory : IWorldStateFactory {
+		public WorldStateImmutable CreateInitialWorldState() {
 			throw new NotImplementedException();
 		}
 
-		public WorldStateImmutable CreateDevGameState() {
+		public WorldStateImmutable CreateDevWorldState() {
 			var players = new List<PlayerImmutable>();
 
 			var gameTick = new GameTick(0);

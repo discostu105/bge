@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace BrowserGameEngine.StatefulGameServer {
+namespace BrowserGameEngine.GameDefinition {
 	[Serializable]
-	internal class InvalidGameDefException : Exception {
+	public class InvalidGameDefException : Exception {
 		public InvalidGameDefException() {
 		}
 

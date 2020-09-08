@@ -14,7 +14,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public int Attack { get; init; }
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }
-		public List<string> Prerequisites { get; init; } = new List<string>();
+		public List<AssetDefId> Prerequisites { get; init; } = new List<AssetDefId>();
 		public GameTick BuildTimeTicks { get; init; }
 
 		public override string ToString() => Id.Id;

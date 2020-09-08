@@ -29,7 +29,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public bool PrerequisitesMet(PlayerId playerId, AssetDef assetDef) {
 			if (assetDef.PlayerTypeRestriction != playerRepository.GetPlayerType(playerId)) return false;
 			foreach (var prereq in assetDef.Prerequisites) {
-				if (!HasAsset(playerId, Id.AssetDef(prereq))) return false;
+				if (!HasAsset(playerId, prereq)) return false;
 			}
 			return true;
 		}

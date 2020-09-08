@@ -44,7 +44,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 1200,
 						BuildTimeTicks = new GameTick(30),
-						Prerequisites = new List<string> { }
+						Prerequisites = new List<AssetDefId> { }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("barracks"),
@@ -55,7 +55,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 500, // TODO
 						BuildTimeTicks = new GameTick( 10),
-						Prerequisites = new List<string> { "commandcenter" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("commandcenter") }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("factory"),
@@ -66,7 +66,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 500, // TODO
 						BuildTimeTicks = new GameTick( 40),
-						Prerequisites = new List<string> { "barracks" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("armory"),
@@ -77,7 +77,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 500, // TODO
 						BuildTimeTicks = new GameTick( 30),
-						Prerequisites = new List<string> { "factory" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("spaceport"),
@@ -88,7 +88,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 500, // TODO
 						BuildTimeTicks = new GameTick( 40),
-						Prerequisites = new List<string> { "factory" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("academy"),
@@ -99,7 +99,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 500, // TODO
 						BuildTimeTicks = new GameTick( 30),
-						Prerequisites = new List<string> { "barracks" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("sciencefacility"),
@@ -110,7 +110,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 500, // TODO
 						BuildTimeTicks = new GameTick( 50),
-						Prerequisites = new List<string> { "spaceport" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
 					}
 				},
 
@@ -134,7 +134,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 4,
 						Hitpoints = 60,
 						Speed = 7,
-						Prerequisites = new List<string> { "barracks" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") }
 					},
 					new UnitDef {
 						Id = Id.UnitDef("firebat"),
@@ -145,7 +145,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 6,
 						Hitpoints = 50,
 						Speed = 7,
-						Prerequisites = new List<string> { "barracks" }
+						Prerequisites =  new List<AssetDefId> { Id.AssetDef("barracks") }
 					},
 					new UnitDef {
 						Id = Id.UnitDef("siegetank"),
@@ -156,7 +156,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 40,
 						Hitpoints = 130,
 						Speed = 9,
-						Prerequisites = new List<string> { "factory" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") }
 					},
 					//new UnitDef {
 					//	Id = Id.Unit("ghost",
@@ -178,7 +178,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 2,
 						Hitpoints = 70,
 						Speed = 5,
-						Prerequisites = new List<string> { "armory" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("armory") }
 					},
 					//new UnitDef {
 					//	Id = Id.Unit("goliath",
@@ -200,7 +200,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 14,
 						Hitpoints = 230,
 						Speed = 5,
-						Prerequisites = new List<string> { "spaceport" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
 					},
 					new UnitDef {
 						Id = Id.UnitDef("battlecruiser"),
@@ -211,7 +211,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 45,
 						Hitpoints = 500,
 						Speed = 11,
-						Prerequisites = new List<string> { "spaceport" }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
 					},
 					//new UnitDef {
 					//	Id = "valkyrie",

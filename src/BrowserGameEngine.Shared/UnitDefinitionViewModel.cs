@@ -27,7 +27,7 @@ namespace BrowserGameEngine.Shared {
 				Defense = unitDefinition.Defense,
 				Hitpoints = unitDefinition.Hitpoints,
 				Speed = unitDefinition.Speed,
-				Prerequisites = unitDefinition.Prerequisites,
+				Prerequisites = unitDefinition.Prerequisites.Select(x => x.Id).ToList(),
 				PrerequisitesMet = prerequisitesMet
 			};
 		}

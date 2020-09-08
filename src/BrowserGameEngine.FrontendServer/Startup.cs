@@ -85,11 +85,12 @@ namespace BrowserGameEngine.Server {
 
 		private async Task ConfigureGameServices(IServiceCollection services) {
 			var gameDefFactory = new StarcraftOnlineGameDefFactory();
-			var stateFactory = new StarcraftOnlineStateFactory();
-
-			services.AddSingleton<GameDef>(gameDefFactory.CreateGameDef());
+			var stateFactory = new StarcraftOnlineWorldStateFactory();
+			var gameDef = gameDefFactory.CreateGameDef();
+			new GameDefVerifier().Verify(gameDef);
+			services.AddSingleton<GameDef>(gameDef);
 			var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
-			await services.AddGameServer(storage, stateFactory.CreateDevGameState()); // todo: init state for non-development
+			await services.AddGameServer(storage, stateFactory.CreateDevWorldState()); // todo: init state for non-development
 			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
 
 			services.Configure<HostOptions>(opts =>
