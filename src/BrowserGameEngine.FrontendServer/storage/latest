@@ -1,0 +1,358 @@
+{
+  "Players": {
+    "discostu#0": {
+      "PlayerId": {
+        "Id": "discostu#0"
+      },
+      "PlayerType": {
+        "Id": "terran"
+      },
+      "Name": "Commander Discostu#0",
+      "Created": "2020-09-08T21:34:47.1721641+02:00",
+      "State": {
+        "LastGameTickUpdate": "2020-09-08T21:34:47.1723575+02:00",
+        "CurrentGameTick": {
+          "Tick": 0
+        },
+        "Resources": {
+          "land": 50,
+          "minerals": 500,
+          "gas": 300
+        },
+        "Assets": [
+          {
+            "AssetDefId": {
+              "Id": "commandcenter"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          },
+          {
+            "AssetDefId": {
+              "Id": "factory"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          }
+        ],
+        "Units": [
+          {
+            "UnitId": {
+              "Id": "bbccdec1-bc46-4578-9a50-f4d1f79b328d"
+            },
+            "UnitDefId": {
+              "Id": "wbf"
+            },
+            "Count": 10
+          },
+          {
+            "UnitId": {
+              "Id": "7f2bcb56-5bc5-43fd-ad28-0d01d80d6228"
+            },
+            "UnitDefId": {
+              "Id": "spacemarine"
+            },
+            "Count": 25
+          },
+          {
+            "UnitId": {
+              "Id": "80053bc6-736a-498d-be6c-43e0bc97a86b"
+            },
+            "UnitDefId": {
+              "Id": "siegetank"
+            },
+            "Count": 3
+          }
+        ]
+      }
+    },
+    "discostu#1": {
+      "PlayerId": {
+        "Id": "discostu#1"
+      },
+      "PlayerType": {
+        "Id": "terran"
+      },
+      "Name": "Commander Discostu#1",
+      "Created": "2020-09-08T21:34:47.1734585+02:00",
+      "State": {
+        "LastGameTickUpdate": "2020-09-08T21:34:47.173461+02:00",
+        "CurrentGameTick": {
+          "Tick": 0
+        },
+        "Resources": {
+          "land": 50,
+          "minerals": 500,
+          "gas": 300
+        },
+        "Assets": [
+          {
+            "AssetDefId": {
+              "Id": "commandcenter"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          },
+          {
+            "AssetDefId": {
+              "Id": "factory"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          }
+        ],
+        "Units": [
+          {
+            "UnitId": {
+              "Id": "4831e4a1-77bc-4399-a7ae-3d3b1c3ce4d5"
+            },
+            "UnitDefId": {
+              "Id": "wbf"
+            },
+            "Count": 10
+          },
+          {
+            "UnitId": {
+              "Id": "249f0c90-ea71-44cc-95af-05f68b31b844"
+            },
+            "UnitDefId": {
+              "Id": "spacemarine"
+            },
+            "Count": 25
+          },
+          {
+            "UnitId": {
+              "Id": "ff4df8f1-5e6c-450f-9ad0-e8c1850caef4"
+            },
+            "UnitDefId": {
+              "Id": "siegetank"
+            },
+            "Count": 3
+          }
+        ]
+      }
+    },
+    "discostu#2": {
+      "PlayerId": {
+        "Id": "discostu#2"
+      },
+      "PlayerType": {
+        "Id": "terran"
+      },
+      "Name": "Commander Discostu#2",
+      "Created": "2020-09-08T21:34:47.1734657+02:00",
+      "State": {
+        "LastGameTickUpdate": "2020-09-08T21:34:47.1734661+02:00",
+        "CurrentGameTick": {
+          "Tick": 0
+        },
+        "Resources": {
+          "land": 50,
+          "minerals": 500,
+          "gas": 300
+        },
+        "Assets": [
+          {
+            "AssetDefId": {
+              "Id": "commandcenter"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          },
+          {
+            "AssetDefId": {
+              "Id": "factory"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          }
+        ],
+        "Units": [
+          {
+            "UnitId": {
+              "Id": "d5b8eeb8-ff07-42e3-a19a-9fd849375ae6"
+            },
+            "UnitDefId": {
+              "Id": "wbf"
+            },
+            "Count": 10
+          },
+          {
+            "UnitId": {
+              "Id": "9c79fa64-91b1-4ca7-a3ee-88998315867b"
+            },
+            "UnitDefId": {
+              "Id": "spacemarine"
+            },
+            "Count": 25
+          },
+          {
+            "UnitId": {
+              "Id": "70b6fdeb-6115-4096-b43c-783cff3b21cb"
+            },
+            "UnitDefId": {
+              "Id": "siegetank"
+            },
+            "Count": 3
+          }
+        ]
+      }
+    },
+    "discostu#3": {
+      "PlayerId": {
+        "Id": "discostu#3"
+      },
+      "PlayerType": {
+        "Id": "terran"
+      },
+      "Name": "Commander Discostu#3",
+      "Created": "2020-09-08T21:34:47.1734698+02:00",
+      "State": {
+        "LastGameTickUpdate": "2020-09-08T21:34:47.1734702+02:00",
+        "CurrentGameTick": {
+          "Tick": 0
+        },
+        "Resources": {
+          "land": 50,
+          "minerals": 500,
+          "gas": 300
+        },
+        "Assets": [
+          {
+            "AssetDefId": {
+              "Id": "commandcenter"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          },
+          {
+            "AssetDefId": {
+              "Id": "factory"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          }
+        ],
+        "Units": [
+          {
+            "UnitId": {
+              "Id": "6b35d2e6-476e-438c-939f-f5acb4900808"
+            },
+            "UnitDefId": {
+              "Id": "wbf"
+            },
+            "Count": 10
+          },
+          {
+            "UnitId": {
+              "Id": "5d426d9a-07da-4adf-9606-891ca3dbe32b"
+            },
+            "UnitDefId": {
+              "Id": "spacemarine"
+            },
+            "Count": 25
+          },
+          {
+            "UnitId": {
+              "Id": "d70cb8a4-8a4d-492a-84c3-3c41822be77d"
+            },
+            "UnitDefId": {
+              "Id": "siegetank"
+            },
+            "Count": 3
+          }
+        ]
+      }
+    },
+    "discostu#4": {
+      "PlayerId": {
+        "Id": "discostu#4"
+      },
+      "PlayerType": {
+        "Id": "terran"
+      },
+      "Name": "Commander Discostu#4",
+      "Created": "2020-09-08T21:34:47.1734723+02:00",
+      "State": {
+        "LastGameTickUpdate": "2020-09-08T21:34:47.1734727+02:00",
+        "CurrentGameTick": {
+          "Tick": 0
+        },
+        "Resources": {
+          "land": 50,
+          "minerals": 500,
+          "gas": 300
+        },
+        "Assets": [
+          {
+            "AssetDefId": {
+              "Id": "commandcenter"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          },
+          {
+            "AssetDefId": {
+              "Id": "factory"
+            },
+            "Level": 1,
+            "FinishedGameTick": {
+              "Tick": 0
+            }
+          }
+        ],
+        "Units": [
+          {
+            "UnitId": {
+              "Id": "dc303f0f-b81b-42c4-815c-c71f1a78ac90"
+            },
+            "UnitDefId": {
+              "Id": "wbf"
+            },
+            "Count": 10
+          },
+          {
+            "UnitId": {
+              "Id": "c5a6d694-6c38-410a-b962-3d37d5b6c3d1"
+            },
+            "UnitDefId": {
+              "Id": "spacemarine"
+            },
+            "Count": 25
+          },
+          {
+            "UnitId": {
+              "Id": "f0b34bbe-62c7-4a7b-972e-b4215111f107"
+            },
+            "UnitDefId": {
+              "Id": "siegetank"
+            },
+            "Count": 3
+          }
+        ]
+      }
+    }
+  },
+  "CurrentGameTick": {
+    "Tick": 0
+  },
+  "LastUpdate": "2020-09-08T21:24:47.1741753+02:00"
+}

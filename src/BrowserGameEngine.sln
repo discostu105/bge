@@ -25,7 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4_Shared", "4_Shared", "{42
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEgnine.Persistence", "BrowserGameEgnine.Persistence\BrowserGameEgnine.Persistence.csproj", "{5C801793-EC99-48C9-9163-F33ACEA7B192}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserGameEngine.StatefulGameServer.Test", "BrowserGameEngine.StatefulGameServer.Test\BrowserGameEngine.StatefulGameServer.Test.csproj", "{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.StatefulGameServer.Test", "BrowserGameEngine.StatefulGameServer.Test\BrowserGameEngine.StatefulGameServer.Test.csproj", "{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserGameEngine.GameDefinition.SCO", "BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj", "{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,6 +84,7 @@ Global
 		{736EBF1E-75F3-4385-BBEC-0468E5ED60CF} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
 		{5C801793-EC99-48C9-9163-F33ACEA7B192} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
 		{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A} = {1A926FDC-FA86-4965-97DB-B6DC2143BCEF}
+		{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93} = {4227BBC6-ACC6-4E28-A9E6-23D9B6144911}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F18177E3-6123-4901-ADC2-32D1D2B9EC5B}

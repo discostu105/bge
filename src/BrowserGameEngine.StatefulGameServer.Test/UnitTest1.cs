@@ -2,10 +2,10 @@ using System;
 using Xunit;
 
 namespace BrowserGameEngine.StatefulGameServer.Test {
-	public class UnitTest1 {
+	public class PersistenceTest {
 		[Fact]
 		public void Test1() {
-
+			
 		}
 	}
 }

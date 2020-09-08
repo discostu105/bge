@@ -20,6 +20,7 @@ using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEgnine.Persistence;
 using System.IO;
 using System.Runtime.InteropServices;
+using BrowserGameEngine.GameDefinition.SCO;
 
 namespace BrowserGameEngine.Server {
 	public class Startup {
@@ -83,9 +84,12 @@ namespace BrowserGameEngine.Server {
 		}
 
 		private async Task ConfigureGameServices(IServiceCollection services) {
-			services.AddSingleton<GameDef>(GameDefFactory.CreateStarcraftOnline());
+			var gameDefFactory = new StarcraftOnlineGameDefFactory();
+			var stateFactory = new StarcraftOnlineStateFactory();
+
+			services.AddSingleton<GameDef>(gameDefFactory.CreateGameDef());
 			var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
-			await services.AddGameServer(storage, DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
+			await services.AddGameServer(storage, stateFactory.CreateDevGameState()); // todo: init state for non-development
 			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
 
 			services.Configure<HostOptions>(opts =>

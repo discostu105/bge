@@ -1,12 +1,13 @@
 ﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BrowserGameEngine.GameModel {
+namespace BrowserGameEngine.GameDefinition.SCO {
 
-	public static partial class GameDefFactory {
-		public static GameDef CreateStarcraftOnline() {
+	public class StarcraftOnlineGameDefFactory : IGameDefFactory {
+		public GameDef CreateGameDef() {
 			var gameDefinition = new GameDef() {
 
 				PlayerTypes = new List<PlayerTypeDef> {

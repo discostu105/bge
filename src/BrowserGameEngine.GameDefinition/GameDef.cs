@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 
 namespace BrowserGameEngine.GameDefinition {
-	public record GameDef {
+	public class GameDef {
 		public IEnumerable<PlayerTypeDef> PlayerTypes { get; init; }
 		public IEnumerable<UnitDef> Units { get; init; }
 		public IEnumerable<AssetDef> Assets { get; init; }

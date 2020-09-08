@@ -1,13 +1,18 @@
 ﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace BrowserGameEngine.GameModel {
-	public static partial class DemoWorldStateFactory {
-		public static WorldStateImmutable CreateStarCraftOnlineDemoWorldState1() {
+namespace BrowserGameEngine.GameDefinition.SCO {
+	public class StarcraftOnlineStateFactory : IGameStateFactory {
+		public WorldStateImmutable CreateInitialGameState() {
+			throw new NotImplementedException();
+		}
+
+		public WorldStateImmutable CreateDevGameState() {
 			var players = new List<PlayerImmutable>();
 
 			var gameTick = new GameTick(0);
