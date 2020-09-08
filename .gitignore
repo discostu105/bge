@@ -350,4 +350,4 @@ MigrationBackup/
 .ionide/
 
 # BGE
-src/BrowserGameEngine/BrowserGameEngine.FrontendServer/storage
+src/BrowserGameEngine.FrontendServer/storage/
