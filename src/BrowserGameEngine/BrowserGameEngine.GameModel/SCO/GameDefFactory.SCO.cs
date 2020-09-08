@@ -37,7 +37,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("commandcenter"),
 						Name = "Kommandozentrale",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 400)),
 						Attack = 0,
 						Defense = 0,
@@ -48,7 +48,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("barracks"),
 						Name = "Kaserne",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 150)),
 						Attack = 0,
 						Defense = 0,
@@ -59,7 +59,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("factory"),
 						Name = "Fabrik",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 200), ("gas", 100)),
 						Attack = 0,
 						Defense = 0,
@@ -70,7 +70,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("armory"),
 						Name = "Waffenfabrik",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
 						Attack = 0,
 						Defense = 0,
@@ -81,7 +81,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("spaceport"),
 						Name = "Raumhafen",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 150), ("gas", 100)),
 						Attack = 0,
 						Defense = 0,
@@ -92,7 +92,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("academy"),
 						Name = "Akademie",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 150),("gas", 0)),
 						Attack = 0,
 						Defense = 0,
@@ -103,7 +103,7 @@ namespace BrowserGameEngine.GameModel {
 					new AssetDef {
 						Id = Id.AssetDef("sciencefacility"),
 						Name = "Wissenschaftliches Institut",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 100),("gas", 150)),
 						Attack = 0,
 						Defense = 0,
@@ -117,7 +117,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("wbf"),
 						Name = "WBF",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(( "minerals", 50 )),
 						Attack = 0,
 						Defense = 1,
@@ -127,7 +127,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("spacemarine"),
 						Name = "Space Marine",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 45)),
 						Attack = 2,
 						Defense = 4,
@@ -138,7 +138,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("firebat"),
 						Name = "Feuerfresser",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 50), ("gas", 25)),
 						Attack = 9,
 						Defense = 6,
@@ -149,7 +149,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("siegetank"),
 						Name = "Belagerungspanzer",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 125), ("gas", 100)),
 						Attack = 10,
 						Defense = 40,
@@ -160,7 +160,7 @@ namespace BrowserGameEngine.GameModel {
 					//new UnitDef {
 					//	Id = Id.Unit("ghost",
 					//	Name = "Geist",
-					//	PlayerTypeRestriction = "terran",
+					//	PlayerTypeRestriction = Id.PlayerType("terran"),
 					//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 					//	Attack = 66,
 					//	Defense = 66,
@@ -171,7 +171,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("vulture"),
 						Name = "Adler",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(( "minerals", 75 )),
 						Attack = 8,
 						Defense = 2,
@@ -182,7 +182,7 @@ namespace BrowserGameEngine.GameModel {
 					//new UnitDef {
 					//	Id = Id.Unit("goliath",
 					//	Name = "Goliath",
-					//	PlayerTypeRestriction = "terran",
+					//	PlayerTypeRestriction = Id.PlayerType("terran"),
 					//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 					//	Attack = 66,
 					//	Defense = 66,
@@ -193,7 +193,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("wraith"),
 						Name = "Raumjäger",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 200), ("gas", 100 )),
 						Attack = 36,
 						Defense = 14,
@@ -204,7 +204,7 @@ namespace BrowserGameEngine.GameModel {
 					new UnitDef {
 						Id = Id.UnitDef("battlecruiser"),
 						Name = "Schwerer Kreuzer",
-						PlayerTypeRestriction = "terran",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 300 ), ("gas", 300)),
 						Attack = 70,
 						Defense = 45,
@@ -215,7 +215,7 @@ namespace BrowserGameEngine.GameModel {
 					//new UnitDef {
 					//	Id = "valkyrie",
 					//	Name = "Walküre",
-					//	PlayerTypeRestriction = "terran",
+					//	PlayerTypeRestriction = Id.PlayerType("terran"),
 					//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 					//	Attack = 66,
 					//	Defense = 66,
@@ -226,7 +226,7 @@ namespace BrowserGameEngine.GameModel {
 					//new UnitDef {
 					//	Id = "todo",
 					//	Name = "todo",
-					//	PlayerTypeRestriction = "terran",
+					//	PlayerTypeRestriction = Id.PlayerType("terran"),
 					//	Cost = CostHelper.Create(( "minerals", 666 }, { "gas", 666 } },
 					//	Attack = 66,
 					//	Defense = 66,

@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Authentication;
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("api/[controller]/{action?}/{id?}")]
 	public class AssetsController : ControllerBase {
 		private readonly ILogger<AssetsController> logger;
 		private readonly CurrentUserContext currentUserContext;
@@ -45,8 +45,18 @@ namespace BrowserGameEngine.Server.Controllers {
 			var playerAssets = assetRepository.Get(currentUserContext.PlayerId);
 
 			return new AssetsViewModel {
-				Assets = gameDef.GetAssetsByPlayerType(currentUserContext.PlayerTypeId).Select(x => CreateAssetViewModel(x, playerAssets)).ToList()
+				Assets = gameDef.GetAssetsByPlayerType(playerRepository.GetPlayerType(currentUserContext.PlayerId)).Select(x => CreateAssetViewModel(x, playerAssets)).ToList()
 			};
+		}
+
+		[HttpPost]
+		public async Task Build([FromQuery] string assetDefId) {
+			assetRepositoryWrite.BuildAsset(new BuildAssetCommand(currentUserContext.PlayerId, Id.AssetDef(assetDefId)));
+		}
+
+		[HttpPost]
+		public async Task Upgrade(string assetDefId) {
+			throw new NotImplementedException();
 		}
 
 		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetImmutable> playerAssets) {

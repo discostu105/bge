@@ -21,7 +21,7 @@ namespace BrowserGameEngine.Shared {
 			return new UnitDefinitionViewModel {
 				Id = unitDefinition.Id.Id,
 				Name = unitDefinition.Name,
-				PlayerTypeRestriction = unitDefinition.PlayerTypeRestriction,
+				PlayerTypeRestriction = unitDefinition.PlayerTypeRestriction.Id,
 				Cost = unitDefinition.Cost.ToPlainDictionary(),
 				Attack = unitDefinition.Attack,
 				Defense = unitDefinition.Defense,

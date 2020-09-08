@@ -12,11 +12,12 @@ namespace BrowserGameEngine.GameModel {
 
 			var gameTick = new GameTick(0);
 
-			int playerCount = 5000;
+			int playerCount = 5;
 			for (int i = 0; i < playerCount; i++) {
 				players.Add(
 					new PlayerImmutable(
 						PlayerId: PlayerIdFactory.Create($"discostu#{i}"),
+						PlayerType: Id.PlayerType("terran"),
 						Name: $"Commander Discostu#{i}",
 						Created: DateTime.Now,
 						State: new PlayerStateImmutable(
@@ -61,7 +62,7 @@ namespace BrowserGameEngine.GameModel {
 				);
 			}
 
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick, DateTime.Now - TimeSpan.FromHours(1));
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick, DateTime.Now - TimeSpan.FromMinutes(10));
 		}
 	}
 }

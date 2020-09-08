@@ -8,12 +8,10 @@ using System.Threading.Tasks;
 namespace BrowserGameEngine.FrontendServer {
 	public class CurrentUserContext {
 		public PlayerId PlayerId { get; set; }
-		public string PlayerTypeId { get; set; }
 
-		public static CurrentUserContext Create(string playerId, string playerTypeId) {
+		public static CurrentUserContext Create(string playerId) {
 			return new CurrentUserContext {
-				PlayerId = PlayerIdFactory.Create(playerId),
-				PlayerTypeId = playerTypeId
+				PlayerId = PlayerIdFactory.Create(playerId)
 			};
 		}
 	}

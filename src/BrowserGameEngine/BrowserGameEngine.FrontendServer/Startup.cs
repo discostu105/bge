@@ -86,7 +86,7 @@ namespace BrowserGameEngine.Server {
 			services.AddSingleton<GameDef>(GameDefFactory.CreateStarcraftOnline());
 			var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
 			await services.AddGameServer(storage, DemoWorldStateFactory.CreateStarCraftOnlineDemoWorldState1());
-			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1", playerTypeId: "terran")); // for dev purposes only.
+			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
 
 			services.Configure<HostOptions>(opts =>
 				opts.ShutdownTimeout = TimeSpan.FromMinutes(10) // large shutdown timeout to allow persistance to save gamestate

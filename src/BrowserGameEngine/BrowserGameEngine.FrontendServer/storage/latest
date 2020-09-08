@@ -4,16 +4,19 @@
       "PlayerId": {
         "Id": "discostu#0"
       },
+      "PlayerType": {
+        "Id": "terran"
+      },
       "Name": "Commander Discostu#0",
-      "Created": "2020-09-07T23:47:58.1797104+02:00",
+      "Created": "2020-09-08T10:44:40.5651727+02:00",
       "State": {
-        "LastGameTickUpdate": "2020-09-07T23:47:58.179882+02:00",
+        "LastGameTickUpdate": "2020-09-08T10:44:40.5653129+02:00",
         "CurrentGameTick": {
-          "Tick": 180
+          "Tick": 102
         },
         "Resources": {
           "land": 50,
-          "minerals": 716.0,
+          "minerals": 622.4,
           "gas": 300
         },
         "Assets": [
@@ -38,21 +41,27 @@
         ],
         "Units": [
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "9505fa6a-d595-4654-b3fa-7c187482f8f5"
+            },
             "UnitDefId": {
               "Id": "wbf"
             },
             "Count": 10
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "8cfe834d-cc8b-4cb8-ab94-b4dc8d08bbb7"
+            },
             "UnitDefId": {
               "Id": "spacemarine"
             },
             "Count": 25
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "4c9ef95c-9038-4966-86da-ae3ae43510d4"
+            },
             "UnitDefId": {
               "Id": "siegetank"
             },
@@ -65,16 +74,19 @@
       "PlayerId": {
         "Id": "discostu#1"
       },
+      "PlayerType": {
+        "Id": "terran"
+      },
       "Name": "Commander Discostu#1",
-      "Created": "2020-09-07T23:47:58.1809779+02:00",
+      "Created": "2020-09-08T10:44:40.5663026+02:00",
       "State": {
-        "LastGameTickUpdate": "2020-09-07T23:47:58.1809807+02:00",
+        "LastGameTickUpdate": "2020-09-08T10:44:40.5663059+02:00",
         "CurrentGameTick": {
-          "Tick": 180
+          "Tick": 102
         },
         "Resources": {
           "land": 50,
-          "minerals": 716.0,
+          "minerals": 622.4,
           "gas": 300
         },
         "Assets": [
@@ -99,21 +111,27 @@
         ],
         "Units": [
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "a0c3de65-93db-4a0c-b4fa-4731ca9e624c"
+            },
             "UnitDefId": {
               "Id": "wbf"
             },
             "Count": 10
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "d8fab11e-c367-461d-bf3b-82f3801862dc"
+            },
             "UnitDefId": {
               "Id": "spacemarine"
             },
             "Count": 25
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "9b86cd75-5bb2-42e9-a1e8-030be5d96f5c"
+            },
             "UnitDefId": {
               "Id": "siegetank"
             },
@@ -126,16 +144,19 @@
       "PlayerId": {
         "Id": "discostu#2"
       },
+      "PlayerType": {
+        "Id": "terran"
+      },
       "Name": "Commander Discostu#2",
-      "Created": "2020-09-07T23:47:58.1809922+02:00",
+      "Created": "2020-09-08T10:44:40.566311+02:00",
       "State": {
-        "LastGameTickUpdate": "2020-09-07T23:47:58.1809926+02:00",
+        "LastGameTickUpdate": "2020-09-08T10:44:40.5663114+02:00",
         "CurrentGameTick": {
-          "Tick": 180
+          "Tick": 102
         },
         "Resources": {
           "land": 50,
-          "minerals": 716.0,
+          "minerals": 622.4,
           "gas": 300
         },
         "Assets": [
@@ -160,21 +181,27 @@
         ],
         "Units": [
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "b3dce805-264b-49f2-9c97-bc57487f4463"
+            },
             "UnitDefId": {
               "Id": "wbf"
             },
             "Count": 10
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "04a10063-cb7b-4fdf-9972-47532f339a08"
+            },
             "UnitDefId": {
               "Id": "spacemarine"
             },
             "Count": 25
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "b63af8a1-17a4-48a4-9381-18a2139fa469"
+            },
             "UnitDefId": {
               "Id": "siegetank"
             },
@@ -187,16 +214,19 @@
       "PlayerId": {
         "Id": "discostu#3"
       },
+      "PlayerType": {
+        "Id": "terran"
+      },
       "Name": "Commander Discostu#3",
-      "Created": "2020-09-07T23:47:58.1809955+02:00",
+      "Created": "2020-09-08T10:44:40.5663144+02:00",
       "State": {
-        "LastGameTickUpdate": "2020-09-07T23:47:58.1809959+02:00",
+        "LastGameTickUpdate": "2020-09-08T10:44:40.5663147+02:00",
         "CurrentGameTick": {
-          "Tick": 180
+          "Tick": 102
         },
         "Resources": {
           "land": 50,
-          "minerals": 716.0,
+          "minerals": 622.4,
           "gas": 300
         },
         "Assets": [
@@ -221,21 +251,27 @@
         ],
         "Units": [
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "0df3304f-2d0a-4886-8262-7a056fb18b81"
+            },
             "UnitDefId": {
               "Id": "wbf"
             },
             "Count": 10
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "c87bbf7f-f4cb-416f-ae34-5417c7a21391"
+            },
             "UnitDefId": {
               "Id": "spacemarine"
             },
             "Count": 25
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "76f85d33-f019-4b7c-adcc-4b8201ac72cb"
+            },
             "UnitDefId": {
               "Id": "siegetank"
             },
@@ -248,16 +284,19 @@
       "PlayerId": {
         "Id": "discostu#4"
       },
+      "PlayerType": {
+        "Id": "terran"
+      },
       "Name": "Commander Discostu#4",
-      "Created": "2020-09-07T23:47:58.1809981+02:00",
+      "Created": "2020-09-08T10:44:40.5663169+02:00",
       "State": {
-        "LastGameTickUpdate": "2020-09-07T23:47:58.1809984+02:00",
+        "LastGameTickUpdate": "2020-09-08T10:44:40.5663173+02:00",
         "CurrentGameTick": {
-          "Tick": 180
+          "Tick": 102
         },
         "Resources": {
           "land": 50,
-          "minerals": 716.0,
+          "minerals": 622.4,
           "gas": 300
         },
         "Assets": [
@@ -282,21 +321,27 @@
         ],
         "Units": [
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "2755a01a-1f51-4d31-8ddb-eef85b6ae6b9"
+            },
             "UnitDefId": {
               "Id": "wbf"
             },
             "Count": 10
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "879232b9-4608-475f-ac60-cad6086196be"
+            },
             "UnitDefId": {
               "Id": "spacemarine"
             },
             "Count": 25
           },
           {
-            "UnitId": null,
+            "UnitId": {
+              "Id": "29f9c4c3-e0dd-418e-8cd0-8ce98f0d09fe"
+            },
             "UnitDefId": {
               "Id": "siegetank"
             },
@@ -307,7 +352,7 @@
     }
   },
   "CurrentGameTick": {
-    "Tick": 180
+    "Tick": 105
   },
-  "LastUpdate": "2020-09-07T23:47:58.1820192+02:00"
+  "LastUpdate": "2020-09-08T11:09:40.5672219+02:00"
 }

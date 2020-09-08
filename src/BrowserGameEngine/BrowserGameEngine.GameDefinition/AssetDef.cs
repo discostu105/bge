@@ -9,7 +9,7 @@ namespace BrowserGameEngine.GameDefinition {
 	public record AssetDef {
 		public AssetDefId Id { get; init; }
 		public string Name { get; init; }
-		public string PlayerTypeRestriction { get; init; }
+		public PlayerTypeDefId PlayerTypeRestriction { get; init; }
 		public Cost Cost { get; init; }
 		public int Attack { get; init; }
 		public int Defense { get; init; }

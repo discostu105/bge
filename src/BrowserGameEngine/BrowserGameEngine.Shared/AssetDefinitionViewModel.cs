@@ -20,7 +20,7 @@ namespace BrowserGameEngine.Shared {
 			return new AssetDefinitionViewModel {
 				Id = assetDefinition.Id.Id,
 				Name = assetDefinition.Name,
-				PlayerTypeRestriction = assetDefinition.PlayerTypeRestriction,
+				PlayerTypeRestriction = assetDefinition.PlayerTypeRestriction.Id,
 				Cost = assetDefinition.Cost.ToPlainDictionary(),
 				Attack = assetDefinition.Attack,
 				Defense = assetDefinition.Defense,

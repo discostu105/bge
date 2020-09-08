@@ -15,15 +15,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.GameModel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.GameDefinition", "BrowserGameEngine.GameDefinition\BrowserGameEngine.GameDefinition.csproj", "{736EBF1E-75F3-4385-BBEC-0468E5ED60CF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_Browser", "3_Browser", "{0B8AB66B-A89F-41F3-9A35-E41EB76E9762}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Browser", "0_Browser", "{0B8AB66B-A89F-41F3-9A35-E41EB76E9762}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1_Backend", "1_Backend", "{1A926FDC-FA86-4965-97DB-B6DC2143BCEF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3_Backend", "3_Backend", "{1A926FDC-FA86-4965-97DB-B6DC2143BCEF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2_Frontend", "2_Frontend", "{4490CE4F-7BEB-4EBA-B8D9-0EDFE5BF242E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1_Frontend", "1_Frontend", "{4490CE4F-7BEB-4EBA-B8D9-0EDFE5BF242E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0_Shared", "0_Shared", "{4227BBC6-ACC6-4E28-A9E6-23D9B6144911}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4_Shared", "4_Shared", "{4227BBC6-ACC6-4E28-A9E6-23D9B6144911}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserGameEgnine.Persistence", "BrowserGameEgnine.Persistence\BrowserGameEgnine.Persistence.csproj", "{5C801793-EC99-48C9-9163-F33ACEA7B192}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEgnine.Persistence", "BrowserGameEgnine.Persistence\BrowserGameEgnine.Persistence.csproj", "{5C801793-EC99-48C9-9163-F33ACEA7B192}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

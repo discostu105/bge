@@ -27,7 +27,11 @@
                         <td>@item.Definition?.Name</td>
                         <td><_Cost Cost="@item.Cost" /></td>
                         <td>@item.PrerequisitesMet</td>
-                        <td><button name="Bauen" value="Bauen" /></td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="BuildAsset">
+                                Bauen
+                            </button>
+                        </td>
                     </tr>
                 }
             }
@@ -42,4 +46,7 @@
         assets = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
     }
 
+    private async Task BuildAsset(MouseEventArgs e) {
+        await Http.PostAsJsonAsync("api/assets/build?assetDefId=barracks", "");
+    }
 }

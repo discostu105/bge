@@ -20,7 +20,7 @@ namespace BrowserGameEngine.GameDefinition {
 			return gameDef.Assets.SingleOrDefault(x => x.Id.Equals(assetDefId));
 		}
 
-		public static IEnumerable<AssetDef> GetAssetsByPlayerType(this GameDef gameDef, string playerTypeId) {
+		public static IEnumerable<AssetDef> GetAssetsByPlayerType(this GameDef gameDef, PlayerTypeDefId playerTypeId) {
 			return gameDef.Assets.Where(x => x.PlayerTypeRestriction.Equals(playerTypeId));
 		}
 
@@ -28,7 +28,7 @@ namespace BrowserGameEngine.GameDefinition {
 			return gameDef.Units.SingleOrDefault(x => x.Id.Equals(unitDefId));
 		}
 
-		public static IEnumerable<UnitDef> GetUnitsByPlayerType(this GameDef gameDef, string playerTypeId) {
+		public static IEnumerable<UnitDef> GetUnitsByPlayerType(this GameDef gameDef, PlayerTypeDefId playerTypeId) {
 			return gameDef.Units.Where(x => x.PlayerTypeRestriction.Equals(playerTypeId));
 		}
 

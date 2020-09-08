@@ -8,9 +8,11 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepository {
 		private readonly WorldState world;
+		private readonly PlayerRepository playerRepository;
 
-		public AssetRepository(WorldState world) {
+		public AssetRepository(WorldState world, PlayerRepository playerRepository) {
 			this.world = world;
+			this.playerRepository = playerRepository;
 		}
 
 		private IList<Asset> GetAssets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
@@ -25,6 +27,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public bool PrerequisitesMet(PlayerId playerId, AssetDef assetDef) {
+			if (assetDef.PlayerTypeRestriction != playerRepository.GetPlayerType(playerId)) return false;
 			foreach (var prereq in assetDef.Prerequisites) {
 				if (!HasAsset(playerId, Id.AssetDef(prereq))) return false;
 			}

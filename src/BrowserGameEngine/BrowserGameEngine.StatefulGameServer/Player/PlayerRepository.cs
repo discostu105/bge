@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
@@ -18,6 +20,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public IEnumerable<PlayerImmutable> GetAll() {
 			return Players.Values.Select(x => x.ToImmutable());
+		}
+
+		public PlayerTypeDefId GetPlayerType(PlayerId playerId) {
+			return Get(playerId).PlayerType;
 		}
 	}
 }
