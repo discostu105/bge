@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 
 namespace BrowserGameEngine.GameDefinition.SCO {
-	public class TestStateFactory : IWorldStateFactory {
+	public class TestWorldStateFactory : IWorldStateFactory {
 		public WorldStateImmutable CreateInitialWorldState() {
 			throw new NotImplementedException();
 		}

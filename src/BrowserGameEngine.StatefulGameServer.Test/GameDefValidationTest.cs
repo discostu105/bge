@@ -8,7 +8,7 @@ using Xunit;
 namespace BrowserGameEngine.StatefulGameServer.Test {
 	public class GameDefValidationTest {
 		[Fact]
-		public void ConsistentGameDef() {
+		public void ValidGameDef() {
 			var gameDef = new TestGameDefFactory().CreateGameDef();
 			new GameDefVerifier().Verify(gameDef);
 		}

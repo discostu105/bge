@@ -89,8 +89,13 @@ namespace BrowserGameEngine.Server {
 			var gameDef = gameDefFactory.CreateGameDef();
 			new GameDefVerifier().Verify(gameDef);
 			services.AddSingleton<GameDef>(gameDef);
+			
 			var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
-			await services.AddGameServer(storage, stateFactory.CreateDevWorldState()); // todo: init state for non-development
+
+			var worldState = stateFactory.CreateDevWorldState();
+			new WorldStateVerifier().Verify(gameDef, worldState); // todo: maybe make this more graceful.
+
+			await services.AddGameServer(storage, worldState); // todo: init state for non-development
 			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
 
 			services.Configure<HostOptions>(opts =>

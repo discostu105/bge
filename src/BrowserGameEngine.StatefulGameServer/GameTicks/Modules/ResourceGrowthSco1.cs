@@ -45,15 +45,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			switch(name) {
 				case "worker-units":
 					workerUnit = new UnitDefId(value);
-					gameDef.ValidateUnitDefId(workerUnit);
+					gameDef.ValidateUnitDefId(workerUnit, $"{Name}.{name}");
 					break;
 				case "growth-resource":
 					growthResource = new ResourceDefId(value);
-					gameDef.ValidateResourceDefId(growthResource);
+					gameDef.ValidateResourceDefId(growthResource, $"{Name}.{name}");
 					break;
 				case "constraint-resource":
 					constraintResource = new ResourceDefId(value);
-					gameDef.ValidateResourceDefId(constraintResource);
+					gameDef.ValidateResourceDefId(constraintResource, $"{Name}.{name}");
 					break;
 				default:
 					throw new InvalidGameDefException($"Property '{name}' not valid for GameTickModule '{this.Name}'.");

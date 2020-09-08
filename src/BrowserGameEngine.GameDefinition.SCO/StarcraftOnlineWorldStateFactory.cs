@@ -22,7 +22,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				players.Add(
 					new PlayerImmutable(
 						PlayerId: PlayerIdFactory.Create($"discostu#{i}"),
-						PlayerType: Id.PlayerType("terran"),
+						PlayerType: Id.PlayerType("terxran"),
 						Name: $"Commander Discostu#{i}",
 						Created: DateTime.Now,
 						State: new PlayerStateImmutable(
