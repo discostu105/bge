@@ -16,9 +16,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private void VerifyPlayer(GameDef gameDef, PlayerImmutable player) {
 			gameDef.ValidatePlayerType(player.PlayerType, $"Player '{player.PlayerId}' PlayerType");
-			player.State.Resources.Keys.ToList().ForEach(x => VerifyResource(gameDef, player.PlayerId, x));
-			player.State.Units.ForEach(x => VerifyUnit(gameDef, player, x));
-			player.State.Assets.ForEach(x => VerifyAsset(gameDef, player, x));
+			foreach (var x in player.State.Resources.Keys.ToList()) VerifyResource(gameDef, player.PlayerId, x);
+			foreach (var x in player.State.Units) VerifyUnit(gameDef, player, x);
+			foreach (var x in player.State.Assets) VerifyAsset(gameDef, player, x);
 		}
 
 		private void VerifyResource(GameDef gameDef, PlayerId playerId, ResourceDefId resourceDefId) {

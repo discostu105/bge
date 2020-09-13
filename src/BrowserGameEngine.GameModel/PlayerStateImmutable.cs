@@ -8,7 +8,7 @@ namespace BrowserGameEngine.GameModel {
 		DateTime? LastGameTickUpdate,
 		GameTick CurrentGameTick,
 		IDictionary<ResourceDefId, decimal> Resources,
-		List<AssetImmutable> Assets,
+		ISet<AssetImmutable> Assets,
 		List<UnitImmutable> Units
 	);
 }

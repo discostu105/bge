@@ -58,7 +58,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 						Resources: new Dictionary<ResourceDefId, decimal> {
 							{ Id.ResDef(resDefId), 50 }
 						},
-						Assets: new List<AssetImmutable> {
+						Assets: new HashSet<AssetImmutable> {
 							new AssetImmutable(
 								AssetDefId: Id.AssetDef(assetDefId),
 								Level: 1

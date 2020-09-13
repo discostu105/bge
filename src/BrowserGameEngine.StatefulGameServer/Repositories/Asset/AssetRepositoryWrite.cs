@@ -2,11 +2,13 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepositoryWrite {
+		private readonly ILogger<AssetRepositoryWrite> logger;
 		private readonly WorldState world;
 		private readonly AssetRepository assetRepository;
 		private readonly ResourceRepository resourceRepository;
@@ -14,13 +16,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly ActionQueueRepository actionQueueRepository;
 		private readonly GameDef gameDef;
 
-		public AssetRepositoryWrite(WorldState world
+		public AssetRepositoryWrite(ILogger<AssetRepositoryWrite> logger
+				, WorldState world
 				, AssetRepository assetRepository
 				, ResourceRepository resourceRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
 				, ActionQueueRepository actionQueueRepository
 				, GameDef gameDef
 			) {
+			this.logger = logger;
 			this.world = world;
 			this.assetRepository = assetRepository;
 			this.resourceRepository = resourceRepository;
@@ -29,7 +33,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.gameDef = gameDef;
 		}
 
-		private IList<Asset> Assets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
+		private ISet<Asset> Assets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
 
 		public void BuildAsset(BuildAssetCommand command) {
 			var assetDef = gameDef.GetAssetDef(command.AssetDefId);
@@ -46,6 +50,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
+			logger.LogDebug("Adding asset '{assetDefId}' to player '{playerId}'", assetDefId, playerId);
 			Assets(playerId).Add(new Asset {
 				AssetDefId = assetDefId,
 				Level = 1

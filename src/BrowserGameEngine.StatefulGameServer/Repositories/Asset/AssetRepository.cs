@@ -15,7 +15,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.playerRepository = playerRepository;
 		}
 
-		private IList<Asset> GetAssets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
+		private ISet<Asset> GetAssets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
 
 		// returns all assets from one player
 		public IEnumerable<AssetImmutable> Get(PlayerId playerId) {

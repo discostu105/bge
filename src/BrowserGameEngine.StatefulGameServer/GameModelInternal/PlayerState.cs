@@ -9,7 +9,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public DateTime? LastGameTickUpdate { get; set; }
 		public GameTick CurrentGameTick { get; set; }
 		public IDictionary<ResourceDefId, decimal> Resources { get; set; } = new Dictionary<ResourceDefId, decimal>();
-		public IList<Asset> Assets { get; set; } = new List<Asset>();
+		public ISet<Asset> Assets { get; set; } = new HashSet<Asset>();
 		public List<Unit> Units { get; set; } = new List<Unit>();
 
 	}
@@ -20,7 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				LastGameTickUpdate: playerState.LastGameTickUpdate,
 				CurrentGameTick: playerState.CurrentGameTick,
 				Resources: new Dictionary<ResourceDefId, decimal>(playerState.Resources),
-				Assets: playerState.Assets.Select(x => x.ToImmutable()).ToList(),
+				Assets: playerState.Assets.Select(x => x.ToImmutable()).ToHashSet(),
 				Units: playerState.Units.Select(x => x.ToImmutable()).ToList()
 			);
 		}
@@ -30,7 +30,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				LastGameTickUpdate = playerStateImmutable.LastGameTickUpdate,
 				CurrentGameTick = playerStateImmutable.CurrentGameTick,
 				Resources = new Dictionary<ResourceDefId, decimal>(playerStateImmutable.Resources),
-				Assets = playerStateImmutable.Assets.Select(x => x.ToMutable()).ToList(),
+				Assets = playerStateImmutable.Assets.Select(x => x.ToMutable()).ToHashSet(),
 				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList()
 		};
 		}

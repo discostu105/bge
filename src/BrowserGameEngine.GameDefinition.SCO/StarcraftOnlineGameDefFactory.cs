@@ -27,6 +27,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				TickDuration = TimeSpan.FromSeconds(20),
 
 				GameTickModules = new List<GameTickModuleDef> {
+					new GameTickModuleDef("actionqueue:1", new Dictionary<string, string> { }),
 					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {
 						{ "worker-units", "wbf" },
 						{ "growth-resource", "minerals" },

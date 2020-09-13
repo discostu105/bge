@@ -33,7 +33,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 							{ Id.ResDef("res1"), 50 },
 							{ Id.ResDef("res2"), 500 }
 						},
-						Assets: new List<AssetImmutable> {
+						Assets: new HashSet<AssetImmutable> {
 							new AssetImmutable(
 								AssetDefId: Id.AssetDef("asset1"),
 								Level: 1
