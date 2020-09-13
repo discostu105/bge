@@ -11,18 +11,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly AssetRepository assetRepository;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
+		private readonly ActionQueueRepository actionQueueRepository;
 		private readonly GameDef gameDef;
 
 		public AssetRepositoryWrite(WorldState world
 				, AssetRepository assetRepository
 				, ResourceRepository resourceRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
+				, ActionQueueRepository actionQueueRepository
 				, GameDef gameDef
 			) {
 			this.world = world;
 			this.assetRepository = assetRepository;
 			this.resourceRepository = resourceRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
+			this.actionQueueRepository = actionQueueRepository;
 			this.gameDef = gameDef;
 		}
 
@@ -34,11 +37,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
 			resourceRepositoryWrite.DeductCost(command.PlayerId, assetDef.Cost);
 			var dueTick = world.GetTargetGameTick(assetDef.BuildTimeTicks);
-			world.ActionQueue.AddAction(new GameAction {
-				Name = "build-asset",
+			actionQueueRepository.AddAction(new GameAction {
+				Name = AssetBuildActionConstants.Name,
 				PlayerId = command.PlayerId,
 				DueTick = dueTick,
-				Properties = new Dictionary<string, string> { { "AssetDefId", command.AssetDefId.Id } }
+				Properties = new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, command.AssetDefId.Id } }
 			});
 		}
 
@@ -50,10 +53,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ExecuteGameActions(PlayerId playerId) {
-			var actions = world.ActionQueue.GetAndRemoveDueActions(playerId, "build-asset", world.GameTickState.CurrentGameTick);
+			var actions = actionQueueRepository.GetAndRemoveDueActions(playerId, AssetBuildActionConstants.Name, world.GameTickState.CurrentGameTick);
 			foreach(var action in actions) {
-				AddAsset(action.PlayerId, Id.AssetDef(action.Properties["AssetDefId"]));
+				AddAsset(action.PlayerId, Id.AssetDef(action.Properties[AssetBuildActionConstants.AssetDefId]));
 			}
 		}
+	}
+
+	internal static class AssetBuildActionConstants {
+		internal const string Name = "build-asset";
+		internal const string AssetDefId = "AssetDefId";
 	}
 }

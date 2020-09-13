@@ -6,6 +6,7 @@ using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,105 +15,104 @@ using System.Threading.Tasks;
 using Xunit;
 
 namespace BrowserGameEngine.StatefulGameServer.Test {
+	internal class TestGame {
+		public NullLoggerFactory LoggerFactory { get; private set; }
+		public WorldState World { get; private set; }
+		public GameDef GameDef { get; private set; }
+		public PlayerRepository PlayerRepository { get; private set; }
+		public PlayerRepositoryWrite PlayerRepositoryWrite { get; private set; }
+		public ResourceRepository ResourceRepository { get; private set; }
+		public ResourceRepositoryWrite ResourceRepositoryWrite { get; private set; }
+		public AssetRepository AssetRepository { get; private set; }
+		public ActionQueueRepository ActionQueueRepository { get; private set; }
+		public AssetRepositoryWrite AssetRepositoryWrite { get; private set; }
+		public UnitRepository UnitRepository { get; private set; }
+		public TestWorldStateFactory WorldStateFactory { get; private set; }
+		public GameTickModuleRegistry GameTickModuleRegistry { get; private set; }
+		public GameTickEngine TickEngine { get; private set; }
+
+		public TestGame() {
+			LoggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();
+			WorldStateFactory = new TestWorldStateFactory();
+			World = WorldStateFactory.CreateDevWorldState().ToMutable();
+			GameDef = new TestGameDefFactory().CreateGameDef();
+			PlayerRepository = new PlayerRepository(World);
+			PlayerRepositoryWrite = new PlayerRepositoryWrite(World);
+			ResourceRepository = new ResourceRepository(World);
+			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository);
+			AssetRepository = new AssetRepository(World, PlayerRepository);
+			ActionQueueRepository = new ActionQueueRepository(World);
+			AssetRepositoryWrite = new AssetRepositoryWrite(World, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
+			UnitRepository = new UnitRepository(World);
+
+			var services = new ServiceCollection();
+			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
+			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, AssetRepository, UnitRepository));
+			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
+			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), World, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite);
+		}
+	}
+
 	public class AssetsTest {
 		[Fact]
 		public void HasAsset() {
-			var factory = new TestWorldStateFactory();
-			var world = factory.CreateDevWorldState().ToMutable();
-			var gameDef = new TestGameDefFactory().CreateGameDef();
-			var playerRepostiroy = new PlayerRepository(world);
-			var assetRepository = new AssetRepository(world, playerRepostiroy);
+			var g = new TestGame();
 
-			Assert.True(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset1")));
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset3")));
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset99")));
-			Assert.Equal(1, assetRepository.Get(factory.Player1).Count());
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset1")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset3")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset99")));
+			Assert.Equal(1, g.AssetRepository.Get(g.WorldStateFactory.Player1).Count());
 
-			Assert.True(assetRepository.PrerequisitesMet(factory.Player1, gameDef.GetAssetDef(Id.AssetDef("asset1"))));
-			Assert.True(assetRepository.PrerequisitesMet(factory.Player1, gameDef.GetAssetDef(Id.AssetDef("asset2"))));
-			Assert.False(assetRepository.PrerequisitesMet(factory.Player1, gameDef.GetAssetDef(Id.AssetDef("asset3"))));
+			Assert.True(g.AssetRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetAssetDef(Id.AssetDef("asset1"))));
+			Assert.True(g.AssetRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetAssetDef(Id.AssetDef("asset2"))));
+			Assert.False(g.AssetRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetAssetDef(Id.AssetDef("asset3"))));
 		}
 
 		[Fact]
 		public void BuildAsset() {
-			var loggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();
-			var factory = new TestWorldStateFactory();
-			var world = factory.CreateDevWorldState().ToMutable();
-			var gameDef = new TestGameDefFactory().CreateGameDef();
-			var playerRepository = new PlayerRepository(world);
-			var playerRepositoryWrite = new PlayerRepositoryWrite(world);
-			var resourceRepository = new ResourceRepository(world);
-			var resourceRepositoryWrite = new ResourceRepositoryWrite(world, resourceRepository);
-			var assetRepository = new AssetRepository(world, playerRepository);
-			var assetRepositoryWrite = new AssetRepositoryWrite(world, assetRepository, resourceRepository, resourceRepositoryWrite, gameDef);
-			var unitRepository = new UnitRepository(world);
-			var services = new ServiceCollection();
-			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(assetRepositoryWrite));
-			//services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(loggerFactory.CreateLogger<ResourceGrowthSco>(), gameDef, resourceRepository, resourceRepositoryWrite, assetRepository, unitRepository));
-			var gameTickModuleRegistry = new GameTickModuleRegistry(loggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), gameDef);
-			var tickEngine = new GameTickEngine(loggerFactory.CreateLogger<GameTickEngine>(), world, gameDef, gameTickModuleRegistry, playerRepositoryWrite);
+			var g = new TestGame();
 
-			Assert.True(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset1")));
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset1")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 
-			resourceRepositoryWrite.AddResources(factory.Player1, Id.ResDef("res1"), 1000);
-			resourceRepositoryWrite.AddResources(factory.Player1, Id.ResDef("res2"), 1000);
-			assetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(factory.Player1, Id.AssetDef("asset2")));
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res1"), 1000);
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res2"), 1000);
+			g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 
-			tickEngine.IncrementWorldTick(9);
-			tickEngine.CheckAllTicks();
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
+			g.TickEngine.IncrementWorldTick(9);
+			g.TickEngine.CheckAllTicks();
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 
-			tickEngine.IncrementWorldTick(1);
-			tickEngine.CheckAllTicks();
-			Assert.True(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
+			g.TickEngine.IncrementWorldTick(1);
+			g.TickEngine.CheckAllTicks();
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 		}
 
 		[Fact]
 		public void BuildAssetNoPrerequisites() {
-			var loggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();
-			var factory = new TestWorldStateFactory();
-			var world = factory.CreateDevWorldState().ToMutable();
-			var gameDef = new TestGameDefFactory().CreateGameDef();
-			var playerRepository = new PlayerRepository(world);
-			var playerRepositoryWrite = new PlayerRepositoryWrite(world);
-			var resourceRepository = new ResourceRepository(world);
-			var resourceRepositoryWrite = new ResourceRepositoryWrite(world, resourceRepository);
-			var assetRepository = new AssetRepository(world, playerRepository);
-			var assetRepositoryWrite = new AssetRepositoryWrite(world, assetRepository, resourceRepository, resourceRepositoryWrite, gameDef);
-			var unitRepository = new UnitRepository(world);
+			var g = new TestGame();
 
-			Assert.True(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset1")));
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset1")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 
-			resourceRepositoryWrite.AddResources(factory.Player1, Id.ResDef("res1"), 1000);
-			resourceRepositoryWrite.AddResources(factory.Player1, Id.ResDef("res2"), 1000);
-			Assert.Throws<PrerequisitesNotMetException>(() => assetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(factory.Player1, Id.AssetDef("asset3"))));
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res1"), 1000);
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res2"), 1000);
+			Assert.Throws<PrerequisitesNotMetException>(() => g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset3"))));
 		}
 
 		[Fact]
 		public void BuildAssetCannotAfford() {
-			var loggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();
-			var factory = new TestWorldStateFactory();
-			var world = factory.CreateDevWorldState().ToMutable();
-			var gameDef = new TestGameDefFactory().CreateGameDef();
-			var playerRepository = new PlayerRepository(world);
-			var playerRepositoryWrite = new PlayerRepositoryWrite(world);
-			var resourceRepository = new ResourceRepository(world);
-			var resourceRepositoryWrite = new ResourceRepositoryWrite(world, resourceRepository);
-			var assetRepository = new AssetRepository(world, playerRepository);
-			var assetRepositoryWrite = new AssetRepositoryWrite(world, assetRepository, resourceRepository, resourceRepositoryWrite, gameDef);
-			var unitRepository = new UnitRepository(world);
+			var g = new TestGame();
 
-			Assert.True(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset1")));
-			Assert.False(assetRepository.HasAsset(factory.Player1, Id.AssetDef("asset2")));
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset1")));
+			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 
-			resourceRepositoryWrite.AddResources(factory.Player1, Id.ResDef("res1"), 1);
-			resourceRepositoryWrite.AddResources(factory.Player1, Id.ResDef("res2"), 1);
-			Assert.Throws<CannotAffordException>(() => assetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(factory.Player1, Id.AssetDef("asset2"))));
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res1"), 1);
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res2"), 1);
+			Assert.Throws<CannotAffordException>(() => g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset2"))));
 		}
 	}
 }

@@ -21,6 +21,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<AssetRepositoryWrite>();
 			services.AddSingleton<UnitRepository>();
 			services.AddSingleton<UnitRepositoryWrite>();
+			services.AddSingleton<ActionQueueRepository>();
 
 			services.AddSingleton<IGameTickModule, UnitReturn>();
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();
