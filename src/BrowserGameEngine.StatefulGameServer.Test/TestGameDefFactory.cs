@@ -26,6 +26,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				TickDuration = TimeSpan.FromSeconds(20),
 
 				GameTickModules = new List<GameTickModuleDef> {
+					new GameTickModuleDef("actionqueue:1", new Dictionary<string, string> { }),
 					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {
 						{ "worker-units", "unit1" },
 						{ "growth-resource", "res1" },
@@ -53,7 +54,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Attack = 0,
 						Defense = 0,
 						Hitpoints = 500,
-						BuildTimeTicks = new GameTick( 10),
+						BuildTimeTicks = new GameTick(10),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1") }
 					}
 					,
@@ -65,7 +66,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Attack = 0,
 						Defense = 0,
 						Hitpoints = 500,
-						BuildTimeTicks = new GameTick( 10),
+						BuildTimeTicks = new GameTick(10),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1"), Id.AssetDef("asset2") }
 					}
 				},

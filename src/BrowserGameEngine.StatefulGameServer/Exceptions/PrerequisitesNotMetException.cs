@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	[Serializable]
-	internal class PrerequisitesNotMetException : Exception {
+	public class PrerequisitesNotMetException : Exception {
 		public PrerequisitesNotMetException() {
 		}
 

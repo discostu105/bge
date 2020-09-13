@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	[Serializable]
-	internal class CannotAffordException : Exception {
+	public class CannotAffordException : Exception {
 		private Cost cost;
 
 		public CannotAffordException() {

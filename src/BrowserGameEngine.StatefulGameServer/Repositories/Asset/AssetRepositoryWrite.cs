@@ -33,17 +33,27 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
 			if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
 			resourceRepositoryWrite.DeductCost(command.PlayerId, assetDef.Cost);
-			AddAsset(command.PlayerId, command.AssetDefId, assetDef.BuildTimeTicks);
+			var dueTick = world.GetTargetGameTick(assetDef.BuildTimeTicks);
+			world.ActionQueue.AddAction(new GameAction {
+				Name = "build-asset",
+				PlayerId = command.PlayerId,
+				DueTick = dueTick,
+				Properties = new Dictionary<string, string> { { "AssetDefId", command.AssetDefId.Id } }
+			});
 		}
 
-		private void AddAsset(PlayerId playerId, AssetDefId assetDefId, GameTick gameTicks) {
-			var finishedGameTick = world.GetTargetGameTick(gameTicks);
-
+		public void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
 			Assets(playerId).Add(new Asset {
 				AssetDefId = assetDefId,
-				Level = 1,
-				FinishedGameTick = finishedGameTick
+				Level = 1
 			});
+		}
+
+		public void ExecuteGameActions(PlayerId playerId) {
+			var actions = world.ActionQueue.GetAndRemoveDueActions(playerId, "build-asset", world.GameTickState.CurrentGameTick);
+			foreach(var action in actions) {
+				AddAsset(action.PlayerId, Id.AssetDef(action.Properties["AssetDefId"]));
+			}
 		}
 	}
 }

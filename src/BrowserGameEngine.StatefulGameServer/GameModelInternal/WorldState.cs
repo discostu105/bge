@@ -13,6 +13,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		internal GameTickState GameTickState { get; set; } = new GameTickState();
 
+		internal ActionQueue ActionQueue { get; set; } = new ActionQueue();
+
 		// throws if player not found
 		internal Player GetPlayer(PlayerId playerId) {
 			if (Players.TryGetValue(playerId, out Player? player)) return player;
@@ -41,6 +43,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new WorldState {
 				Players = worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable()),
 				GameTickState = worldStateImmutable.GameTickState.ToMutable()
+
 			};
 		}
 

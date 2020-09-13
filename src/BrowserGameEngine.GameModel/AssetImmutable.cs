@@ -6,7 +6,6 @@ namespace BrowserGameEngine.GameModel {
 	// e.g. buildings or upgrades
 	public record AssetImmutable(
 		AssetDefId AssetDefId,
-		int Level,
-		GameTick FinishedGameTick
+		int Level
 	);
 }

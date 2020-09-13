@@ -61,8 +61,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 						Assets: new List<AssetImmutable> {
 							new AssetImmutable(
 								AssetDefId: Id.AssetDef(assetDefId),
-								Level: 1,
-								FinishedGameTick: new GameTick(0)
+								Level: 1
 							)
 						},
 						Units: new List<UnitImmutable> {

@@ -12,10 +12,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 	/// SCO: based on WBF's and existing "land", the resource "minerals" is increased.
 	///      in SCO, there was also an assignement of WBFs to minerals and gas.
 	/// </summary>
-	public class ResourceGrowthSco1 : IGameTickModule {
+	public class ResourceGrowthSco : IGameTickModule {
 		public string Name => "resource-growth-sco:1";
 
-		private readonly ILogger<ResourceGrowthSco1> logger;
+		private readonly ILogger<ResourceGrowthSco> logger;
 		private readonly GameDef gameDef;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
@@ -26,7 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private ResourceDefId growthResource;
 		private ResourceDefId constraintResource;
 
-		public ResourceGrowthSco1(ILogger<ResourceGrowthSco1> logger
+		public ResourceGrowthSco(ILogger<ResourceGrowthSco> logger
 				, GameDef gameDef
 				, ResourceRepository resourceRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
