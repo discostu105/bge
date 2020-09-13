@@ -33,7 +33,7 @@ namespace BrowserGameEngine.FrontendServer {
 			try {
 				var count = Interlocked.Increment(ref executionCount);
 				logger.LogInformation("GameTickTimer #{Count}", count);
-				while (!gameTickEngine.CheckTick()) { } // repeat until all players are up to date
+				gameTickEngine.CheckAllTicks();
 			} finally {
 				Interlocked.Decrement(ref isactive);
 			}

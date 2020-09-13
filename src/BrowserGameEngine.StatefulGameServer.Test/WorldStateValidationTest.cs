@@ -75,7 +75,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 					)
 				)
 			);
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick, DateTime.Now);
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), new GameTickStateImmutable(gameTick, DateTime.Now));
 		}
 	}
 }

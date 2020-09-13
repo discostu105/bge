@@ -8,6 +8,9 @@ using System.Text;
 
 namespace BrowserGameEngine.GameDefinition.SCO {
 	public class TestWorldStateFactory : IWorldStateFactory {
+
+		public PlayerId Player1 { get => PlayerIdFactory.Create($"player1"); }
+
 		public WorldStateImmutable CreateInitialWorldState() {
 			throw new NotImplementedException();
 		}
@@ -35,11 +38,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 								AssetDefId: Id.AssetDef("asset1"),
 								Level: 1,
 								FinishedGameTick: new GameTick(0)
-							),
-							new AssetImmutable(
-								AssetDefId: Id.AssetDef("asset2"),
-								Level: 1,
-								FinishedGameTick: new GameTick(0)
 							)
 						},
 						Units: new List<UnitImmutable> {
@@ -58,7 +56,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				)
 			);
 
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick, DateTime.Now);
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), new GameTickStateImmutable(gameTick, DateTime.Now));
 		}
 	}
 }

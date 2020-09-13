@@ -19,7 +19,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
 
-		internal void DeductCost(PlayerId playerId, Cost cost) {
+		public void DeductCost(PlayerId playerId, Cost cost) {
 			if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
 			var playerRes = Res(playerId);
 			foreach (var res in cost.Resources) {
@@ -31,7 +31,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
-		internal decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
+		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
 			var playerRes = Res(playerId);
 			if (!playerRes.ContainsKey(resourceDefId)) {
 				playerRes.Add(resourceDefId, 0);

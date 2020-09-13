@@ -17,13 +17,16 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 				, GameDef gameDef
 			) {
 			this.logger = logger;
-			Discover(serviceProvider, gameDef);
+			DiscoverAndRegister(gameDef, serviceProvider);
 		}
 
-		private void Discover(IServiceProvider serviceProvider, GameDef gameDef) {
-			var gameTickModules = serviceProvider.GetServices<IGameTickModule>();
+		private void DiscoverAndRegister(GameDef gameDef, IServiceProvider serviceProvider) {
+			RegisterModules(gameDef, serviceProvider.GetServices<IGameTickModule>());
+		}
+
+		private void RegisterModules(GameDef gameDef, IEnumerable<IGameTickModule> gameTickModules) {
 			var gameTickModuleDefs = gameDef.GameTickModules;
-			foreach(var moduleDef in gameTickModuleDefs) {
+			foreach (var moduleDef in gameTickModuleDefs) {
 				var module = gameTickModules.SingleOrDefault(x => x.Name == moduleDef.Name);
 				if (module == null) throw new InvalidGameDefException($"GameTickModule with name '{moduleDef.Name}' is not registered. Check name and dependency injection.");
 				RegisterModule(module, moduleDef);

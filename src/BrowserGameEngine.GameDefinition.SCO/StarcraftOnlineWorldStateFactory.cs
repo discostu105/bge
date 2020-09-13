@@ -22,7 +22,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				players.Add(
 					new PlayerImmutable(
 						PlayerId: PlayerIdFactory.Create($"discostu#{i}"),
-						PlayerType: Id.PlayerType("terxran"),
+						PlayerType: Id.PlayerType("terran"),
 						Name: $"Commander Discostu#{i}",
 						Created: DateTime.Now,
 						State: new PlayerStateImmutable(
@@ -67,7 +67,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				);
 			}
 
-			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), gameTick, DateTime.Now - TimeSpan.FromMinutes(10));
+			return new WorldStateImmutable(players.ToDictionary(x => x.PlayerId), new GameTickStateImmutable(gameTick, DateTime.Now - TimeSpan.FromMinutes(10)));
 		}
 	}
 }

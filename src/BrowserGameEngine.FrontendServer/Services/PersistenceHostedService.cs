@@ -28,7 +28,7 @@ namespace BrowserGameEngine.FrontendServer {
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken) {
-			timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+			timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 			return Task.CompletedTask;
 		}
 

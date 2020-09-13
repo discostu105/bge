@@ -36,6 +36,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 			this.playerRepositoryWrite = playerRepositoryWrite;
 		}
 
+		public void CheckAllTicks() {
+			while (!CheckTick()) { } // repeat until all players are up to date
+		}
+
 		/// <summary>
 		/// Checks if a new tick shall be performed
 		/// </summary>
@@ -49,7 +53,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		}
 
 		private bool IsTickDue() {
-			var diff = DateTime.Now - worldState.LastUpdate;
+			var diff = DateTime.Now - worldState.GameTickState.LastUpdate;
 			return diff > gameDef.TickDuration;
 		}
 
@@ -59,7 +63,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 
 		private bool UpdatePlayers() {
 			var stopwatch = Stopwatch.StartNew();
-			var currentTick = worldState.CurrentGameTick;
+			var currentTick = worldState.GameTickState.CurrentGameTick;
 			var playerIds = worldState.GetPlayersForGameTick();
 			if (playerIds.Length == 0) return true;
 			var allPlayersUpToDate = true;
@@ -76,12 +80,23 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 			return allPlayersUpToDate;
 		}
 
-		private GameTick IncrementWorldTick() {
-			var currentTick = worldState.CurrentGameTick;
-			worldState.CurrentGameTick = currentTick with { Tick = currentTick.Tick + 1 };
-			worldState.LastUpdate += gameDef.TickDuration;
-			logger.LogInformation("Incremented World Tick to #{CurrentTick}. LastUpdate: {LastUpdate}", worldState.CurrentGameTick.Tick, worldState.LastUpdate);
-			return worldState.CurrentGameTick;
+		public GameTick IncrementWorldTick(int count = 1) {
+			for (int i = 0; i < count; i++) {
+				var currentTick = worldState.GameTickState.CurrentGameTick;
+				worldState.GameTickState.CurrentGameTick = currentTick with { Tick = currentTick.Tick + 1 };
+				worldState.GameTickState.LastUpdate += gameDef.TickDuration;
+				logger.LogInformation("Incremented World Tick to #{CurrentTick}. LastUpdate: {LastUpdate}", worldState.GameTickState.CurrentGameTick.Tick, worldState.GameTickState.LastUpdate);
+			}
+			return worldState.GameTickState.CurrentGameTick;
+		}
+
+		/// <summary>
+		/// For unit testing
+		/// </summary>
+		public void DecrementWorldTick() {
+			var currentTick = worldState.GameTickState.CurrentGameTick;
+			worldState.GameTickState.CurrentGameTick = currentTick with { Tick = currentTick.Tick - 1 };
+			worldState.GameTickState.LastUpdate -= gameDef.TickDuration;
 		}
 	}
 }

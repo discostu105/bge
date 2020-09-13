@@ -17,14 +17,21 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 
 				Resources = new List<ResourceDef> {
 					new ResourceDef(Id.ResDef("res1"), "res1"),
-					new ResourceDef(Id.ResDef("res2"), "res2")
+					new ResourceDef(Id.ResDef("res2"), "res2"),
+					new ResourceDef(Id.ResDef("res3"), "res3")
 				},
 
 				ScoreResource = Id.ResDef("res1"),
 
 				TickDuration = TimeSpan.FromSeconds(20),
 
-				GameTickModules = new List<GameTickModuleDef> { },
+				GameTickModules = new List<GameTickModuleDef> {
+					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {
+						{ "worker-units", "unit1" },
+						{ "growth-resource", "res1" },
+						{ "constraint-resource", "res2" },
+					})
+				},
 
 				Assets = new List<AssetDef> {
 					new AssetDef {
@@ -49,6 +56,18 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						BuildTimeTicks = new GameTick( 10),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1") }
 					}
+					,
+					new AssetDef {
+						Id = Id.AssetDef("asset3"),
+						Name = "asset3",
+						PlayerTypeRestriction = Id.PlayerType("type1"),
+						Cost = CostHelper.Create(("res1", 1500), ("res2", 3000)),
+						Attack = 0,
+						Defense = 0,
+						Hitpoints = 500,
+						BuildTimeTicks = new GameTick( 10),
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1"), Id.AssetDef("asset2") }
+					}
 				},
 
 				Units = new List<UnitDef> {
@@ -72,6 +91,17 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Hitpoints = 60,
 						Speed = 7,
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1") }
+					},
+					new UnitDef {
+						Id = Id.UnitDef("unit3"),
+						Name = "unit3",
+						PlayerTypeRestriction = Id.PlayerType("type2"),
+						Cost = CostHelper.Create(("res2", 45), ("res3", 45)),
+						Attack = 2,
+						Defense = 4,
+						Hitpoints = 60,
+						Speed = 7,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1"), Id.AssetDef("asset2") }
 					}
 				}
 			};

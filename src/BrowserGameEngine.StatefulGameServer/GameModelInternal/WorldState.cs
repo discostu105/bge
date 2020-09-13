@@ -9,12 +9,9 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
-		private readonly GameDef gameDef;
-
 		internal IDictionary<PlayerId, Player> Players { get; set; } = new Dictionary<PlayerId, Player>();
 
-		internal GameTick CurrentGameTick { get; set; }
-		internal DateTime LastUpdate { get; set; }
+		internal GameTickState GameTickState { get; set; } = new GameTickState();
 
 		// throws if player not found
 		internal Player GetPlayer(PlayerId playerId) {
@@ -24,11 +21,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		internal PlayerId[] GetPlayersForGameTick() {
 			// TODO read lock players
-			return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
+			return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.GameTickState.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
 		}
 
 		internal GameTick GetTargetGameTick(GameTick tickToAdd) {
-			return CurrentGameTick with { Tick = CurrentGameTick.Tick + tickToAdd.Tick };
+			return GameTickState.CurrentGameTick with { Tick = GameTickState.CurrentGameTick.Tick + tickToAdd.Tick };
 		}
 	}
 
@@ -36,16 +33,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public static WorldStateImmutable ToImmutable(this WorldState worldState) {
 			return new WorldStateImmutable(
 				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
-				CurrentGameTick: worldState.CurrentGameTick,
-				LastUpdate: worldState.LastUpdate
+				GameTickState: worldState.GameTickState.ToImmutable()
 			);
 		}
 
 		public static WorldState ToMutable(this WorldStateImmutable worldStateImmutable) {
 			return new WorldState {
 				Players = worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable()),
-				CurrentGameTick = worldStateImmutable.CurrentGameTick,
-				LastUpdate = worldStateImmutable.LastUpdate
+				GameTickState = worldStateImmutable.GameTickState.ToMutable()
 			};
 		}
 
