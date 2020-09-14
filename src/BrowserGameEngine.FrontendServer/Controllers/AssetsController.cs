@@ -60,26 +60,13 @@ namespace BrowserGameEngine.Server.Controllers {
 		}
 
 		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetImmutable> playerAssets) {
-			var playerAsset = playerAssets.SingleOrDefault(x => x.AssetDefId == assetDef.Id);
-
-			if (playerAsset == null) {
-				// not built yet
-				return new AssetViewModel {
-					Definition = AssetDefinitionViewModel.Create(assetDef),
-					Count = 0,
-					PrerequisitesMet = assetRepository.PrerequisitesMet(currentUserContext.PlayerId, assetDef),
-					Cost = CostViewModel.Create(assetDef.Cost)
-				};
-			} else {
-				// already built
-				return new AssetViewModel {
-					Definition = AssetDefinitionViewModel.Create(assetDef),
-					Count = 1,
-					Level = playerAsset.Level,
-					PrerequisitesMet = assetRepository.PrerequisitesMet(currentUserContext.PlayerId, assetDef),
-					Cost = CostViewModel.Create(assetDef.Cost)
-				};
-			}
+			return new AssetViewModel {
+				Definition = AssetDefinitionViewModel.Create(assetDef),
+				Built = assetRepository.HasAsset(currentUserContext.PlayerId, assetDef.Id),
+				PrerequisitesMet = assetRepository.PrerequisitesMet(currentUserContext.PlayerId, assetDef),
+				AlreadyQueued = assetRepository.IsBuildQueued(currentUserContext.PlayerId, assetDef.Id),
+				Cost = CostViewModel.Create(assetDef.Cost)
+			};
 		}
 	}
 }

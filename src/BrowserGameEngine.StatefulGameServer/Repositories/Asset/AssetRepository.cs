@@ -33,8 +33,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return GetAssets(playerId).Any(x => x.AssetDefId.Equals(assetDefId));
 		}
 
-		public bool IsBuildQueued(BuildAssetCommand command) {
-			return actionQueueRepository.IsQueued(command.PlayerId, AssetBuildActionConstants.Name, new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, command.AssetDefId.Id } });
+		public bool IsBuildQueued(PlayerId playerId, AssetDefId assetDefId) {
+			return actionQueueRepository.IsQueued(playerId, AssetBuildActionConstants.Name, new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, assetDefId.Id } });
 		}
 
 		public bool PrerequisitesMet(PlayerId playerId, AssetDef assetDef) {

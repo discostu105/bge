@@ -29,7 +29,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private void DeductResourceUnchecked(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
-			if (value <= 0) throw new InvalidGameDefException("Resource cost cannot be zero");
+			if (value < 0) throw new InvalidGameDefException("Resource cost cannot be negative.");
 			if (!Res(playerId).ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value));
 
 			// deduct cost

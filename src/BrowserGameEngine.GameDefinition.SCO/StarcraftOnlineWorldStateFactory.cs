@@ -67,7 +67,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 
 			return new WorldStateImmutable(
 				players.ToDictionary(x => x.PlayerId), 
-				new GameTickStateImmutable(gameTick, DateTime.Now - TimeSpan.FromMinutes(10)),
+				new GameTickStateImmutable(gameTick, DateTime.Now - TimeSpan.FromMinutes(1)),
 				new List<GameActionImmutable>()
 			);
 		}
