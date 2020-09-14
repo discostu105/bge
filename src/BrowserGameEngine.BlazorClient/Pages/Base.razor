@@ -33,6 +33,9 @@
                             <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
                                 Bauen
                             </button>
+                            @if (errors.ContainsKey(item.Definition.Id)) {
+                                <span class="error">@errors[item.Definition.Id]</span>
+                            }
                         </td>
                     </tr>
                 }
@@ -43,14 +46,20 @@
 
 @code {
     private AssetsViewModel? assets;
+    private IDictionary<string, string> errors = new Dictionary<string, string>();
 
     protected override async Task OnInitializedAsync() {
         await Update();
     }
 
-    private async Task BuildAsset(AssetViewModel assetViewModel) {
-        await Http.PostAsJsonAsync($"api/assets/build?assetDefId={assetViewModel.Definition.Id}", "");
-        await Update();
+    private async Task BuildAsset(AssetViewModel asset) {
+        var response = await Http.PostAsJsonAsync($"api/assets/build?assetDefId={asset.Definition.Id}", "");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            errors[asset.Definition.Id] = error;
+        }
     }
 
     private async Task Update() {

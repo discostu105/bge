@@ -23,7 +23,7 @@ namespace BrowserGameEngine.FrontendServer {
 
 		public Task StartAsync(CancellationToken stoppingToken) {
 			logger.LogInformation("Timed Hosted Service running.");
-			timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+			timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 			return Task.CompletedTask;
 		}
 

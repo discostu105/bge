@@ -50,8 +50,19 @@ namespace BrowserGameEngine.Server.Controllers {
 		}
 
 		[HttpPost]
-		public async Task Build([FromQuery] string assetDefId) {
-			assetRepositoryWrite.BuildAsset(new BuildAssetCommand(currentUserContext.PlayerId, Id.AssetDef(assetDefId)));
+		public async Task<ActionResult> Build([FromQuery] string assetDefId) {
+			try {
+				assetRepositoryWrite.BuildAsset(new BuildAssetCommand(currentUserContext.PlayerId, Id.AssetDef(assetDefId)));
+				return Ok();
+			} catch (InvalidGameDefException e) {
+				return BadRequest(e.Message);
+			} catch (CannotAffordException e) {
+				return BadRequest(e.Message);
+			} catch (AssetAlreadyBuiltException e) {
+				return BadRequest(e.Message);
+			} catch (AssetAlreadyQueuedException e) {
+				return BadRequest(e.Message);
+			}
 		}
 
 		[HttpPost]
