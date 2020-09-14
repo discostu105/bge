@@ -21,20 +21,20 @@ namespace BrowserGameEngine.GameDefinition {
 			return gameDef.Assets.SingleOrDefault(x => x.Id.Equals(assetDefId));
 		}
 
+		public static UnitDef? GetUnitDef(this GameDef gameDef, UnitDefId unitDefId) {
+			return gameDef.Units.SingleOrDefault(x => x.Id.Equals(unitDefId));
+		}
+
+		public static ResourceDef? GetResourceDef(this GameDef gameDef, ResourceDefId resourceDefId) {
+			return gameDef.Resources.SingleOrDefault(x => x.Id.Equals(resourceDefId));
+		}
+
 		public static IEnumerable<AssetDef> GetAssetsByPlayerType(this GameDef gameDef, PlayerTypeDefId playerTypeId) {
 			return gameDef.Assets.Where(x => x.PlayerTypeRestriction.Equals(playerTypeId));
 		}
 
-		public static UnitDef? GetUnit(this GameDef gameDef, UnitDefId unitDefId) {
-			return gameDef.Units.SingleOrDefault(x => x.Id.Equals(unitDefId));
-		}
-
 		public static IEnumerable<UnitDef> GetUnitsByPlayerType(this GameDef gameDef, PlayerTypeDefId playerTypeId) {
 			return gameDef.Units.Where(x => x.PlayerTypeRestriction.Equals(playerTypeId));
-		}
-
-		public static ResourceDef? GetResource(this GameDef gameDef, ResourceDefId resourceDefId) {
-			return gameDef.Resources.SingleOrDefault(x => x.Id.Equals(resourceDefId));
 		}
 
 		public static void ValidateUnitDefId(this GameDef gameDef, UnitDefId unitDefId, string hint) {

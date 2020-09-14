@@ -23,12 +23,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
 			var playerRes = Res(playerId);
 			foreach (var res in cost.Resources) {
-				if (res.Value <= 0) throw new InvalidGameDefException("Resource cost cannot be zero");
-				if (!playerRes.ContainsKey(res.Key)) throw new CannotAffordException(cost);
-
-				// deduct cost
-				playerRes[res.Key] -= res.Value;
+				DeductCost(playerId, res.Key, res.Value);
 			}
+		}
+
+		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
+			if (value <= 0) throw new InvalidGameDefException("Resource cost cannot be zero");
+			if (!Res(playerId).ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value));
+
+			// deduct cost
+			Res(playerId)[resourceDefId] -= value;
 		}
 
 		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {

@@ -35,11 +35,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private ISet<Asset> Assets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
 
+		/// <summary>
+		/// Building assets takes a number of gameticks until finished.
+		/// </summary>
 		public void BuildAsset(BuildAssetCommand command) {
 			var assetDef = gameDef.GetAssetDef(command.AssetDefId);
 			if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
 			if (assetRepository.HasAsset(command.PlayerId, assetDef.Id)) throw new AssetAlreadyBuiltException(assetDef.Id);
-			if (actionQueueRepository.HasAction(command.PlayerId, AssetBuildActionConstants.Name, new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, assetDef.Id.Id } })) throw new AssetAlreadyQueuedException(assetDef.Id);
+			if (assetRepository.IsBuildQueued(command)) throw new AssetAlreadyQueuedException(assetDef.Id);
 			if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
 			resourceRepositoryWrite.DeductCost(command.PlayerId, assetDef.Cost);
 			var dueTick = world.GetTargetGameTick(assetDef.BuildTimeTicks);
@@ -51,7 +54,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			});
 		}
 
-		public void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
+		private void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
 			logger.LogDebug("Adding asset '{assetDefId}' to player '{playerId}'", assetDefId, playerId);
 			Assets(playerId).Add(new Asset {
 				AssetDefId = assetDefId,

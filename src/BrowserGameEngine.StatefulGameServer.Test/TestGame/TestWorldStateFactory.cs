@@ -30,8 +30,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						LastGameTickUpdate: DateTime.Now,
 						CurrentGameTick: gameTick,
 						Resources: new Dictionary<ResourceDefId, decimal> {
-							{ Id.ResDef("res1"), 50 },
-							{ Id.ResDef("res2"), 500 }
+							{ Id.ResDef("res1"), 1000 },
+							{ Id.ResDef("res2"), 2000 }
 						},
 						Assets: new HashSet<AssetImmutable> {
 							new AssetImmutable(
@@ -44,6 +44,11 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 								UnitId: Id.NewUnitId(),
 								UnitDefId: Id.UnitDef("unit1"),
 								Count: 10
+							),
+							new UnitImmutable (
+								UnitId: Id.NewUnitId(),
+								UnitDefId: Id.UnitDef("unit1"),
+								Count: 5
 							),
 							new UnitImmutable (
 								UnitId: Id.NewUnitId(),

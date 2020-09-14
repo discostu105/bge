@@ -19,11 +19,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var playerRes = Res(playerId);
 			foreach(var res in cost.Resources) {
 				if (res.Value <= 0) throw new InvalidGameDefException("Resource cost cannot be zero");
-				if (playerRes.TryGetValue(res.Key, out var value)) {
-					if (value < res.Value) return false; // to little resources
-				} else return false; // no resources at all
+				if (GetAmount(playerId, res.Key) < res.Value) return false; // to little resources
 			}
 			return true; // enough resources
+		}
+
+		public decimal GetAmount(PlayerId playerId, ResourceDefId resourceDefId) {
+			if (Res(playerId).TryGetValue(resourceDefId, out var value)) {
+				return value;
+			}
+			return 0;
 		}
 	}
 }

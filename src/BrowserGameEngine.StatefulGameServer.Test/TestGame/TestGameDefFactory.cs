@@ -96,13 +96,24 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					new UnitDef {
 						Id = Id.UnitDef("unit3"),
 						Name = "unit3",
-						PlayerTypeRestriction = Id.PlayerType("type2"),
+						PlayerTypeRestriction = Id.PlayerType("type1"),
 						Cost = CostHelper.Create(("res2", 45), ("res3", 45)),
 						Attack = 2,
 						Defense = 4,
 						Hitpoints = 60,
 						Speed = 7,
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1"), Id.AssetDef("asset2") }
+					},
+					new UnitDef {
+						Id = Id.UnitDef("unit4"),
+						Name = "unit4",
+						PlayerTypeRestriction = Id.PlayerType("type2"),
+						Cost = CostHelper.Create(("res2", 45), ("res3", 45)),
+						Attack = 2,
+						Defense = 4,
+						Hitpoints = 60,
+						Speed = 7,
+						Prerequisites = new List<AssetDefId> { }
 					}
 				}
 			};

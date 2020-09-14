@@ -24,7 +24,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 
 				ScoreResource = Id.ResDef("land"),
 
-				TickDuration = TimeSpan.FromSeconds(20),
+				TickDuration = TimeSpan.FromSeconds(1),
 
 				GameTickModules = new List<GameTickModuleDef> {
 					new GameTickModuleDef("actionqueue:1", new Dictionary<string, string> { }),

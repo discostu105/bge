@@ -28,7 +28,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return actions;
 		}
 
-		internal bool HasAction(PlayerId playerId, string name, IDictionary<string, string> properties) {
+		internal bool IsQueued(PlayerId playerId, string name, IDictionary<string, string> properties) {
 			return GetActions(playerId).Any(x => x.Name == name && MatchesProperties(x.Properties, properties));
 		}
 

@@ -4,16 +4,22 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepository {
 		private readonly WorldState world;
 		private readonly PlayerRepository playerRepository;
+		private readonly ActionQueueRepository actionQueueRepository;
 
-		public AssetRepository(WorldState world, PlayerRepository playerRepository) {
+		public AssetRepository(WorldState world
+				, PlayerRepository playerRepository
+				, ActionQueueRepository actionQueueRepository
+			) {
 			this.world = world;
 			this.playerRepository = playerRepository;
+			this.actionQueueRepository = actionQueueRepository;
 		}
 
 		private ISet<Asset> GetAssets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
@@ -25,6 +31,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public bool HasAsset(PlayerId playerId, AssetDefId assetDefId) {
 			return GetAssets(playerId).Any(x => x.AssetDefId.Equals(assetDefId));
+		}
+
+		public bool IsBuildQueued(BuildAssetCommand command) {
+			return actionQueueRepository.IsQueued(command.PlayerId, AssetBuildActionConstants.Name, new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, command.AssetDefId.Id } });
 		}
 
 		public bool PrerequisitesMet(PlayerId playerId, AssetDef assetDef) {
