@@ -19,15 +19,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
 
+		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) => DeductCost(playerId, Cost.FromSingle(resourceDefId, value));
 		public void DeductCost(PlayerId playerId, Cost cost) {
 			if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
 			var playerRes = Res(playerId);
 			foreach (var res in cost.Resources) {
-				DeductCost(playerId, res.Key, res.Value);
+				DeductResourceUnchecked(playerId, res.Key, res.Value);
 			}
 		}
 
-		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
+		private void DeductResourceUnchecked(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
 			if (value <= 0) throw new InvalidGameDefException("Resource cost cannot be zero");
 			if (!Res(playerId).ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value));
 

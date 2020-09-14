@@ -18,7 +18,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public bool CanAfford(PlayerId playerId, Cost cost) {
 			var playerRes = Res(playerId);
 			foreach(var res in cost.Resources) {
-				if (res.Value <= 0) throw new InvalidGameDefException("Resource cost cannot be zero");
+				if (res.Value <= 0) throw new ArgumentOutOfRangeException("Resource cost cannot be zero");
 				if (GetAmount(playerId, res.Key) < res.Value) return false; // to little resources
 			}
 			return true; // enough resources
