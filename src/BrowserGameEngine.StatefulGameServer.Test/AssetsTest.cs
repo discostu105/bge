@@ -103,6 +103,18 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public void BuildAssetAlreadyQueued() {
+			var g = new TestGame();
+
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset1")));
+
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res1"), 1000);
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res2"), 1000);
+			g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
+			Assert.Throws<AssetAlreadyQueuedException>(() => g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset2"))));
+		}
+
+		[Fact]
 		public void BuildAssetNoPrerequisites() {
 			var g = new TestGame();
 

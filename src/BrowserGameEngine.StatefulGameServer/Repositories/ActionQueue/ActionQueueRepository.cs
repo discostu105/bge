@@ -4,6 +4,7 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 				Remove(action);
 			}
 			return actions;
+		}
+
+		internal bool HasAction(PlayerId playerId, string name, IDictionary<string, string> properties) {
+			return GetActions(playerId).Any(x => x.Name == name && MatchesProperties(x.Properties, properties));
+		}
+
+		private bool MatchesProperties(Dictionary<string, string> properties, IDictionary<string, string> expected) {
+			foreach(var exp in expected) {
+				if (!properties.ContainsKey(exp.Key)) return false;
+				if (properties[exp.Key] != exp.Value) return false;
+			}
+			return true;
 		}
 
 		internal void Remove(GameAction action) {
