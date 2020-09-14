@@ -92,6 +92,17 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public void BuildAssetAlreadyBuilt() {
+			var g = new TestGame();
+
+			Assert.True(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset1")));
+
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res1"), 1000);
+			g.ResourceRepositoryWrite.AddResources(g.WorldStateFactory.Player1, Id.ResDef("res2"), 1000);
+			Assert.Throws<AssetAlreadyBuiltException>(() => g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset1"))));
+		}
+
+		[Fact]
 		public void BuildAssetNoPrerequisites() {
 			var g = new TestGame();
 
