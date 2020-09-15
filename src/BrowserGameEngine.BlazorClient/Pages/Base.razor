@@ -9,6 +9,9 @@
 @if (assets == null) {
     <p><em>Loading...</em></p>
 } else {
+    if (!string.IsNullOrEmpty(lastError)) {
+        <span class="error">@lastError</span>
+    }
     <table class="table">
         <thead>
             <tr>
@@ -33,9 +36,6 @@
                             <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
                                 Bauen
                             </button>
-                            @if (errors.ContainsKey(item.Definition.Id)) {
-                                <span class="error">@errors[item.Definition.Id]</span>
-                            }
                         </td>
                     </tr>
                 }
@@ -46,7 +46,7 @@
 
 @code {
     private AssetsViewModel? assets;
-    private IDictionary<string, string> errors = new Dictionary<string, string>();
+    private string? lastError;
 
     protected override async Task OnInitializedAsync() {
         await Update();
@@ -58,7 +58,7 @@
             await Update();
         } else {
             var error = await response.Content.ReadAsStringAsync();
-            errors[asset.Definition.Id] = error;
+            lastError = error;
         }
     }
 
