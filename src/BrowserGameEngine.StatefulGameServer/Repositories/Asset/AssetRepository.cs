@@ -37,6 +37,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return actionQueueRepository.IsQueued(playerId, AssetBuildActionConstants.Name, new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, assetDefId.Id } });
 		}
 
+		public int TicksLeft(PlayerId playerId, AssetDefId assetDefId) {
+			return actionQueueRepository.TicksLeft(playerId, AssetBuildActionConstants.Name, new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, assetDefId.Id } }).Tick;
+		}
+
 		public bool PrerequisitesMet(PlayerId playerId, AssetDef assetDef) {
 			if (assetDef.PlayerTypeRestriction != playerRepository.GetPlayerType(playerId)) return false;
 			foreach (var prereq in assetDef.Prerequisites) {
@@ -44,5 +48,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 			return true;
 		}
+
 	}
 }

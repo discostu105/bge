@@ -23,6 +23,7 @@ namespace BrowserGameEngine.Server.Controllers {
 		private readonly PlayerRepository playerRepository;
 		private readonly AssetRepository assetRepository;
 		private readonly AssetRepositoryWrite assetRepositoryWrite;
+		private readonly ResourceRepository resourceRepository;
 		private readonly GameDef gameDef;
 
 		public AssetsController(ILogger<AssetsController> logger
@@ -30,6 +31,7 @@ namespace BrowserGameEngine.Server.Controllers {
 				, PlayerRepository playerRepository
 				, AssetRepository assetRepository
 				, AssetRepositoryWrite assetRepositoryWrite
+				, ResourceRepository resourceRepository
 				, GameDef gameDef
 			) {
 			this.logger = logger;
@@ -37,6 +39,7 @@ namespace BrowserGameEngine.Server.Controllers {
 			this.playerRepository = playerRepository;
 			this.assetRepository = assetRepository;
 			this.assetRepositoryWrite = assetRepositoryWrite;
+			this.resourceRepository = resourceRepository;
 			this.gameDef = gameDef;
 		}
 
@@ -74,9 +77,12 @@ namespace BrowserGameEngine.Server.Controllers {
 			return new AssetViewModel {
 				Definition = AssetDefinitionViewModel.Create(assetDef),
 				Built = assetRepository.HasAsset(currentUserContext.PlayerId, assetDef.Id),
+				Prerequisites = string.Join(", ", gameDef.GetAssetNames(assetDef.Prerequisites)),
 				PrerequisitesMet = assetRepository.PrerequisitesMet(currentUserContext.PlayerId, assetDef),
+				Cost = CostViewModel.Create(assetDef.Cost),
+				CanAfford = resourceRepository.CanAfford(currentUserContext.PlayerId, assetDef.Cost),
 				AlreadyQueued = assetRepository.IsBuildQueued(currentUserContext.PlayerId, assetDef.Id),
-				Cost = CostViewModel.Create(assetDef.Cost)
+				TicksLeftForBuild = assetRepository.TicksLeft(currentUserContext.PlayerId, assetDef.Id),
 			};
 		}
 	}

@@ -181,3 +181,8 @@ app {
         display: block;
     }
 }
+
+.bge-asset {
+    border: 1px solid black;
+    overflow: auto;
+}

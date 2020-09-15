@@ -29,6 +29,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		internal GameTick GetTargetGameTick(GameTick tickToAdd) {
 			return GameTickState.CurrentGameTick with { Tick = GameTickState.CurrentGameTick.Tick + tickToAdd.Tick };
 		}
+
+		/// <summary>
+		/// Returns the number of ticks still left until targetTick
+		/// </summary>
+		internal GameTick TicksLeft(GameTick targetTick) {
+			return new GameTick(targetTick.Tick - GameTickState.CurrentGameTick.Tick);
+		}
 	}
 
 	public static class WorldStateImmutableExtensions {

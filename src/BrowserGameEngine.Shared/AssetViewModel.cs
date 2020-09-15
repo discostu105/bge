@@ -13,8 +13,11 @@ namespace BrowserGameEngine.Shared {
 		public AssetDefinitionViewModel Definition { get; set; }
 		public int Level { get; set; }
 		public bool Built { get; set; }
+		public int TicksLeftForBuild { get; set; }
+		public string Prerequisites { get; set; }
 		public bool PrerequisitesMet { get; set; }
 		public bool AlreadyQueued { get; set; }
 		public CostViewModel Cost { get; set; } // for build or upgrade to next level
+		public bool CanAfford { get; set; }
 	}
 }

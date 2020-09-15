@@ -37,6 +37,10 @@ namespace BrowserGameEngine.GameDefinition {
 			return gameDef.Units.Where(x => x.PlayerTypeRestriction.Equals(playerTypeId));
 		}
 
+		public static IEnumerable<string> GetAssetNames(this GameDef gameDef, IList<AssetDefId> assetDefIds) {
+			return assetDefIds.Select(x => gameDef.GetAssetDef(x)).Where(x => x != null).Select(x => x.Name);
+		}
+
 		public static void ValidateUnitDefId(this GameDef gameDef, UnitDefId unitDefId, string hint) {
 			if (!gameDef.Units.Any(x => x.Id.Equals(unitDefId))) throw new InvalidGameDefException($"Asset '{unitDefId}' not found. Check '{hint}'!");
 		}

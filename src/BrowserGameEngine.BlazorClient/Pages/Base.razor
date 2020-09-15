@@ -4,45 +4,42 @@
 
 <h1>Basis</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+<div class="container">
 
-@if (assets == null) {
-    <p><em>Loading...</em></p>
-} else {
-    if (!string.IsNullOrEmpty(lastError)) {
-        <span class="error">@lastError</span>
-    }
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Gebaut</th>
-                <th>Name</th>
-                <th>Kosten</th>
-                <th>Verfügbar</th>
-                <th>Wird gebaut</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (assets.Assets != null) {
+    @if (assets == null) {
+        <p><em>Lade...</em></p>
+    } else {
+        if (!string.IsNullOrEmpty(lastError)) {
+            <span class="error">@lastError</span>
+        }
+
+        @if (assets.Assets != null) {
+            <div class="row">
                 @foreach (var item in assets.Assets) {
-                    <tr>
-                        <td>@item.Built</td>
-                        <td>@item.Definition?.Name</td>
-                        <td><_Cost Cost="@item.Cost" /></td>
-                        <td>@item.PrerequisitesMet</td>
-                        <td>@item.AlreadyQueued</td>
-                        <td>
-                            <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
-                                Bauen
-                            </button>
-                        </td>
-                    </tr>
+                    <div class="col-md-3 bge-asset @(item.Built ? "available" : "unavailable")">
+                        <h2>@item.Definition?.Name</h2>
+
+                        @if (item.Built) {
+                            <span>Bereits gebaut!</span>
+                        } else if (item.AlreadyQueued) {
+                            <span>Wird in @item.TicksLeftForBuild Runden fertig sein.</span>
+                        } else {
+                            <div>Kosten: <_Cost Cost="@item.Cost" /></div>
+                            <div>Benötigt: @item.Prerequisites </div>
+                            @if (item.PrerequisitesMet && item.CanAfford) {
+                                <div>
+                                    <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
+                                        Bauen
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
                 }
-            }
-        </tbody>
-    </table>
-}
+            </div>
+        }
+    }
+</div>
 
 @code {
     private AssetsViewModel? assets;

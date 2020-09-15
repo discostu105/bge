@@ -32,6 +32,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return GetActions(playerId).Any(x => x.Name == name && MatchesProperties(x.Properties, properties));
 		}
 
+		/// <summary>
+		/// Returns the number of ticks that are still left for an action
+		/// </summary>
+		internal GameTick TicksLeft(PlayerId playerId, string name, Dictionary<string, string> properties) {
+			var action = GetActions(playerId).Where(x => x.Name == name && MatchesProperties(x.Properties, properties)).SingleOrDefault();
+			if (action == null) return new GameTick(0);
+			return world.TicksLeft(action.DueTick);
+		}
+
 		private bool MatchesProperties(Dictionary<string, string> properties, IDictionary<string, string> expected) {
 			foreach(var exp in expected) {
 				if (!properties.ContainsKey(exp.Key)) return false;
