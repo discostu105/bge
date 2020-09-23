@@ -19,5 +19,6 @@ namespace BrowserGameEngine.Shared {
 		public bool AlreadyQueued { get; set; }
 		public CostViewModel Cost { get; set; } // for build or upgrade to next level
 		public bool CanAfford { get; set; }
+		public List<UnitDefinitionViewModel> AvailableUnits { get; set; }
 	}
 }

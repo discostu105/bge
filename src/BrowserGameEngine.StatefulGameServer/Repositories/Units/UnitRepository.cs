@@ -8,11 +8,17 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepository {
 		private readonly WorldState world;
+		private readonly GameDef gameDef;
 		private readonly PlayerRepository playerRepository;
 		private readonly AssetRepository assetRepository;
 
-		public UnitRepository(WorldState world, PlayerRepository playerRepository, AssetRepository assetRepository) {
+		public UnitRepository(WorldState world
+				, GameDef gameDef
+				, PlayerRepository playerRepository
+				, AssetRepository assetRepository
+			) {
 			this.world = world;
+			this.gameDef = gameDef;
 			this.playerRepository = playerRepository;
 			this.assetRepository = assetRepository;
 		}
@@ -41,6 +47,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return Units(playerId)
 				.Where(x => x.UnitDefId == unitDefId)
 				.Sum(x => x.Count);
+		}
+
+		public List<UnitDef> GetUnitsPrerequisitesMet(PlayerId playerId) {
+			return gameDef.GetUnitsByPlayerType(world.GetPlayer(playerId).PlayerType).Where(x => PrerequisitesMet(playerId, x)).ToList();
 		}
 	}
 }

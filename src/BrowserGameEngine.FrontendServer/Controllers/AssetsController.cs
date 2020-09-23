@@ -24,6 +24,7 @@ namespace BrowserGameEngine.Server.Controllers {
 		private readonly AssetRepository assetRepository;
 		private readonly AssetRepositoryWrite assetRepositoryWrite;
 		private readonly ResourceRepository resourceRepository;
+		private readonly UnitRepository unitRepository;
 		private readonly GameDef gameDef;
 
 		public AssetsController(ILogger<AssetsController> logger
@@ -32,6 +33,7 @@ namespace BrowserGameEngine.Server.Controllers {
 				, AssetRepository assetRepository
 				, AssetRepositoryWrite assetRepositoryWrite
 				, ResourceRepository resourceRepository
+				, UnitRepository unitRepository
 				, GameDef gameDef
 			) {
 			this.logger = logger;
@@ -40,15 +42,14 @@ namespace BrowserGameEngine.Server.Controllers {
 			this.assetRepository = assetRepository;
 			this.assetRepositoryWrite = assetRepositoryWrite;
 			this.resourceRepository = resourceRepository;
+			this.unitRepository = unitRepository;
 			this.gameDef = gameDef;
 		}
 
 		[HttpGet]
 		public async Task<AssetsViewModel> Get() {
-			var playerAssets = assetRepository.Get(currentUserContext.PlayerId);
-
 			return new AssetsViewModel {
-				Assets = gameDef.GetAssetsByPlayerType(playerRepository.GetPlayerType(currentUserContext.PlayerId)).Select(x => CreateAssetViewModel(x, playerAssets)).ToList()
+				Assets = gameDef.GetAssetsByPlayerType(playerRepository.GetPlayerType(currentUserContext.PlayerId)).Select(x => CreateAssetViewModel(x)).ToList()
 			};
 		}
 
@@ -73,7 +74,7 @@ namespace BrowserGameEngine.Server.Controllers {
 			throw new NotImplementedException();
 		}
 
-		private AssetViewModel CreateAssetViewModel(AssetDef assetDef, IEnumerable<AssetImmutable> playerAssets) {
+		private AssetViewModel CreateAssetViewModel(AssetDef assetDef) {
 			return new AssetViewModel {
 				Definition = AssetDefinitionViewModel.Create(assetDef),
 				Built = assetRepository.HasAsset(currentUserContext.PlayerId, assetDef.Id),
@@ -83,6 +84,8 @@ namespace BrowserGameEngine.Server.Controllers {
 				CanAfford = resourceRepository.CanAfford(currentUserContext.PlayerId, assetDef.Cost),
 				AlreadyQueued = assetRepository.IsBuildQueued(currentUserContext.PlayerId, assetDef.Id),
 				TicksLeftForBuild = assetRepository.TicksLeft(currentUserContext.PlayerId, assetDef.Id),
+				AvailableUnits = gameDef.GetUnitsForAsset(assetDef.Id)
+					.Select(x => UnitDefinitionViewModel.Create(x, unitRepository.PrerequisitesMet(currentUserContext.PlayerId, x))).ToList()
 			};
 		}
 	}

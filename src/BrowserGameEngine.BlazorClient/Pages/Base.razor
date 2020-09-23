@@ -21,6 +21,15 @@
 
                         @if (item.Built) {
                             <span>Bereits gebaut!</span>
+
+                            <div class="bge-recruiting">
+                                <select>
+                                    @foreach(var x in item.AvailableUnits) {
+                                    }
+
+                                </select>
+                            </div>
+
                         } else if (item.AlreadyQueued) {
                             <span>Wird in @item.TicksLeftForBuild Runden fertig sein.</span>
                         } else {

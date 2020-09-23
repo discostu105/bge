@@ -25,6 +25,7 @@ namespace BrowserGameEngine.GameDefinition {
 			ValidateAllUnique(gameDef.Units.Select(x => x.Id.Id), "Units");
 			foreach(var unit in gameDef.Units) {
 				gameDef.ValidatePlayerType(unit.PlayerTypeRestriction, unit.Id.Id + " PlayerTypeRestriction");
+				if (unit.Prerequisites.Count == 0) throw new InvalidGameDefException($"Unit '{unit.Id}' has no prerequisites. At least one prerequisite is required.");
 				unit.Prerequisites.ForEach(x => gameDef.ValidateAssetDefId(x, unit.Id.Id + " Prerequisites"));
 				gameDef.ValidateCost(unit.Cost, unit.Id.Id + " Cost");
 			}

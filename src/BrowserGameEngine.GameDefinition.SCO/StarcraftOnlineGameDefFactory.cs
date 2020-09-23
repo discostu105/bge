@@ -124,7 +124,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Attack = 0,
 						Defense = 1,
 						Hitpoints = 60,
-						Speed = 8
+						Speed = 8,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("commandcenter") }
 					},
 					new UnitDef {
 						Id = Id.UnitDef("spacemarine"),

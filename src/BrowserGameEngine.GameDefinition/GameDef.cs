@@ -14,6 +14,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public ResourceDefId ScoreResource { get; init; } // player ranking is based on this resource
 		public IEnumerable<GameTickModuleDef> GameTickModules { get; init; } = new List<GameTickModuleDef>();
 		public TimeSpan TickDuration { get; init; } = TimeSpan.FromMinutes(20);
+
 	}
 
 	public static class GameDefExtensions {
@@ -39,6 +40,11 @@ namespace BrowserGameEngine.GameDefinition {
 
 		public static IEnumerable<string> GetAssetNames(this GameDef gameDef, IList<AssetDefId> assetDefIds) {
 			return assetDefIds.Select(x => gameDef.GetAssetDef(x)).Where(x => x != null).Select(x => x.Name);
+		}
+
+		// The first asset in prerequisites is the primary asset, where the unit can be built
+		public static IEnumerable<UnitDef> GetUnitsForAsset(this GameDef gameDef, AssetDefId id) {
+			return gameDef.Units.Where(x => x.Prerequisites.Count > 0 && x.Prerequisites.First().Id.Equals(id));
 		}
 
 		public static void ValidateUnitDefId(this GameDef gameDef, UnitDefId unitDefId, string hint) {

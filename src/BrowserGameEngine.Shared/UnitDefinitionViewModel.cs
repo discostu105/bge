@@ -14,7 +14,7 @@ namespace BrowserGameEngine.Shared {
 		public int Defense { get; set; }
 		public int Hitpoints { get; set; }
 		public int Speed { get; set; }
-		public List<string>? Prerequisites { get; set; }
+		public List<string> Prerequisites { get; set; }
 		public bool PrerequisitesMet { get; set; }
 
 		public static UnitDefinitionViewModel Create(UnitDef unitDefinition, bool prerequisitesMet) {

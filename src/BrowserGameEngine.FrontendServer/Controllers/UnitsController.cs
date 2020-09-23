@@ -48,15 +48,12 @@ namespace BrowserGameEngine.Server.Controllers {
 
 		private UnitViewModel CreateUnitViewModel(UnitImmutable unit) {
 			var unitDef = gameDef.GetUnitDef(unit.UnitDefId);
+			if (unitDef == null) throw new InvalidGameDefException($"Unit '{unit.UnitDefId}' not found");
 
 			return new UnitViewModel {
-				Definition = UnitDefinitionViewModel.Create(unitDef, PrerequisitesMet(unitDef)),
+				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId, unitDef)),
 				Count = unit.Count
 			};
-		}
-
-		private bool PrerequisitesMet(UnitDef unitDef) {
-			return true; // TODO
 		}
 	}
 }
