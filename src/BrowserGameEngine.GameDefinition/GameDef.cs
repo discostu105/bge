@@ -44,7 +44,7 @@ namespace BrowserGameEngine.GameDefinition {
 
 		// The first asset in prerequisites is the primary asset, where the unit can be built
 		public static IEnumerable<UnitDef> GetUnitsForAsset(this GameDef gameDef, AssetDefId id) {
-			return gameDef.Units.Where(x => x.Prerequisites.Count > 0 && x.Prerequisites.First().Id.Equals(id));
+			return gameDef.Units.Where(x => x.Prerequisites.Count > 0 && x.Prerequisites.First().Equals(id));
 		}
 
 		public static void ValidateUnitDefId(this GameDef gameDef, UnitDefId unitDefId, string hint) {

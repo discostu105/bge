@@ -58,5 +58,21 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			g.UnitRepositoryWrite.BuildUnit(new Commands.BuildUnitCommand(g.WorldStateFactory.Player1, Id.UnitDef("unit1"), 20));
 			Assert.Throws<CannotAffordException>(() => g.UnitRepositoryWrite.BuildUnit(new Commands.BuildUnitCommand(g.WorldStateFactory.Player1, Id.UnitDef("unit1"), 1)));
 		}
+
+
+		[Fact]
+		public void GameDefAvailableUnits() {
+			var g = new TestGame();
+			Assert.Collection(g.GameDef.GetUnitsForAsset(Id.AssetDef("asset1")).Select(x => x.Id.Id),
+				item => Assert.Equal("unit1", item),
+				item => Assert.Equal("unit2", item)
+			);
+			Assert.Collection(g.GameDef.GetUnitsForAsset(Id.AssetDef("asset2")).Select(x => x.Id.Id),
+				item => Assert.Equal("unit3", item)
+			);
+			Assert.Collection(g.GameDef.GetUnitsForAsset(Id.AssetDef("asset3")).Select(x => x.Id.Id),
+				item => Assert.Equal("unit4", item)
+			);
+		}
 	}
 }

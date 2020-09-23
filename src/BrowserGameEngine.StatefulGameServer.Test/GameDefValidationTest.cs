@@ -60,5 +60,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			};
 			Assert.Throws<InvalidGameDefException>(() => new GameDefVerifier().Verify(gameDef));
 		}
+
 	}
 }

@@ -80,7 +80,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Attack = 0,
 						Defense = 1,
 						Hitpoints = 60,
-						Speed = 8
+						Speed = 8,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1") }
 					},
 					new UnitDef {
 						Id = Id.UnitDef("unit2"),
@@ -102,7 +103,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 4,
 						Hitpoints = 60,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1"), Id.AssetDef("asset2") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset2"), Id.AssetDef("asset1") }
 					},
 					new UnitDef {
 						Id = Id.UnitDef("unit4"),
@@ -113,7 +114,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 4,
 						Hitpoints = 60,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset3"), Id.AssetDef("asset2"), Id.AssetDef("asset1") }
 					}
 				}
 			};
