@@ -2,7 +2,9 @@
 using System;
 
 namespace BrowserGameEngine.GameModel {
-	public record UnitId(Guid Id);
+	public record UnitId(Guid Id) {
+		public override string ToString() => Id.ToString();
+	}
 
 	public record UnitImmutable(
 		UnitId UnitId,

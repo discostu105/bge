@@ -37,6 +37,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return true;
 		}
 
+		public List<UnitImmutable> GetByUnitDefId(PlayerId playerId, UnitDefId unitDefId) {
+			return Units(playerId)
+				.Where(x => x.UnitDefId.Equals(unitDefId))
+				.Select(x => x.ToImmutable())
+				.ToList();
+		}
+
 		public IEnumerable<UnitImmutable> GetById(PlayerId playerId, UnitId unitId) {
 			return Units(playerId)
 				.Where(x => x.UnitId == unitId)
@@ -45,12 +52,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public int CountByUnitDefId(PlayerId playerId, UnitDefId unitDefId) {
 			return Units(playerId)
-				.Where(x => x.UnitDefId == unitDefId)
+				.Where(x => x.UnitDefId.Equals(unitDefId))
 				.Sum(x => x.Count);
 		}
 
 		public List<UnitDef> GetUnitsPrerequisitesMet(PlayerId playerId) {
 			return gameDef.GetUnitsByPlayerType(world.GetPlayer(playerId).PlayerType).Where(x => PrerequisitesMet(playerId, x)).ToList();
 		}
+
 	}
 }

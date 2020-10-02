@@ -1,0 +1,48 @@
+﻿@using BrowserGameEngine.Shared
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <span class="error">@lastError</span>
+}
+<EditForm Model="model" OnValidSubmit="@SplitUnit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputNumber @bind-Value="model.Count" />
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Guid UnitId { get; set; }
+    [Parameter]
+    public int InitCount { get; set; }
+
+    private SplitUnitFormModel model = new();
+    private string? lastError;
+
+    [Parameter]
+    public EventCallback<string> SplitDoneEvent { get; set; }
+
+    protected override void OnInitialized() {
+        model.Count = InitCount;
+    }
+
+    private async Task SplitUnit() {
+        var response = await Http.PostAsJsonAsync($"api/units/split?unitId={UnitId.ToString()}&splitCount={model.Count}", "");
+        if (response.IsSuccessStatusCode) {
+            await SplitDoneEvent.InvokeAsync();
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            lastError = error;
+        }
+    }
+
+    internal class SplitUnitFormModel {
+        [Required]
+        [Range(1, 100000, ErrorMessage = "Accommodation invalid (1-100000).")]
+        public int Count { get; set; }
+    }
+}

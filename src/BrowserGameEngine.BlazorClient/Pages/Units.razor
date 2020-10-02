@@ -33,9 +33,19 @@
                         <td>@item.Count</td>
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
                         <td>
-                            <button class="btn btn-primary" @onclick="() => Merge(item.Definition.Id)">
+                            <button class="btn btn-primary" @onclick="async () => await Merge(item.Definition.Id)">
                                 Truppen dieses Typs zusammenführen
                             </button>
+
+                            @if (item.Count > 1) {
+                                @if (!IsShowSplit(item.UnitId)) {
+                                    <button class="btn btn-primary" @onclick="() => ToggleShowSplit(item.UnitId)">
+                                        Truppen aufteilen
+                                    </button>
+                                } else {
+                                    <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
+                                }
+                            }
                         </td>
                     </tr>
                 }
@@ -47,12 +57,14 @@
 @code {
     private UnitsViewModel? units;
     private string? lastError;
+    private Dictionary<Guid, bool> showSplit = new();
 
     protected override async Task OnInitializedAsync() {
         await Update();
     }
 
     private async Task Update() {
+        showSplit = new();
         units = await Http.GetFromJsonAsync<UnitsViewModel>("api/units");
     }
 
@@ -74,5 +86,16 @@
             var error = await response.Content.ReadAsStringAsync();
             lastError = error;
         }
+    }
+
+    private bool IsShowSplit(Guid unitId) {
+        if (showSplit.TryGetValue(unitId, out bool value)) {
+            return value;
+        }
+        return false;
+    }
+
+    private void ToggleShowSplit(Guid unitId) {
+        showSplit[unitId] = !IsShowSplit(unitId);
     }
 }

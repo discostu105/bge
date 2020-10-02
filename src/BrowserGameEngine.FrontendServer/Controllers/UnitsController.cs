@@ -72,11 +72,22 @@ namespace BrowserGameEngine.Server.Controllers {
 			}
 		}
 
+		[HttpPost]
+		public async Task<ActionResult> Split([FromQuery] Guid unitId, [FromQuery] int splitCount) {
+			try {
+				unitRepositoryWrite.SplitUnit(new SplitUnitCommand(currentUserContext.PlayerId, Id.UnitId(unitId), splitCount));
+				return Ok();
+			} catch (InvalidGameDefException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
 		private UnitViewModel CreateUnitViewModel(UnitImmutable unit) {
 			var unitDef = gameDef.GetUnitDef(unit.UnitDefId);
 			if (unitDef == null) throw new InvalidGameDefException($"Unit '{unit.UnitDefId}' not found");
 
 			return new UnitViewModel {
+				UnitId = unit.UnitId.Id,
 				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId, unitDef)),
 				Count = unit.Count
 			};

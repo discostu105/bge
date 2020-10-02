@@ -27,6 +27,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private List<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
+		private Unit? Unit(PlayerId playerId, UnitId unitId) => Units(playerId).SingleOrDefault(x => x.UnitId.Equals(unitId));
 
 		private void AddUnit(PlayerId playerId, UnitDefId unitDefId, int count) {
 			Units(playerId).Add(new Unit {
@@ -63,6 +64,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsMergable()).Sum(x => x.Count);
 			RemoveUnits(command.PlayerId, command.UnitDefId);
 			AddUnit(command.PlayerId, command.UnitDefId, totalCount);
+		}
+
+		public void SplitUnit(SplitUnitCommand command) {
+			// TODO: synchronize
+			var unit = Unit(command.PlayerId, command.UnitId);
+			if (unit == null) throw new UnitNotFoundException(command.UnitId);
+			if (command.SplitCount <= 0) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
+			if (command.SplitCount == unit.Count) return;
+			if (command.SplitCount > unit.Count) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
+			unit.Count -= command.SplitCount;
+			AddUnit(command.PlayerId, unit.UnitDefId, command.SplitCount);
 		}
 
 		private void RemoveUnits(PlayerId playerId, UnitDefId unitDefId) {

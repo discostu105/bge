@@ -128,5 +128,52 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
 			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
 		}
+
+		[Fact]
+		public void SplitUnit() {
+			var g = new TestGame();
+
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(2, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+
+			g.UnitRepositoryWrite.MergeUnits(new Commands.MergeAllUnitsCommand(g.Player1));
+			g.UnitRepositoryWrite.SplitUnit(new Commands.SplitUnitCommand(g.Player1, 
+				g.UnitRepository.GetByUnitDefId(g.Player1, Id.UnitDef("unit1")).Single().UnitId, 5));
+			g.UnitRepositoryWrite.SplitUnit(new Commands.SplitUnitCommand(g.Player1,
+				g.UnitRepository.GetByUnitDefId(g.Player1, Id.UnitDef("unit1")).Single(x => x.Count == 10).UnitId, 3));
+
+			Assert.Collection(g.UnitRepository.GetByUnitDefId(g.Player1, Id.UnitDef("unit1")).OrderByDescending(x => x.Count),
+				item => { Assert.Equal("unit1", item.UnitDefId.Id); Assert.Equal(7, item.Count); },
+				item => { Assert.Equal("unit1", item.UnitDefId.Id); Assert.Equal(5, item.Count); },
+				item => { Assert.Equal("unit1", item.UnitDefId.Id); Assert.Equal(3, item.Count); }
+			);
+
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(3, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+		}
+
+		[Fact]
+		public void SplitUnitZero() {
+			var g = new TestGame();
+
+			Assert.Throws<CannotSplitUnitException>(() =>
+				g.UnitRepositoryWrite.SplitUnit(new Commands.SplitUnitCommand(g.Player1,
+					g.UnitRepository.GetByUnitDefId(g.Player1, Id.UnitDef("unit2")).Single().UnitId, 0))
+			);
+		}
+
+		[Fact]
+		public void SplitUnitTooLarge() {
+			var g = new TestGame();
+
+			Assert.Throws<CannotSplitUnitException>(() =>
+				g.UnitRepositoryWrite.SplitUnit(new Commands.SplitUnitCommand(g.Player1,
+					g.UnitRepository.GetByUnitDefId(g.Player1, Id.UnitDef("unit2")).Single().UnitId, 999))
+			);
+		}
 	}
 }
