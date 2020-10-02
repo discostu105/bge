@@ -27,11 +27,16 @@
         </thead>
         <tbody>
             @if (units.Units != null) {
-                @foreach (var item in units.Units) {
+                @foreach (var item in units.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
                     <tr>
                         <td>@item.Definition?.Name</td>
                         <td>@item.Count</td>
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="() => Merge(item.Definition.Id)">
+                                Truppen dieses Typs zusammenführen
+                            </button>
+                        </td>
                     </tr>
                 }
             }
@@ -53,6 +58,16 @@
 
     private async Task MergeAll(MouseEventArgs e) {
         var response = await Http.PostAsync("api/units/merge", null);
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            lastError = error;
+        }
+    }
+
+    private async Task Merge(string unitDefId) {
+        var response = await Http.PostAsync($"api/units/merge?unitDefId={unitDefId}", null);
         if (response.IsSuccessStatusCode) {
             await Update();
         } else {
