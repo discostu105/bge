@@ -1,0 +1,50 @@
+﻿@using BrowserGameEngine.Shared
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <span class="error">@lastError</span>
+}
+<EditForm Model="model" OnValidSubmit="@BuildUnits">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputNumber @bind-Value="model.Count" />
+    <InputSelect @bind-Value="model.UnitDefId">
+        @foreach (var x in AvailableUnits) {
+            <option value="@x.Id">@x.Name</option>
+        }
+    </InputSelect>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public List<UnitDefinitionViewModel> AvailableUnits { get; set; }
+
+    private BuildUnitFormModel model = new BuildUnitFormModel();
+    private string? lastError;
+
+    protected override void OnInitialized() {
+        if (AvailableUnits.Any()) model.UnitDefId = AvailableUnits.First().Id;
+    }
+
+    private async Task BuildUnits() {
+        var response = await Http.PostAsJsonAsync($"api/units/build?unitDefId={model.UnitDefId}&count={model.Count}", "");
+        if (response.IsSuccessStatusCode) {
+            NavManager.NavigateTo("/units");
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            lastError = error;
+        }
+    }
+
+    internal class BuildUnitFormModel {
+        [Required]
+        public string UnitDefId { get; set; }
+        [Required]
+        [Range(1, 100000, ErrorMessage = "Accommodation invalid (1-100000).")]
+        public int Count { get; set; }
+    }
+}

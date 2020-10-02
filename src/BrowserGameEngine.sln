@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEgnine.Persisten
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.StatefulGameServer.Test", "BrowserGameEngine.StatefulGameServer.Test\BrowserGameEngine.StatefulGameServer.Test.csproj", "{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserGameEngine.GameDefinition.SCO", "BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj", "{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.GameDefinition.SCO", "BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj", "{8AEDD4E0-9438-4538-AA6C-DD36BB65DE93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

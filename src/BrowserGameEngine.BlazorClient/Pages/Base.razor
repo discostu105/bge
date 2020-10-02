@@ -23,11 +23,7 @@
                             <span>Bereits gebaut!</span>
 
                             <div class="bge-recruiting">
-                                <select>
-                                    @foreach(var x in item.AvailableUnits) {
-                                        <option value="@x.Id">@x.Name</option>
-                                    }
-                                </select>
+                                <_BuildUnitsForm AvailableUnits="item.AvailableUnits" />
                             </div>
 
                         } else if (item.AlreadyQueued) {
@@ -51,6 +47,8 @@
 </div>
 
 @code {
+
+
     private AssetsViewModel? assets;
     private string? lastError;
 
@@ -71,4 +69,5 @@
     private async Task Update() {
         assets = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
     }
+
 }

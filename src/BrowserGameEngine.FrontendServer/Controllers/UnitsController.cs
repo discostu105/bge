@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace BrowserGameEngine.Server.Controllers {
 	[ApiController]
 	[Authorize]
-	[Route("api/[controller]")]
+	[Route("api/[controller]/{action?}/{id?}")]
 	public class UnitsController : ControllerBase {
 		private readonly ILogger<UnitsController> logger;
 		private readonly CurrentUserContext currentUserContext;
@@ -44,6 +44,18 @@ namespace BrowserGameEngine.Server.Controllers {
 			return new UnitsViewModel {
 				Units = unitRepository.GetAll(currentUserContext.PlayerId).Select(x => CreateUnitViewModel(x)).ToList()
 			};
+		}
+
+		[HttpPost]
+		public async Task<ActionResult> Build([FromQuery] string unitDefId, [FromQuery] int count) {
+			try {
+				unitRepositoryWrite.BuildUnit(new BuildUnitCommand(currentUserContext.PlayerId, Id.UnitDef(unitDefId), count));
+				return Ok();
+			} catch (InvalidGameDefException e) {
+				return BadRequest(e.Message);
+			} catch (CannotAffordException e) {
+				return BadRequest(e.Message);
+			}
 		}
 
 		private UnitViewModel CreateUnitViewModel(UnitImmutable unit) {

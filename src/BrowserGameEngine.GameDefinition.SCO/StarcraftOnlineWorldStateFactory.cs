@@ -41,6 +41,14 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 								new AssetImmutable(
 									AssetDefId: Id.AssetDef("factory"),
 									Level: 1
+								),
+								new AssetImmutable(
+									AssetDefId: Id.AssetDef("armory"),
+									Level: 1
+								),
+								new AssetImmutable(
+									AssetDefId: Id.AssetDef("spaceport"),
+									Level: 1
 								)
 							},
 							Units: new List<UnitImmutable> {
