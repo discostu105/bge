@@ -19,6 +19,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		internal GameTick IncrementTick(PlayerId playerId) {
+			// TODO: synchronize
 			var player = world.GetPlayer(playerId);
 			player.State.CurrentGameTick = player.State.CurrentGameTick with { Tick = player.State.CurrentGameTick.Tick + 1 };
 			return player.State.CurrentGameTick;

@@ -39,6 +39,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// Building assets takes a number of gameticks until finished.
 		/// </summary>
 		public void BuildAsset(BuildAssetCommand command) {
+			// TODO: synchronize
 			var assetDef = gameDef.GetAssetDef(command.AssetDefId);
 			if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
 			if (assetRepository.HasAsset(command.PlayerId, assetDef.Id)) throw new AssetAlreadyBuiltException(assetDef.Id);
@@ -63,6 +64,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ExecuteGameActions(PlayerId playerId) {
+			// TODO: synchronize
 			var actions = actionQueueRepository.GetAndRemoveDueActions(playerId, AssetBuildActionConstants.Name, world.GameTickState.CurrentGameTick);
 			foreach(var action in actions) {
 				AddAsset(action.PlayerId, Id.AssetDef(action.Properties[AssetBuildActionConstants.AssetDefId]));

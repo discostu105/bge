@@ -9,21 +9,31 @@
 @if (units == null) {
     <p><em>Loading...</em></p>
 } else {
+    if (!string.IsNullOrEmpty(lastError)) {
+        <span class="error">@lastError</span>
+    }
+
+    <button class="btn btn-primary" @onclick="MergeAll">
+        Truppen zusammenführen
+    </button>
+
     <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
+                <th>Anzahl</th>
                 <th>Eigenschaften</th>
             </tr>
         </thead>
         <tbody>
             @if (units.Units != null) {
-            @foreach (var item in units.Units) {
-                <tr>
-                    <td>@item.Definition?.Name</td>
-                    <td>@item.</td>
-                </tr>
-            }
+                @foreach (var item in units.Units) {
+                    <tr>
+                        <td>@item.Definition?.Name</td>
+                        <td>@item.Count</td>
+                        <td><_UnitProperties UnitDef="item.Definition" /></td>
+                    </tr>
+                }
             }
         </tbody>
     </table>
@@ -31,9 +41,23 @@
 
 @code {
     private UnitsViewModel? units;
+    private string? lastError;
 
     protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+
+    private async Task Update() {
         units = await Http.GetFromJsonAsync<UnitsViewModel>("api/units");
     }
 
+    private async Task MergeAll(MouseEventArgs e) {
+        var response = await Http.PostAsync("api/units/merge", null);
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            lastError = error;
+        }
+    }
 }

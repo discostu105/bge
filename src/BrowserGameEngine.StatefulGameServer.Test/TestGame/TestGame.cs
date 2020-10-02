@@ -6,6 +6,7 @@ using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using BrowserGameEngine.GameModel;
 
 namespace BrowserGameEngine.StatefulGameServer.Test {
 	internal class TestGame {
@@ -24,6 +25,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
+
+		public PlayerId Player1 => WorldStateFactory.Player1;
 
 		public TestGame() {
 			LoggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();

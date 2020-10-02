@@ -58,6 +58,20 @@ namespace BrowserGameEngine.Server.Controllers {
 			}
 		}
 
+		[HttpPost]
+		public async Task<ActionResult> Merge([FromQuery] string? unitDefId) {
+			try {
+				if (string.IsNullOrEmpty(unitDefId)) {
+					unitRepositoryWrite.MergeUnits(new MergeAllUnitsCommand(currentUserContext.PlayerId));
+				} else {
+					unitRepositoryWrite.MergeUnits(new MergeUnitsCommand(currentUserContext.PlayerId, Id.UnitDef(unitDefId)));
+				}
+				return Ok();
+			} catch (InvalidGameDefException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
 		private UnitViewModel CreateUnitViewModel(UnitImmutable unit) {
 			var unitDef = gameDef.GetUnitDef(unit.UnitDefId);
 			if (unitDef == null) throw new InvalidGameDefException($"Unit '{unit.UnitDefId}' not found");

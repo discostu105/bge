@@ -74,5 +74,59 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				item => Assert.Equal("unit4", item)
 			);
 		}
+
+		[Fact]
+		public void MergeUnits1() {
+			var g = new TestGame();
+
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(2, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+
+			g.UnitRepositoryWrite.MergeUnits(new Commands.MergeUnitsCommand(g.Player1, Id.UnitDef("unit1")));
+
+			// count should stay the same but, units of unit 1 are merged
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+		}
+
+		[Fact]
+		public void MergeUnits2() {
+			var g = new TestGame();
+
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(2, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+
+			g.UnitRepositoryWrite.MergeUnits(new Commands.MergeUnitsCommand(g.Player1, Id.UnitDef("unit2")));
+
+			// nothing should change, as unit2 only exists once
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(2, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+		}
+
+		[Fact]
+		public void MergeUnits3() {
+			var g = new TestGame();
+
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(2, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+
+			g.UnitRepositoryWrite.MergeUnits(new Commands.MergeAllUnitsCommand(g.Player1));
+
+			// count should stay the same but, units of unit 1 are merged
+			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit1")));
+			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.Player1, Id.UnitDef("unit2")));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit1"))));
+			Assert.Equal(1, g.UnitRepository.GetAll(g.Player1).Count(x => x.UnitDefId.Equals(Id.UnitDef("unit2"))));
+		}
 	}
 }

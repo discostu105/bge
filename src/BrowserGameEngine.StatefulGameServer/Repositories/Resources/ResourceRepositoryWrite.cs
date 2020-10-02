@@ -21,6 +21,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) => DeductCost(playerId, Cost.FromSingle(resourceDefId, value));
 		public void DeductCost(PlayerId playerId, Cost cost) {
+			// TODO: synchronize
 			if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
 			var playerRes = Res(playerId);
 			foreach (var res in cost.Resources) {
@@ -37,6 +38,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
+			// TODO: synchronize
 			var playerRes = Res(playerId);
 			if (!playerRes.ContainsKey(resourceDefId)) {
 				playerRes.Add(resourceDefId, 0);

@@ -8,6 +8,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public UnitId UnitId { get; init; }
 		public UnitDefId UnitDefId { get; init; }
 		public int Count { get; set; }
+
+		internal bool IsMergable() {
+			return true; // TODO; return false if unit is outside base
+		}
 	}
 
 	internal static class UnitExtensions {

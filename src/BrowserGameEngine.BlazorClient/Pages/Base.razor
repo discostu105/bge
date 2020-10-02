@@ -16,7 +16,7 @@
         @if (assets.Assets != null) {
             <div class="row">
                 @foreach (var item in assets.Assets) {
-                    <div class="col-md-3 bge-asset @(item.Built ? "available" : "unavailable")">
+                    <div class="col-md-4 bge-asset @(item.Built ? "available" : "unavailable")">
                         <h2>@item.Definition?.Name</h2>
 
                         @if (item.Built) {

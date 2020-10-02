@@ -20,7 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private IEnumerable<GameAction> GetActions(PlayerId playerId) => Actions.Where(x => x.PlayerId.Equals(playerId));
 
 		internal IList<GameAction> GetAndRemoveDueActions(PlayerId playerId, string name, GameTick gameTick) {
-			// TODO LOCK
+			// TODO: synchronize
 			var actions = GetActions(playerId).Where(x => x.Name == name && x.IsDue(gameTick)).ToList(); // copy
 			foreach (var action in actions) {
 				Remove(action);
@@ -50,12 +50,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		internal void Remove(GameAction action) {
-			// TODO LOCK
+			// TODO: synchronize
 			Actions.Remove(action);
 		}
 
 		internal void AddAction(GameAction action) {
-			// TODO LOCK
+			// TODO: synchronize
 			Actions.Add(action);
 		}
 	}
