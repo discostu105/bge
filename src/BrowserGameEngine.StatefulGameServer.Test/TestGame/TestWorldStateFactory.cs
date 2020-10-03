@@ -43,17 +43,20 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 							new UnitImmutable (
 								UnitId: Id.NewUnitId(),
 								UnitDefId: Id.UnitDef("unit1"),
-								Count: 10
+								Count: 10,
+								Position: null
 							),
 							new UnitImmutable (
 								UnitId: Id.NewUnitId(),
 								UnitDefId: Id.UnitDef("unit1"),
-								Count: 5
+								Count: 5,
+								Position: null
 							),
 							new UnitImmutable (
 								UnitId: Id.NewUnitId(),
 								UnitDefId: Id.UnitDef("unit2"),
-								Count: 25
+								Count: 25,
+								Position: null
 							)
 						}
 					)
@@ -61,7 +64,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 			);
 
 			return new WorldStateImmutable(
-				players.ToDictionary(x => x.PlayerId), 
+				players.ToDictionary(x => x.PlayerId),
 				new GameTickStateImmutable(gameTick, DateTime.Now),
 				new List<GameActionImmutable>()
 			);

@@ -14,5 +14,6 @@ namespace BrowserGameEngine.Shared {
 		public Guid UnitId { get; set; }
 		public UnitDefinitionViewModel? Definition { get; set; }
 		public int Count { get; set; }
+		public string? PositionPlayerId { get; set; }
 	}
 }

@@ -20,5 +20,9 @@
     <ProjectReference Include="..\BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="storage\" />
+  </ItemGroup>
+
 
 </Project>

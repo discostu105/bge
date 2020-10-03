@@ -11,5 +11,6 @@ namespace BrowserGameEngine.GameModel {
 		public static PlayerTypeDefId PlayerType(string id) => new PlayerTypeDefId(id);
 		public static UnitId NewUnitId() => new UnitId(Guid.NewGuid());
 		public static UnitId UnitId(Guid guid) => new UnitId(guid);
+		public static UnitId UnitId(string guid) => new UnitId(Guid.Parse(guid));
 	}
 }

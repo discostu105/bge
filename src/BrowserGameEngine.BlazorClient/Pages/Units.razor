@@ -1,6 +1,7 @@
 ﻿@page "/units"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@inject NavigationManager Nav
 
 <h1>Einheiten</h1>
 
@@ -21,6 +22,7 @@
                 <th>Name</th>
                 <th>Anzahl</th>
                 <th>Eigenschaften</th>
+                <th>Position</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +32,7 @@
                         <td>@item.Definition?.Name</td>
                         <td>@item.Count</td>
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
+                        <td>@item.PositionPlayerId</td>
                         <td>
                             <button class="btn btn-primary" @onclick="async () => await Merge(item.Definition.Id)">
                                 Truppen dieses Typs zusammenführen
@@ -44,6 +47,7 @@
                                     <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
                                 }
                             }
+                            <NavLink class="nav-link" href="@($"selectenemy/{item.UnitId}")">Angriff</NavLink>
                         </td>
                     </tr>
                 }

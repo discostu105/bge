@@ -55,17 +55,20 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 								new UnitImmutable (
 									UnitId: Id.NewUnitId(),
 									UnitDefId: Id.UnitDef("wbf"),
-									Count: 10
+									Count: 10,
+									Position: null
 								),
 								new UnitImmutable (
 									UnitId: Id.NewUnitId(),
 									UnitDefId: Id.UnitDef("spacemarine"),
-									Count: 25
+									Count: 25,
+									Position: null
 								),
 								new UnitImmutable (
 									UnitId: Id.NewUnitId(),
 									UnitDefId: Id.UnitDef("siegetank"),
-									Count: 3
+									Count: 3,
+									Position: null
 								),
 							}
 						)

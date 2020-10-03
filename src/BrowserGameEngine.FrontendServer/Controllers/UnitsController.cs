@@ -12,7 +12,7 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.GameDefinition;
 using Microsoft.AspNetCore.Authorization;
 
-namespace BrowserGameEngine.Server.Controllers {
+namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
 	[Route("api/[controller]/{action?}/{id?}")]
@@ -89,7 +89,8 @@ namespace BrowserGameEngine.Server.Controllers {
 			return new UnitViewModel {
 				UnitId = unit.UnitId.Id,
 				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId, unitDef)),
-				Count = unit.Count
+				Count = unit.Count,
+				PositionPlayerId = unit.Position?.Id
 			};
 		}
 	}

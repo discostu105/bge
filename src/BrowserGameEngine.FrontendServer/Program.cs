@@ -6,7 +6,7 @@ using Serilog.Events;
 using Microsoft.Extensions.DependencyInjection;
 using BrowserGameEngine.FrontendServer;
 
-namespace BrowserGameEngine.Server {
+namespace BrowserGameEngine.FrontendServer {
 	public class Program {
 		public static int Main(string[] args) {
 			Log.Logger = new LoggerConfiguration()

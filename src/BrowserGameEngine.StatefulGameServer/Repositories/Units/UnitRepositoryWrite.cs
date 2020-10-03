@@ -61,7 +61,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			// TODO: synchronize
 			var unitDef = gameDef.GetUnitDef(command.UnitDefId);
 			if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
-			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsMergable()).Sum(x => x.Count);
+			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsHome()).Sum(x => x.Count);
+			if (totalCount == 0) return;
 			RemoveUnits(command.PlayerId, command.UnitDefId);
 			AddUnit(command.PlayerId, command.UnitDefId, totalCount);
 		}
@@ -70,11 +71,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 			// TODO: synchronize
 			var unit = Unit(command.PlayerId, command.UnitId);
 			if (unit == null) throw new UnitNotFoundException(command.UnitId);
+			if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot split unit.");
 			if (command.SplitCount <= 0) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
 			if (command.SplitCount == unit.Count) return;
 			if (command.SplitCount > unit.Count) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
 			unit.Count -= command.SplitCount;
 			AddUnit(command.PlayerId, unit.UnitDefId, command.SplitCount);
+		}
+
+		public void SendUnit(SendUnitCommand command) {
+			// TODO: synchronize
+			var unit = Unit(command.PlayerId, command.UnitId);
+			if (unit == null) throw new UnitNotFoundException(command.UnitId);
+			if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot move unit.");
+			world.ValidatePlayer(command.EnemyPlayerId);
+			unit.Position = command.EnemyPlayerId;
 		}
 
 		private void RemoveUnits(PlayerId playerId, UnitDefId unitDefId) {

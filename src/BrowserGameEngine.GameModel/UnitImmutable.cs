@@ -9,6 +9,7 @@ namespace BrowserGameEngine.GameModel {
 	public record UnitImmutable(
 		UnitId UnitId,
 		UnitDefId UnitDefId,
-		int Count
+		int Count,
+		PlayerId? Position
 	);
 }

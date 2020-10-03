@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using BrowserGameEngine.GameDefinition;
 using Microsoft.AspNetCore.Authorization;
 
-namespace BrowserGameEngine.Server.Controllers {
+namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
 	[Route("api/[controller]")]

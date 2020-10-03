@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in model) {
+            @foreach (var item in model.OrderByDescending(x => x.Score)) {
             <tr>
                 <td>@item.PlayerId</td>
                 <td>@item.PlayerName</td>
@@ -28,10 +28,10 @@
 }
 
 @code {
-    private PlayerRankingViewModel[]? model;
+    private PublicPlayerViewModel[]? model;
 
     protected override async Task OnInitializedAsync() {
-        model = await Http.GetFromJsonAsync<PlayerRankingViewModel[]>("api/playerranking");
+        model = await Http.GetFromJsonAsync<PublicPlayerViewModel[]>("api/playerranking");
     }
 
 }

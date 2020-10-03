@@ -1,0 +1,58 @@
+﻿@page "/selectenemy/{UnitId}"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h1>Gegner auswählen</h1>
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <span class="error">@lastError</span>
+}
+
+@if (model == null) {
+    <p><em>Loading...</em></p>
+} else {
+    <EditForm Model="model" OnValidSubmit="@SendUnits">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <InputSelect @bind-Value="SelectedPlayerId">
+            @foreach (var x in model.AttackablePlayers) {
+                <option value="@x.PlayerId">@x.PlayerName (@x.Score)</option>
+                }
+        </InputSelect>
+        <button type="submit">Truppen senden</button>
+    </EditForm>
+
+    <NavLink class="nav-link" href="units">Angriff abbrechen</NavLink>
+}
+
+@code {
+    [Parameter]
+    public string UnitId { get; set; }
+
+    private SelectEnemyViewModel? model;
+
+    private string? SelectedPlayerId = null;
+
+    private string? lastError;
+
+    protected override async Task OnInitializedAsync() {
+        model = await Http.GetFromJsonAsync<SelectEnemyViewModel>("api/battle/attackableplayers");
+        if (model != null && model.AttackablePlayers.Any()) SelectedPlayerId = model.AttackablePlayers.First().PlayerId;
+    }
+
+    private async Task SendUnits() {
+        if (string.IsNullOrEmpty(SelectedPlayerId)) {
+            lastError = "SelectedPlayerId empty.";
+            return;
+        }
+        var response = await Http.PostAsJsonAsync($"api/battle/sendunits?unitId={UnitId}&enemyPlayerId={Uri.EscapeDataString(SelectedPlayerId)}", "");
+        if (response.IsSuccessStatusCode) {
+            Nav.NavigateTo(@"/enemybase/{SelectedPlayerId}");
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            lastError = error;
+        }
+    }
+}

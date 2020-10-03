@@ -68,7 +68,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 							new UnitImmutable (
 								UnitId: Id.NewUnitId(),
 								UnitDefId: Id.UnitDef(unitDefId),
-								Count: 10
+								Count: 10,
+								Position: null
 							)
 						}
 					)

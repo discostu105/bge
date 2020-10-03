@@ -13,6 +13,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public NullLoggerFactory LoggerFactory { get; }
 		public WorldState World { get; }
 		public GameDef GameDef { get; }
+		public ScoreRepository ScoreRepository { get; }
 		public PlayerRepository PlayerRepository { get; }
 		public PlayerRepositoryWrite PlayerRepositoryWrite { get; }
 		public ResourceRepository ResourceRepository { get; }
@@ -33,7 +34,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			WorldStateFactory = new TestWorldStateFactory();
 			World = WorldStateFactory.CreateDevWorldState().ToMutable();
 			GameDef = new TestGameDefFactory().CreateGameDef();
-			PlayerRepository = new PlayerRepository(World);
+			ScoreRepository = new ScoreRepository(GameDef, World);
+			PlayerRepository = new PlayerRepository(World, ScoreRepository);
 			PlayerRepositoryWrite = new PlayerRepositoryWrite(World);
 			ResourceRepository = new ResourceRepository(World);
 			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository);

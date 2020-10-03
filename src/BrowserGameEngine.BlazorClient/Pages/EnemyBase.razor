@@ -1,0 +1,20 @@
+﻿@page "/enemybase"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Angriff</h1>
+
+@if (model == null) {
+    <p><em>Loading...</em></p>
+} else {
+
+}
+
+@code {
+    private EnemyBaseViewModel[]? model;
+
+    protected override async Task OnInitializedAsync() {
+
+    }
+
+}

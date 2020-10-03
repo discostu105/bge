@@ -21,6 +21,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			throw new PlayerNotFoundException(playerId);
 		}
 
+		// throws if player not found
+		internal void ValidatePlayer(PlayerId playerId) {
+			if (!Players.ContainsKey(playerId)) throw new PlayerNotFoundException(playerId);
+		}
+
 		internal PlayerId[] GetPlayersForGameTick() {
 			// TODO read lock players
 			return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.GameTickState.CurrentGameTick.Tick).Select(x => x.Key).ToArray();

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authorization;
 
-namespace BrowserGameEngine.Server.Controllers {
+namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
 	[Route("api/[controller]")]
@@ -27,12 +27,9 @@ namespace BrowserGameEngine.Server.Controllers {
 		}
 
 		[HttpGet]
-		public IEnumerable<PlayerRankingViewModel> Get() {
-			return playerRepository.GetAll().Select(p => new PlayerRankingViewModel {
-				PlayerId = p.PlayerId.Id,
-				PlayerName = p.Name,
-				Score = scoreRepository.GetScore(p.PlayerId)
-			});
+		public IEnumerable<PublicPlayerViewModel> Get() {
+			return playerRepository.GetAll().Select(p => p.ToPublicPlayerViewModel(scoreRepository));
 		}
+
 	}
 }

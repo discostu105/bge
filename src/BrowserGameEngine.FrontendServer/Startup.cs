@@ -22,7 +22,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using BrowserGameEngine.GameDefinition.SCO;
 
-namespace BrowserGameEngine.Server {
+namespace BrowserGameEngine.FrontendServer {
 	public class Startup {
 		public Startup(IConfiguration configuration) {
 			Configuration = configuration;

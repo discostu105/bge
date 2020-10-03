@@ -13,7 +13,7 @@ using BrowserGameEngine.GameDefinition;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 
-namespace BrowserGameEngine.Server.Controllers {
+namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
 	[Route("api/[controller]/{action?}/{id?}")]

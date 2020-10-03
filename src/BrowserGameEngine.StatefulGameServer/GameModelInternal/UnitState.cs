@@ -8,9 +8,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public UnitId UnitId { get; init; }
 		public UnitDefId UnitDefId { get; init; }
 		public int Count { get; set; }
+		public PlayerId? Position { get; set; }
 
-		internal bool IsMergable() {
-			return true; // TODO; return false if unit is outside base
+		internal bool IsHome() {
+			return Position == null;
 		}
 	}
 
@@ -19,7 +20,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new UnitImmutable(
 				UnitId: unitState.UnitId,
 				UnitDefId: unitState.UnitDefId,
-				Count: unitState.Count
+				Count: unitState.Count,
+				Position: unitState.Position
 			);
 		}
 
@@ -27,7 +29,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new Unit {
 				UnitId = unitStateImmutable.UnitId,
 				UnitDefId = unitStateImmutable.UnitDefId,
-				Count = unitStateImmutable.Count
+				Count = unitStateImmutable.Count,
+				Position = unitStateImmutable.Position
 			};
 		}
 	}

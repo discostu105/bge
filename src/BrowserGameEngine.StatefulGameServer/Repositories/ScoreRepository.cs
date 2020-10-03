@@ -2,21 +2,24 @@ using System;
 using System.Collections.Generic;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 
 	public class ScoreRepository {
-		private readonly PlayerRepository playerReadApi;
 		private readonly GameDef gameDef;
+		private readonly WorldState world;
 
-		public ScoreRepository(PlayerRepository playerReadApi, GameDef gameDef) {
-			this.playerReadApi = playerReadApi;
+		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
+
+		public ScoreRepository(GameDef gameDef, WorldState world) {
 			this.gameDef = gameDef;
+			this.world = world;
 		}
 
 		public decimal GetScore(PlayerId playerId) {
 			var scoreResource = gameDef.ScoreResource;
-			return playerReadApi.Get(playerId).State.Resources[scoreResource];
+			return Res(playerId)[scoreResource];
 		}
 	}
 }
