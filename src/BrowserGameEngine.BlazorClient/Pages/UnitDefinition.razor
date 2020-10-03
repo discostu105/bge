@@ -2,11 +2,9 @@
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
-<h1>Units</h1>
+<h1>Einheiten Definitionen</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (unitDefinitions == null) {
+@if (model == null) {
     <p><em>Loading...</em></p>
 } else {
     <table class="table">
@@ -20,7 +18,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var unitDef in unitDefinitions) {
+            @foreach (var unitDef in model) {
             <tr>
                 <td>@unitDef.Id</td>
                 <td>@unitDef.Name</td>
@@ -34,10 +32,10 @@
 }
 
 @code {
-    private UnitDefinitionViewModel[]? unitDefinitions;
+    private UnitDefinitionViewModel[]? model;
 
     protected override async Task OnInitializedAsync() {
-        unitDefinitions = await Http.GetFromJsonAsync<UnitDefinitionViewModel[]>("api/unitdefinitions");
+        model = await Http.GetFromJsonAsync<UnitDefinitionViewModel[]>("api/unitdefinitions");
     }
 
 }

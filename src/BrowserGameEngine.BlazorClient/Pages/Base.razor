@@ -6,16 +6,16 @@
 
 <div class="container">
 
-    @if (assets == null) {
+    @if (model == null) {
         <p><em>Lade...</em></p>
     } else {
         if (!string.IsNullOrEmpty(lastError)) {
             <span class="error">@lastError</span>
         }
 
-        @if (assets.Assets != null) {
+        @if (model.Assets != null) {
             <div class="row">
-                @foreach (var item in assets.Assets) {
+                @foreach (var item in model.Assets) {
                     <div class="col-md-4 bge-asset @(item.Built ? "available" : "unavailable")">
                         <h2>@item.Definition?.Name</h2>
 
@@ -49,7 +49,7 @@
 @code {
 
 
-    private AssetsViewModel? assets;
+    private AssetsViewModel? model;
     private string? lastError;
 
     protected override async Task OnInitializedAsync() {
@@ -67,7 +67,7 @@
     }
 
     private async Task Update() {
-        assets = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
+        model = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
     }
 
 }

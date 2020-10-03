@@ -2,19 +2,17 @@
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
-<h1>Units</h1>
+<h1>Profile</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (playerProfile == null) {
+@if (model == null) {
     <p><em>Loading...</em></p>
 } else {
     <div>
-        <EditForm Model="@playerProfile" OnValidSubmit="HandleValidSubmit">
+        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <InputText id="PlayerName" @bind-Value="playerProfile.PlayerName" />
+            <InputText id="PlayerName" @bind-Value="model.PlayerName" />
 
             <button type="submit">Submit</button>
         </EditForm>
@@ -22,15 +20,15 @@
 }
 
 @code {
-    private PlayerProfileViewModel? playerProfile;
+    private PlayerProfileViewModel? model;
 
     protected override async Task OnInitializedAsync() {
-        playerProfile = await Http.GetFromJsonAsync<PlayerProfileViewModel>("api/playerprofile");
+        model = await Http.GetFromJsonAsync<PlayerProfileViewModel>("api/playerprofile");
     }
 
     private async Task HandleValidSubmit() {
-        if (playerProfile == null) return;
-        await Http.PostAsJsonAsync("api/playerprofile/changename", playerProfile);
+        if (model == null) return;
+        await Http.PostAsJsonAsync("api/playerprofile/changename", model);
     }
 
 }

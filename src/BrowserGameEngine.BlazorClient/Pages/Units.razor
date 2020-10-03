@@ -4,9 +4,7 @@
 
 <h1>Einheiten</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (units == null) {
+@if (model == null) {
     <p><em>Loading...</em></p>
 } else {
     if (!string.IsNullOrEmpty(lastError)) {
@@ -26,8 +24,8 @@
             </tr>
         </thead>
         <tbody>
-            @if (units.Units != null) {
-                @foreach (var item in units.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+            @if (model.Units != null) {
+                @foreach (var item in model.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
                     <tr>
                         <td>@item.Definition?.Name</td>
                         <td>@item.Count</td>
@@ -55,7 +53,7 @@
 }
 
 @code {
-    private UnitsViewModel? units;
+    private UnitsViewModel? model;
     private string? lastError;
     private Dictionary<Guid, bool> showSplit = new();
 
@@ -65,7 +63,7 @@
 
     private async Task Update() {
         showSplit = new();
-        units = await Http.GetFromJsonAsync<UnitsViewModel>("api/units");
+        model = await Http.GetFromJsonAsync<UnitsViewModel>("api/units");
     }
 
     private async Task MergeAll(MouseEventArgs e) {
