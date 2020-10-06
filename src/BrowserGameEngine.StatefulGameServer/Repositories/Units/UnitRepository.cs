@@ -37,11 +37,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return true;
 		}
 
-		public List<UnitImmutable> GetByUnitDefId(PlayerId playerId, UnitDefId unitDefId) {
+		public IEnumerable<UnitImmutable> GetByUnitDefId(PlayerId playerId, UnitDefId unitDefId) {
 			return Units(playerId)
 				.Where(x => x.UnitDefId.Equals(unitDefId))
-				.Select(x => x.ToImmutable())
-				.ToList();
+				.Select(x => x.ToImmutable());
 		}
 
 		public IEnumerable<UnitImmutable> GetById(PlayerId playerId, UnitId unitId) {
@@ -56,9 +55,20 @@ namespace BrowserGameEngine.StatefulGameServer {
 				.Sum(x => x.Count);
 		}
 
-		public List<UnitDef> GetUnitsPrerequisitesMet(PlayerId playerId) {
-			return gameDef.GetUnitsByPlayerType(world.GetPlayer(playerId).PlayerType).Where(x => PrerequisitesMet(playerId, x)).ToList();
+		public IEnumerable<UnitDef> GetUnitsPrerequisitesMet(PlayerId playerId) {
+			return gameDef.GetUnitsByPlayerType(world.GetPlayer(playerId).PlayerType).Where(x => PrerequisitesMet(playerId, x));
 		}
 
+		public IEnumerable<UnitImmutable> GetOffensiveUnits(PlayerId playerId, PlayerId enemyPlayerId) {
+			return Units(playerId)
+				.Where(x => x.Position == enemyPlayerId)
+				.Select(x => x.ToImmutable());
+		}
+
+		public IEnumerable<UnitImmutable> GetDefendingEnemyUnits(PlayerId playerId, PlayerId enemyPlayerId) {
+			return Units(enemyPlayerId)
+				.Where(x => x.IsHome())
+				.Select(x => x.ToImmutable());
+		}
 	}
 }

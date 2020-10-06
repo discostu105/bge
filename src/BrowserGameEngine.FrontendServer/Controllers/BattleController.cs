@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.GameDefinition;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
@@ -17,21 +18,27 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 	[Route("api/[controller]/{action?}")]
 	public class BattleController : ControllerBase {
 		private readonly ILogger<PlayerRankingController> logger;
+		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly ScoreRepository scoreRepository;
 		private readonly PlayerRepository playerRepository;
+		private readonly UnitRepository unitRepository;
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 
 		public BattleController(ILogger<PlayerRankingController> logger
+				, GameDef gameDef
 				, CurrentUserContext currentUserContext
 				, ScoreRepository scoreRepository
 				, PlayerRepository playerRepository
+				, UnitRepository unitRepository
 				, UnitRepositoryWrite unitRepositoryWrite
 			) {
 			this.logger = logger;
+			this.gameDef = gameDef;
 			this.currentUserContext = currentUserContext;
 			this.scoreRepository = scoreRepository;
 			this.playerRepository = playerRepository;
+			this.unitRepository = unitRepository;
 			this.unitRepositoryWrite = unitRepositoryWrite;
 		}
 
@@ -51,5 +58,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return BadRequest(e.Message);
 			}
 		}
+
+		[HttpGet]
+		public EnemyBaseViewModel EnemyBase([FromQuery] string enemyPlayerId) {
+			return new EnemyBaseViewModel {
+				PlayerAttackingUnits = new UnitsViewModel {
+					Units = unitRepository.GetOffensiveUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
+						.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
+				},
+				EnemyDefendingUnits = new UnitsViewModel {
+					Units = unitRepository.GetDefendingEnemyUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
+						.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
+				}
+			};
+		}
+		
 	}
 }

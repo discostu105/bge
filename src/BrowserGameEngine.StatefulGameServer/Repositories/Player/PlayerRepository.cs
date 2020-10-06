@@ -32,12 +32,26 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public IEnumerable<PlayerImmutable> GetAttackablePlayers(PlayerId playerId) {
 			var playerScore = scoreRepository.GetScore(playerId);
-			var minScore = playerScore * 0.5M; // TODO: selection shall be configurable behavior
+			var minScore = GetMinScore(playerScore);
 			return Players
 				.Where(x => scoreRepository.GetScore(x.Key) >= minScore)
 				.Where(x => x.Key != playerId)
 				// TODO: consider alliance members here
 				.Select(x => x.Value.ToImmutable());
+		}
+
+		private static decimal GetMinScore(decimal playerScore) {
+			return playerScore * 0.5M; // TODO: selection shall be configurable behavior
+		}
+
+		public bool IsPlayerAttackable(PlayerId attacker, PlayerId defender) {
+			var attackerScore = scoreRepository.GetScore(attacker);
+			var defenderScore = scoreRepository.GetScore(attacker);
+			var minScore = GetMinScore(attackerScore);
+			return attacker != defender
+				&& defenderScore >= attackerScore
+				// TODO: consider alliance members
+				;
 		}
 	}
 }

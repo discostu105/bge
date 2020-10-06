@@ -42,7 +42,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public UnitsViewModel Get() {
 			return new UnitsViewModel {
-				Units = unitRepository.GetAll(currentUserContext.PlayerId).Select(x => CreateUnitViewModel(x)).ToList()
+				Units = unitRepository.GetAll(currentUserContext.PlayerId).Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
 			};
 		}
 
@@ -80,18 +80,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			} catch (InvalidGameDefException e) {
 				return BadRequest(e.Message);
 			}
-		}
-
-		private UnitViewModel CreateUnitViewModel(UnitImmutable unit) {
-			var unitDef = gameDef.GetUnitDef(unit.UnitDefId);
-			if (unitDef == null) throw new InvalidGameDefException($"Unit '{unit.UnitDefId}' not found");
-
-			return new UnitViewModel {
-				UnitId = unit.UnitId.Id,
-				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId, unitDef)),
-				Count = unit.Count,
-				PositionPlayerId = unit.Position?.Id
-			};
 		}
 	}
 }

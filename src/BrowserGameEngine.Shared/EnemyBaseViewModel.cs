@@ -6,5 +6,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.Shared {
 	public class EnemyBaseViewModel {
+		public UnitsViewModel PlayerAttackingUnits { get; set; }
+		public UnitsViewModel EnemyDefendingUnits { get; set; }
 	}
 }

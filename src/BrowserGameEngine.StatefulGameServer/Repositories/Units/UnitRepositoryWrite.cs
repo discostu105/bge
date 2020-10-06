@@ -14,16 +14,19 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly GameDef gameDef;
 		private readonly UnitRepository unitRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
+		private readonly PlayerRepository playerRepository;
 
 		public UnitRepositoryWrite(WorldState world
 				, GameDef gameDef
 				, UnitRepository unitRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
+				, PlayerRepository playerRepository
 			) {
 			this.world = world;
 			this.gameDef = gameDef;
 			this.unitRepository = unitRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
+			this.playerRepository = playerRepository;
 		}
 
 		private List<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
@@ -45,6 +48,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var unitDef = gameDef.GetUnitDef(command.UnitDefId);
 			if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
 			if (!unitRepository.PrerequisitesMet(command.PlayerId, unitDef)) throw new PrerequisitesNotMetException("too bad");
+
 			resourceRepositoryWrite.DeductCost(command.PlayerId, unitDef.Cost.Multiply(command.Count));
 			AddUnit(command.PlayerId, command.UnitDefId, command.Count);
 		}
@@ -63,6 +67,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
 			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsHome()).Sum(x => x.Count);
 			if (totalCount == 0) return;
+
 			RemoveUnits(command.PlayerId, command.UnitDefId);
 			AddUnit(command.PlayerId, command.UnitDefId, totalCount);
 		}
@@ -75,6 +80,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (command.SplitCount <= 0) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
 			if (command.SplitCount == unit.Count) return;
 			if (command.SplitCount > unit.Count) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
+
 			unit.Count -= command.SplitCount;
 			AddUnit(command.PlayerId, unit.UnitDefId, command.SplitCount);
 		}
@@ -85,6 +91,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (unit == null) throw new UnitNotFoundException(command.UnitId);
 			if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot move unit.");
 			world.ValidatePlayer(command.EnemyPlayerId);
+			if (!playerRepository.IsPlayerAttackable(command.PlayerId, command.EnemyPlayerId)) throw new PlayerNotAttackableException(command.EnemyPlayerId);
+
 			unit.Position = command.EnemyPlayerId;
 		}
 

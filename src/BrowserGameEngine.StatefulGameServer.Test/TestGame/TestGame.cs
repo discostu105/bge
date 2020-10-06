@@ -43,7 +43,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			AssetRepository = new AssetRepository(World, PlayerRepository, ActionQueueRepository);
 			AssetRepositoryWrite = new AssetRepositoryWrite(LoggerFactory.CreateLogger<AssetRepositoryWrite>(), World, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
 			UnitRepository = new UnitRepository(World, GameDef, PlayerRepository, AssetRepository);
-			UnitRepositoryWrite = new UnitRepositoryWrite(World, GameDef, UnitRepository, ResourceRepositoryWrite);
+			UnitRepositoryWrite = new UnitRepositoryWrite(World, GameDef, UnitRepository, ResourceRepositoryWrite, PlayerRepository);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));

@@ -1,4 +1,4 @@
-﻿@page "/enemybase"
+﻿@page "/enemybase/{EnemeyPlayerId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
@@ -7,14 +7,59 @@
 @if (model == null) {
     <p><em>Loading...</em></p>
 } else {
+    <h2>Eigene Truppen</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Anzahl</th>
+                <th>Eigenschaften</th>
+                <th>Position</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in model.PlayerAttackingUnits.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+                <tr>
+                    <td>@item.Definition?.Name</td>
+                    <td>@item.Count</td>
+                    <td><_UnitProperties UnitDef="item.Definition" /></td>
+                    <td>@item.PositionPlayerId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
+    <h2>Feindliche Truppen</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Anzahl</th>
+                <th>Eigenschaften</th>
+                <th>Position</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in model.EnemyDefendingUnits.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+                <tr>
+                    <td>@item.Definition?.Name</td>
+                    <td>@item.Count</td>
+                    <td><_UnitProperties UnitDef="item.Definition" /></td>
+                    <td>@item.PositionPlayerId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {
-    private EnemyBaseViewModel[]? model;
+    private EnemyBaseViewModel? model;
+
+    [Parameter]
+    public string EnemeyPlayerId { get; set; }
 
     protected override async Task OnInitializedAsync() {
-
+        model = await Http.GetFromJsonAsync<EnemyBaseViewModel>($"api/battle/enemybase?enemyPlayerId={Uri.EscapeDataString(EnemeyPlayerId)}");
     }
 
 }

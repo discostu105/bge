@@ -32,7 +32,11 @@
                         <td>@item.Definition?.Name</td>
                         <td>@item.Count</td>
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
-                        <td>@item.PositionPlayerId</td>
+                        <td>
+                            @if (item.PositionPlayerId != null) {
+                                <NavLink class="nav-link" href="@($"enemybase/{Uri.EscapeDataString(item.PositionPlayerId)}")">@item.PositionPlayerId</NavLink>
+                            }
+                        </td>
                         <td>
                             <button class="btn btn-primary" @onclick="async () => await Merge(item.Definition.Id)">
                                 Truppen dieses Typs zusammenführen
