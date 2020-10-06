@@ -59,13 +59,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return gameDef.GetUnitsByPlayerType(world.GetPlayer(playerId).PlayerType).Where(x => PrerequisitesMet(playerId, x));
 		}
 
-		public IEnumerable<UnitImmutable> GetOffensiveUnits(PlayerId playerId, PlayerId enemyPlayerId) {
+		public IEnumerable<UnitImmutable> GetAttackingUnits(PlayerId playerId, PlayerId enemyPlayerId) {
 			return Units(playerId)
 				.Where(x => x.Position == enemyPlayerId)
 				.Select(x => x.ToImmutable());
 		}
 
 		public IEnumerable<UnitImmutable> GetDefendingEnemyUnits(PlayerId playerId, PlayerId enemyPlayerId) {
+			if (!GetAttackingUnits(playerId, enemyPlayerId).Any()) throw new CannotViewEnemyBaseException();
 			return Units(enemyPlayerId)
 				.Where(x => x.IsHome())
 				.Select(x => x.ToImmutable());

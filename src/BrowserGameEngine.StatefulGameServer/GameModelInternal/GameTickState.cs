@@ -1,4 +1,5 @@
 ﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

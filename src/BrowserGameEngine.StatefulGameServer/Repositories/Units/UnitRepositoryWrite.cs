@@ -15,18 +15,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly UnitRepository unitRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
+		private readonly IBattleBehavior battleBehavior;
 
 		public UnitRepositoryWrite(WorldState world
 				, GameDef gameDef
 				, UnitRepository unitRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
 				, PlayerRepository playerRepository
+				, IBattleBehavior battleBehavior
 			) {
 			this.world = world;
 			this.gameDef = gameDef;
 			this.unitRepository = unitRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 			this.playerRepository = playerRepository;
+			this.battleBehavior = battleBehavior;
 		}
 
 		private List<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
@@ -68,7 +71,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsHome()).Sum(x => x.Count);
 			if (totalCount == 0) return;
 
-			RemoveUnits(command.PlayerId, command.UnitDefId);
+			RemoveUnitsOfType(command.PlayerId, command.UnitDefId);
 			AddUnit(command.PlayerId, command.UnitDefId, totalCount);
 		}
 
@@ -96,8 +99,54 @@ namespace BrowserGameEngine.StatefulGameServer {
 			unit.Position = command.EnemyPlayerId;
 		}
 
-		private void RemoveUnits(PlayerId playerId, UnitDefId unitDefId) {
+		private void RemoveUnitsOfType(PlayerId playerId, UnitDefId unitDefId) {
 			Units(playerId).RemoveAll(x => x.UnitDefId == unitDefId);
+		}
+
+		private void RemoveUnit(PlayerId playerId, UnitId unitId) {
+			Units(playerId).RemoveAll(x => x.UnitId == unitId);
+		}
+
+		private int TryRemoveUnitCount(PlayerId playerId, UnitId unitId, int count) {
+			var unit = Unit(playerId, unitId);
+			if (count >= unit.Count) {
+				// remove full unit
+				RemoveUnit(playerId, unitId);
+				return unit.Count;
+			}
+			// only reduce count of existing unit
+			unit.Count -= count;
+			return count;
+		}
+
+		public BattleResult Attack(PlayerId playerId, PlayerId enemyPlayerId) {
+			var attackingUnits = unitRepository.GetAttackingUnits(playerId, enemyPlayerId);
+			var defendingUnits = unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId);
+
+			BattleResult battleResult = battleBehavior.CalculateResult(attackingUnits, defendingUnits);
+			ApplyBatteResult(battleResult);
+			return battleResult;
+		}
+
+		private void ApplyBatteResult(BattleResult battleResult) {
+			RemoveUnits(battleResult.Attacker, battleResult.AttackingUnitsDestroyed);
+			RemoveUnits(battleResult.Defender, battleResult.DefendingUnitsDestroyed);
+		}
+
+		private void RemoveUnits(PlayerId playerId, List<UnitCount> unitCounts) {
+			foreach (var unitCount in unitCounts) {
+				RemoveUnits(playerId, unitCount);
+			}
+		}
+
+		private void RemoveUnits(PlayerId playerId, UnitCount unitCount) {
+			var units = unitRepository.GetByUnitDefId(playerId, unitCount.UnitDefId);
+			int unitsToRemove = unitCount.Count;
+			foreach (var unit in units) {
+				unitsToRemove -= TryRemoveUnitCount(playerId, unit.UnitId, unitsToRemove);
+				if (unitsToRemove == 0) return;
+				if (unitsToRemove < 0) throw new Exception("Here be dragons. unitsToRemove can never be less than zero.");
+			}
 		}
 	}
 }

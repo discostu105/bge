@@ -1,5 +1,6 @@
 ﻿using BrowserGameEgnine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.GameModel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;

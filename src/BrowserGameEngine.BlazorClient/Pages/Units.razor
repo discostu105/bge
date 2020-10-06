@@ -5,13 +5,13 @@
 
 <h1>Einheiten</h1>
 
+@if (!string.IsNullOrEmpty(lastError)) {
+    <span class="error">@lastError</span>
+}
+
 @if (model == null) {
     <p><em>Loading...</em></p>
 } else {
-    if (!string.IsNullOrEmpty(lastError)) {
-        <span class="error">@lastError</span>
-    }
-
     <button class="btn btn-primary" @onclick="MergeAll">
         Truppen zusammenführen
     </button>

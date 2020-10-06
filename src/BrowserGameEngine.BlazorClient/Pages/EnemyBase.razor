@@ -4,56 +4,78 @@
 
 <h1>Angriff</h1>
 
+@if (!string.IsNullOrEmpty(lastError)) {
+    <span class="error">@lastError</span>
+}
+
 @if (model == null) {
     <p><em>Loading...</em></p>
 } else {
-    <h2>Eigene Truppen</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Anzahl</th>
-                <th>Eigenschaften</th>
-                <th>Position</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in model.PlayerAttackingUnits.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
-                <tr>
-                    <td>@item.Definition?.Name</td>
-                    <td>@item.Count</td>
-                    <td><_UnitProperties UnitDef="item.Definition" /></td>
-                    <td>@item.PositionPlayerId</td>
-                </tr>
-            }
-        </tbody>
-    </table>
 
-    <h2>Feindliche Truppen</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Anzahl</th>
-                <th>Eigenschaften</th>
-                <th>Position</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in model.EnemyDefendingUnits.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+    <NavLink class="nav-link" href="units">Nachschub anfordern</NavLink>
+
+    <button class="btn btn-primary" @onclick="Attack">
+        Angreifen
+    </button>
+
+    @if (battleResult != null) {
+        <h2>Schlachtergebnis</h2>
+
+    } else {
+        <h2>Eigene Truppen</h2>
+
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@item.Definition?.Name</td>
-                    <td>@item.Count</td>
-                    <td><_UnitProperties UnitDef="item.Definition" /></td>
-                    <td>@item.PositionPlayerId</td>
+                    <th>Name</th>
+                    <th>Anzahl</th>
+                    <th>Eigenschaften</th>
+                    <th>Position</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in model.PlayerAttackingUnits.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+                    <tr>
+                        <td>@item.Definition?.Name</td>
+                        <td>@item.Count</td>
+                        <td><_UnitProperties UnitDef="item.Definition" /></td>
+                        <td>@item.PositionPlayerId</td>
+                        <td>Rückzug</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h2>Feindliche Truppen</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Anzahl</th>
+                    <th>Eigenschaften</th>
+                    <th>Position</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in model.EnemyDefendingUnits.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+                    <tr>
+                        <td>@item.Definition?.Name</td>
+                        <td>@item.Count</td>
+                        <td><_UnitProperties UnitDef="item.Definition" /></td>
+                        <td>@item.PositionPlayerId</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
 
 @code {
     private EnemyBaseViewModel? model;
+
+    private BattleResultViewModel? battleResult;
+
+    private string? lastError;
 
     [Parameter]
     public string EnemeyPlayerId { get; set; }
@@ -62,4 +84,13 @@
         model = await Http.GetFromJsonAsync<EnemyBaseViewModel>($"api/battle/enemybase?enemyPlayerId={Uri.EscapeDataString(EnemeyPlayerId)}");
     }
 
+    private async Task Attack() {
+        var response = await Http.PostAsync($"api/battle/attack?enemyPlayerId={Uri.EscapeDataString(EnemeyPlayerId)}", null);
+        if (response.IsSuccessStatusCode) {
+            battleResult = await response.Content.ReadFromJsonAsync<BattleResultViewModel>();
+        } else {
+            var error = await response.Content.ReadAsStringAsync();
+            lastError = error;
+        }
+    }
 }

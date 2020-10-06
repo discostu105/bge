@@ -11,6 +11,7 @@ using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.GameDefinition;
+using System.Diagnostics;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
@@ -60,18 +61,27 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public EnemyBaseViewModel EnemyBase([FromQuery] string enemyPlayerId) {
-			return new EnemyBaseViewModel {
-				PlayerAttackingUnits = new UnitsViewModel {
-					Units = unitRepository.GetOffensiveUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
-						.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
-				},
-				EnemyDefendingUnits = new UnitsViewModel {
-					Units = unitRepository.GetDefendingEnemyUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
-						.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
-				}
-			};
+		public ActionResult<EnemyBaseViewModel> EnemyBase([FromQuery] string enemyPlayerId) {
+			try {
+				return new EnemyBaseViewModel {
+					PlayerAttackingUnits = new UnitsViewModel {
+						Units = unitRepository.GetAttackingUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
+							.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
+					},
+					EnemyDefendingUnits = new UnitsViewModel {
+						Units = unitRepository.GetDefendingEnemyUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
+							.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
+					}
+				};
+			} catch (CannotViewEnemyBaseException e) {
+				return BadRequest(e.Message);
+			}
 		}
-		
+
+
+		[HttpPost]
+		public ActionResult<BattleResultViewModel> Attack([FromQuery] string enemyPlayerId) {
+			return new BattleResultViewModel();
+		}
 	}
 }

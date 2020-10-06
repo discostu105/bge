@@ -1,12 +1,7 @@
 ﻿using BrowserGameEngine.GameDefinition;
-using BrowserGameEngine.GameModel;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BrowserGameEngine.StatefulGameServer {
+namespace BrowserGameEngine.GameModel {
 	public class WorldStateVerifier {
 		public void Verify(GameDef gameDef, WorldStateImmutable worldStateImmutable) {
 			foreach(var player in worldStateImmutable.Players.Values) {

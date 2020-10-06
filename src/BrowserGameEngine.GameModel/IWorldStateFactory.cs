@@ -1,6 +1,4 @@
-﻿using BrowserGameEngine.StatefulGameServer;
-
-namespace BrowserGameEngine.GameModel {
+﻿namespace BrowserGameEngine.GameModel {
 	public interface IWorldStateFactory {
 		WorldStateImmutable CreateDevWorldState();
 		WorldStateImmutable CreateInitialWorldState();
