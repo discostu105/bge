@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BrowserGameEgnine.Persistence {
+namespace BrowserGameEngine.Persistence {
 	public interface IBlobStorage {
 		Task Store(string name, byte[] blob);
 		Task<byte[]> Load(string name);

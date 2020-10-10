@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BrowserGameEgnine.Persistence {
+namespace BrowserGameEngine.Persistence {
 	public class FileStorage : IBlobStorage {
 		private readonly DirectoryInfo directory;
 

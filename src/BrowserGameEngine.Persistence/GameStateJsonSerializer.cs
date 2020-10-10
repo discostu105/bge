@@ -5,7 +5,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using KellySharp;
 
-namespace BrowserGameEgnine.Persistence {
+namespace BrowserGameEngine.Persistence {
 	public class GameStateJsonSerializer {
 		public byte[] Serialize(WorldStateImmutable worldStateImmutable) {
 			return JsonSerializer.SerializeToUtf8Bytes<WorldStateImmutable>(worldStateImmutable, GetOptions());

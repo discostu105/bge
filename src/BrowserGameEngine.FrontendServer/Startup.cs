@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
-using BrowserGameEgnine.Persistence;
+using BrowserGameEngine.Persistence;
 using System.IO;
 using System.Runtime.InteropServices;
 using BrowserGameEngine.GameDefinition.SCO;

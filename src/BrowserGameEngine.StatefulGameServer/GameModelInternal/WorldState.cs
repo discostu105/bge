@@ -1,4 +1,4 @@
-﻿using BrowserGameEgnine.Persistence;
+﻿using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;

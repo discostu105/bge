@@ -7,6 +7,7 @@ namespace BrowserGameEngine.GameModel {
 		public PlayerId Defender { get; set; }
 		public List<UnitCount> AttackingUnitsDestroyed { get; set; }
 		public List<UnitCount> DefendingUnitsDestroyed { get; set; }
+		public List<Cost> ResourcesDestroyed { get; set; }
 		public List<Cost> ResourcesStolen { get; set; }
 	}
 }

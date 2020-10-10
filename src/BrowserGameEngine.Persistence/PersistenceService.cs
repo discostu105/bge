@@ -1,7 +1,7 @@
 ﻿using BrowserGameEngine.GameModel;
 using System.Threading.Tasks;
 
-namespace BrowserGameEgnine.Persistence {
+namespace BrowserGameEngine.Persistence {
 	public class PersistenceService {
 		private readonly IBlobStorage storage;
 		private readonly GameStateJsonSerializer serializer;

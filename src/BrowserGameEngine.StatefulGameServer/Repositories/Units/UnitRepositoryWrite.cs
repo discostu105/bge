@@ -123,14 +123,24 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var attackingUnits = unitRepository.GetAttackingUnits(playerId, enemyPlayerId);
 			var defendingUnits = unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId);
 
-			BattleResult battleResult = battleBehavior.CalculateResult(attackingUnits, defendingUnits);
+			BattleResult battleResult = battleBehavior.CalculateResult(ToBattleUnits(attackingUnits), ToBattleUnits(defendingUnits));
 			ApplyBatteResult(battleResult);
 			return battleResult;
+		}
+
+		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> attackingUnits) {
+			return attackingUnits.Select(x => new BtlUnit {
+				UnitDefId = x.UnitDefId,
+				TotalAttack = gameDef.GetUnitDef(x.UnitDefId).Attack * x.Count,
+				TotalDefense = gameDef.GetUnitDef(x.UnitDefId).Defense * x.Count,
+				TotalHitpoints = gameDef.GetUnitDef(x.UnitDefId).Hitpoints * x.Count,
+			});
 		}
 
 		private void ApplyBatteResult(BattleResult battleResult) {
 			RemoveUnits(battleResult.Attacker, battleResult.AttackingUnitsDestroyed);
 			RemoveUnits(battleResult.Defender, battleResult.DefendingUnitsDestroyed);
+			// TODO: apply resourses stolen/lost
 		}
 
 		private void RemoveUnits(PlayerId playerId, List<UnitCount> unitCounts) {

@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1_Frontend", "1_Frontend", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4_Shared", "4_Shared", "{4227BBC6-ACC6-4E28-A9E6-23D9B6144911}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEgnine.Persistence", "BrowserGameEgnine.Persistence\BrowserGameEgnine.Persistence.csproj", "{5C801793-EC99-48C9-9163-F33ACEA7B192}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.Persistence", "BrowserGameEngine.Persistence\BrowserGameEngine.Persistence.csproj", "{5C801793-EC99-48C9-9163-F33ACEA7B192}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserGameEngine.StatefulGameServer.Test", "BrowserGameEngine.StatefulGameServer.Test\BrowserGameEngine.StatefulGameServer.Test.csproj", "{196C5C6D-82BE-4F1B-B590-7832D1E0CC8A}"
 EndProject

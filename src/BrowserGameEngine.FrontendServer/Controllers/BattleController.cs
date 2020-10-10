@@ -80,8 +80,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 
 		[HttpPost]
-		public ActionResult<BattleResultViewModel> Attack([FromQuery] string enemyPlayerId) {
-			return new BattleResultViewModel();
+		public BattleResultViewModel Attack([FromQuery] string enemyPlayerId) {
+			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId));
+			return new BattleResultViewModel {
+
+			};
 		}
 	}
 }
