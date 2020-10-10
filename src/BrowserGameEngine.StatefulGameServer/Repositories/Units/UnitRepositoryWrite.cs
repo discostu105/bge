@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Security.Cryptography.X509Certificates;
 
 namespace BrowserGameEngine.StatefulGameServer {
@@ -123,7 +124,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var attackingUnits = unitRepository.GetAttackingUnits(playerId, enemyPlayerId);
 			var defendingUnits = unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId);
 
-			BattleResult battleResult = battleBehavior.CalculateResult(ToBattleUnits(attackingUnits), ToBattleUnits(defendingUnits));
+			BattleResult battleResult = new BattleResult {
+				Attacker = playerId,
+				Defender = enemyPlayerId,
+				BtlResult = battleBehavior.CalculateResult(ToBattleUnits(attackingUnits), ToBattleUnits(defendingUnits))
+			};
 			ApplyBatteResult(battleResult);
 			return battleResult;
 		}
@@ -131,15 +136,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> attackingUnits) {
 			return attackingUnits.Select(x => new BtlUnit {
 				UnitDefId = x.UnitDefId,
-				TotalAttack = gameDef.GetUnitDef(x.UnitDefId).Attack * x.Count,
-				TotalDefense = gameDef.GetUnitDef(x.UnitDefId).Defense * x.Count,
-				TotalHitpoints = gameDef.GetUnitDef(x.UnitDefId).Hitpoints * x.Count,
+				Count = x.Count,
+				Attack = gameDef.GetUnitDef(x.UnitDefId).Attack,
+				Defense = gameDef.GetUnitDef(x.UnitDefId).Defense,
+				Hitpoints = gameDef.GetUnitDef(x.UnitDefId).Hitpoints,
 			});
 		}
 
 		private void ApplyBatteResult(BattleResult battleResult) {
-			RemoveUnits(battleResult.Attacker, battleResult.AttackingUnitsDestroyed);
-			RemoveUnits(battleResult.Defender, battleResult.DefendingUnitsDestroyed);
+			RemoveUnits(battleResult.Attacker, battleResult.BtlResult.AttackingUnitsDestroyed);
+			RemoveUnits(battleResult.Defender, battleResult.BtlResult.DefendingUnitsDestroyed);
 			// TODO: apply resourses stolen/lost
 		}
 
