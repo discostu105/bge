@@ -44,7 +44,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			AssetRepository = new AssetRepository(World, PlayerRepository, ActionQueueRepository);
 			AssetRepositoryWrite = new AssetRepositoryWrite(LoggerFactory.CreateLogger<AssetRepositoryWrite>(), World, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
 			UnitRepository = new UnitRepository(World, GameDef, PlayerRepository, AssetRepository);
-			BattleBehavior = new BattleBehaviorScoOriginal();
+			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
 			UnitRepositoryWrite = new UnitRepositoryWrite(World, GameDef, UnitRepository, ResourceRepositoryWrite, PlayerRepository, BattleBehavior);
 
 			var services = new ServiceCollection();

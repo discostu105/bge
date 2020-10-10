@@ -1,4 +1,5 @@
 ﻿using BrowserGameEngine.GameModel;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {

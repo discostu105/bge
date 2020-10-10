@@ -1,5 +1,6 @@
 ﻿using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class BattleBehaviorScoOriginal : IBattleBehavior {
+		private readonly ILogger<IBattleBehavior> logger;
 
 		/// <summary>
 		/// 
@@ -29,16 +31,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// <param name="defendingUnits"></param>
 		/// <returns></returns>
 
+		public BattleBehaviorScoOriginal(ILogger<IBattleBehavior> logger) {
+			this.logger = logger;
+		}
+
 		public BtlResult CalculateResult(IEnumerable<BtlUnit> attackingUnits, IEnumerable<BtlUnit> defendingUnits) {
 			var battleState = new BattleState {
 				AttackingUnits = attackingUnits.ToList(),
 				DefendingUnits = defendingUnits.ToList()
 			};
 			for (int i = 0; i < 8; i++) {
+				logger.LogDebug("Round {RoundNr}", i);
 				battleState.DefendingUnits = Fight(battleState.AttackingUnits, battleState.DefendingUnits, FightMode.Attack, out var defendingUnitsDestroyed);
 				battleState.DefendingUnitsDestroyed.AddRange(defendingUnitsDestroyed);
 				battleState.AttackingUnits = Fight(battleState.DefendingUnits, battleState.AttackingUnits, FightMode.Defend, out var attackingUnitsDestroyed);
-				battleState.DefendingUnitsDestroyed.AddRange(attackingUnitsDestroyed);
+				battleState.AttackingUnitsDestroyed.AddRange(attackingUnitsDestroyed);
 			}
 			return new BtlResult {
 				AttackingUnitsDestroyed = battleState.AttackingUnitsDestroyed,
@@ -48,19 +55,32 @@ namespace BrowserGameEngine.StatefulGameServer {
 			};
 		}
 
-		private static List<BtlUnit> Fight(List<BtlUnit> attackers, List<BtlUnit> defenders, FightMode fightMode, out List<UnitCount> defendingUnitsDestroyed) {
+		private List<BtlUnit> Fight(List<BtlUnit> attackers, List<BtlUnit> defenders, FightMode fightMode, out List<UnitCount> defendingUnitsDestroyed) {
 			var attackPoints = attackers.Sum(x => fightMode == FightMode.Attack ? x.TotalAttack : x.TotalDefense);
+			logger.LogDebug("{fightMode} with {attackPoints} Points", fightMode, attackPoints);
 			defendingUnitsDestroyed = new List<UnitCount>();
 			if (attackPoints == 0) return new List<BtlUnit>(defenders); // all survived
 			var survivingDefendingUnits = new List<BtlUnit>();
 			foreach (var defendingUnit in defenders.OrderBy(x => x.Hitpoints)) {
-				if (attackPoints >= defendingUnit.TotalHitpoints) {
+				if (attackPoints == 0) {
+					// no more attack points left. unit survives
+					survivingDefendingUnits.Add(new BtlUnit {
+						UnitDefId = defendingUnit.UnitDefId,
+						Count = defendingUnit.Count,
+						Attack = defendingUnit.Attack,
+						Defense = defendingUnit.Defense,
+						Hitpoints = defendingUnit.Hitpoints
+					});
+				} else if (attackPoints >= defendingUnit.TotalHitpoints) {
 					// fully destroyed
 					defendingUnitsDestroyed.Add(new UnitCount(defendingUnit.UnitDefId, defendingUnit.Count));
+					attackPoints -= defendingUnit.TotalHitpoints;
+					logger.LogDebug("Unit {UnitDefId} with {HitPoints} fully destroyed. {AttackPoints} attackpoints remaining.", defendingUnit.UnitDefId, defendingUnit.TotalHitpoints, attackPoints);
 				} else {
 					// not fully destroyed
-					var remainingHitpoints = defendingUnit.TotalHitpoints - attackPoints;
-					var survivorCount = remainingHitpoints / defendingUnit.Hitpoints;
+					int remainingHitpoints = defendingUnit.TotalHitpoints - attackPoints;
+					decimal survivorCountExact = remainingHitpoints / (decimal)defendingUnit.Hitpoints;
+					int survivorCount = (int)survivorCountExact;
 					survivingDefendingUnits.Add(new BtlUnit {
 						UnitDefId = defendingUnit.UnitDefId,
 						Count = survivorCount,
@@ -68,10 +88,31 @@ namespace BrowserGameEngine.StatefulGameServer {
 						Defense = defendingUnit.Defense,
 						Hitpoints = defendingUnit.Hitpoints
 					});
-					defendingUnitsDestroyed.Add(new UnitCount(defendingUnit.UnitDefId, defendingUnit.Count - survivorCount));
+
+					// in case of a remainder, add a unit with only partial hitpoints. e.g. if 5.25 units would have survived, add 5 full units, and 1 unit with only 25% of hitpoints
+					decimal remainderSurvivor = Math.Round(survivorCountExact, 2) - survivorCount;
+					int remainderHitpoints = (int)(defendingUnit.Hitpoints * remainderSurvivor);
+					if (remainderHitpoints > 0) {
+						survivingDefendingUnits.Add(new BtlUnit {
+							UnitDefId = defendingUnit.UnitDefId,
+							Count = 1,
+							Attack = defendingUnit.Attack,
+							Defense = defendingUnit.Defense,
+							Hitpoints = remainderHitpoints
+						});
+						survivorCount++;
+					}
+
+					int destroyedCount = defendingUnit.Count - survivorCount;
+					decimal destroyedCountExact = defendingUnit.Count - survivorCountExact;
+
+					if (destroyedCount > 0) {
+						defendingUnitsDestroyed.Add(new UnitCount(defendingUnit.UnitDefId, destroyedCount));
+					}
+					attackPoints = 0;
+					logger.LogDebug("{DestroyedCount} units of type {UnitDefId} destroyed. {RemainingHitPoints}/{HitPoints} hitpoints remain.",
+						destroyedCountExact, defendingUnit.UnitDefId, remainingHitpoints + remainderHitpoints, defendingUnit.TotalHitpoints);
 				}
-				attackPoints -= defendingUnit.TotalHitpoints;
-				if (attackPoints == 0) break;
 				if (attackPoints < 0) throw new Exception($"Here be dragons. attackPoints should never by below zero. {attackPoints}");
 			}
 			return survivingDefendingUnits;
@@ -93,7 +134,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 	public class BtlUnit {
 		public UnitDefId UnitDefId { get; set; }
-		public int Count  { get; set; }
+		public int Count { get; set; }
 		public int Hitpoints { get; set; }
 		public int Attack { get; set; }
 		public int Defense { get; set; }
