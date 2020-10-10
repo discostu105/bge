@@ -69,7 +69,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			// same number of units as attackersSingle, but split up in multiple units 
 			var attackersMulti = new List<BtlUnit>(
-				Enumerable.Repeat<BtlUnit>(new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 1000, Attack = 0, Defense = 100, Count = 10 }, attackerCount)
+				Enumerable.Repeat<BtlUnit>(new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 10, Attack = 1, Defense = 0, Count = 1 }, attackerCount)
 			);
 
 			var defenders = new List<BtlUnit> {
