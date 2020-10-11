@@ -8,9 +8,11 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepository {
 		private readonly WorldState world;
+		private readonly GameDef gameDef;
 
-		public ResourceRepository(WorldState world) {
+		public ResourceRepository(WorldState world, GameDef gameDef) {
 			this.world = world;
+			this.gameDef = gameDef;
 		}
 
 		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
@@ -29,6 +31,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 				return value;
 			}
 			return 0;
+		}
+
+		public Cost GetPrimaryResource(PlayerId playerId) {
+			var res = Res(playerId).Single(x => x.Key == gameDef.ScoreResource);
+			return Cost.FromSingle(res.Key, res.Value);
+		}
+
+		public Cost GetSecondaryResources(PlayerId playerId) {
+			return Cost.FromList(Res(playerId).Where(x => x.Key != gameDef.ScoreResource));
 		}
 	}
 }

@@ -15,6 +15,14 @@ namespace BrowserGameEngine.GameDefinition {
 		public static Cost FromSingle(ResourceDefId resourceDefId, decimal value) {
 			return new Cost(new Dictionary<ResourceDefId, decimal> { { resourceDefId, value } });
 		}
+
+		public static Cost FromDict(IDictionary<ResourceDefId, decimal> dictionaries) {
+			return new Cost(new Dictionary<ResourceDefId, decimal>(dictionaries));
+		}
+
+		public static Cost FromList(IEnumerable<KeyValuePair<ResourceDefId, decimal>> list) {
+			return new Cost(new Dictionary<ResourceDefId, decimal>(list));
+		}
 	}
 
 	public static class CostExtensions {

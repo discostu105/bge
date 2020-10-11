@@ -1,0 +1,30 @@
+﻿@inject HttpClient Http
+
+<span>Resourcen</span>
+@if (model != null) {
+    <div>
+        <span>@model.PrimaryResource.Cost.Single().Key</span>: <span>@model.PrimaryResource.Cost.Single().Value</span>
+    </div>
+
+    <div>
+
+        @foreach (var res in model.SecondaryResources.Cost) {
+            <div>
+                <span>@res.Key</span>: <span>@res.Value</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    public BrowserGameEngine.Shared.PlayerResourcesViewModel model { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+
+    private async Task Update() {
+        model = await Http.GetFromJsonAsync<BrowserGameEngine.Shared.PlayerResourcesViewModel>("api/resources");
+    }
+
+}
