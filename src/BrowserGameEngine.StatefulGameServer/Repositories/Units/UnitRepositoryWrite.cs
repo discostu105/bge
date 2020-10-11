@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepositoryWrite {
+		private readonly ILogger<UnitRepositoryWrite> logger;
 		private readonly WorldState world;
 		private readonly GameDef gameDef;
 		private readonly UnitRepository unitRepository;
@@ -18,13 +19,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly PlayerRepository playerRepository;
 		private readonly IBattleBehavior battleBehavior;
 
-		public UnitRepositoryWrite(WorldState world
+		public UnitRepositoryWrite(ILogger<UnitRepositoryWrite> logger
+				, WorldState world
 				, GameDef gameDef
 				, UnitRepository unitRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
 				, PlayerRepository playerRepository
 				, IBattleBehavior battleBehavior
 			) {
+			this.logger = logger;
 			this.world = world;
 			this.gameDef = gameDef;
 			this.unitRepository = unitRepository;
@@ -100,6 +103,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 			unit.Position = command.EnemyPlayerId;
 		}
 
+		public void ReturnUnitsHome(ReturnUnitsHomeCommand command) {
+			// TODO: synchronize
+			world.ValidatePlayer(command.EnemyPlayerId);
+			var units = Units(command.PlayerId).Where(x => x.Position == command.EnemyPlayerId);
+			foreach (var unit in units) {
+				unit.Position = null; // TODO: should not be immediate, but rather with some rounds delay
+			}
+		}
+
 		private void RemoveUnitsOfType(PlayerId playerId, UnitDefId unitDefId) {
 			Units(playerId).RemoveAll(x => x.UnitDefId == unitDefId);
 		}
@@ -121,16 +133,42 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public BattleResult Attack(PlayerId playerId, PlayerId enemyPlayerId) {
-			var attackingUnits = unitRepository.GetAttackingUnits(playerId, enemyPlayerId);
-			var defendingUnits = unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId);
+			var attackingUnits = ToBattleUnits(unitRepository.GetAttackingUnits(playerId, enemyPlayerId)).ToList();
+			var defendingUnits = ToBattleUnits(unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId)).ToList();
 
 			BattleResult battleResult = new BattleResult {
 				Attacker = playerId,
 				Defender = enemyPlayerId,
-				BtlResult = battleBehavior.CalculateResult(ToBattleUnits(attackingUnits), ToBattleUnits(defendingUnits))
+				BtlResult = battleBehavior.CalculateResult(attackingUnits, defendingUnits)
 			};
 			ApplyBatteResult(battleResult);
+
+			logger.LogInformation(@"Battle {Attacker}->{Defender}
+  Defender {Defender}
+    units: {DefendingUnits}
+    lost: {DefendingUnitsLost}
+    survived: {DefendingUnitsSurvived}
+  Attacker {Attacker}
+    units: {AttackingUnits}
+    lost: {AttackingUnitsLost}
+    survived: {AttackingUnitsSurvived}"
+				, playerId, enemyPlayerId
+				, enemyPlayerId
+				, StringifyUnitCounts(defendingUnits.ToGroupedUnitCounts())
+				, StringifyUnitCounts(battleResult.BtlResult.DefendingUnitsDestroyed)
+				, StringifyUnitCounts(battleResult.BtlResult.DefendingUnitsSurvived)
+				, playerId
+				, StringifyUnitCounts(attackingUnits.ToGroupedUnitCounts())
+				, StringifyUnitCounts(battleResult.BtlResult.AttackingUnitsDestroyed)
+				, StringifyUnitCounts(battleResult.BtlResult.AttackingUnitsSurvived)
+				);
+
+			ReturnUnitsHome(new ReturnUnitsHomeCommand(playerId, enemyPlayerId));
 			return battleResult;
+		}
+
+		private static string StringifyUnitCounts(IEnumerable<UnitCount> attackingUnits) {
+			return string.Join(", ", attackingUnits.Select(x => $"({x.Count} × {x.UnitDefId})"));
 		}
 
 		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> attackingUnits) {
@@ -144,19 +182,19 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private void ApplyBatteResult(BattleResult battleResult) {
-			RemoveUnits(battleResult.Attacker, battleResult.BtlResult.AttackingUnitsDestroyed);
-			RemoveUnits(battleResult.Defender, battleResult.BtlResult.DefendingUnitsDestroyed);
+			RemoveUnits(battleResult.Attacker, battleResult.Defender, battleResult.BtlResult.AttackingUnitsDestroyed);
+			RemoveUnits(battleResult.Defender, null, battleResult.BtlResult.DefendingUnitsDestroyed);
 			// TODO: apply resourses stolen/lost
 		}
 
-		private void RemoveUnits(PlayerId playerId, List<UnitCount> unitCounts) {
+		private void RemoveUnits(PlayerId playerId, PlayerId? position, List<UnitCount> unitCounts) {
 			foreach (var unitCount in unitCounts) {
-				RemoveUnits(playerId, unitCount);
+				RemoveUnits(playerId, position, unitCount);
 			}
 		}
 
-		private void RemoveUnits(PlayerId playerId, UnitCount unitCount) {
-			var units = unitRepository.GetByUnitDefId(playerId, unitCount.UnitDefId);
+		private void RemoveUnits(PlayerId playerId, PlayerId? position, UnitCount unitCount) {
+			var units = unitRepository.GetByUnitDefId(playerId, unitCount.UnitDefId).Where(x => x.Position == position);
 			int unitsToRemove = unitCount.Count;
 			foreach (var unit in units) {
 				unitsToRemove -= TryRemoveUnitCount(playerId, unit.UnitId, unitsToRemove);

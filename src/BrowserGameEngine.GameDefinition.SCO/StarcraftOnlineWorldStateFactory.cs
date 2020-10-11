@@ -29,8 +29,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 							CurrentGameTick: gameTick,
 							Resources: new Dictionary<ResourceDefId, decimal> {
 								{ Id.ResDef("land"), 50 },
-								{ Id.ResDef("minerals"), 500 },
-								{ Id.ResDef("gas"), 300 }
+								{ Id.ResDef("minerals"), 5000 },
+								{ Id.ResDef("gas"), 3000 }
 							},
 							Assets: new HashSet<AssetImmutable> {
 								new AssetImmutable(
@@ -67,7 +67,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 									UnitId: Id.NewUnitId(),
 									UnitDefId: Id.UnitDef("siegetank"),
 									Count: 3,
-									Position: null
+									Position: i == 0 ? null : PlayerIdFactory.Create("discostu#0")
 								),
 							}
 						)

@@ -10,6 +10,7 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record MergeUnitsCommand(PlayerId PlayerId, UnitDefId UnitDefId) : ICommand;
 	public record SplitUnitCommand(PlayerId PlayerId, UnitId UnitId, int SplitCount) : ICommand;
 	public record SendUnitCommand(PlayerId PlayerId, UnitId UnitId, PlayerId EnemyPlayerId) : ICommand;
+	public record ReturnUnitsHomeCommand(PlayerId PlayerId, PlayerId EnemyPlayerId) : ICommand;
 	public record MergeAllUnitsCommand(PlayerId PlayerId) : ICommand;
 	public record ChangePlayerNameCommand(PlayerId PlayerId, string NewName) : ICommand;
 	public record HarvestResourceCommand(PlayerId PlayerId, string ResourceId, int Count) : ICommand;
