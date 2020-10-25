@@ -25,25 +25,19 @@ steps:
     includePreviewVersions: true
 
 - task: DotNetCoreCLI@2
-  displayName: Build
+  displayName: 'Restore'
+  inputs:
+    command: 'restore'
+    projects: '**/BrowserGameEngine.FrontendServer.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
   inputs:
     command: 'build'
     projects: '**/BrowserGameEngine.FrontendServer.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: Run Unit Tests
+  displayName: 'Run Unit Tests'
   inputs:
     command: 'test'
     projects: '**/*Test.csproj'
-
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
