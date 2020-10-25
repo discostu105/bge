@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   solution: '**/*.sln'
@@ -24,9 +24,17 @@ steps:
     version: '5.x'
     includePreviewVersions: true
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
+  displayName: Build
   inputs:
-    restoreSolution: '$(solution)'
+    command: 'build'
+    projects: '**/BrowserGameEngine.FrontendServer.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Run Unit Tests
+  inputs:
+    command: 'test'
+    projects: '**/*Test.csproj'
 
 - task: VSBuild@1
   inputs:
