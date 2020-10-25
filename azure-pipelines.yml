@@ -21,7 +21,7 @@ steps:
   displayName: 'Install .Net Core SDK'
   inputs:
     packageType: 'sdk'
-    version: '5'
+    version: '5.x'
     includePreviewVersions: true
 
 - task: NuGetCommand@2
