@@ -53,5 +53,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 				// TODO: consider alliance members
 				;
 		}
+
+		public bool Exists(PlayerId playerId) {
+			return world.PlayerExists(playerId);
+		}
 	}
 }

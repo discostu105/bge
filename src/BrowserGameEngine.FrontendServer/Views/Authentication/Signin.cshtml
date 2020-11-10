@@ -1,5 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.Extensions.Options
+@using BrowserGameEngine.FrontendServer
 @model AuthenticationScheme[]
+@inject IOptions<BgeOptions> options
+
+@if (options.Value.DevAuth) {
+    <form action="/signindev" method="post">
+        <input type="text" name="PlayerId" />
+        <button class="btn btn-lg btn-success m-1" type="submit">Direct Login (dev)</button>
+    </form>
+}
 
 <div class="jumbotron">
     <h1>Authentication</h1>

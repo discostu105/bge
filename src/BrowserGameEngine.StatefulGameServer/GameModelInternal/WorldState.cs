@@ -21,6 +21,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			throw new PlayerNotFoundException(playerId);
 		}
 
+		internal bool PlayerExists(PlayerId playerId) {
+			return Players.ContainsKey(playerId);
+		}
+
 		// throws if player not found
 		internal void ValidatePlayer(PlayerId playerId) {
 			if (!Players.ContainsKey(playerId)) throw new PlayerNotFoundException(playerId);

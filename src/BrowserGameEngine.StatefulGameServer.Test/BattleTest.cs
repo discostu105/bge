@@ -102,6 +102,24 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(0, result.DefendingUnitsDestroyed.Sum(x => x.Count));
 			Assert.Equal(3, result.AttackingUnitsDestroyed.Sum(x => x.Count));
 		}
+
+
+		[Fact]
+		public void BattleScoMarineVsSiegeTanks() {
+			var battleBehavior = new BattleBehaviorScoOriginal(OutputHelper.ToLogger<IBattleBehavior>());
+
+			var attackers = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("spacemarine"), Hitpoints = 60, Attack = 2, Defense = 4, Count = 100 }
+			};
+			var defenders = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("siegetank"), Hitpoints = 130, Attack = 10, Defense = 40, Count = 3 }
+			};
+
+			var result = battleBehavior.CalculateResult(attackers, defenders);
+
+			Assert.Equal(3, result.DefendingUnitsDestroyed.Sum(x => x.Count));
+			Assert.Equal(1, result.AttackingUnitsDestroyed.Sum(x => x.Count));
+		}
 	}
 
 }

@@ -21,6 +21,7 @@ using BrowserGameEngine.Persistence;
 using System.IO;
 using System.Runtime.InteropServices;
 using BrowserGameEngine.GameDefinition.SCO;
+using Microsoft.Extensions.Options;
 
 namespace BrowserGameEngine.FrontendServer {
 	public class Startup {
@@ -33,6 +34,7 @@ namespace BrowserGameEngine.FrontendServer {
 		// This method gets called by the runtime. Use this method to add services to the container.
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services) {
+			services.Configure<BgeOptions>(Configuration.GetSection(BgeOptions.Position));
 			services.AddControllersWithViews();
 			services.AddRazorPages();
 			services.AddLogging();
