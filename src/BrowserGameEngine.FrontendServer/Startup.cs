@@ -22,6 +22,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using BrowserGameEngine.GameDefinition.SCO;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Trace;
+using Prometheus;
+using Prometheus.DotNetRuntime;
 
 namespace BrowserGameEngine.FrontendServer {
 	public class Startup {
@@ -38,6 +41,16 @@ namespace BrowserGameEngine.FrontendServer {
 			services.AddControllersWithViews();
 			services.AddRazorPages();
 			services.AddLogging();
+			
+			services.AddOpenTelemetryTracing((builder) => builder
+				.AddAspNetCoreInstrumentation()
+				.AddJaegerExporter()
+				//.AddJaegerExporter(jaegerOptions =>
+				//{
+				//	jaegerOptions.AgentHost = this.Configuration.GetValue<string>("Jaeger:Host");
+				//	jaegerOptions.AgentPort = this.Configuration.GetValue<int>("Jaeger:Port");
+				//})
+			);
 
 			services.AddAuthentication(options => {
 				options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -91,7 +104,7 @@ namespace BrowserGameEngine.FrontendServer {
 			var gameDef = gameDefFactory.CreateGameDef();
 			new GameDefVerifier().Verify(gameDef);
 			services.AddSingleton<GameDef>(gameDef);
-			
+
 			var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
 
 			var worldState = stateFactory.CreateDevWorldState();
@@ -121,6 +134,17 @@ namespace BrowserGameEngine.FrontendServer {
 			app.UseStaticFiles();
 
 			app.UseRouting();
+			app.UseHttpMetrics();
+
+			IDisposable collector = DotNetRuntimeStatsBuilder
+				.Customize()
+				.WithContentionStats()
+				.WithJitStats()
+				.WithThreadPoolSchedulingStats()
+				.WithThreadPoolStats()
+				.WithGcStats()
+				.WithExceptionStats()
+				.StartCollecting();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
@@ -130,6 +154,7 @@ namespace BrowserGameEngine.FrontendServer {
 				endpoints.MapRazorPages();
 				endpoints.MapControllers();
 				endpoints.MapFallbackToFile("index.html");
+				endpoints.MapMetrics();
 			});
 		}
 	}

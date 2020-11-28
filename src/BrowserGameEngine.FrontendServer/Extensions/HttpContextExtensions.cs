@@ -26,7 +26,7 @@ namespace Mvc.Client.Extensions {
 		}
 
 		public static async Task<bool> IsProviderSupportedAsync(this HttpContext context, string provider) {
-			if (context == null) {
+			if (context is null) {
 				throw new ArgumentNullException(nameof(context));
 			}
 

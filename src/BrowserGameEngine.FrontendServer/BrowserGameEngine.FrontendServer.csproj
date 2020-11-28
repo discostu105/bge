@@ -4,11 +4,26 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
+    <UserSecretsId>f4bd9b12-89a7-43ca-a935-647ac2ae6729</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="storage\**" />
+    <Content Remove="storage\**" />
+    <EmbeddedResource Remove="storage\**" />
+    <None Remove="storage\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.Discord" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.10" />
+    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="1.0.0-rc1.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc1.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc1.1" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="4.0.0" />
+    <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.4.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.1-dev-00188" />
   </ItemGroup>
 
@@ -18,10 +33,6 @@
     <ProjectReference Include="..\BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.Shared\BrowserGameEngine.ViewModels.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="storage\" />
   </ItemGroup>
 
 

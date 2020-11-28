@@ -11,6 +11,7 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.GameDefinition;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
