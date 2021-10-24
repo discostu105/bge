@@ -63,7 +63,12 @@ namespace BrowserGameEngine.FrontendServer {
 				options.ClientId = "743803200787709953";
 				options.ClientSecret = "JgcbikjBvxVuUNrgTQWark-VCbrIcrym";
 				options.SaveTokens = true;
+				//options.ForwardSignIn = "/fwdsignin";
+				//options.ForwardDefault = "/fwdefault";
+				//options.ForwardChallenge = "/fwdchallenge";
+				//options.ForwardChallenge = "/fwdauth";
 				options.Events.OnTicketReceived = ctx => {
+					
 					Console.WriteLine("OnTicketReceived");
 					return Task.CompletedTask;
 				};
@@ -111,7 +116,8 @@ namespace BrowserGameEngine.FrontendServer {
 			new WorldStateVerifier().Verify(gameDef, worldState); // todo: maybe make this more graceful.
 
 			await services.AddGameServer(storage, worldState); // todo: init state for non-development
-			services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
+			//services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
+			services.AddSingleton(CurrentUserContext.Inactive());
 
 			services.Configure<HostOptions>(opts =>
 				opts.ShutdownTimeout = TimeSpan.FromMinutes(10) // large shutdown timeout to allow persistance to save gamestate
