@@ -140,7 +140,6 @@ namespace BrowserGameEngine.FrontendServer {
 				.Customize()
 				.WithContentionStats()
 				.WithJitStats()
-				.WithThreadPoolSchedulingStats()
 				.WithThreadPoolStats()
 				.WithGcStats()
 				.WithExceptionStats()
