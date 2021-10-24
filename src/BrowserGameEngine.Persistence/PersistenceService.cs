@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.Persistence {
 	public class PersistenceService {
+		private const string filename = "latest.json";
 		private readonly IBlobStorage storage;
 		private readonly GameStateJsonSerializer serializer;
 
@@ -12,15 +13,15 @@ namespace BrowserGameEngine.Persistence {
 		}
 
 		public async Task<WorldStateImmutable> LoadWorldState() {
-			return serializer.Deserialize(await storage.Load("latest"));
+			return serializer.Deserialize(await storage.Load(filename));
 		}
 
 		public async Task StoreWorldSate(WorldStateImmutable worldStateImmutable) {
-			await storage.Store("latest", serializer.Serialize(worldStateImmutable));
+			await storage.Store(filename, serializer.Serialize(worldStateImmutable));
 		}
 
 		public bool WorldStateExists() {
-			return storage.Exists("latest");
+			return storage.Exists(filename);
 		}
 	}
 }

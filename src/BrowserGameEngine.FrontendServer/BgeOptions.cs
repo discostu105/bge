@@ -11,5 +11,10 @@ namespace BrowserGameEngine.FrontendServer {
 		/// Allows simple login without password for any account. For dev purposes only.
 		/// </summary>
 		public bool DevAuth { get; set; }
+
+		// "localfile", "s3"
+		public string StorageType { get; set; }
+
+		public string S3BucketName { get; set; }
     }
 }
