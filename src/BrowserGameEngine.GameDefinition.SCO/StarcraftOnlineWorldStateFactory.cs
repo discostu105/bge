@@ -16,7 +16,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 
 			var gameTick = new GameTick(0);
 
-			int playerCount = 5;
+			int playerCount = 0;
 			for (int i = 0; i < playerCount; i++) {
 				players.Add(
 					new PlayerImmutable(

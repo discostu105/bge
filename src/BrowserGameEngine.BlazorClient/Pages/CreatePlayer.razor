@@ -1,0 +1,34 @@
+﻿@page "/createplayer"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Create Player</h1>
+
+@if (model == null) {
+    <p><em>Loading...</em></p>
+} else {
+    <div>
+        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <InputText id="PlayerName" @bind-Value="model.PlayerName" />
+
+            <button type="submit">Submit</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private CreatePlayerViewModel? model;
+
+    protected override async Task OnInitializedAsync() {
+        model = await Http.GetFromJsonAsync<CreatePlayerViewModel>("api/playerprofile/init");
+    }
+
+    private async Task HandleValidSubmit() {
+        if (model == null) return;
+        await Http.PostAsJsonAsync("api/playerprofile/create", model);
+    }
+
+}
