@@ -367,6 +367,24 @@
             {
               "physicalLocation": {
                 "artifactLocation": {
+                  "uri": "file:///C:/workspaces/bge/src/BrowserGameEngine.FrontendServer/Controllers/AssetsController.cs"
+                },
+                "region": {
+                  "startLine": 57
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UA0002",
+          "message": {
+            "text": "This type is not supported on .NET Core/.NET 5+ and should be replaced with a modern equivalent."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
                   "uri": "file:///C:/workspaces/bge/src/BrowserGameEngine.FrontendServer/Controllers/UnitsController.cs"
                 },
                 "region": {
@@ -407,24 +425,6 @@
                 },
                 "region": {
                   "startLine": 77
-                }
-              }
-            }
-          ]
-        },
-        {
-          "ruleId": "UA0002",
-          "message": {
-            "text": "This type is not supported on .NET Core/.NET 5+ and should be replaced with a modern equivalent."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "file:///C:/workspaces/bge/src/BrowserGameEngine.FrontendServer/Controllers/AssetsController.cs"
-                },
-                "region": {
-                  "startLine": 57
                 }
               }
             }
