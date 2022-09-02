@@ -9,7 +9,7 @@ namespace BrowserGameEngine.Shared {
 		public string Id { get; set; }
 		public string Name { get; set; }
 		public string PlayerTypeRestriction { get; set; }
-		public IDictionary<string, decimal>? Cost { get; set; }
+		public CostViewModel Cost { get; set; }
 		public int Attack { get; set; }
 		public int Defense { get; set; }
 		public int Hitpoints { get; set; }
@@ -22,7 +22,7 @@ namespace BrowserGameEngine.Shared {
 				Id = unitDefinition.Id.Id,
 				Name = unitDefinition.Name,
 				PlayerTypeRestriction = unitDefinition.PlayerTypeRestriction.Id,
-				Cost = unitDefinition.Cost.ToPlainDictionary(),
+				Cost = CostViewModel.Create(unitDefinition.Cost),
 				Attack = unitDefinition.Attack,
 				Defense = unitDefinition.Defense,
 				Hitpoints = unitDefinition.Hitpoints,

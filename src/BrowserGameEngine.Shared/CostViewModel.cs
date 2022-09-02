@@ -14,5 +14,7 @@ namespace BrowserGameEngine.Shared {
 				Cost = cost.Resources.ToDictionary(x => x.Key.Id, y => y.Value)
 			};
 		}
-	}
+
+        public override string ToString() => string.Join(", ", Cost.Select(x => $"{x.Key}:{x.Value}"));
+    }
 }

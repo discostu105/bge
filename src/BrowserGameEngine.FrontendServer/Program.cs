@@ -122,8 +122,9 @@ async Task ConfigureGameServices(IServiceCollection services) {
     new WorldStateVerifier().Verify(gameDef, worldState); // todo: maybe make this more graceful.
 
     await services.AddGameServer(storage, worldState); // todo: init state for non-development
-                                                       //services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
-    services.AddSingleton(CurrentUserContext.Inactive());
+    
+    services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
+    //services.AddSingleton(CurrentUserContext.Inactive()); // for prod
 
     services.Configure<HostOptions>(opts =>
         opts.ShutdownTimeout = TimeSpan.FromMinutes(10) // large shutdown timeout to allow persistance to save gamestate
