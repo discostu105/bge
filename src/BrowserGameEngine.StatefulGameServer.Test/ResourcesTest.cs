@@ -65,5 +65,5 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Throws<ArgumentOutOfRangeException>( () => g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
 				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 }, { Id.ResDef("res3"), -1 } })));
 		}
-	}
+    }
 }

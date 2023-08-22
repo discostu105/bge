@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using BrowserGameEngine.GameModel;
 
 namespace BrowserGameEngine.StatefulGameServer.Test {
-	internal class TestGame {
+	public class TestGame {
 		public NullLoggerFactory LoggerFactory { get; }
 		public WorldState World { get; }
 		public GameDef GameDef { get; }
@@ -30,10 +30,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 		public PlayerId Player1 => WorldStateFactory.Player1;
 
-		public TestGame() {
+		public TestGame(int playerCount = 1) {
 			LoggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();
 			WorldStateFactory = new TestWorldStateFactory();
-			World = WorldStateFactory.CreateDevWorldState().ToMutable();
+			World = WorldStateFactory.CreateDevWorldState(playerCount).ToMutable();
 			GameDef = new TestGameDefFactory().CreateGameDef();
 			ScoreRepository = new ScoreRepository(GameDef, World);
 			PlayerRepository = new PlayerRepository(World, ScoreRepository);

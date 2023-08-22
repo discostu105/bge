@@ -18,7 +18,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset2")));
 			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset3")));
 			Assert.False(g.AssetRepository.HasAsset(g.WorldStateFactory.Player1, Id.AssetDef("asset99")));
-			Assert.Equal(1, g.AssetRepository.Get(g.WorldStateFactory.Player1).Count());
+			Assert.Single(g.AssetRepository.Get(g.WorldStateFactory.Player1));
 
 			Assert.True(g.AssetRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetAssetDef(Id.AssetDef("asset1"))));
 			Assert.True(g.AssetRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetAssetDef(Id.AssetDef("asset2"))));

@@ -11,12 +11,11 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 			throw new NotImplementedException();
 		}
 
-		public WorldStateImmutable CreateDevWorldState() {
+		public WorldStateImmutable CreateDevWorldState(int playerCount = 0) {
 			var players = new List<PlayerImmutable>();
 
 			var gameTick = new GameTick(0);
 
-			int playerCount = 0;
 			for (int i = 0; i < playerCount; i++) {
 				players.Add(
 					new PlayerImmutable(

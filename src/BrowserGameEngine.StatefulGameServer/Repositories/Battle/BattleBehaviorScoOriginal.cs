@@ -18,10 +18,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// loop:
 		///   attack:
 		///     - calculate total offensive points
-		///     - deduct offensive poins from hitpoins of defensive units, remove killed units. units with least hitpoints die first
+		///     - deduct offensive points from hitpoins of defensive units, remove killed units. units with least hitpoints die first
 		///   defense:
 		///     - calculate total offensive points
-		///     - deduct defensive poins from hitpoints of offensive units, remove killed units. units with least hitpoints die first
+		///     - deduct defensive points from hitpoints of offensive units, remove killed units. units with least hitpoints die first
 		/// 
 		/// this loop repeats 8x
 		/// 

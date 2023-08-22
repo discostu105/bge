@@ -1,6 +1,6 @@
 ﻿namespace BrowserGameEngine.GameModel {
 	public interface IWorldStateFactory {
-		WorldStateImmutable CreateDevWorldState();
+		WorldStateImmutable CreateDevWorldState(int playerCount = 1);
 		WorldStateImmutable CreateInitialWorldState();
 	}
 }

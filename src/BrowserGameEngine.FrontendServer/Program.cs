@@ -12,8 +12,14 @@ using Prometheus.DotNetRuntime;
 using Serilog;
 using Serilog.Events;
 
+Rook.RookOptions options = new Rook.RookOptions() {
+    token = "8ec5815b038ce52b430c0caa163689bdd61119e8d81a920786274f2cf3562c2a",
+    labels = new Dictionary<string, string> { { "env", "dev" } }
+};
+Rook.API.Start(options);
+
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Error()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console()

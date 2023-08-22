@@ -62,7 +62,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		}
 
 		private bool UpdatePlayers() {
-			var stopwatch = Stopwatch.StartNew();
 			var currentTick = worldState.GameTickState.CurrentGameTick;
 			var playerIds = worldState.GetPlayersForGameTick();
 			if (playerIds.Length == 0) return true;
@@ -76,7 +75,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 				var newTick = playerRepositoryWrite.IncrementTick(playerId);
 				if (newTick.Tick < currentTick.Tick) allPlayersUpToDate = false;
 			}
-			logger.LogInformation("UpdatePlayers #{CurrentTick} finished in {Duration}. Updated {Players} players.", currentTick.Tick, stopwatch.Elapsed, playerIds.Length);
+			logger.LogDebug("UpdatePlayers #{CurrentTick} finished. Updated {Players} players.", currentTick.Tick, playerIds.Length);
 			return allPlayersUpToDate;
 		}
 
@@ -85,7 +84,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 				var currentTick = worldState.GameTickState.CurrentGameTick;
 				worldState.GameTickState.CurrentGameTick = currentTick with { Tick = currentTick.Tick + 1 };
 				worldState.GameTickState.LastUpdate += gameDef.TickDuration;
-				logger.LogInformation("Incremented World Tick to #{CurrentTick}. LastUpdate: {LastUpdate}", worldState.GameTickState.CurrentGameTick.Tick, worldState.GameTickState.LastUpdate);
+				logger.LogDebug("Incremented World Tick to #{CurrentTick}. LastUpdate: {LastUpdate}", worldState.GameTickState.CurrentGameTick.Tick, worldState.GameTickState.LastUpdate);
 			}
 			return worldState.GameTickState.CurrentGameTick;
 		}
