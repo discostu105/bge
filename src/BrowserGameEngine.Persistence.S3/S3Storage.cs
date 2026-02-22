@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Amazon;
+using Amazon.S3;
 
 namespace BrowserGameEngine.Persistence.S3 {
 	public class S3Storage : IBlobStorage {
