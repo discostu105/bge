@@ -12,12 +12,6 @@ using Prometheus.DotNetRuntime;
 using Serilog;
 using Serilog.Events;
 
-Rook.RookOptions options = new Rook.RookOptions() {
-    token = "8ec5815b038ce52b430c0caa163689bdd61119e8d81a920786274f2cf3562c2a",
-    labels = new Dictionary<string, string> { { "env", "dev" } }
-};
-Rook.API.Start(options);
-
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Error()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -26,6 +20,15 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+var rookoutToken = builder.Configuration["Rookout:Token"];
+if (!string.IsNullOrEmpty(rookoutToken)) {
+    Rook.RookOptions rookOptions = new Rook.RookOptions() {
+        token = rookoutToken,
+        labels = new Dictionary<string, string> { { "env", builder.Environment.EnvironmentName } }
+    };
+    Rook.API.Start(rookOptions);
+}
 builder.Host.UseSerilog();
 
 /*
@@ -53,8 +56,8 @@ builder.Services.AddAuthentication(options => {
         options.Cookie.Name = "BGE.AuthCookie";
     })
     .AddDiscord(options => {
-        options.ClientId = "743803200787709953";
-        options.ClientSecret = "JgcbikjBvxVuUNrgTQWark-VCbrIcrym";
+        options.ClientId = builder.Configuration["Discord:ClientId"] ?? throw new InvalidOperationException("Discord:ClientId not configured");
+        options.ClientSecret = builder.Configuration["Discord:ClientSecret"] ?? throw new InvalidOperationException("Discord:ClientSecret not configured");
         options.SaveTokens = true;
         options.Events.OnTicketReceived = ctx => {
             Console.WriteLine("OnTicketReceived");

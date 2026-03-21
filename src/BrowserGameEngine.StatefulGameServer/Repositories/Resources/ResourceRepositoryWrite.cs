@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepositoryWrite {
+		private readonly object _lock = new();
 		private readonly WorldState world;
 		private readonly ResourceRepository resourceRepository;
 
@@ -21,11 +22,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) => DeductCost(playerId, Cost.FromSingle(resourceDefId, value));
 		public void DeductCost(PlayerId playerId, Cost cost) {
-			// TODO: synchronize
-			if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
-			var playerRes = Res(playerId);
-			foreach (var res in cost.Resources) {
-				DeductResourceUnchecked(playerId, res.Key, res.Value);
+			lock (_lock) {
+				if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
+				var playerRes = Res(playerId);
+				foreach (var res in cost.Resources) {
+					DeductResourceUnchecked(playerId, res.Key, res.Value);
+				}
 			}
 		}
 
@@ -38,14 +40,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
-			// TODO: synchronize
-			var playerRes = Res(playerId);
-			if (!playerRes.ContainsKey(resourceDefId)) {
-				playerRes.Add(resourceDefId, 0);
-			} else {
-				playerRes[resourceDefId] += value;
+			lock (_lock) {
+				var playerRes = Res(playerId);
+				if (!playerRes.ContainsKey(resourceDefId)) {
+					playerRes.Add(resourceDefId, 0);
+				} else {
+					playerRes[resourceDefId] += value;
+				}
+				return playerRes[resourceDefId];
 			}
-			return playerRes[resourceDefId];
 		}
 	}
 }

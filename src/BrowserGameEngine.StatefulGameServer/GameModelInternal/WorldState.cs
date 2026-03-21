@@ -9,6 +9,7 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
+		private readonly object _lock = new();
 		internal IDictionary<PlayerId, Player> Players { get; set; } = new Dictionary<PlayerId, Player>();
 
 		internal GameTickState GameTickState { get; set; } = new GameTickState();
@@ -31,8 +32,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		}
 
 		internal PlayerId[] GetPlayersForGameTick() {
-			// TODO read lock players
-			return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.GameTickState.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
+			lock (_lock) {
+				return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.GameTickState.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
+			}
 		}
 
 		internal GameTick GetTargetGameTick(GameTick tickToAdd) {

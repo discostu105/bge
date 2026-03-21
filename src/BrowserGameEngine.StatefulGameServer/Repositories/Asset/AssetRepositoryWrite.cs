@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepositoryWrite {
+		private readonly object _lock = new();
 		private readonly ILogger<AssetRepositoryWrite> logger;
 		private readonly WorldState world;
 		private readonly AssetRepository assetRepository;
@@ -39,20 +40,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// Building assets takes a number of gameticks until finished.
 		/// </summary>
 		public void BuildAsset(BuildAssetCommand command) {
-			// TODO: synchronize
-			var assetDef = gameDef.GetAssetDef(command.AssetDefId);
-			if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
-			if (assetRepository.HasAsset(command.PlayerId, assetDef.Id)) throw new AssetAlreadyBuiltException(assetDef.Id);
-			if (assetRepository.IsBuildQueued(command.PlayerId, command.AssetDefId)) throw new AssetAlreadyQueuedException(assetDef.Id);
-			if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
-			resourceRepositoryWrite.DeductCost(command.PlayerId, assetDef.Cost);
-			var dueTick = world.GetTargetGameTick(assetDef.BuildTimeTicks);
-			actionQueueRepository.AddAction(new GameAction {
-				Name = AssetBuildActionConstants.Name,
-				PlayerId = command.PlayerId,
-				DueTick = dueTick,
-				Properties = new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, command.AssetDefId.Id } }
-			});
+			lock (_lock) {
+				var assetDef = gameDef.GetAssetDef(command.AssetDefId);
+				if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
+				if (assetRepository.HasAsset(command.PlayerId, assetDef.Id)) throw new AssetAlreadyBuiltException(assetDef.Id);
+				if (assetRepository.IsBuildQueued(command.PlayerId, command.AssetDefId)) throw new AssetAlreadyQueuedException(assetDef.Id);
+				if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
+				resourceRepositoryWrite.DeductCost(command.PlayerId, assetDef.Cost);
+				var dueTick = world.GetTargetGameTick(assetDef.BuildTimeTicks);
+				actionQueueRepository.AddAction(new GameAction {
+					Name = AssetBuildActionConstants.Name,
+					PlayerId = command.PlayerId,
+					DueTick = dueTick,
+					Properties = new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, command.AssetDefId.Id } }
+				});
+			}
 		}
 
 		private void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
@@ -64,10 +66,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ExecuteGameActions(PlayerId playerId) {
-			// TODO: synchronize
-			var actions = actionQueueRepository.GetAndRemoveDueActions(playerId, AssetBuildActionConstants.Name, world.GameTickState.CurrentGameTick);
-			foreach(var action in actions) {
-				AddAsset(action.PlayerId, Id.AssetDef(action.Properties[AssetBuildActionConstants.AssetDefId]));
+			lock (_lock) {
+				var actions = actionQueueRepository.GetAndRemoveDueActions(playerId, AssetBuildActionConstants.Name, world.GameTickState.CurrentGameTick);
+				foreach(var action in actions) {
+					AddAsset(action.PlayerId, Id.AssetDef(action.Properties[AssetBuildActionConstants.AssetDefId]));
+				}
 			}
 		}
 	}
