@@ -4,12 +4,10 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ActionQueueRepository {
+		private readonly object _lock = new();
 		private readonly WorldState world;
 
 		public ActionQueueRepository(WorldState world) {
@@ -20,12 +18,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private IEnumerable<GameAction> GetActions(PlayerId playerId) => Actions.Where(x => x.PlayerId.Equals(playerId));
 
 		internal IList<GameAction> GetAndRemoveDueActions(PlayerId playerId, string name, GameTick gameTick) {
-			// TODO: synchronize
-			var actions = GetActions(playerId).Where(x => x.Name == name && x.IsDue(gameTick)).ToList(); // copy
-			foreach (var action in actions) {
-				Remove(action);
+			lock (_lock) {
+				var actions = GetActions(playerId).Where(x => x.Name == name && x.IsDue(gameTick)).ToList(); // copy
+				foreach (var action in actions) {
+					Actions.Remove(action);
+				}
+				return actions;
 			}
-			return actions;
 		}
 
 		internal bool IsQueued(PlayerId playerId, string name, IDictionary<string, string> properties) {
@@ -50,13 +49,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		internal void Remove(GameAction action) {
-			// TODO: synchronize
-			Actions.Remove(action);
+			lock (_lock) {
+				Actions.Remove(action);
+			}
 		}
 
 		internal void AddAction(GameAction action) {
-			// TODO: synchronize
-			Actions.Add(action);
+			lock (_lock) {
+				Actions.Add(action);
+			}
 		}
 	}
 }

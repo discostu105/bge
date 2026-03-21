@@ -6,11 +6,10 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Security.Cryptography.X509Certificates;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepositoryWrite {
+		private readonly object _lock = new();
 		private readonly ILogger<UnitRepositoryWrite> logger;
 		private readonly WorldState world;
 		private readonly GameDef gameDef;
@@ -51,25 +50,32 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// Building units happens immediately. Throws exceptions if prerequisites are not met.
 		/// </summary>
 		public void BuildUnit(BuildUnitCommand command) {
-			// TODO: synchronize
-			var unitDef = gameDef.GetUnitDef(command.UnitDefId);
-			if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
-			if (!unitRepository.PrerequisitesMet(command.PlayerId, unitDef)) throw new PrerequisitesNotMetException("too bad");
+			lock (_lock) {
+				var unitDef = gameDef.GetUnitDef(command.UnitDefId);
+				if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
+				if (!unitRepository.PrerequisitesMet(command.PlayerId, unitDef)) throw new PrerequisitesNotMetException("too bad");
 
-			resourceRepositoryWrite.DeductCost(command.PlayerId, unitDef.Cost.Multiply(command.Count));
-			AddUnit(command.PlayerId, command.UnitDefId, command.Count);
+				resourceRepositoryWrite.DeductCost(command.PlayerId, unitDef.Cost.Multiply(command.Count));
+				AddUnit(command.PlayerId, command.UnitDefId, command.Count);
+			}
 		}
 
 		public void MergeUnits(MergeAllUnitsCommand command) {
-			// TODO: synchronize
-			var unitDefIds = Units(command.PlayerId).Select(x => x.UnitDefId).Distinct().ToArray();
-			foreach (var unitDefId in unitDefIds) {
-				MergeUnits(new MergeUnitsCommand(command.PlayerId, unitDefId));
+			lock (_lock) {
+				var unitDefIds = Units(command.PlayerId).Select(x => x.UnitDefId).Distinct().ToArray();
+				foreach (var unitDefId in unitDefIds) {
+					MergeUnitsInternal(new MergeUnitsCommand(command.PlayerId, unitDefId));
+				}
 			}
 		}
 
 		public void MergeUnits(MergeUnitsCommand command) {
-			// TODO: synchronize
+			lock (_lock) {
+				MergeUnitsInternal(command);
+			}
+		}
+
+		private void MergeUnitsInternal(MergeUnitsCommand command) {
 			var unitDef = gameDef.GetUnitDef(command.UnitDefId);
 			if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
 			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsHome()).Sum(x => x.Count);
@@ -80,35 +86,38 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void SplitUnit(SplitUnitCommand command) {
-			// TODO: synchronize
-			var unit = Unit(command.PlayerId, command.UnitId);
-			if (unit == null) throw new UnitNotFoundException(command.UnitId);
-			if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot split unit.");
-			if (command.SplitCount <= 0) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
-			if (command.SplitCount == unit.Count) return;
-			if (command.SplitCount > unit.Count) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
+			lock (_lock) {
+				var unit = Unit(command.PlayerId, command.UnitId);
+				if (unit == null) throw new UnitNotFoundException(command.UnitId);
+				if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot split unit.");
+				if (command.SplitCount <= 0) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
+				if (command.SplitCount == unit.Count) return;
+				if (command.SplitCount > unit.Count) throw new CannotSplitUnitException(command.UnitId, command.SplitCount, unit.Count);
 
-			unit.Count -= command.SplitCount;
-			AddUnit(command.PlayerId, unit.UnitDefId, command.SplitCount);
+				unit.Count -= command.SplitCount;
+				AddUnit(command.PlayerId, unit.UnitDefId, command.SplitCount);
+			}
 		}
 
 		public void SendUnit(SendUnitCommand command) {
-			// TODO: synchronize
-			var unit = Unit(command.PlayerId, command.UnitId);
-			if (unit == null) throw new UnitNotFoundException(command.UnitId);
-			if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot move unit.");
-			world.ValidatePlayer(command.EnemyPlayerId);
-			if (!playerRepository.IsPlayerAttackable(command.PlayerId, command.EnemyPlayerId)) throw new PlayerNotAttackableException(command.EnemyPlayerId);
+			lock (_lock) {
+				var unit = Unit(command.PlayerId, command.UnitId);
+				if (unit == null) throw new UnitNotFoundException(command.UnitId);
+				if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot move unit.");
+				world.ValidatePlayer(command.EnemyPlayerId);
+				if (!playerRepository.IsPlayerAttackable(command.PlayerId, command.EnemyPlayerId)) throw new PlayerNotAttackableException(command.EnemyPlayerId);
 
-			unit.Position = command.EnemyPlayerId;
+				unit.Position = command.EnemyPlayerId;
+			}
 		}
 
 		public void ReturnUnitsHome(ReturnUnitsHomeCommand command) {
-			// TODO: synchronize
-			world.ValidatePlayer(command.EnemyPlayerId);
-			var units = Units(command.PlayerId).Where(x => x.Position == command.EnemyPlayerId);
-			foreach (var unit in units) {
-				unit.Position = null; // TODO: should not be immediate, but rather with some rounds delay
+			lock (_lock) {
+				world.ValidatePlayer(command.EnemyPlayerId);
+				var units = Units(command.PlayerId).Where(x => x.Position == command.EnemyPlayerId);
+				foreach (var unit in units) {
+					unit.Position = null; // TODO: should not be immediate, but rather with some rounds delay
+				}
 			}
 		}
 
