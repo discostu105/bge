@@ -1,6 +1,7 @@
 ﻿@page "/createplayer"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@inject NavigationManager Nav
 
 <h1>Create Player</h1>
 
@@ -28,7 +29,10 @@
 
     private async Task HandleValidSubmit() {
         if (model == null) return;
-        await Http.PostAsJsonAsync("api/playerprofile/create", model);
+        var response = await Http.PostAsJsonAsync("api/playerprofile/create", model);
+        if (response.IsSuccessStatusCode) {
+            Nav.NavigateTo("/", forceLoad: true);
+        }
     }
 
 }

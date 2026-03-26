@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer;
@@ -65,16 +66,22 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			// only works if DevAuth setting in appsettings is set (dev only!)
 			if (!options.Value.DevAuth) return BadRequest();
 			if (string.IsNullOrWhiteSpace(playerid)) return BadRequest();
-			return CreatePlayer(PlayerIdFactory.Create(playerid));
-		}
 
-		private IActionResult CreatePlayer(PlayerId playerId) {
+			var playerId = PlayerIdFactory.Create(playerid);
 			if (!playerRepository.Exists(playerId)) {
-				// create player
 				playerRepositoryWrite.CreatePlayer(playerId);
 			}
-			currentUserContext.PlayerId = playerId;
-			return Challenge();
+
+			// Create a claims identity so the cookie auth and CurrentUserMiddleware work correctly
+			var claims = new List<Claim> {
+				new Claim(ClaimTypes.NameIdentifier, playerid),
+				new Claim(ClaimTypes.Name, playerid)
+			};
+			var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+			var principal = new ClaimsPrincipal(identity);
+
+			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+			return Redirect("/");
 		}
 	}
 }
