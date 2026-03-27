@@ -3,14 +3,14 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
-		private readonly object _lock = new();
-		internal IDictionary<PlayerId, Player> Players { get; set; } = new Dictionary<PlayerId, Player>();
+		internal IDictionary<PlayerId, Player> Players { get; set; } = new ConcurrentDictionary<PlayerId, Player>();
 
 		internal GameTickState GameTickState { get; set; } = new GameTickState();
 
@@ -32,9 +32,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		}
 
 		internal PlayerId[] GetPlayersForGameTick() {
-			lock (_lock) {
-				return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.GameTickState.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
-			}
+			return Players.Where(x => x.Value.State.CurrentGameTick.Tick < this.GameTickState.CurrentGameTick.Tick).Select(x => x.Key).ToArray();
 		}
 
 		internal GameTick GetTargetGameTick(GameTick tickToAdd) {
@@ -60,7 +58,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		public static WorldState ToMutable(this WorldStateImmutable worldStateImmutable) {
 			return new WorldState {
-				Players = worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable()),
+				Players = new ConcurrentDictionary<PlayerId, Player>(worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable())),
 				GameTickState = worldStateImmutable.GameTickState.ToMutable(),
 				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList()
 			};

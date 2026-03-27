@@ -45,7 +45,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
 				if (assetRepository.HasAsset(command.PlayerId, assetDef.Id)) throw new AssetAlreadyBuiltException(assetDef.Id);
 				if (assetRepository.IsBuildQueued(command.PlayerId, command.AssetDefId)) throw new AssetAlreadyQueuedException(assetDef.Id);
-				if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException("too bad");
+				if (!assetRepository.PrerequisitesMet(command.PlayerId, assetDef)) throw new PrerequisitesNotMetException($"Prerequisites not met for asset '{command.AssetDefId}'.");
 				resourceRepositoryWrite.DeductCost(command.PlayerId, assetDef.Cost);
 				var dueTick = world.GetTargetGameTick(assetDef.BuildTimeTicks);
 				actionQueueRepository.AddAction(new GameAction {

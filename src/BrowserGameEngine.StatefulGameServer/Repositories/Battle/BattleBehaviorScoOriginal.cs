@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class BattleBehaviorScoOriginal : IBattleBehavior {
+		private const int MaxBattleRounds = 8;
 		private readonly ILogger<IBattleBehavior> logger;
 
 		/// <summary>
@@ -40,7 +41,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				AttackingUnits = new List<BtlUnit>(attackingUnits),
 				DefendingUnits = new List<BtlUnit>(defendingUnits)
 			};
-			for (int i = 0; i < 8; i++) {
+			for (int i = 0; i < MaxBattleRounds; i++) {
 				logger.LogDebug("Round {RoundNr}", i);
 				battleState.DefendingUnits = Fight(battleState.AttackingUnits, battleState.DefendingUnits, FightMode.Attack, out var defendingUnitsDestroyed);
 				battleState.DefendingUnitsDestroyed.AddRange(defendingUnitsDestroyed);
@@ -119,7 +120,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					logger.LogDebug("{DestroyedCount} {UnitDefId}'s destroyed. {RemainingHitPoints}/{HitPoints} hitpoints remain.",
 						destroyedCountExact, defendingUnit.UnitDefId, remainingHitpoints + remainderHitpoints, defendingUnit.TotalHitpoints);
 				}
-				if (attackPoints < 0) throw new Exception($"Here be dragons. attackPoints should never by below zero. {attackPoints}");
+				if (attackPoints < 0) throw new InvalidOperationException($"attackPoints should never be below zero. {attackPoints}");
 			}
 			return survivingDefendingUnits;
 		}
@@ -152,17 +153,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 	public static class ExtensionMethods {
 
-
 		public static IEnumerable<UnitCount> ToUnitCount(this IEnumerable<BtlUnit> btlUnits) => btlUnits.Select(x => new UnitCount(x.UnitDefId, x.Count));
-		public static IEnumerable<UnitCount> ToUnitCount(this List<BtlUnit> btlUnits) => ((IEnumerable<BtlUnit>)btlUnits).ToUnitCount();
 
 		public static IEnumerable<UnitCount> GroupByUnitDefId(this IEnumerable<UnitCount> units) {
 			return units.GroupBy(x => x.UnitDefId).Select(x => new UnitCount(x.First().UnitDefId, x.Sum(y => y.Count)));
 		}
 
 		public static IEnumerable<UnitCount> ToGroupedUnitCounts(this IEnumerable<BtlUnit> btlUnits) => btlUnits.ToUnitCount().GroupByUnitDefId();
-		public static IEnumerable<UnitCount> ToGroupedUnitCounts(this List<BtlUnit> btlUnits) => ((IEnumerable<BtlUnit>)btlUnits).ToGroupedUnitCounts();
-
-		
 	}
 }

@@ -28,14 +28,13 @@ namespace BrowserGameEngine.FrontendServer {
 		}
 
 		private void DoWork(object? state) {
-			if (isactive == 1) return; // avoid multipe timers at once. if old timer task is still running, just skip this time.
-			Interlocked.Increment(ref isactive);
+			if (Interlocked.CompareExchange(ref isactive, 1, 0) != 0) return;
 			try {
 				var count = Interlocked.Increment(ref executionCount);
 				logger.LogInformation("GameTickTimer #{Count}", count);
 				gameTickEngine.CheckAllTicks();
 			} finally {
-				Interlocked.Decrement(ref isactive);
+				Interlocked.Exchange(ref isactive, 0);
 			}
 		}
 
