@@ -6,10 +6,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepositoryWrite {
-		private readonly object _lock = new();
+		private readonly Lock _lock = new();
 		private readonly ILogger<UnitRepositoryWrite> logger;
 		private readonly WorldState world;
 		private readonly GameDef gameDef;

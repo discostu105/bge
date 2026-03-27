@@ -5,10 +5,11 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepositoryWrite {
-		private readonly object _lock = new();
+		private readonly Lock _lock = new();
 		private readonly ILogger<AssetRepositoryWrite> logger;
 		private readonly WorldState world;
 		private readonly AssetRepository assetRepository;

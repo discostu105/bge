@@ -22,18 +22,21 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		private readonly GameDef gameDef;
 		private readonly GameTickModuleRegistry gameTickModuleRegistry;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
+		private readonly TimeProvider timeProvider;
 
 		public GameTickEngine(ILogger<GameTickEngine> logger
 				, WorldState worldState
 				, GameDef gameDef
 				, GameTickModuleRegistry gameTickModuleRegistry
 				, PlayerRepositoryWrite playerRepositoryWrite
+				, TimeProvider timeProvider
 			) {
 			this.logger = logger;
 			this.worldState = worldState;
 			this.gameDef = gameDef;
 			this.gameTickModuleRegistry = gameTickModuleRegistry;
 			this.playerRepositoryWrite = playerRepositoryWrite;
+			this.timeProvider = timeProvider;
 		}
 
 		public void CheckAllTicks() {
@@ -53,7 +56,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		}
 
 		private bool IsTickDue() {
-			var diff = DateTime.Now - worldState.GameTickState.LastUpdate;
+			var diff = timeProvider.GetLocalNow().DateTime - worldState.GameTickState.LastUpdate;
 			return diff > gameDef.TickDuration;
 		}
 

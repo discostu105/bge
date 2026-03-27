@@ -37,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			GameDef = new TestGameDefFactory().CreateGameDef();
 			ScoreRepository = new ScoreRepository(GameDef, World);
 			PlayerRepository = new PlayerRepository(World, ScoreRepository);
-			PlayerRepositoryWrite = new PlayerRepositoryWrite(World);
+			PlayerRepositoryWrite = new PlayerRepositoryWrite(World, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(World, GameDef);
 			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository);
 			ActionQueueRepository = new ActionQueueRepository(World);
@@ -51,7 +51,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
 			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, AssetRepository, UnitRepository));
 			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
-			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), World, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite);
+			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), World, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System);
 		}
 	}
 }

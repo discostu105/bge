@@ -4,10 +4,11 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepositoryWrite {
-		private readonly object _lock = new();
+		private readonly Lock _lock = new();
 		private readonly WorldState world;
 		private readonly ResourceRepository resourceRepository;
 

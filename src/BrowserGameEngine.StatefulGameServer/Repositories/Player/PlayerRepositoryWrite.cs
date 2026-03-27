@@ -4,15 +4,18 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class PlayerRepositoryWrite {
-		private readonly object _lock = new();
+		private readonly Lock _lock = new();
 		private readonly WorldState world;
+		private readonly TimeProvider timeProvider;
 		private IDictionary<PlayerId, Player> Players => world.Players;
 
-		public PlayerRepositoryWrite(WorldState world) {
+		public PlayerRepositoryWrite(WorldState world, TimeProvider timeProvider) {
 			this.world = world;
+			this.timeProvider = timeProvider;
 		}
 
 		public void ChangePlayerName(ChangePlayerNameCommand command) {
@@ -31,12 +34,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
 				world.Players[playerId] = new Player() {
-					Created = DateTime.Now,
+					Created = timeProvider.GetLocalNow().DateTime,
 					PlayerId = playerId,
 					Name = playerId.Id,
 					PlayerType = Id.PlayerType("terran"),
 					State = new PlayerState {
-						LastGameTickUpdate = DateTime.Now,
+						LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
 						CurrentGameTick = world.GameTickState.CurrentGameTick,
 						Resources = new Dictionary<ResourceDefId, decimal> {
 							{ Id.ResDef("land"), 50 },

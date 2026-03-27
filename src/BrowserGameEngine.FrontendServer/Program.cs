@@ -39,6 +39,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddLogging();
 builder.Services.AddHealthChecks();
+builder.Services.AddOpenApi();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -81,6 +82,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions {
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
     app.UseWebAssemblyDebugging();
+    app.MapOpenApi();
 } else {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
