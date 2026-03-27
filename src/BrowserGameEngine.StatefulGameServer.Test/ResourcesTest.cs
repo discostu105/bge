@@ -1,6 +1,7 @@
 ﻿using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,23 +48,23 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(2000, g.ResourceRepository.GetAmount(g.WorldStateFactory.Player1, Id.ResDef("res2")));
 			Assert.Equal(0, g.ResourceRepository.GetAmount(g.WorldStateFactory.Player1, Id.ResDef("res3")));
 
-			Assert.True(g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1, 
-				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 } })));
+			Assert.True(g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
+				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 } }.ToFrozenDictionary())));
 
 			Assert.False(g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
-				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1001 } })));
+				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1001 } }.ToFrozenDictionary())));
 
 			Assert.True(g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
-				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 } })));
+				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 } }.ToFrozenDictionary())));
 
 			Assert.False(g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
-				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2001 } })));
+				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2001 } }.ToFrozenDictionary())));
 
 			Assert.False(g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
-				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 }, { Id.ResDef("res3"), 1 } })));
+				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 }, { Id.ResDef("res3"), 1 } }.ToFrozenDictionary())));
 
 			Assert.Throws<ArgumentOutOfRangeException>( () => g.ResourceRepository.CanAfford(g.WorldStateFactory.Player1,
-				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 }, { Id.ResDef("res3"), -1 } })));
+				new Cost(new Dictionary<ResourceDefId, decimal> { { Id.ResDef("res1"), 1000 }, { Id.ResDef("res2"), 2000 }, { Id.ResDef("res3"), -1 } }.ToFrozenDictionary())));
 		}
     }
 }

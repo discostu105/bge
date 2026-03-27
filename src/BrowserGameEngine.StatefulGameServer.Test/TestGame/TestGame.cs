@@ -1,4 +1,5 @@
-﻿using BrowserGameEngine.GameDefinition;
+﻿using System;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
