@@ -1,11 +1,10 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY ["BrowserGameEngine.FrontendServer/BrowserGameEngine.FrontendServer.csproj", "BrowserGameEngine.FrontendServer/"]
 COPY ["BrowserGameEngine.GameDefinition.SCO/BrowserGameEngine.GameDefinition.SCO.csproj", "BrowserGameEngine.GameDefinition.SCO/"]
@@ -14,6 +13,7 @@ COPY ["BrowserGameEngine.GameDefinition/BrowserGameEngine.GameDefinition.csproj"
 COPY ["BrowserGameEngine.BlazorClient/BrowserGameEngine.BlazorClient.csproj", "BrowserGameEngine.BlazorClient/"]
 COPY ["BrowserGameEngine.Shared/BrowserGameEngine.ViewModels.csproj", "BrowserGameEngine.Shared/"]
 COPY ["BrowserGameEngine.Persistence/BrowserGameEngine.Persistence.csproj", "BrowserGameEngine.Persistence/"]
+COPY ["BrowserGameEngine.Persistence.S3/BrowserGameEngine.Persistence.S3.csproj", "BrowserGameEngine.Persistence.S3/"]
 COPY ["BrowserGameEngine.StatefulGameServer/BrowserGameEngine.StatefulGameServer.csproj", "BrowserGameEngine.StatefulGameServer/"]
 RUN dotnet restore "BrowserGameEngine.FrontendServer/BrowserGameEngine.FrontendServer.csproj"
 COPY . .

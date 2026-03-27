@@ -1,27 +1,47 @@
-﻿using System;
+using System;
+using System.IO;
 using System.Threading.Tasks;
-using Amazon;
 using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace BrowserGameEngine.Persistence.S3 {
 	public class S3Storage : IBlobStorage {
-		private const string bucketName = "*** provide bucket name ***";
-		private const string keyName = "*** provide a name for the uploaded object ***";
-		private const string filePath = "*** provide the full path name of the file to upload ***";
-		// Specify your bucket region (an example region is shown).
-		private static readonly RegionEndpoint bucketRegion = RegionEndpoint.USWest2;
-		private static IAmazonS3 s3Client;
+		private readonly IAmazonS3 s3Client;
+		private readonly string bucketName;
+		private readonly string keyPrefix;
+
+		public S3Storage(IAmazonS3 s3Client, string bucketName, string keyPrefix = "") {
+			this.s3Client = s3Client;
+			this.bucketName = bucketName;
+			this.keyPrefix = keyPrefix;
+		}
+
+		private string GetKey(string name) => string.IsNullOrEmpty(keyPrefix) ? name : $"{keyPrefix}/{name}";
 
 		public bool Exists(string name) {
-			throw new NotImplementedException();
+			try {
+				var response = s3Client.GetObjectMetadataAsync(bucketName, GetKey(name)).GetAwaiter().GetResult();
+				return true;
+			} catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound) {
+				return false;
+			}
 		}
 
-		public Task<byte[]> Load(string name) {
-			throw new NotImplementedException();
+		public async Task<byte[]> Load(string name) {
+			var response = await s3Client.GetObjectAsync(bucketName, GetKey(name));
+			using var memoryStream = new MemoryStream();
+			await response.ResponseStream.CopyToAsync(memoryStream);
+			return memoryStream.ToArray();
 		}
 
-		public Task Store(string name, byte[] blob) {
-			throw new NotImplementedException();
+		public async Task Store(string name, byte[] blob) {
+			using var stream = new MemoryStream(blob);
+			var request = new PutObjectRequest {
+				BucketName = bucketName,
+				Key = GetKey(name),
+				InputStream = stream
+			};
+			await s3Client.PutObjectAsync(request);
 		}
 	}
 }
