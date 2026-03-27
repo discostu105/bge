@@ -53,7 +53,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				var unitDef = gameDef.GetUnitDef(command.UnitDefId);
 				if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
-				if (!unitRepository.PrerequisitesMet(command.PlayerId, unitDef)) throw new PrerequisitesNotMetException("too bad");
+				if (!unitRepository.PrerequisitesMet(command.PlayerId, unitDef)) throw new PrerequisitesNotMetException($"Prerequisites not met for unit '{command.UnitDefId}'.");
 
 				resourceRepositoryWrite.DeductCost(command.PlayerId, unitDef.Cost.Multiply(command.Count));
 				AddUnit(command.PlayerId, command.UnitDefId, command.Count);
@@ -208,7 +208,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			foreach (var unit in units) {
 				unitsToRemove -= TryRemoveUnitCount(playerId, unit.UnitId, unitsToRemove);
 				if (unitsToRemove == 0) return;
-				if (unitsToRemove < 0) throw new Exception("Here be dragons. unitsToRemove can never be less than zero.");
+				if (unitsToRemove < 0) throw new InvalidOperationException("unitsToRemove can never be less than zero.");
 			}
 		}
 	}

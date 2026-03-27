@@ -51,11 +51,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> SendUnits([FromQuery] string unitId, [FromQuery] string enemyPlayerId) {
+		public ActionResult SendUnits([FromQuery] string unitId, [FromQuery] string enemyPlayerId) {
 			try {
 				unitRepositoryWrite.SendUnit(new SendUnitCommand(currentUserContext.PlayerId, Id.UnitId(unitId), PlayerIdFactory.Create(enemyPlayerId)));
 				return Ok();
-			} catch (Exception e) {
+			} catch (PlayerNotAttackableException e) {
+				return BadRequest(e.Message);
+			} catch (UnitNotFoundException e) {
+				return BadRequest(e.Message);
+			} catch (UnitNotHomeException e) {
 				return BadRequest(e.Message);
 			}
 		}

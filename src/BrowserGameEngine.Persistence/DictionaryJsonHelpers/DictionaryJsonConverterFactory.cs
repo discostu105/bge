@@ -68,7 +68,7 @@ namespace KellySharp {
 				var obj = GetType()
 					.GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic)?
 					.MakeGenericMethod(keyType)
-					.Invoke(null, null) ?? throw new NullReferenceException("Failed to invoke serializer maker");
+					.Invoke(null, null) ?? throw new InvalidOperationException("Failed to invoke serializer maker");
 				keySerializer = (Delegate)obj;
 			}
 
@@ -76,7 +76,7 @@ namespace KellySharp {
 			var result = Activator.CreateInstance(
 				converterType.MakeGenericType(typeToConvert.GenericTypeArguments),
 				keyParser,
-				keySerializer) ?? throw new NullReferenceException("Failed to create converter");
+				keySerializer) ?? throw new InvalidOperationException("Failed to create converter");
 
 			return (JsonConverter)result;
 		}

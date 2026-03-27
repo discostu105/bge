@@ -46,10 +46,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public bool IsPlayerAttackable(PlayerId attacker, PlayerId defender) {
 			var attackerScore = scoreRepository.GetScore(attacker);
-			var defenderScore = scoreRepository.GetScore(attacker);
+			var defenderScore = scoreRepository.GetScore(defender);
 			var minScore = GetMinScore(attackerScore);
 			return attacker != defender
-				&& defenderScore >= attackerScore
+				&& defenderScore >= minScore
 				// TODO: consider alliance members
 				;
 		}

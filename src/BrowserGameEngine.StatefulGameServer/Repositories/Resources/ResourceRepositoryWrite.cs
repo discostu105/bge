@@ -43,7 +43,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				var playerRes = Res(playerId);
 				if (!playerRes.ContainsKey(resourceDefId)) {
-					playerRes.Add(resourceDefId, 0);
+					playerRes.Add(resourceDefId, value);
 				} else {
 					playerRes[resourceDefId] += value;
 				}

@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.Persistence;
+using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.GameModel;
 using Microsoft.Extensions.Hosting;
@@ -33,13 +33,14 @@ namespace BrowserGameEngine.FrontendServer {
 			return Task.CompletedTask;
 		}
 
-		private async void DoWork(object? state) {
-			if (isactive == 1) return; // avoid multipe timers at once. if old timer task is still running, just skip this time.
-			Interlocked.Increment(ref isactive);
+		private void DoWork(object? state) {
+			if (Interlocked.CompareExchange(ref isactive, 1, 0) != 0) return;
 			try {
-				await StoreGameState();
+				StoreGameState().GetAwaiter().GetResult();
+			} catch (Exception ex) {
+				logger.LogError(ex, "Failed to store game state");
 			} finally {
-				Interlocked.Decrement(ref isactive);
+				Interlocked.Exchange(ref isactive, 0);
 			}
 		}
 
