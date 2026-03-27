@@ -4,10 +4,11 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ActionQueueRepository {
-		private readonly object _lock = new();
+		private readonly Lock _lock = new();
 		private readonly WorldState world;
 
 		public ActionQueueRepository(WorldState world) {

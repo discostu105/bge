@@ -1,6 +1,7 @@
 ﻿using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,12 +27,12 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				TickDuration = TimeSpan.FromSeconds(20),
 
 				GameTickModules = new List<GameTickModuleDef> {
-					new GameTickModuleDef("actionqueue:1", new Dictionary<string, string> { }),
+					new GameTickModuleDef("actionqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {
 						{ "worker-units", "unit1" },
 						{ "growth-resource", "res1" },
 						{ "constraint-resource", "res2" },
-					})
+					}.ToFrozenDictionary())
 				},
 
 				Assets = new List<AssetDef> {

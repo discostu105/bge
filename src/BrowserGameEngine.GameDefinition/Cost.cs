@@ -1,5 +1,6 @@
 ﻿using BrowserGameEngine.GameDefinition;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,20 +9,20 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.GameDefinition {
 	public record Cost(
-		IDictionary<ResourceDefId, decimal> Resources
+		FrozenDictionary<ResourceDefId, decimal> Resources
 	) {
 		public override string ToString() => string.Join(", ", this.ToPlainDictionary().Select(x => $"{x.Key}:{x.Value}"));
 
 		public static Cost FromSingle(ResourceDefId resourceDefId, decimal value) {
-			return new Cost(new Dictionary<ResourceDefId, decimal> { { resourceDefId, value } });
+			return new Cost(new Dictionary<ResourceDefId, decimal> { { resourceDefId, value } }.ToFrozenDictionary());
 		}
 
 		public static Cost FromDict(IDictionary<ResourceDefId, decimal> dictionaries) {
-			return new Cost(new Dictionary<ResourceDefId, decimal>(dictionaries));
+			return new Cost(dictionaries.ToFrozenDictionary());
 		}
 
 		public static Cost FromList(IEnumerable<KeyValuePair<ResourceDefId, decimal>> list) {
-			return new Cost(new Dictionary<ResourceDefId, decimal>(list));
+			return new Cost(list.ToFrozenDictionary());
 		}
 	}
 
@@ -34,13 +35,13 @@ namespace BrowserGameEngine.GameDefinition {
 			return new Cost(cost.Resources.ToDictionary(
 				x => x.Key,
 				y => y.Value * count
-			));
+			).ToFrozenDictionary());
 		}
 	}
 
 	public static class CostHelper {
 		public static Cost Create(params (string, decimal)[] resources) {
-			return new Cost(resources.ToDictionary(x => new ResourceDefId(x.Item1), y => y.Item2));
+			return new Cost(resources.ToDictionary(x => new ResourceDefId(x.Item1), y => y.Item2).ToFrozenDictionary());
 		}
 	}
 }
