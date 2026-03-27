@@ -34,6 +34,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\BrowserGameEngine.Persistence\BrowserGameEngine.Persistence.csproj" />
+		<ProjectReference Include="..\BrowserGameEngine.Persistence.S3\BrowserGameEngine.Persistence.S3.csproj" />
 		<ProjectReference Include="..\BrowserGameEngine.BlazorClient\BrowserGameEngine.BlazorClient.csproj" />
 		<ProjectReference Include="..\BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj" />
 		<ProjectReference Include="..\BrowserGameEngine.Shared\BrowserGameEngine.ViewModels.csproj" />

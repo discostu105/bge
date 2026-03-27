@@ -1,11 +1,14 @@
-﻿using BrowserGameEngine.FrontendServer;
+﻿using Amazon.S3;
+using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
+using BrowserGameEngine.Persistence.S3;
 using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using OpenTelemetry.Trace;
 using Prometheus;
@@ -14,8 +17,9 @@ using Serilog;
 using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Error()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .CreateLogger();
@@ -42,6 +46,7 @@ builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptio
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddLogging();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -77,12 +82,15 @@ await ConfigureGameServices(builder.Services);
  */
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions {
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
     app.UseWebAssemblyDebugging();
 } else {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -106,6 +114,8 @@ app.UseAuthentication();
 app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
+
 app.UseEndpoints(endpoints => {
     endpoints.MapDefaultControllerRoute();
     endpoints.MapRazorPages();
@@ -124,7 +134,10 @@ async Task ConfigureGameServices(IServiceCollection services) {
     new GameDefVerifier().Verify(gameDef);
     services.AddSingleton<GameDef>(gameDef);
 
-    var storage = new FileStorage(new DirectoryInfo("storage")); // todo: make this configurable
+    var s3BucketName = builder.Configuration["Bge:S3BucketName"];
+    IBlobStorage storage = !string.IsNullOrEmpty(s3BucketName)
+        ? new S3Storage(new AmazonS3Client(), s3BucketName, builder.Configuration["Bge:S3KeyPrefix"] ?? "")
+        : new FileStorage(new DirectoryInfo("storage"));
 
     var worldState = stateFactory.CreateDevWorldState();
     new WorldStateVerifier().Verify(gameDef, worldState); // todo: maybe make this more graceful.
