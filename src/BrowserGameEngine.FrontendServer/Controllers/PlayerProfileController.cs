@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.Shared;
+using BrowserGameEngine.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Principal;
 using System.Security.Claims;
+using BrowserGameEngine.GameModel;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
@@ -34,9 +35,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public PlayerProfileViewModel Get() {
+		public ActionResult<PlayerProfileViewModel> Get() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			var player = playerRepository.Get(currentUserContext.PlayerId);
-			return new PlayerProfileViewModel { 
+			return new PlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name
 			};
@@ -44,51 +46,53 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpGet]
 		[Route("init")]
-		public CreatePlayerViewModel Init() {
-			ClaimsPrincipal? user = User;
-			if (user == null) throw new Exception("TODO exception type not authenticated");
-			IIdentity? identity = user.Identity;
-			if (identity == null) throw new Exception("TODO exception type not authenticated");
-			if (!identity.IsAuthenticated) throw new Exception("TODO exception type not authenticated");
-			var name = identity.Name;
-			var id = user.Claims.First(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+		public ActionResult<CreatePlayerViewModel> Init() {
+			var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (id == null) return Unauthorized();
 
-			Console.WriteLine(id);
 			return new CreatePlayerViewModel {
-				PlayerName = name
+				PlayerName = User.Identity?.Name
 			};
 		}
 
-
-		/* Example:
+		/* Example claims from Discord:
 		  	http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier: 690094355519766528
-			http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name: Christoph Neumüller
+			http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name: Christoph Neumueller
 			urn:discord:user:discriminator: 0075
 			urn:discord:avatar:url: https://cdn.discordapp.com/avatars/690094355519766528/.png
 		*/
 
+		[HttpGet]
+		[Route("exists")]
+		public ActionResult<bool> Exists() {
+			var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (id == null) return Unauthorized();
+
+			var playerId = PlayerIdFactory.Create(id);
+			return playerRepository.Exists(playerId);
+		}
+
 		[HttpPost]
 		[Route("changename")]
-		public IActionResult ChangePlayerName(PlayerProfileViewModel playerProfile) {
+		public ActionResult ChangePlayerName(PlayerProfileViewModel playerProfile) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(currentUserContext.PlayerId, playerProfile.PlayerName));
 			return Ok();
 		}
 
 		[HttpPost]
 		[Route("create")]
-		public void Create(CreatePlayerViewModel model) {
-			ClaimsPrincipal? user = User;
-			if (user == null) throw new Exception("TODO exception type not authenticated");
-			IIdentity? identity = user.Identity;
-			if (identity == null) throw new Exception("TODO exception type not authenticated");
-			if (!identity.IsAuthenticated) throw new Exception("TODO exception type not authenticated");
-			var name = identity.Name;
-			var id = user.Claims.First(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+		public ActionResult Create(CreatePlayerViewModel model) {
+			var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (id == null) return Unauthorized();
 
-			var playerId = GameModel.PlayerIdFactory.Create(id);
+			var playerId = PlayerIdFactory.Create(id);
+			if (playerRepository.Exists(playerId)) return Conflict("Player already exists");
+
 			playerRepositoryWrite.CreatePlayer(playerId);
 			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, model.PlayerName));
 			currentUserContext.Activate(playerId);
+			return Ok();
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using BrowserGameEngine.FrontendServer;
+using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.GameModel;
@@ -59,10 +60,6 @@ builder.Services.AddAuthentication(options => {
         options.ClientId = builder.Configuration["Discord:ClientId"] ?? throw new InvalidOperationException("Discord:ClientId not configured");
         options.ClientSecret = builder.Configuration["Discord:ClientSecret"] ?? throw new InvalidOperationException("Discord:ClientSecret not configured");
         options.SaveTokens = true;
-        options.Events.OnTicketReceived = ctx => {
-            Console.WriteLine("OnTicketReceived");
-            return Task.CompletedTask;
-        };
     });
 
 builder.Services.ConfigureApplicationCookie(options => {
@@ -106,6 +103,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder
     .StartCollecting();
 
 app.UseAuthentication();
+app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
 app.UseEndpoints(endpoints => {
@@ -133,8 +131,7 @@ async Task ConfigureGameServices(IServiceCollection services) {
 
     await services.AddGameServer(storage, worldState); // todo: init state for non-development
     
-    services.AddSingleton(CurrentUserContext.Create(playerId: "discostu#1")); // for dev purposes only.
-    //services.AddSingleton(CurrentUserContext.Inactive()); // for prod
+    services.AddScoped(_ => CurrentUserContext.Inactive());
 
     services.Configure<HostOptions>(opts =>
         opts.ShutdownTimeout = TimeSpan.FromMinutes(10) // large shutdown timeout to allow persistance to save gamestate
