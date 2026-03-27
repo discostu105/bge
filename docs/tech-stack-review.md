@@ -5,12 +5,12 @@
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | **Language** | C# | Latest (LangVersion: preview) |
-| **Runtime** | .NET | 9.0 |
-| **Backend** | ASP.NET Core | 9.0 |
-| **Frontend** | Blazor WebAssembly (WASM) | 9.0 |
-| **Auth** | Discord OAuth2 (`AspNet.Security.OAuth.Discord`) | 9.0 |
+| **Runtime** | .NET | 10.0 (LTS) |
+| **Backend** | ASP.NET Core | 10.0 |
+| **Frontend** | Blazor WebAssembly (WASM) | 10.0 |
+| **Auth** | Discord OAuth2 (`AspNet.Security.OAuth.Discord`) | 10.0 |
 | **Persistence** | File-based (dev) / AWS S3 (prod) | - |
-| **Observability** | OpenTelemetry, Serilog, Prometheus, Rookout | Mixed |
+| **Observability** | OpenTelemetry (OTLP), Serilog, Prometheus | Mixed |
 | **Deployment** | Docker, AWS ECS Fargate, Terraform | - |
 | **CI/CD** | GitHub Actions | - |
 | **Testing** | xUnit, BenchmarkDotNet | 2.9 / 0.14 |
@@ -30,8 +30,8 @@
 
 - **No relational database:** State is serialized as blobs. This works for a small game but limits querying, concurrency, and data integrity as the project scales.
 - **Stateful in-process game server:** The `StatefulGameServer` holds state in memory. This means no horizontal scaling — a single ECS task handles everything (512 CPU / 1024 MB).
-- **`OpenTelemetry.Exporter.Jaeger` is deprecated:** Jaeger exporter was deprecated in favor of OTLP exporter. Should migrate to `OpenTelemetry.Exporter.OpenTelemetryProtocol`.
-- **Rookout dependency:** Niche live-debugging tool. Adds a dependency that may not justify its cost for a hobby/small project.
+- ~~**`OpenTelemetry.Exporter.Jaeger` is deprecated:** Migrated to OTLP exporter.~~
+- ~~**Rookout dependency:** Removed.~~
 
 ---
 
@@ -96,10 +96,10 @@ If upgrading to .NET 10, consider evaluating **Blazor's unified rendering model*
 - Terraform for infrastructure
 - xUnit + BenchmarkDotNet for testing
 
-### Consider Upgrading
-- **Upgrade to .NET 10 (LTS):** Current .NET 9 is STS (support ends May 2026). .NET 10 is LTS with 3-year support and brings meaningful Blazor improvements.
-- **Replace Jaeger exporter with OTLP exporter:** `OpenTelemetry.Exporter.Jaeger` is deprecated. Use `OpenTelemetry.Exporter.OpenTelemetryProtocol` instead.
-- **Evaluate removing Rookout:** Unless actively used, it adds unnecessary dependency surface.
+### Done
+- ~~**Upgrade to .NET 10 (LTS):** Upgraded from .NET 9 STS to .NET 10 LTS.~~
+- ~~**Replace Jaeger exporter with OTLP exporter:** Migrated to `OpenTelemetry.Exporter.OpenTelemetryProtocol`.~~
+- ~~**Remove Rookout:** Removed dependency and initialization code.~~
 
 ### Consider If Scaling
 - **Add a lightweight database** (e.g., PostgreSQL or SQLite) if querying game state becomes a bottleneck.

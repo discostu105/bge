@@ -26,14 +26,6 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
-var rookoutToken = builder.Configuration["Rookout:Token"];
-if (!string.IsNullOrEmpty(rookoutToken)) {
-    Rook.RookOptions rookOptions = new Rook.RookOptions() {
-        token = rookoutToken,
-        labels = new Dictionary<string, string> { { "env", builder.Environment.EnvironmentName } }
-    };
-    Rook.API.Start(rookOptions);
-}
 builder.Host.UseSerilog();
 
 /*
@@ -51,7 +43,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
-        .AddJaegerExporter()
+        .AddOtlpExporter()
     );
 
 builder.Services.AddAuthentication(options => {
