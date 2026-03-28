@@ -53,13 +53,15 @@ builder.Services.AddAuthentication(options => {
 })
     .AddCookie(options => {
         options.Cookie.Name = "BGE.AuthCookie";
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
     })
     .AddDiscord(options => {
         options.ClientId = builder.Configuration["Discord:ClientId"] ?? throw new InvalidOperationException("Discord:ClientId not configured");
         options.ClientSecret = builder.Configuration["Discord:ClientSecret"] ?? throw new InvalidOperationException("Discord:ClientSecret not configured");
         options.SaveTokens = true;
         options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.ConfigureApplicationCookie(options => {
