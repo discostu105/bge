@@ -7,7 +7,7 @@
 
 ## Overview
 
-A .NET 9 / Blazor WebAssembly game engine — a revived hobby project ("StarCraft Online" from 2003). Stateful monolith with in-memory game state, Discord OAuth2 auth, and S3 persistence. 124 C# source files across 11 projects, 61 commits, primarily one contributor.
+A .NET 10 / Blazor WebAssembly game engine — a revived hobby project ("StarCraft Online" from 2003). Stateful monolith with in-memory game state, Discord OAuth2 auth, and S3 persistence. 124 C# source files across 11 projects, 61 commits, primarily one contributor.
 
 ---
 
@@ -24,13 +24,10 @@ A .NET 9 / Blazor WebAssembly game engine — a revived hobby project ("StarCraf
 
 ## Glaring Issues
 
-### 1. Hardcoded Secret in Source Code
-**Severity: HIGH**
-`BrowserGameEngine.FrontendServer/Program.cs` contains a plaintext Rookout token:
-```
-token = "8ec5815b038ce52b430c0caa163689bdd61119e8d81a920786274f2cf3562c2a"
-```
-This should be moved to user secrets or environment variables immediately.
+### ~~1. Hardcoded Secret in Source Code~~ ✅ Removed
+~~**Severity: HIGH**~~
+~~`BrowserGameEngine.FrontendServer/Program.cs` contained a plaintext Rookout token.~~
+Rookout dependency and token have been removed from the codebase.
 
 ### 2. No Concurrency Control *(partially addressed)*
 **Severity: MEDIUM**
@@ -69,8 +66,8 @@ An `.editorconfig` has been added with standard C# conventions. No StyleCop anal
 | Documentation         | Minimal    | README exists, no dev docs |
 | CI/CD                 | Good | GitHub Actions build + test |
 | Observability         | Excellent  | Tracing, metrics, structured logging |
-| Security              | Poor       | Hardcoded secret in source |
-| Dependency Management | Good       | All packages on stable .NET 9 releases |
+| Security              | Improved   | Rookout secret removed |
+| Dependency Management | Good       | All packages on stable .NET 10 releases |
 | Completeness          | Partial    | Multiple TODOs, stubbed features |
 
 ---
@@ -87,8 +84,8 @@ The main gap is **completeness over polish**: many features are stubbed out, and
 
 ## Recommended Next Steps (Priority Order)
 
-1. Remove hardcoded Rookout token from source — use `dotnet user-secrets` or environment variables
-2. ~~Stabilize dependencies~~ ✅ All packages upgraded to stable .NET 9 releases
+1. ~~Remove hardcoded Rookout token from source~~ ✅ Rookout dependency and token removed
+2. ~~Stabilize dependencies~~ ✅ All packages upgraded to stable .NET 10 releases
 3. ~~Add concurrency controls~~ ✅ `lock` statements added to repository write operations
 4. ~~Remove legacy `azure-pipelines.yml`~~ ✅ Removed
 5. ~~Add `.editorconfig`~~ ✅ Added with standard C# conventions
