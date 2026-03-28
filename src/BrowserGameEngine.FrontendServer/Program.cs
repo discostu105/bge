@@ -75,20 +75,21 @@ await ConfigureGameServices(builder.Services);
  */
 var app = builder.Build();
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions {
+var forwardedHeadersOptions = new ForwardedHeadersOptions {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
     app.UseWebAssemblyDebugging();
     app.MapOpenApi();
+    app.UseHttpsRedirection();
 } else {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
