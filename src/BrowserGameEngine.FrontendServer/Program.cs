@@ -116,14 +116,11 @@ app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
-
-app.UseEndpoints(endpoints => {
-    endpoints.MapDefaultControllerRoute();
-    endpoints.MapRazorPages();
-    endpoints.MapControllers();
-    endpoints.MapFallbackToFile("index.html");
-    endpoints.MapMetrics();
-});
+app.MapDefaultControllerRoute();
+app.MapRazorPages();
+app.MapControllers();
+app.MapMetrics();
+app.MapFallbackToFile("index.html");
 
 app.Run();
 
