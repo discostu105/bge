@@ -24,6 +24,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly TimeProvider timeProvider;
 
+		private volatile bool isPaused = false;
+		private TimeSpan? tickDurationOverride = null;
+
 		public GameTickEngine(ILogger<GameTickEngine> logger
 				, WorldState worldState
 				, GameDef gameDef
@@ -56,9 +59,18 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		}
 
 		private bool IsTickDue() {
+			if (isPaused) return false;
+			var duration = tickDurationOverride ?? gameDef.TickDuration;
 			var diff = timeProvider.GetLocalNow().DateTime - worldState.GameTickState.LastUpdate;
-			return diff > gameDef.TickDuration;
+			return diff > duration;
 		}
+
+		public void PauseTicks() => isPaused = true;
+		public void ResumeTicks() => isPaused = false;
+		public bool IsPaused => isPaused;
+		public void SetTickDuration(TimeSpan duration) => tickDurationOverride = duration;
+		public void ResetTickDuration() => tickDurationOverride = null;
+		public TimeSpan EffectiveTickDuration => tickDurationOverride ?? gameDef.TickDuration;
 
 		private bool AreAllPlayersUpToDate() {
 			return worldState.GetPlayersForGameTick().Length == 0;
@@ -83,10 +95,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		}
 
 		public GameTick IncrementWorldTick(int count = 1) {
+			var duration = tickDurationOverride ?? gameDef.TickDuration;
 			for (int i = 0; i < count; i++) {
 				var currentTick = worldState.GameTickState.CurrentGameTick;
 				worldState.GameTickState.CurrentGameTick = currentTick with { Tick = currentTick.Tick + 1 };
-				worldState.GameTickState.LastUpdate += gameDef.TickDuration;
+				worldState.GameTickState.LastUpdate += duration;
 				logger.LogDebug("Incremented World Tick to #{CurrentTick}. LastUpdate: {LastUpdate}", worldState.GameTickState.CurrentGameTick.Tick, worldState.GameTickState.LastUpdate);
 			}
 			return worldState.GameTickState.CurrentGameTick;

@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -19,6 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly UnitRepository unitRepository;
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
+		private readonly IActionLogger actionLogger;
 
 		private UnitDefId workerUnit;
 		private ResourceDefId mineralResource;
@@ -52,6 +54,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, UnitRepository unitRepository
 				, UnitRepositoryWrite unitRepositoryWrite
+				, IActionLogger actionLogger
 			) {
 			this.logger = logger;
 			this.gameDef = gameDef;
@@ -61,6 +64,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.unitRepository = unitRepository;
 			this.unitRepositoryWrite = unitRepositoryWrite;
+			this.actionLogger = actionLogger;
 		}
 
 		public void SetProperty(string name, string value) {
@@ -119,16 +123,21 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 
 			// Mineral income (spec 2.3)
 			decimal mineralIncome = CalculateWorkerIncome(mineralWorkers, land, MineralsPerWorker, MineralEfficiencyFactor);
-			decimal newMinerals = resourceRepositoryWrite.AddResources(playerId, mineralResource, mineralIncome + BaseIncomeMinerals);
+			decimal totalMineralIncome = mineralIncome + BaseIncomeMinerals;
+			decimal newMinerals = resourceRepositoryWrite.AddResources(playerId, mineralResource, totalMineralIncome);
 			logger.LogDebug("Added {Value} minerals to player {PlayerId} ({Workers} workers, land={Land}). New value: {NewValue}",
-				mineralIncome + BaseIncomeMinerals, playerId, mineralWorkers, land, newMinerals);
+				totalMineralIncome, playerId, mineralWorkers, land, newMinerals);
 
 			// Gas income (spec 2.3) — only if gas-resource is configured
 			if (gasResource != null) {
 				decimal gasIncome = CalculateWorkerIncome(gasWorkers, land, GasPerWorker, GasEfficiencyFactor);
-				decimal newGas = resourceRepositoryWrite.AddResources(playerId, gasResource, gasIncome + BaseIncomeGas);
+				decimal totalGasIncome = gasIncome + BaseIncomeGas;
+				decimal newGas = resourceRepositoryWrite.AddResources(playerId, gasResource, totalGasIncome);
 				logger.LogDebug("Added {Value} gas to player {PlayerId} ({Workers} workers, land={Land}). New value: {NewValue}",
-					gasIncome + BaseIncomeGas, playerId, gasWorkers, land, newGas);
+					totalGasIncome, playerId, gasWorkers, land, newGas);
+				actionLogger.Log("tick", playerId.Id, "ResourceGrowth", $"+{totalMineralIncome:F0}M +{totalGasIncome:F0}G ({mineralWorkers}mw/{gasWorkers}gw land={land:F0})");
+			} else {
+				actionLogger.Log("tick", playerId.Id, "ResourceGrowth", $"+{totalMineralIncome:F0}M ({mineralWorkers}mw land={land:F0})");
 			}
 		}
 

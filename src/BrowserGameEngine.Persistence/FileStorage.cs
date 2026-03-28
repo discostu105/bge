@@ -31,8 +31,21 @@ namespace BrowserGameEngine.Persistence {
 		}
 
 		public async Task Store(string name, byte[] blob) {
-			EnsureDirectory();
-			await File.WriteAllBytesAsync(GetFile(name).FullName, blob);
+			var file = GetFile(name);
+			file.Directory?.Create();
+			await File.WriteAllBytesAsync(file.FullName, blob);
+		}
+
+		public IEnumerable<string> List(string folderPrefix) {
+			var subDir = new DirectoryInfo(Path.Combine(directory.FullName, folderPrefix));
+			if (!subDir.Exists) return Enumerable.Empty<string>();
+			return subDir.GetFiles().Select(f => folderPrefix + "/" + f.Name);
+		}
+
+		public Task Delete(string name) {
+			var file = GetFile(name);
+			if (file.Exists) file.Delete();
+			return Task.CompletedTask;
 		}
 	}
 }

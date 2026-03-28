@@ -2,12 +2,18 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BrowserGameEngine.FrontendServer.Controllers;
 
@@ -27,6 +33,8 @@ public class AdminController : ControllerBase
 	private readonly GameTickEngine gameTickEngine;
 	private readonly WorldState worldState;
 	private readonly GameStateJsonSerializer serializer;
+	private readonly IBlobStorage storage;
+	private readonly IActionLogger actionLogger;
 	private readonly GameDef gameDef;
 
 	public AdminController(
@@ -42,6 +50,8 @@ public class AdminController : ControllerBase
 		GameTickEngine gameTickEngine,
 		WorldState worldState,
 		GameStateJsonSerializer serializer,
+		IBlobStorage storage,
+		IActionLogger actionLogger,
 		GameDef gameDef
 	)
 	{
@@ -57,8 +67,12 @@ public class AdminController : ControllerBase
 		this.gameTickEngine = gameTickEngine;
 		this.worldState = worldState;
 		this.serializer = serializer;
+		this.storage = storage;
+		this.actionLogger = actionLogger;
 		this.gameDef = gameDef;
 	}
+
+	// ── Existing cheat endpoints ──────────────────────────────────────────────
 
 	[HttpPost("set-resources")]
 	public ActionResult SetResources([FromBody] SetResourcesRequest request)
@@ -123,6 +137,95 @@ public class AdminController : ControllerBase
 		if (!options.Value.DevAuth) return NotFound();
 		var json = Encoding.UTF8.GetString(serializer.Serialize(worldState.ToImmutable()));
 		return Content(json, "application/json");
+	}
+
+	[HttpGet("players")]
+	public ActionResult<IEnumerable<string>> ListPlayers()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		return Ok(playerRepository.GetAll().Select(p => p.PlayerId.Id));
+	}
+
+	// ── State Snapshots ───────────────────────────────────────────────────────
+
+	[HttpPost("save-snapshot")]
+	public async Task<ActionResult> SaveSnapshot([FromQuery] string name)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		if (!IsValidSnapshotName(name)) return BadRequest("Invalid snapshot name. Use letters, digits, hyphens, and underscores only.");
+		await storage.Store($"snapshots/{name}.json", serializer.Serialize(worldState.ToImmutable()));
+		return Ok();
+	}
+
+	[HttpPost("load-snapshot")]
+	public async Task<ActionResult> LoadSnapshot([FromQuery] string name)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		if (!IsValidSnapshotName(name)) return BadRequest("Invalid snapshot name. Use letters, digits, hyphens, and underscores only.");
+		var blobName = $"snapshots/{name}.json";
+		if (!storage.Exists(blobName)) return NotFound($"Snapshot '{name}' not found.");
+		var snapshot = serializer.Deserialize(await storage.Load(blobName));
+		worldState.ReplaceFrom(snapshot);
+		return Ok();
+	}
+
+	[HttpGet("snapshots")]
+	public ActionResult<IEnumerable<string>> ListSnapshots()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var names = storage.List("snapshots")
+			.Select(n => Path.GetFileNameWithoutExtension(n.Substring("snapshots/".Length)));
+		return Ok(names);
+	}
+
+	[HttpDelete("snapshot")]
+	public async Task<ActionResult> DeleteSnapshot([FromQuery] string name)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		if (!IsValidSnapshotName(name)) return BadRequest("Invalid snapshot name. Use letters, digits, hyphens, and underscores only.");
+		var blobName = $"snapshots/{name}.json";
+		if (!storage.Exists(blobName)) return NotFound($"Snapshot '{name}' not found.");
+		await storage.Delete(blobName);
+		return Ok();
+	}
+
+	private static bool IsValidSnapshotName(string? name) =>
+		!string.IsNullOrWhiteSpace(name) && name.All(c => char.IsLetterOrDigit(c) || c == '-' || c == '_');
+
+	// ── Tick Speed Control ────────────────────────────────────────────────────
+
+	[HttpPost("set-tick-duration")]
+	public ActionResult SetTickDuration([FromQuery] int seconds)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		if (seconds < 1 || seconds > 86400) return BadRequest("seconds must be between 1 and 86400.");
+		gameTickEngine.SetTickDuration(TimeSpan.FromSeconds(seconds));
+		return Ok(new { seconds, message = $"Tick duration set to {seconds}s (was {gameDef.TickDuration.TotalSeconds}s default)." });
+	}
+
+	[HttpPost("pause-ticks")]
+	public ActionResult PauseTicks()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		gameTickEngine.PauseTicks();
+		return Ok(new { paused = true });
+	}
+
+	[HttpPost("resume-ticks")]
+	public ActionResult ResumeTicks()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		gameTickEngine.ResumeTicks();
+		return Ok(new { paused = false, effectiveTickDurationSeconds = gameTickEngine.EffectiveTickDuration.TotalSeconds });
+	}
+
+	// ── Action Feed ───────────────────────────────────────────────────────────
+
+	[HttpGet("action-log")]
+	public ActionResult<IEnumerable<ActionLogEntry>> GetActionLog()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		return Ok(actionLogger.GetRecentEntries());
 	}
 }
 
