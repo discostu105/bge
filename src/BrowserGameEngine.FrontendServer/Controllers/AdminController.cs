@@ -165,7 +165,12 @@ public class AdminController : ControllerBase
 		var blobName = $"snapshots/{name}.json";
 		if (!storage.Exists(blobName)) return NotFound($"Snapshot '{name}' not found.");
 		var snapshot = serializer.Deserialize(await storage.Load(blobName));
-		worldState.ReplaceFrom(snapshot);
+		gameTickEngine.PauseTicks();
+		try {
+			worldState.ReplaceFrom(snapshot);
+		} finally {
+			gameTickEngine.ResumeTicks();
+		}
 		return Ok();
 	}
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer.GameTicks {
@@ -25,7 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		private readonly TimeProvider timeProvider;
 
 		private volatile bool isPaused = false;
-		private TimeSpan? tickDurationOverride = null;
+		private long tickDurationOverrideTicks = 0; // 0 = no override; use Interlocked for thread safety
 
 		public GameTickEngine(ILogger<GameTickEngine> logger
 				, WorldState worldState
@@ -60,7 +61,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 
 		private bool IsTickDue() {
 			if (isPaused) return false;
-			var duration = tickDurationOverride ?? gameDef.TickDuration;
+			var duration = EffectiveTickDuration;
 			var diff = timeProvider.GetLocalNow().DateTime - worldState.GameTickState.LastUpdate;
 			return diff > duration;
 		}
@@ -68,9 +69,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		public void PauseTicks() => isPaused = true;
 		public void ResumeTicks() => isPaused = false;
 		public bool IsPaused => isPaused;
-		public void SetTickDuration(TimeSpan duration) => tickDurationOverride = duration;
-		public void ResetTickDuration() => tickDurationOverride = null;
-		public TimeSpan EffectiveTickDuration => tickDurationOverride ?? gameDef.TickDuration;
+		public void SetTickDuration(TimeSpan duration) => Interlocked.Exchange(ref tickDurationOverrideTicks, duration.Ticks);
+		public void ResetTickDuration() => Interlocked.Exchange(ref tickDurationOverrideTicks, 0);
+		public TimeSpan EffectiveTickDuration {
+			get {
+				var ticks = Interlocked.Read(ref tickDurationOverrideTicks);
+				return ticks > 0 ? new TimeSpan(ticks) : gameDef.TickDuration;
+			}
+		}
 
 		private bool AreAllPlayersUpToDate() {
 			return worldState.GetPlayersForGameTick().Length == 0;
@@ -95,7 +101,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		}
 
 		public GameTick IncrementWorldTick(int count = 1) {
-			var duration = tickDurationOverride ?? gameDef.TickDuration;
+			var duration = EffectiveTickDuration;
 			for (int i = 0; i < count; i++) {
 				var currentTick = worldState.GameTickState.CurrentGameTick;
 				worldState.GameTickState.CurrentGameTick = currentTick with { Tick = currentTick.Tick + 1 };
