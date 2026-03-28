@@ -8,8 +8,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Bge__DevAuth=true
-      - Discord__ClientId=${DISCORD_CLIENT_ID}
-      - Discord__ClientSecret=${DISCORD_CLIENT_SECRET}
+      - GitHub__ClientId=${GITHUB_CLIENT_ID}
+      - GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
       # To use S3 storage instead of local file storage:
       # - Bge__S3BucketName=my-bge-bucket
       # - AWS_REGION=eu-central-1

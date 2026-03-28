@@ -4,6 +4,7 @@ namespace BrowserGameEngine.GameModel {
 	public record WorldStateImmutable(
 		IDictionary<PlayerId, PlayerImmutable> Players,
 		GameTickStateImmutable GameTickState,
-		IList<GameActionImmutable> GameActionQueue
+		IList<GameActionImmutable> GameActionQueue,
+		IDictionary<string, UserImmutable>? Users = null
 	);
 }

@@ -12,6 +12,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
 		internal IDictionary<PlayerId, Player> Players { get; set; } = new ConcurrentDictionary<PlayerId, Player>();
 
+		internal IDictionary<string, User> Users { get; set; } = new ConcurrentDictionary<string, User>();
+
 		internal GameTickState GameTickState { get; set; } = new GameTickState();
 
 		internal IList<GameAction> GameActionQueue { get; set; } = new List<GameAction>();
@@ -51,6 +53,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public static void ReplaceFrom(this WorldState worldState, WorldStateImmutable snapshot) {
 			var mutable = snapshot.ToMutable();
 			worldState.Players = mutable.Players;
+			worldState.Users = mutable.Users;
 			worldState.GameTickState = mutable.GameTickState;
 			worldState.GameActionQueue = mutable.GameActionQueue;
 		}
@@ -59,13 +62,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new WorldStateImmutable(
 				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				GameTickState: worldState.GameTickState.ToImmutable(),
-				GameActionQueue: worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList()
+				GameActionQueue: worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList(),
+				Users: worldState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable())
 			);
 		}
 
 		public static WorldState ToMutable(this WorldStateImmutable worldStateImmutable) {
 			return new WorldState {
 				Players = new ConcurrentDictionary<PlayerId, Player>(worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable())),
+				Users = new ConcurrentDictionary<string, User>(worldStateImmutable.Users?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<string, User>()),
 				GameTickState = worldStateImmutable.GameTickState.ToMutable(),
 				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList()
 			};

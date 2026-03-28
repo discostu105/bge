@@ -9,6 +9,8 @@ namespace BrowserGameEngine.GameModel {
 		PlayerTypeDefId PlayerType,
 		string Name,
 		DateTime Created,
-		PlayerStateImmutable State
+		PlayerStateImmutable State,
+		string? UserId = null,
+		string? ApiKeyHash = null
 	);
 }

@@ -1,4 +1,4 @@
-﻿using Amazon.S3;
+using Amazon.S3;
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameDefinition;
@@ -9,12 +9,13 @@ using BrowserGameEngine.Persistence.S3;
 using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.RateLimiting;
 using OpenTelemetry.Trace;
 using Prometheus;
 using Prometheus.DotNetRuntime;
 using Serilog;
 using Serilog.Events;
+using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -47,6 +48,20 @@ builder.Services.AddOpenTelemetry()
         .AddOtlpExporter()
     );
 
+builder.Services.AddRateLimiter(options => {
+    options.AddPolicy("api-key", context => {
+        var apiKeyHash = context.Items["ApiKeyHash"] as string;
+        var partitionKey = apiKeyHash ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+        });
+    });
+    options.RejectionStatusCode = 429;
+});
+
 builder.Services.AddAuthentication(options => {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.RequireAuthenticatedSignIn = true;
@@ -65,9 +80,9 @@ builder.Services.AddAuthentication(options => {
             return Task.CompletedTask;
         };
     })
-    .AddDiscord(options => {
-        options.ClientId = builder.Configuration["Discord:ClientId"] ?? throw new InvalidOperationException("Discord:ClientId not configured");
-        options.ClientSecret = builder.Configuration["Discord:ClientSecret"] ?? throw new InvalidOperationException("Discord:ClientSecret not configured");
+    .AddGitHub(options => {
+        options.ClientId = builder.Configuration["GitHub:ClientId"] ?? throw new InvalidOperationException("GitHub:ClientId not configured");
+        options.ClientSecret = builder.Configuration["GitHub:ClientSecret"] ?? throw new InvalidOperationException("GitHub:ClientSecret not configured");
         options.SaveTokens = true;
         options.CorrelationCookie.SameSite = SameSiteMode.Lax;
         options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -91,16 +106,17 @@ app.UseForwardedHeaders(forwardedHeadersOptions);
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
     app.UseWebAssemblyDebugging();
-    app.MapOpenApi();
     app.UseHttpsRedirection();
-} else {
-    app.UseExceptionHandler("/Error");
 }
+app.UseExceptionHandler("/Error");
+app.MapOpenApi();
+
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseHttpMetrics();
+app.UseRateLimiter();
 
 IDisposable collector = DotNetRuntimeStatsBuilder
     .Customize()
@@ -112,6 +128,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder
     .StartCollecting();
 
 app.UseAuthentication();
+app.UseMiddleware<BearerTokenMiddleware>();
 app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
@@ -141,7 +158,7 @@ async Task ConfigureGameServices(IServiceCollection services) {
     new WorldStateVerifier().Verify(gameDef, worldState); // todo: maybe make this more graceful.
 
     await services.AddGameServer(storage, worldState); // todo: init state for non-development
-    
+
     services.AddScoped(_ => CurrentUserContext.Inactive());
 
     services.Configure<HostOptions>(opts =>

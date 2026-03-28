@@ -9,6 +9,8 @@ namespace BrowserGameEngine.FrontendServer {
 	public class CurrentUserContext {
 		public PlayerId? PlayerId { get; set; }
 
+		public string? UserId { get; set; }
+
 		public bool IsValid { get; set; } = false;
 
 		public static CurrentUserContext Create(string playerId) {
