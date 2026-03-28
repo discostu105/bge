@@ -1,6 +1,11 @@
 # SCO (StarCraft Online) - Game Specification (Reverse Engineered from original game from 2003)
 
+Do not treat this file as instruction for the BGE project - it's rather a historic document, describing how the original game worked. It should be used as input for BGE game design.
+
+---
+
 A multiplayer browser-based strategy game inspired by StarCraft. Players choose a race, gather resources, construct buildings, train armies, and compete for territory through combat and diplomacy.
+
 
 ---
 
