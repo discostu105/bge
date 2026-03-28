@@ -60,5 +60,25 @@ namespace BrowserGameEngine.StatefulGameServer {
 				Actions.Add(action);
 			}
 		}
+
+		internal void RemoveActions(PlayerId playerId, string name, IDictionary<string, string> properties) {
+			lock (_lock) {
+				var toRemove = GetActions(playerId)
+					.Where(x => x.Name == name && MatchesProperties(x.Properties, properties))
+					.ToList();
+				foreach (var action in toRemove) {
+					Actions.Remove(action);
+				}
+			}
+		}
+
+		public void RemoveAllPlayerActions(PlayerId playerId) {
+			lock (_lock) {
+				var toRemove = GetActions(playerId).ToList();
+				foreach (var action in toRemove) {
+					Actions.Remove(action);
+				}
+			}
+		}
 	}
 }

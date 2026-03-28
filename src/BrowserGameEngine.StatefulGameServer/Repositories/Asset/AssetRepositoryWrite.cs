@@ -66,6 +66,19 @@ namespace BrowserGameEngine.StatefulGameServer {
 			});
 		}
 
+		public void GrantBuilding(PlayerId playerId, AssetDefId assetDefId) {
+			lock (_lock) {
+				actionQueueRepository.RemoveActions(
+					playerId,
+					AssetBuildActionConstants.Name,
+					new Dictionary<string, string> { { AssetBuildActionConstants.AssetDefId, assetDefId.Id } }
+				);
+				if (!assetRepository.HasAsset(playerId, assetDefId)) {
+					AddAsset(playerId, assetDefId);
+				}
+			}
+		}
+
 		public void ExecuteGameActions(PlayerId playerId) {
 			lock (_lock) {
 				var actions = actionQueueRepository.GetAndRemoveDueActions(playerId, AssetBuildActionConstants.Name, world.GameTickState.CurrentGameTick);

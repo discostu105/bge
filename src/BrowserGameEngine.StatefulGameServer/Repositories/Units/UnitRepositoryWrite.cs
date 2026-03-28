@@ -47,6 +47,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			});
 		}
 
+		public void GrantUnits(PlayerId playerId, UnitDefId unitDefId, int count) {
+			lock (_lock) {
+				var unitDef = gameDef.GetUnitDef(unitDefId);
+				if (unitDef == null) throw new UnitDefNotFoundException(unitDefId);
+				AddUnit(playerId, unitDefId, count);
+			}
+		}
+
 		/// <summary>
 		/// Building units happens immediately. Throws exceptions if prerequisites are not met.
 		/// </summary>
