@@ -55,6 +55,15 @@ builder.Services.AddAuthentication(options => {
         options.Cookie.Name = "BGE.AuthCookie";
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
+        options.LoginPath = "/signin";
+        options.Events.OnRedirectToLogin = context => {
+            if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest") {
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
     })
     .AddDiscord(options => {
         options.ClientId = builder.Configuration["Discord:ClientId"] ?? throw new InvalidOperationException("Discord:ClientId not configured");
@@ -64,13 +73,6 @@ builder.Services.AddAuthentication(options => {
         options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
-builder.Services.ConfigureApplicationCookie(options => {
-    options.Events.OnRedirectToLogin = context => {
-        context.Response.Headers["Location"] = context.RedirectUri;
-        context.Response.StatusCode = 401;
-        return Task.CompletedTask;
-    };
-});
 
 await ConfigureGameServices(builder.Services);
 
