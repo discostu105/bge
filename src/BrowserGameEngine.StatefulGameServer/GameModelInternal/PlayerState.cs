@@ -11,7 +11,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public IDictionary<ResourceDefId, decimal> Resources { get; set; } = new Dictionary<ResourceDefId, decimal>();
 		public ISet<Asset> Assets { get; set; } = new HashSet<Asset>();
 		public List<Unit> Units { get; set; } = new List<Unit>();
-
+		public int MineralWorkers { get; set; }
+		public int GasWorkers { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -21,7 +22,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				CurrentGameTick: playerState.CurrentGameTick,
 				Resources: new Dictionary<ResourceDefId, decimal>(playerState.Resources),
 				Assets: playerState.Assets.Select(x => x.ToImmutable()).ToHashSet(),
-				Units: playerState.Units.Select(x => x.ToImmutable()).ToList()
+				Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
+				MineralWorkers: playerState.MineralWorkers,
+				GasWorkers: playerState.GasWorkers
 			);
 		}
 
@@ -31,7 +34,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				CurrentGameTick = playerStateImmutable.CurrentGameTick,
 				Resources = new Dictionary<ResourceDefId, decimal>(playerStateImmutable.Resources),
 				Assets = playerStateImmutable.Assets.Select(x => x.ToMutable()).ToHashSet(),
-				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList()
+				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList(),
+				MineralWorkers = playerStateImmutable.MineralWorkers,
+				GasWorkers = playerStateImmutable.GasWorkers
 		};
 		}
 	}

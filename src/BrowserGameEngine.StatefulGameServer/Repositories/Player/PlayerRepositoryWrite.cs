@@ -22,6 +22,26 @@ namespace BrowserGameEngine.StatefulGameServer {
 			Players[command.PlayerId].Name = command.NewName;
 		}
 
+		public void AssignWorkers(AssignWorkersCommand command, int totalWorkers) {
+			if (command.MineralWorkers < 0 || command.GasWorkers < 0)
+				throw new ArgumentOutOfRangeException("Worker counts cannot be negative.");
+			if (command.MineralWorkers + command.GasWorkers > totalWorkers)
+				throw new ArgumentOutOfRangeException($"Cannot assign {command.MineralWorkers + command.GasWorkers} workers: only {totalWorkers} available.");
+			lock (_lock) {
+				var state = world.GetPlayer(command.PlayerId).State;
+				state.MineralWorkers = command.MineralWorkers;
+				state.GasWorkers = command.GasWorkers;
+			}
+		}
+
+		public void GrantEmergencyWorkers(PlayerId playerId) {
+			lock (_lock) {
+				var state = world.GetPlayer(playerId).State;
+				state.MineralWorkers = 1;
+				state.GasWorkers = 1;
+			}
+		}
+
 		internal GameTick IncrementTick(PlayerId playerId) {
 			lock (_lock) {
 				var player = world.GetPlayer(playerId);

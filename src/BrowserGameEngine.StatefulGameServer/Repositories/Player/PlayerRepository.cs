@@ -57,5 +57,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public bool Exists(PlayerId playerId) {
 			return world.PlayerExists(playerId);
 		}
+
+		public int GetMineralWorkers(PlayerId playerId) => world.GetPlayer(playerId).State.MineralWorkers;
+		public int GetGasWorkers(PlayerId playerId) => world.GetPlayer(playerId).State.GasWorkers;
 	}
 }

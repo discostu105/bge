@@ -32,6 +32,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {
 						{ "worker-units", "wbf" },
 						{ "growth-resource", "minerals" },
+						{ "gas-resource", "gas" },
 						{ "constraint-resource", "land" },
 					}.ToFrozenDictionary())
 				},

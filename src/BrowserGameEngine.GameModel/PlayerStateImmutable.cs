@@ -9,6 +9,8 @@ namespace BrowserGameEngine.GameModel {
 		GameTick CurrentGameTick,
 		IDictionary<ResourceDefId, decimal> Resources,
 		ISet<AssetImmutable> Assets,
-		List<UnitImmutable> Units
+		List<UnitImmutable> Units,
+		int MineralWorkers = 0,
+		int GasWorkers = 0
 	);
 }
