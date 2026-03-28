@@ -1,14 +1,31 @@
-﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication
 @using Microsoft.Extensions.Options
 @using BrowserGameEngine.FrontendServer
+@using BrowserGameEngine.StatefulGameServer
 @model AuthenticationScheme[]
 @inject IOptions<BgeOptions> options
+@inject PlayerRepository playerRepository
 
 @if (options.Value.DevAuth) {
-    <form action="/signindev" method="post">
-        <input type="text" name="PlayerId" />
-        <button class="btn btn-lg btn-success m-1" type="submit">Direct Login (dev)</button>
-    </form>
+    var players = playerRepository.GetAll().Select(p => p.PlayerId.Id).OrderBy(x => x).ToList();
+    <div class="jumbotron">
+        <h3>Dev Login</h3>
+        @if (players.Any()) {
+            <p class="text-muted">Click to log in as an existing player:</p>
+            @foreach (var playerId in players) {
+                <form action="/signindev" method="post" style="display:inline">
+                    <input type="hidden" name="PlayerId" value="@playerId" />
+                    <button class="btn btn-outline-primary m-1" type="submit">@playerId</button>
+                </form>
+            }
+            <hr />
+        }
+        <p class="text-muted">Or create and log in as a new player:</p>
+        <form action="/signindev" method="post" class="form-inline">
+            <input type="text" name="PlayerId" class="form-control mr-2" placeholder="New player ID" />
+            <button class="btn btn-success" type="submit">Create &amp; Login</button>
+        </form>
+    </div>
 }
 
 <div class="jumbotron">

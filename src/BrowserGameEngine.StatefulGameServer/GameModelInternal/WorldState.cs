@@ -48,6 +48,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	}
 
 	public static class WorldStateImmutableExtensions {
+		public static void ReplaceFrom(this WorldState worldState, WorldStateImmutable snapshot) {
+			var mutable = snapshot.ToMutable();
+			worldState.Players = mutable.Players;
+			worldState.GameTickState = mutable.GameTickState;
+			worldState.GameActionQueue = mutable.GameActionQueue;
+		}
+
 		public static WorldStateImmutable ToImmutable(this WorldState worldState) {
 			return new WorldStateImmutable(
 				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),

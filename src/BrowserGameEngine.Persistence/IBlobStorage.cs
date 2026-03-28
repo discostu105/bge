@@ -8,5 +8,7 @@ namespace BrowserGameEngine.Persistence {
 		Task Store(string name, byte[] blob);
 		Task<byte[]> Load(string name);
 		bool Exists(string name);
+		IEnumerable<string> List(string folderPrefix);
+		Task Delete(string name);
 	}
 }

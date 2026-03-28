@@ -1,5 +1,6 @@
 ﻿using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
@@ -25,6 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<UnitRepositoryWrite>();
 			services.AddSingleton<ActionQueueRepository>();
 
+			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
 			services.AddSingleton<IGameTickModule, UnitReturn>();
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();

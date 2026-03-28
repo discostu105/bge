@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -42,6 +44,18 @@ namespace BrowserGameEngine.Persistence.S3 {
 				InputStream = stream
 			};
 			await s3Client.PutObjectAsync(request);
+		}
+
+		public IEnumerable<string> List(string folderPrefix) {
+			var fullPrefix = GetKey(folderPrefix) + "/";
+			var request = new ListObjectsV2Request { BucketName = bucketName, Prefix = fullPrefix };
+			var response = s3Client.ListObjectsV2Async(request).GetAwaiter().GetResult();
+			var stripLen = string.IsNullOrEmpty(keyPrefix) ? 0 : keyPrefix.Length + 1;
+			return response.S3Objects.Select(o => o.Key.Substring(stripLen));
+		}
+
+		public async Task Delete(string name) {
+			await s3Client.DeleteObjectAsync(bucketName, GetKey(name));
 		}
 	}
 }
