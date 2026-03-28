@@ -89,3 +89,27 @@ Governed by `.editorconfig`:
 ## Testing
 
 Tests are in `StatefulGameServer.Test` (xUnit). Test game logic through repositories using the `TestGame` helper class, not through controllers.
+
+## Development Workflow (Agent/PR-based)
+
+All changes go through GitHub PRs — never push directly to `master`.
+
+Each task gets an **isolated git worktree** so multiple branches can be active simultaneously:
+
+```bash
+# Create worktree for a new task
+git worktree add /tmp/bge-work/<branch-name> -b <branch-name> master
+cd /tmp/bge-work/<branch-name>
+
+# ... implement, build, test, commit ...
+
+# Push and open PR
+git push -u origin <branch-name>
+gh pr create --title "<title>" --body "..."
+
+# Clean up worktree after PR is open
+cd /home/chris/repos/my/bge
+git worktree remove /tmp/bge-work/<branch-name>
+```
+
+List all active worktrees: `git worktree list`
