@@ -15,4 +15,5 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record ChangePlayerNameCommand(PlayerId PlayerId, string NewName) : ICommand;
 	public record HarvestResourceCommand(PlayerId PlayerId, string ResourceId, int Count) : ICommand;
 	public record AssignWorkersCommand(PlayerId PlayerId, int MineralWorkers, int GasWorkers) : ICommand;
+	public record ColonizeCommand(PlayerId PlayerId, int Amount) : ICommand;
 }
