@@ -1,9 +1,46 @@
 using BrowserGameEngine.GameModel;
+using System;
 using System.Linq;
 using Xunit;
 
 namespace BrowserGameEngine.StatefulGameServer.Test {
 	public class PlayerRepositoryTest {
+
+		[Fact]
+		public void DeletePlayer_RemovesPlayerFromWorld() {
+			var game = new TestGame(playerCount: 1);
+			var playerId = PlayerIdFactory.Create("player0");
+			var userRepository = new UserRepository(game.World);
+
+			game.PlayerRepositoryWrite.DeletePlayer(playerId);
+
+			Assert.False(game.PlayerRepository.Exists(playerId));
+		}
+
+		[Fact]
+		public void DeletePlayer_NoLongerAppearsInGetPlayersForUser() {
+			var game = new TestGame(playerCount: 1);
+			var playerId = PlayerIdFactory.Create("player0");
+			var userId = "testuser";
+			// Assign a userId to the player via creating a fresh player
+			game.PlayerRepositoryWrite.CreatePlayer(PlayerIdFactory.Create("newplayer"), userId);
+			var userRepository = new UserRepository(game.World);
+
+			game.PlayerRepositoryWrite.DeletePlayer(PlayerIdFactory.Create("newplayer"));
+
+			var players = userRepository.GetPlayersForUser(userId).ToList();
+			Assert.DoesNotContain(players, p => p.PlayerId == PlayerIdFactory.Create("newplayer"));
+		}
+
+		[Fact]
+		public void DeletePlayer_GetThrowsAfterDeletion() {
+			var game = new TestGame(playerCount: 1);
+			var playerId = PlayerIdFactory.Create("player0");
+
+			game.PlayerRepositoryWrite.DeletePlayer(playerId);
+
+			Assert.ThrowsAny<Exception>(() => game.PlayerRepository.Get(playerId));
+		}
 
 		[Fact]
 		public void IsPlayerAttackable_SamePlayer_ReturnsFalse() {
