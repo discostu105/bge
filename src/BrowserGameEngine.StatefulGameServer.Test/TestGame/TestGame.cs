@@ -16,6 +16,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public WorldState World { get; }
 		public GameDef GameDef { get; }
 		public ScoreRepository ScoreRepository { get; }
+		public AllianceRepository AllianceRepository { get; }
+		public AllianceRepositoryWrite AllianceRepositoryWrite { get; }
 		public PlayerRepository PlayerRepository { get; }
 		public PlayerRepositoryWrite PlayerRepositoryWrite { get; }
 		public ResourceRepository ResourceRepository { get; }
@@ -41,7 +43,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			World = initialState.ToMutable();
 			GameDef = new TestGameDefFactory().CreateGameDef();
 			ScoreRepository = new ScoreRepository(GameDef, World);
-			PlayerRepository = new PlayerRepository(World, ScoreRepository);
+			AllianceRepository = new AllianceRepository(World);
+			AllianceRepositoryWrite = new AllianceRepositoryWrite(World, AllianceRepository);
+			PlayerRepository = new PlayerRepository(World, ScoreRepository, AllianceRepository);
 			PlayerRepositoryWrite = new PlayerRepositoryWrite(World, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(World, GameDef);
 			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository);
