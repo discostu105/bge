@@ -27,6 +27,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<UnitRepository>();
 			services.AddSingleton<UnitRepositoryWrite>();
 			services.AddSingleton<ActionQueueRepository>();
+			services.AddSingleton<MessageRepository>();
+			services.AddSingleton<MessageRepositoryWrite>();
+			services.AddSingleton<BattleReportGenerator>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
