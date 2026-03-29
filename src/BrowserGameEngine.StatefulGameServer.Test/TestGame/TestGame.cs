@@ -29,6 +29,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public IBattleBehavior BattleBehavior { get; }
 		public UpgradeRepository UpgradeRepository { get; }
 		public UnitRepositoryWrite UnitRepositoryWrite { get; }
+		public MessageRepository MessageRepository { get; }
+		public MessageRepositoryWrite MessageRepositoryWrite { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
@@ -56,6 +58,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
 			UpgradeRepository = new UpgradeRepository(World);
 			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), World, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
+			MessageRepository = new MessageRepository(World);
+			MessageRepositoryWrite = new MessageRepositoryWrite(World, TimeProvider.System);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
