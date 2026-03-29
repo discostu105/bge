@@ -19,7 +19,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				Resources = new List<ResourceDef> {
 					new ResourceDef(Id.ResDef("res1"), "res1"),
 					new ResourceDef(Id.ResDef("res2"), "res2"),
-					new ResourceDef(Id.ResDef("res3"), "res3")
+					new ResourceDef(Id.ResDef("res3"), "res3"),
+					new ResourceDef(Id.ResDef("land"), "land")
 				},
 
 				ScoreResource = Id.ResDef("res1"),

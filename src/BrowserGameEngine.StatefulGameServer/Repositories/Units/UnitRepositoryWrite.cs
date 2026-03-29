@@ -16,7 +16,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly GameDef gameDef;
 		private readonly UnitRepository unitRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
+		private readonly ResourceRepository resourceRepository;
 		private readonly PlayerRepository playerRepository;
+		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly IBattleBehavior battleBehavior;
 
 		public UnitRepositoryWrite(ILogger<UnitRepositoryWrite> logger
@@ -24,7 +26,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, GameDef gameDef
 				, UnitRepository unitRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
+				, ResourceRepository resourceRepository
 				, PlayerRepository playerRepository
+				, PlayerRepositoryWrite playerRepositoryWrite
 				, IBattleBehavior battleBehavior
 			) {
 			this.logger = logger;
@@ -32,7 +36,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.gameDef = gameDef;
 			this.unitRepository = unitRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
+			this.resourceRepository = resourceRepository;
 			this.playerRepository = playerRepository;
+			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.battleBehavior = battleBehavior;
 		}
 
@@ -125,9 +131,49 @@ namespace BrowserGameEngine.StatefulGameServer {
 				world.ValidatePlayer(command.EnemyPlayerId);
 				var units = Units(command.PlayerId).Where(x => x.Position == command.EnemyPlayerId);
 				foreach (var unit in units) {
-					unit.Position = null; // TODO: should not be immediate, but rather with some rounds delay
+					unit.Position = null;
 				}
 			}
+		}
+
+		private void SetReturnTimers(PlayerId playerId, PlayerId enemyPlayerId) {
+			lock (_lock) {
+				var units = Units(playerId).Where(x => x.Position == enemyPlayerId).ToList();
+				foreach (var unit in units) {
+					unit.ReturnTimer = gameDef.GetUnitDef(unit.UnitDefId).Speed;
+				}
+			}
+		}
+
+		public void ProcessReturningUnits(PlayerId playerId) {
+			lock (_lock) {
+				var units = Units(playerId).Where(x => x.ReturnTimer > 0).ToList();
+				foreach (var unit in units) {
+					unit.ReturnTimer--;
+					if (unit.ReturnTimer == 0) {
+						unit.Position = null;
+					}
+				}
+			}
+		}
+
+		private void ApplyLandTransfer(BattleResult battleResult, int remainingAttackDamage) {
+			var defenderLand = (int)resourceRepository.GetAmount(battleResult.Defender, Id.ResDef("land"));
+			if (defenderLand <= 0) return;
+
+			decimal percent = Math.Clamp(remainingAttackDamage / (decimal)defenderLand * 12, 1, 50);
+			decimal landToTransfer = Math.Round(defenderLand * percent / 100);
+
+			resourceRepositoryWrite.AddResources(battleResult.Defender, Id.ResDef("land"), -landToTransfer);
+			resourceRepositoryWrite.AddResources(battleResult.Attacker, Id.ResDef("land"), landToTransfer);
+
+			var defenderState = world.GetPlayer(battleResult.Defender).State;
+			int totalWorkers = defenderState.MineralWorkers + defenderState.GasWorkers;
+			int workersToCapture = (int)Math.Round(totalWorkers * percent / 100 / 2);
+			playerRepositoryWrite.CaptureWorkers(battleResult.Defender, workersToCapture);
+
+			battleResult.BtlResult.LandTransferred = landToTransfer;
+			battleResult.BtlResult.WorkersCaptured = workersToCapture;
 		}
 
 		private void RemoveUnitsOfType(PlayerId playerId, UnitDefId unitDefId) {
@@ -181,7 +227,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, StringifyUnitCounts(battleResult.BtlResult.AttackingUnitsSurvived)
 				);
 
-			ReturnUnitsHome(new ReturnUnitsHomeCommand(playerId, enemyPlayerId));
+			bool attackerWon = !battleResult.BtlResult.DefendingUnitsSurvived.Any() && battleResult.BtlResult.AttackingUnitsSurvived.Any();
+			if (attackerWon) {
+				int remainingAttackDamage = battleResult.BtlResult.AttackingUnitsSurvived
+					.Sum(uc => uc.Count * gameDef.GetUnitDef(uc.UnitDefId).Attack);
+				ApplyLandTransfer(battleResult, remainingAttackDamage);
+			}
+
+			SetReturnTimers(playerId, enemyPlayerId);
 			return battleResult;
 		}
 
@@ -212,7 +265,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private void RemoveUnits(PlayerId playerId, PlayerId? position, UnitCount unitCount) {
-			var units = unitRepository.GetByUnitDefId(playerId, unitCount.UnitDefId).Where(x => x.Position == position);
+			var units = unitRepository.GetByUnitDefId(playerId, unitCount.UnitDefId).Where(x => x.Position == position).ToList();
 			int unitsToRemove = unitCount.Count;
 			foreach (var unit in units) {
 				unitsToRemove -= TryRemoveUnitCount(playerId, unit.UnitId, unitsToRemove);
