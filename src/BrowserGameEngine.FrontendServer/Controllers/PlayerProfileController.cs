@@ -42,7 +42,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var player = playerRepository.Get(currentUserContext.PlayerId);
 			return new PlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
-				PlayerName = player.Name
+				PlayerName = player.Name,
+				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining
 			};
 		}
 

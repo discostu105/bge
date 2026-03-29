@@ -11,6 +11,7 @@ namespace BrowserGameEngine.GameModel {
 		ISet<AssetImmutable> Assets,
 		List<UnitImmutable> Units,
 		int MineralWorkers = 0,
-		int GasWorkers = 0
+		int GasWorkers = 0,
+		int ProtectionTicksRemaining = 0
 	);
 }

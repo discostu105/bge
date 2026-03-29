@@ -13,6 +13,7 @@
                 <th>Id</th>
                 <th>Name</th>
                 <th>Punkte</th>
+                <th>Schutz</th>
             </tr>
         </thead>
         <tbody>
@@ -21,6 +22,7 @@
                 <td>@item.PlayerId</td>
                 <td>@item.PlayerName</td>
                 <td>@item.Score</td>
+                <td>@(item.ProtectionTicksRemaining > 0 ? $"🛡 {item.ProtectionTicksRemaining}" : "")</td>
             </tr>
             }
         </tbody>

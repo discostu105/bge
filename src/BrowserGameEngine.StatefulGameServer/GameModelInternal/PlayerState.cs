@@ -13,6 +13,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public List<Unit> Units { get; set; } = new List<Unit>();
 		public int MineralWorkers { get; set; }
 		public int GasWorkers { get; set; }
+		public int ProtectionTicksRemaining { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -24,7 +25,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Assets: playerState.Assets.Select(x => x.ToImmutable()).ToHashSet(),
 				Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
 				MineralWorkers: playerState.MineralWorkers,
-				GasWorkers: playerState.GasWorkers
+				GasWorkers: playerState.GasWorkers,
+				ProtectionTicksRemaining: playerState.ProtectionTicksRemaining
 			);
 		}
 
@@ -36,7 +38,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Assets = playerStateImmutable.Assets.Select(x => x.ToMutable()).ToHashSet(),
 				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList(),
 				MineralWorkers = playerStateImmutable.MineralWorkers,
-				GasWorkers = playerStateImmutable.GasWorkers
+				GasWorkers = playerStateImmutable.GasWorkers,
+				ProtectionTicksRemaining = playerStateImmutable.ProtectionTicksRemaining
 		};
 		}
 	}

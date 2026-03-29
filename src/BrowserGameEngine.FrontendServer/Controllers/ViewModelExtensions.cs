@@ -13,7 +13,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new PublicPlayerViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
-				Score = scoreRepository.GetScore(player.PlayerId)
+				Score = scoreRepository.GetScore(player.PlayerId),
+				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining
 			};
 		}
 
