@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
@@ -27,4 +27,7 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record AssignWorkersCommand(PlayerId PlayerId, int MineralWorkers, int GasWorkers) : ICommand;
 	public record ColonizeCommand(PlayerId PlayerId, int Amount) : ICommand;
 	public record ResearchUpgradeCommand(PlayerId PlayerId, UpgradeType UpgradeType) : ICommand;
+	public record AddToQueueCommand(PlayerId PlayerId, string Type, string DefId, int Count) : ICommand;
+	public record RemoveFromQueueCommand(PlayerId PlayerId, Guid EntryId) : ICommand;
+	public record ReorderQueueCommand(PlayerId PlayerId, Guid EntryId, int NewPriority) : ICommand;
 }

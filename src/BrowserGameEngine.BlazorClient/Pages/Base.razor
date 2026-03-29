@@ -1,4 +1,4 @@
-﻿@page "/base"
+@page "/base"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
@@ -42,7 +42,7 @@
                             <span>Bereits gebaut!</span>
 
                             <div class="bge-recruiting">
-                                <_BuildUnitsForm AvailableUnits="item.AvailableUnits" />
+                                <_BuildUnitsForm AvailableUnits="item.AvailableUnits" BuildQueue="buildQueue" OnQueueChanged="OnQueueChanged" />
                             </div>
 
                         } else if (item.AlreadyQueued) {
@@ -50,10 +50,15 @@
                         } else {
                             <div>Kosten: <_Cost Cost="@item.Cost" /></div>
                             <div>Benötigt: @item.Prerequisites </div>
-                            @if (item.PrerequisitesMet && item.CanAfford) {
+                            @if (item.PrerequisitesMet) {
                                 <div>
-                                    <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
-                                        Bauen
+                                    @if (item.CanAfford) {
+                                        <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
+                                            Bauen
+                                        </button>
+                                    }
+                                    <button class="btn btn-secondary" @onclick="(e) => QueueAsset(item)">
+                                        In Warteschlange
                                     </button>
                                 </div>
                             }
@@ -63,6 +68,9 @@
             </div>
         }
     }
+
+    <_BuildQueue @ref="buildQueue" />
+
 </div>
 
 @code {
@@ -72,6 +80,7 @@
     private string? lastError;
     private string? colonizeError;
     private int colonizeAmount = 1;
+    private _BuildQueue? buildQueue;
 
     protected override async Task OnInitializedAsync() {
         await Update();
@@ -95,6 +104,20 @@
         } else {
             colonizeError = await response.Content.ReadAsStringAsync();
         }
+    }
+
+    private async Task QueueAsset(AssetViewModel asset) {
+        var request = new AddToQueueRequest { Type = "asset", DefId = asset.Definition.Id, Count = 1 };
+        var response = await Http.PostAsJsonAsync("api/buildqueue/add", request);
+        if (response.IsSuccessStatusCode) {
+            if (buildQueue != null) await buildQueue.Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task OnQueueChanged() {
+        if (buildQueue != null) await buildQueue.Update();
     }
 
     private async Task Update() {

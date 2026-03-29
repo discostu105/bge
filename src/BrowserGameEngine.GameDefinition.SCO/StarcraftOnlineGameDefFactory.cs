@@ -35,8 +35,10 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						{ "gas-resource", "gas" },
 						{ "constraint-resource", "land" },
 					}.ToFrozenDictionary()),
+
 					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
-					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary())
+					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
+					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary())
 				},
 
 				Assets = new List<AssetDef> {
