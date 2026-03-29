@@ -16,19 +16,22 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ILogger<PlayerRankingController> logger;
 		private readonly ScoreRepository scoreRepository;
 		private readonly PlayerRepository playerRepository;
+		private readonly UserRepository userRepository;
 
 		public PlayerRankingController(ILogger<PlayerRankingController> logger
 				, ScoreRepository scoreRepository
 				, PlayerRepository playerRepository
+				, UserRepository userRepository
 			) {
 			this.logger = logger;
 			this.scoreRepository = scoreRepository;
 			this.playerRepository = playerRepository;
+			this.userRepository = userRepository;
 		}
 
 		[HttpGet]
 		public IEnumerable<PublicPlayerViewModel> Get() {
-			return playerRepository.GetAll().Select(p => p.ToPublicPlayerViewModel(scoreRepository));
+			return playerRepository.GetAll().Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository));
 		}
 
 	}

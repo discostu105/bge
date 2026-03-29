@@ -11,6 +11,7 @@ namespace BrowserGameEngine.GameModel {
 		DateTime Created,
 		PlayerStateImmutable State,
 		string? UserId = null,
-		string? ApiKeyHash = null
+		string? ApiKeyHash = null,
+		DateTime? LastOnline = null
 	);
 }

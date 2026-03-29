@@ -32,5 +32,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var player = world.Players.Values.FirstOrDefault(p => p.ApiKeyHash == apiKeyHash);
 			return player?.ToImmutable();
 		}
+
+		public string? GetDisplayNameByUserId(string userId) {
+			var user = world.Users.Values.FirstOrDefault(u => u.UserId == userId);
+			return user?.DisplayName;
+		}
 	}
 }

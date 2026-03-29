@@ -1,37 +1,66 @@
-﻿@page "/ranking"
+@page "/ranking"
 @using BrowserGameEngine.Shared
+@using System.Linq
 @inject HttpClient Http
 
 <h1>Ranking</h1>
 
+<div class="mb-3">
+    <button class="btn @(filter == "all" ? "btn-primary" : "btn-outline-secondary") me-1" @onclick='() => filter = "all"'>All</button>
+    <button class="btn @(filter == "human" ? "btn-primary" : "btn-outline-secondary") me-1" @onclick='() => filter = "human"'>Human</button>
+    <button class="btn @(filter == "agent" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => filter = "agent"'>Agent</button>
+</div>
+
 @if (model == null) {
     <p><em>Loading...</em></p>
 } else {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Punkte</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in model.OrderByDescending(x => x.Score)) {
-            <tr>
-                <td>@item.PlayerId</td>
-                <td>@item.PlayerName</td>
-                <td>@item.Score</td>
-            </tr>
-            }
-        </tbody>
-    </table>
+    @foreach (var group in FilteredAndGrouped()) {
+        <h5 class="mt-3">@(group.displayName ?? group.userId ?? "(unknown)")</h5>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Score</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in group.players) {
+                <tr>
+                    <td>@item.PlayerName</td>
+                    <td>@item.Score</td>
+                    <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
+                    <td>@(IsOnline(item) ? "Online" : "Offline")</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
 
 @code {
     private PublicPlayerViewModel[]? model;
+    private string filter = "all";
 
     protected override async Task OnInitializedAsync() {
         model = await Http.GetFromJsonAsync<PublicPlayerViewModel[]>("api/playerranking");
     }
 
+    private IEnumerable<(string? userId, string? displayName, IEnumerable<PublicPlayerViewModel> players)> FilteredAndGrouped() {
+        if (model == null) return Enumerable.Empty<(string?, string?, IEnumerable<PublicPlayerViewModel>)>();
+        IEnumerable<PublicPlayerViewModel> filtered = filter switch {
+            "human" => model.Where(p => !p.IsAgent),
+            "agent" => model.Where(p => p.IsAgent),
+            _ => model
+        };
+        return filtered
+            .OrderByDescending(x => x.Score)
+            .GroupBy(p => p.UserId)
+            .Select(g => (g.Key, g.First().UserDisplayName, (IEnumerable<PublicPlayerViewModel>)g));
+    }
+
+    private bool IsOnline(PublicPlayerViewModel p) {
+        return p.LastOnline.HasValue && (DateTime.UtcNow - p.LastOnline.Value).TotalMinutes < 8;
+    }
 }

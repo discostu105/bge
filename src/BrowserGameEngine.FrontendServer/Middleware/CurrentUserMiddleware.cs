@@ -19,11 +19,13 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 			CurrentUserContext currentUserContext,
 			UserRepository userRepository,
 			UserRepositoryWrite userRepositoryWrite,
-			PlayerRepository playerRepository) {
+			PlayerRepository playerRepository,
+			PlayerRepositoryWrite playerRepositoryWrite) {
 			// Bearer token path: BearerTokenMiddleware already resolved the PlayerId
 			if (context.Items.TryGetValue("BearerPlayerId", out var bearerPlayerId) && bearerPlayerId is string bearerPlayerIdStr) {
 				var playerId = PlayerIdFactory.Create(bearerPlayerIdStr);
 				currentUserContext.Activate(playerId);
+				playerRepositoryWrite.UpdateLastOnline(playerId, DateTime.UtcNow);
 				await _next(context);
 				return;
 			}
@@ -66,6 +68,7 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 						}
 						currentUserContext.Activate(selectedPlayerId);
 						currentUserContext.UserId = user.UserId;
+						playerRepositoryWrite.UpdateLastOnline(selectedPlayerId, DateTime.UtcNow);
 					} else {
 						// Authenticated but no player yet; store UserId so create endpoint can use it
 						currentUserContext.UserId = user.UserId;
