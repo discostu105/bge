@@ -16,6 +16,7 @@ builder.Services.AddHttpClient("ServerAPI", client => {
     .AddHttpMessageHandler<RedirectIfUnauthorizedHandler>();
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
+builder.Services.AddSingleton<BrowserGameEngine.BlazorClient.Code.RefreshService>();
 
 await builder.Build().RunAsync();
 

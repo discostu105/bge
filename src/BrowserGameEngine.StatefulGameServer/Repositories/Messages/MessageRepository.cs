@@ -17,5 +17,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 				.OrderByDescending(x => x.CreatedAt)
 				.ToList();
 		}
+
+		public int GetUnreadCount(PlayerId playerId) {
+			return world.GetPlayer(playerId).State.Messages.Count(x => !x.IsRead);
+		}
 	}
 }
