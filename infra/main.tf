@@ -25,11 +25,11 @@ variable "domain_name" {
   default     = ""
 }
 
-variable "discord_client_id" {
+variable "github_client_id" {
   sensitive = true
 }
 
-variable "discord_client_secret" {
+variable "github_client_secret" {
   sensitive = true
 }
 
@@ -73,16 +73,16 @@ resource "aws_s3_bucket_versioning" "game_state" {
 
 # --- SSM Parameters for secrets ---
 
-resource "aws_ssm_parameter" "discord_client_id" {
-  name  = "/${var.app_name}/discord-client-id"
+resource "aws_ssm_parameter" "github_client_id" {
+  name  = "/${var.app_name}/github-client-id"
   type  = "SecureString"
-  value = var.discord_client_id
+  value = var.github_client_id
 }
 
-resource "aws_ssm_parameter" "discord_client_secret" {
-  name  = "/${var.app_name}/discord-client-secret"
+resource "aws_ssm_parameter" "github_client_secret" {
+  name  = "/${var.app_name}/github-client-secret"
   type  = "SecureString"
-  value = var.discord_client_secret
+  value = var.github_client_secret
 }
 
 # --- CloudWatch Log Group ---
@@ -118,7 +118,7 @@ resource "aws_iam_policy" "ecs_task_execution_ssm" {
     Statement = [{
       Effect   = "Allow"
       Action   = ["ssm:GetParameters", "ssm:GetParameter"]
-      Resource = [aws_ssm_parameter.discord_client_id.arn, aws_ssm_parameter.discord_client_secret.arn]
+      Resource = [aws_ssm_parameter.github_client_id.arn, aws_ssm_parameter.github_client_secret.arn]
     }]
   })
 }
@@ -268,8 +268,8 @@ resource "aws_ecs_task_definition" "app" {
     ]
 
     secrets = [
-      { name = "Discord__ClientId", valueFrom = aws_ssm_parameter.discord_client_id.arn },
-      { name = "Discord__ClientSecret", valueFrom = aws_ssm_parameter.discord_client_secret.arn },
+      { name = "GitHub__ClientId", valueFrom = aws_ssm_parameter.github_client_id.arn },
+      { name = "GitHub__ClientSecret", valueFrom = aws_ssm_parameter.github_client_secret.arn },
     ]
 
     logConfiguration = {
