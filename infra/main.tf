@@ -256,6 +256,11 @@ resource "aws_lb_listener" "http" {
 
 resource "aws_ecs_cluster" "app" {
   name = var.app_name
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
 
 resource "aws_ecs_task_definition" "app" {
