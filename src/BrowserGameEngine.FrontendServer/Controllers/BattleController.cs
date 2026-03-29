@@ -25,6 +25,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly PlayerRepository playerRepository;
 		private readonly UnitRepository unitRepository;
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
+		private readonly BattleReportGenerator battleReportGenerator;
 
 		public BattleController(ILogger<PlayerRankingController> logger
 				, GameDef gameDef
@@ -33,6 +34,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, PlayerRepository playerRepository
 				, UnitRepository unitRepository
 				, UnitRepositoryWrite unitRepositoryWrite
+				, BattleReportGenerator battleReportGenerator
 			) {
 			this.logger = logger;
 			this.gameDef = gameDef;
@@ -41,6 +43,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.playerRepository = playerRepository;
 			this.unitRepository = unitRepository;
 			this.unitRepositoryWrite = unitRepositoryWrite;
+			this.battleReportGenerator = battleReportGenerator;
 		}
 
 		[HttpGet]
@@ -88,6 +91,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPost]
 		public BattleResultViewModel Attack([FromQuery] string enemyPlayerId) {
 			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId));
+			battleReportGenerator.GenerateReports(result);
 			return new BattleResultViewModel {
 
 			};
