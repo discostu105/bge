@@ -66,6 +66,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				if (!tradeableResources.Contains(cmd.FromResource))
 					throw new InvalidOperationException($"Resource '{cmd.FromResource.Id}' is not tradeable.");
 
+				// NOTE: assumes exactly 2 tradeable resources; correct for SCO but would break if the game def ever adds a third
 				var toResource = tradeableResources.First(r => r != cmd.FromResource);
 				var cost = Cost.FromSingle(cmd.FromResource, 2m * cmd.Amount);
 
