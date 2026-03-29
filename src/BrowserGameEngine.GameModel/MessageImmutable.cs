@@ -2,7 +2,7 @@ using System;
 
 namespace BrowserGameEngine.GameModel {
 	public record MessageImmutable(
-		Guid Id,
+		MessageId Id,
 		PlayerId RecipientId,
 		string Subject,
 		string Body,

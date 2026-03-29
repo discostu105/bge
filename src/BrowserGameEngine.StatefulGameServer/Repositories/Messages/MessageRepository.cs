@@ -19,7 +19,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				.ToList();
 		}
 
-		public bool IsRecipient(PlayerId playerId, Guid messageId) {
+		public bool IsRecipient(PlayerId playerId, MessageId messageId) {
 			return world.GetPlayer(playerId).State.Messages
 				.Any(m => m.Id == messageId);
 		}

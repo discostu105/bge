@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class Message {
-		public Guid Id { get; set; }
+		public MessageId Id { get; set; } = default!;
 		public required PlayerId RecipientId { get; set; }
 		public PlayerId? SenderId { get; set; }
 		public string Subject { get; set; } = string.Empty;

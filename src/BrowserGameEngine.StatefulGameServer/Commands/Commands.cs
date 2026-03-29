@@ -28,5 +28,5 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record ColonizeCommand(PlayerId PlayerId, int Amount) : ICommand;
 	public record ResearchUpgradeCommand(PlayerId PlayerId, UpgradeType UpgradeType) : ICommand;
 	public record SendMessageCommand(PlayerId SenderId, PlayerId RecipientId, string Subject, string Body) : ICommand;
-	public record MarkMessageReadCommand(PlayerId PlayerId, Guid MessageId) : ICommand;
+	public record MarkMessageReadCommand(PlayerId PlayerId, MessageId MessageId) : ICommand;
 }

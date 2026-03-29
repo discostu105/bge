@@ -61,7 +61,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPost("{id}/read")]
 		public ActionResult MarkRead(string id) {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var messageId = Guid.Parse(id);
+			var messageId = MessageIdFactory.Create(id);
 			if (!messageRepository.IsRecipient(currentUserContext.PlayerId!, messageId)) return Forbid();
 			messageRepositoryWrite.MarkRead(new MarkMessageReadCommand(currentUserContext.PlayerId!, messageId));
 			return Ok();

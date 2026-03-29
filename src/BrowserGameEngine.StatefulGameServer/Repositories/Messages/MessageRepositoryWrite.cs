@@ -19,7 +19,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public void SendMessage(PlayerId recipientId, string subject, string body) {
 			lock (_lock) {
 				world.GetPlayer(recipientId).State.Messages.Add(new Message {
-					Id = Guid.NewGuid(),
+					Id = MessageIdFactory.NewMessageId(),
 					RecipientId = recipientId,
 					Subject = subject,
 					Body = body,
@@ -31,8 +31,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		// Used for player-to-player messages
-		public Guid Send(SendMessageCommand command) {
-			var id = Guid.NewGuid();
+		public MessageId Send(SendMessageCommand command) {
+			var id = MessageIdFactory.NewMessageId();
 			lock (_lock) {
 				world.GetPlayer(command.RecipientId).State.Messages.Add(new Message {
 					Id = id,
@@ -50,7 +50,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public void MarkRead(MarkMessageReadCommand command) {
 			lock (_lock) {
 				var message = world.GetPlayer(command.PlayerId).State.Messages
-					.Find(m => m.Id == command.MessageId);
+					.Find(m => m.Id.Equals(command.MessageId));
 				if (message != null) message.IsRead = true;
 			}
 		}
