@@ -15,5 +15,7 @@ namespace BrowserGameEngine.GameModel {
 		public List<UnitCount> DefendingUnitsSurvived { get; set; }
 		public List<Cost> ResourcesDestroyed { get; set; }
 		public List<Cost> ResourcesStolen { get; set; }
+		public decimal LandTransferred { get; set; }
+		public int WorkersCaptured { get; set; }
 	}
 }

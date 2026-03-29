@@ -9,6 +9,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public UnitDefId UnitDefId { get; init; }
 		public int Count { get; set; }
 		public PlayerId? Position { get; set; }
+		public int ReturnTimer { get; set; }
 
 		internal bool IsHome() {
 			return Position == null;
@@ -21,7 +22,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UnitId: unitState.UnitId,
 				UnitDefId: unitState.UnitDefId,
 				Count: unitState.Count,
-				Position: unitState.Position
+				Position: unitState.Position,
+				ReturnTimer: unitState.ReturnTimer
 			);
 		}
 
@@ -30,7 +32,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UnitId = unitStateImmutable.UnitId,
 				UnitDefId = unitStateImmutable.UnitDefId,
 				Count = unitStateImmutable.Count,
-				Position = unitStateImmutable.Position
+				Position = unitStateImmutable.Position,
+				ReturnTimer = unitStateImmutable.ReturnTimer
 			};
 		}
 	}

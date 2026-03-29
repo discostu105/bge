@@ -10,6 +10,7 @@ namespace BrowserGameEngine.GameModel {
 		UnitId UnitId,
 		UnitDefId UnitDefId,
 		int Count,
-		PlayerId? Position
+		PlayerId? Position,
+		int ReturnTimer = 0
 	);
 }

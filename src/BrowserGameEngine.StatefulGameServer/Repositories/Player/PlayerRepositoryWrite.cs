@@ -42,6 +42,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
+		public void CaptureWorkers(PlayerId playerId, int count) {
+			lock (_lock) {
+				var state = world.GetPlayer(playerId).State;
+				int mineralRemoved = Math.Min(count, state.MineralWorkers);
+				state.MineralWorkers -= mineralRemoved;
+				int remaining = count - mineralRemoved;
+				int gasRemoved = Math.Min(remaining, state.GasWorkers);
+				state.GasWorkers -= gasRemoved;
+			}
+		}
+
 		internal GameTick IncrementTick(PlayerId playerId) {
 			lock (_lock) {
 				var player = world.GetPlayer(playerId);

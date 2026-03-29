@@ -66,7 +66,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			defendingUnitsDestroyed = new List<UnitCount>();
 			if (attackPoints == 0) return new List<BtlUnit>(defenders); // all survived
 			var survivingDefendingUnits = new List<BtlUnit>();
-			foreach (var defendingUnit in defenders.OrderBy(x => x.Hitpoints).ThenBy(x => x.Defense).ThenBy(x => x.UnitDefId)) {
+			foreach (var defendingUnit in defenders.OrderBy(x => x.Hitpoints).ThenBy(x => x.Defense).ThenBy(x => x.UnitDefId.Id)) {
 				if (attackPoints == 0) {
 					// no more attack points left. unit survives
 					survivingDefendingUnits.Add(new BtlUnit {

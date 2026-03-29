@@ -32,7 +32,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
                             CurrentGameTick: gameTick,
                             Resources: new Dictionary<ResourceDefId, decimal> {
                             { Id.ResDef("res1"), 1000 },
-                            { Id.ResDef("res2"), 2000 }
+                            { Id.ResDef("res2"), 2000 },
+                            { Id.ResDef("land"), 50 }
                             },
                             Assets: new HashSet<AssetImmutable> {
                             new AssetImmutable(
