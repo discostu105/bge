@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.Persistence;
+using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -35,6 +35,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<BattleReportGenerator>();
 			services.AddSingleton<UpgradeRepository>();
 			services.AddSingleton<UpgradeRepositoryWrite>();
+			services.AddSingleton<BuildQueueRepository>();
+			services.AddSingleton<BuildQueueRepositoryWrite>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
@@ -42,6 +44,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();
 			services.AddSingleton<IGameTickModule, NewPlayerProtectionModule>();
 			services.AddSingleton<IGameTickModule, UpgradeTimer>();
+			services.AddSingleton<IGameTickModule, BuildQueueModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
 			services.AddSingleton<GameTickEngine>();
 
