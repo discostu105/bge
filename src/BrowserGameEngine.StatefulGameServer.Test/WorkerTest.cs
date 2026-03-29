@@ -105,5 +105,45 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			Assert.Equal(gasBefore + 30m, gasAfter);
 		}
+
+		[Fact]
+		public void ResourceIncome_MixedWorkers_EarnsCorrectIncome() {
+			// 5 mineral workers + 3 gas workers, res2 (constraint) = 2000
+			// mineral efficiency = clamp(2000/(5*0.03), 0.2, 100) = clamp(13333, ...) = 100
+			// mineral income = 5 * 4 * 100/100 + 10 base = 30
+			// gas efficiency = clamp(2000/(3*0.06), 0.2, 100) = clamp(11111, ...) = 100
+			// gas income = 3 * 4 * 100/100 + 10 base = 22
+			var g = new TestGame();
+			var playerId = g.Player1;
+			g.PlayerRepositoryWrite.AssignWorkers(new AssignWorkersCommand(playerId, 5, 3), 15);
+
+			decimal mineralsBefore = g.ResourceRepository.GetAmount(playerId, Id.ResDef("res1"));
+			decimal gasBefore = g.ResourceRepository.GetAmount(playerId, Id.ResDef("res3"));
+			g.TickEngine.IncrementWorldTick(1);
+			g.TickEngine.CheckAllTicks();
+			decimal mineralsAfter = g.ResourceRepository.GetAmount(playerId, Id.ResDef("res1"));
+			decimal gasAfter = g.ResourceRepository.GetAmount(playerId, Id.ResDef("res3"));
+
+			Assert.Equal(mineralsBefore + 30m, mineralsAfter);
+			Assert.Equal(gasBefore + 22m, gasAfter);
+		}
+
+		[Fact]
+		public void ResourceIncome_LowEfficiency_ClampedAtMinimum() {
+			// Reduce res2 (constraint) to 0, assign 10 mineral workers
+			// efficiency = clamp(0/(10*0.03), 0.2, 100) = 0.2
+			// income = 10 * 4 * 0.2/100 + 10 base = 0.08 + 10 = 10.08
+			var g = new TestGame();
+			var playerId = g.Player1;
+			g.ResourceRepositoryWrite.DeductCost(playerId, Id.ResDef("res2"), 2000m);
+			g.PlayerRepositoryWrite.AssignWorkers(new AssignWorkersCommand(playerId, 10, 0), 15);
+
+			decimal mineralsBefore = g.ResourceRepository.GetAmount(playerId, Id.ResDef("res1"));
+			g.TickEngine.IncrementWorldTick(1);
+			g.TickEngine.CheckAllTicks();
+			decimal mineralsAfter = g.ResourceRepository.GetAmount(playerId, Id.ResDef("res1"));
+
+			Assert.Equal(mineralsBefore + 10.08m, mineralsAfter);
+		}
 	}
 }
