@@ -72,9 +72,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var pid = PlayerIdFactory.Create(playerId);
 			var player = playerRepository.Get(pid);
 			if (player.UserId != currentUserContext.UserId) return Forbid();
-			// Soft-delete: revoke API key and mark player as deleted is out of scope.
-			// For now return not implemented.
-			return StatusCode(501, "Player deletion not yet implemented");
+			if (currentUserContext.PlayerId == pid) return Conflict("Cannot delete the player you are currently playing as.");
+			playerRepositoryWrite.DeletePlayer(pid);
+			return NoContent();
 		}
 
 		[HttpPost("{playerId}/apikey")]

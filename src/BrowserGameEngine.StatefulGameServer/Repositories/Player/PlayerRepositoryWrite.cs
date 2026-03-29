@@ -108,5 +108,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 				};
 			}
 		}
+
+		public void DeletePlayer(PlayerId playerId) {
+			lock (_lock) {
+				if (!world.PlayerExists(playerId)) return;
+				var player = world.Players[playerId];
+				player.ApiKeyHash = null;
+				world.Players.Remove(playerId);
+			}
+		}
 	}
 }
