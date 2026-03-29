@@ -1,0 +1,49 @@
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+@if (!string.IsNullOrEmpty(lastError)) {
+	<span class="error">@lastError</span>
+}
+@if (model != null) {
+	<div>
+		<h3>Arbeiter</h3>
+		<div>Gesamt: @model.TotalWorkers</div>
+		<div>Untätig: @(model.TotalWorkers - mineralWorkers - gasWorkers)</div>
+		<div>
+			<label>Mineralien: <InputNumber @bind-Value="mineralWorkers" /></label>
+		</div>
+		<div>
+			<label>Gas: <InputNumber @bind-Value="gasWorkers" /></label>
+		</div>
+		<button @onclick="Assign">Zuweisen</button>
+	</div>
+}
+
+@code {
+	private WorkerAssignmentViewModel? model;
+	private string? lastError;
+	private int mineralWorkers;
+	private int gasWorkers;
+
+	protected override async Task OnInitializedAsync() {
+		await Load();
+	}
+
+	private async Task Load() {
+		model = await Http.GetFromJsonAsync<WorkerAssignmentViewModel>("api/workers");
+		if (model != null) {
+			mineralWorkers = model.MineralWorkers;
+			gasWorkers = model.GasWorkers;
+		}
+	}
+
+	private async Task Assign() {
+		lastError = null;
+		var response = await Http.PostAsJsonAsync($"api/workers/assign?mineralWorkers={mineralWorkers}&gasWorkers={gasWorkers}", "");
+		if (response.IsSuccessStatusCode) {
+			await Load();
+		} else {
+			lastError = await response.Content.ReadAsStringAsync();
+		}
+	}
+}
