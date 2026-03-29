@@ -86,5 +86,22 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			currentUserContext.Activate(playerId);
 			return Ok();
 		}
+
+		[HttpPost]
+		[Route("switch")]
+		public ActionResult SwitchPlayer(SwitchPlayerViewModel model) {
+			if (currentUserContext.UserId == null) return Unauthorized();
+			var pid = PlayerIdFactory.Create(model.PlayerId);
+			var players = userRepository.GetPlayersForUser(currentUserContext.UserId).ToList();
+			if (!players.Any(p => p.PlayerId == pid)) return Forbid();
+
+			Response.Cookies.Append("BGE.SelectedPlayer", model.PlayerId, new Microsoft.AspNetCore.Http.CookieOptions {
+				HttpOnly = true,
+				Secure = true,
+				SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax,
+				MaxAge = TimeSpan.FromDays(30)
+			});
+			return Ok();
+		}
 	}
 }

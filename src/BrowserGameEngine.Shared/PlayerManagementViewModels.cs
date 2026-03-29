@@ -18,4 +18,8 @@ namespace BrowserGameEngine.Shared {
 	public class ApiKeyViewModel {
 		public string ApiKey { get; set; } = "";
 	}
+
+	public class SwitchPlayerViewModel {
+		public string PlayerId { get; set; } = "";
+	}
 }

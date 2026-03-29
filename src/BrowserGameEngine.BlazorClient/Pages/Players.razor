@@ -1,0 +1,122 @@
+@page "/players"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<h1>My Players</h1>
+
+@if (players == null) {
+	<p><em>Loading...</em></p>
+} else {
+	<h2>Create Player</h2>
+	<EditForm Model="@createModel" OnValidSubmit="HandleCreatePlayer">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
+		<InputText id="PlayerName" @bind-Value="createModel.PlayerName" placeholder="Player name" />
+		<button type="submit">Create</button>
+	</EditForm>
+	@if (!string.IsNullOrEmpty(createError)) {
+		<p style="color:red">@createError</p>
+	}
+
+	<h2>Player List</h2>
+	@if (players.Count == 0) {
+		<p>No players yet.</p>
+	} else {
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>ID</th>
+					<th>API Key</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var player in players) {
+					<tr>
+						<td>@player.PlayerName</td>
+						<td>@player.PlayerId</td>
+						<td>@(player.HasApiKey ? "Key active" : "No key")</td>
+						<td>
+							@if (players.Count > 1) {
+								<button @onclick="() => HandleSwitchPlayer(player.PlayerId)">Play as this player</button>
+															}
+							@if (player.HasApiKey) {
+								<button @onclick="() => HandleRevokeKey(player.PlayerId)">Revoke API Key</button>
+							} else {
+								<button @onclick="() => HandleGenerateKey(player.PlayerId)">Generate API Key</button>
+							}
+														<button disabled title="Not yet available">Delete</button>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+@if (!string.IsNullOrEmpty(newApiKey)) {
+	<div style="border:1px solid #ccc; padding:1em; margin-top:1em;">
+		<strong>New API Key (shown once — copy now):</strong><br />
+		<code>@newApiKey</code>
+		<br />
+		<button @onclick="() => CopyToClipboard(newApiKey)">Copy</button>
+		<button @onclick="() => newApiKey = null">Dismiss</button>
+	</div>
+}
+
+@code {
+	private List<PlayerSummaryViewModel>? players;
+	private CreatePlayerForUserViewModel createModel = new();
+	private string? createError;
+	private string? newApiKey;
+
+	protected override async Task OnInitializedAsync() {
+		await LoadPlayers();
+	}
+
+	private async Task LoadPlayers() {
+		var result = await Http.GetFromJsonAsync<PlayerListViewModel>("api/players");
+		players = result?.Players ?? new();
+	}
+
+	private async Task HandleCreatePlayer() {
+		createError = null;
+		var response = await Http.PostAsJsonAsync("api/players", createModel);
+		if (response.IsSuccessStatusCode) {
+			createModel = new();
+			await LoadPlayers();
+		} else {
+			createError = "Failed to create player.";
+		}
+	}
+
+	private async Task HandleGenerateKey(string playerId) {
+		var response = await Http.PostAsJsonAsync($"api/players/{playerId}/apikey", new { });
+		if (response.IsSuccessStatusCode) {
+			var keyVm = await response.Content.ReadFromJsonAsync<ApiKeyViewModel>();
+			newApiKey = keyVm?.ApiKey;
+			await LoadPlayers();
+		}
+	}
+
+	private async Task HandleRevokeKey(string playerId) {
+		var response = await Http.DeleteAsync($"api/players/{playerId}/apikey");
+		if (response.IsSuccessStatusCode) {
+			await LoadPlayers();
+		}
+	}
+
+	private async Task HandleSwitchPlayer(string playerId) {
+		var response = await Http.PostAsJsonAsync("api/playerprofile/switch", new SwitchPlayerViewModel { PlayerId = playerId });
+		if (response.IsSuccessStatusCode) {
+			Nav.NavigateTo("/", forceLoad: true);
+		}
+	}
+
+	private async Task CopyToClipboard(string text) {
+		await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+	}
+}
