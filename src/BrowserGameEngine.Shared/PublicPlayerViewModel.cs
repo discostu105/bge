@@ -14,5 +14,6 @@ namespace BrowserGameEngine.Shared {
 		public string? UserDisplayName { get; set; }
 		public bool IsAgent { get; set; }
 		public DateTime? LastOnline { get; set; }
+		public bool IsOnline { get; set; }
 	}
 }

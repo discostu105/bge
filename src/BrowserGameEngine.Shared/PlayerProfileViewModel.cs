@@ -10,5 +10,7 @@ namespace BrowserGameEngine.Shared {
 		public string? PlayerName { get; set; }
 		public decimal Score { get; set; }
 		public int ProtectionTicksRemaining { get; set; }
+		public bool IsOnline { get; set; }
+		public DateTime? LastOnline { get; set; }
 	}
 }
