@@ -31,6 +31,7 @@ namespace BrowserGameEngine.Persistence {
 				.AddParser<PlayerTypeDefId>((str) => Id.PlayerType(str))
 				.AddParser<UnitId>((str) => Id.UnitId(Guid.Parse(str)))
 				.AddParser<AllianceId>((str) => AllianceIdFactory.Create(str))
+				.AddParser<MessageId>((str) => new MessageId(Guid.Parse(str)))
 				.Build();
 		}
 	}

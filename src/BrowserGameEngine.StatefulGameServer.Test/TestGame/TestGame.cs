@@ -29,6 +29,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public IBattleBehavior BattleBehavior { get; }
 		public UpgradeRepository UpgradeRepository { get; }
 		public UnitRepositoryWrite UnitRepositoryWrite { get; }
+		public MessageRepository MessageRepository { get; }
+		public MessageRepositoryWrite MessageRepositoryWrite { get; }
 		public BuildQueueRepository BuildQueueRepository { get; }
 		public BuildQueueRepositoryWrite BuildQueueRepositoryWrite { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
@@ -58,6 +60,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
 			UpgradeRepository = new UpgradeRepository(World);
 			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), World, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
+			MessageRepository = new MessageRepository(World);
+			MessageRepositoryWrite = new MessageRepositoryWrite(World, TimeProvider.System);
 			BuildQueueRepository = new BuildQueueRepository(World);
 			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), World, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 
