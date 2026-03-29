@@ -48,7 +48,15 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 					var players = userRepository.GetPlayersForUser(user.UserId).ToList();
 					if (players.Count > 0) {
 						var selectedPlayerId = players[0].PlayerId;
-						// Support X-Player-Id header for multi-player accounts
+						// Support BGE.SelectedPlayer cookie for multi-player accounts
+						var selectedPlayerCookie = context.Request.Cookies["BGE.SelectedPlayer"];
+						if (selectedPlayerCookie != null) {
+							var cookieId = PlayerIdFactory.Create(selectedPlayerCookie);
+							if (players.Any(p => p.PlayerId == cookieId)) {
+								selectedPlayerId = cookieId;
+							}
+						}
+						// Support X-Player-Id header (takes precedence over cookie)
 						var playerIdHeader = context.Request.Headers["X-Player-Id"].FirstOrDefault();
 						if (playerIdHeader != null) {
 							var requestedId = PlayerIdFactory.Create(playerIdHeader);
