@@ -20,6 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly PlayerRepository playerRepository;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly IBattleBehavior battleBehavior;
+		private readonly UpgradeRepository upgradeRepository;
 
 		public UnitRepositoryWrite(ILogger<UnitRepositoryWrite> logger
 				, WorldState world
@@ -30,6 +31,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, PlayerRepository playerRepository
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, IBattleBehavior battleBehavior
+				, UpgradeRepository upgradeRepository
 			) {
 			this.logger = logger;
 			this.world = world;
@@ -40,6 +42,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.playerRepository = playerRepository;
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.battleBehavior = battleBehavior;
+			this.upgradeRepository = upgradeRepository;
 		}
 
 		private List<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
@@ -199,8 +202,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public BattleResult Attack(PlayerId playerId, PlayerId enemyPlayerId) {
-			var attackingUnits = ToBattleUnits(unitRepository.GetAttackingUnits(playerId, enemyPlayerId)).ToList();
-			var defendingUnits = ToBattleUnits(unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId)).ToList();
+			int attackerAttackLevel = upgradeRepository.GetAttackUpgradeLevel(playerId);
+			int defenderDefenseLevel = upgradeRepository.GetDefenseUpgradeLevel(enemyPlayerId);
+			var attackingUnits = ToBattleUnits(unitRepository.GetAttackingUnits(playerId, enemyPlayerId), attackerAttackLevel, 0).ToList();
+			var defendingUnits = ToBattleUnits(unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId), 0, defenderDefenseLevel).ToList();
 
 			BattleResult battleResult = new BattleResult {
 				Attacker = playerId,
@@ -244,13 +249,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return string.Join(", ", attackingUnits.Select(x => $"({x.Count} × {x.UnitDefId})"));
 		}
 
-		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> attackingUnits) {
-			return attackingUnits.Select(x => new BtlUnit {
-				UnitDefId = x.UnitDefId,
-				Count = x.Count,
-				Attack = gameDef.GetUnitDef(x.UnitDefId).Attack,
-				Defense = gameDef.GetUnitDef(x.UnitDefId).Defense,
-				Hitpoints = gameDef.GetUnitDef(x.UnitDefId).Hitpoints,
+		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> units, int attackLevel, int defenseLevel) {
+			return units.Select(x => {
+				var unitDef = gameDef.GetUnitDef(x.UnitDefId);
+				int attackBonus = attackLevel > 0 ? unitDef.AttackBonuses[attackLevel - 1] : 0;
+				int defenseBonus = defenseLevel > 0 ? unitDef.DefenseBonuses[defenseLevel - 1] : 0;
+				return new BtlUnit {
+					UnitDefId = x.UnitDefId,
+					Count = x.Count,
+					Attack = unitDef.Attack + attackBonus,
+					Defense = unitDef.Defense + defenseBonus,
+					Hitpoints = unitDef.Hitpoints,
+				};
 			});
 		}
 

@@ -31,11 +31,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<MessageRepository>();
 			services.AddSingleton<MessageRepositoryWrite>();
 			services.AddSingleton<BattleReportGenerator>();
+			services.AddSingleton<UpgradeRepository>();
+			services.AddSingleton<UpgradeRepositoryWrite>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
 			services.AddSingleton<IGameTickModule, UnitReturn>();
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();
+			services.AddSingleton<IGameTickModule, UpgradeTimer>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
 			services.AddSingleton<GameTickEngine>();
 

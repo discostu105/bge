@@ -14,6 +14,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int MineralWorkers { get; set; }
 		public int GasWorkers { get; set; }
 		public List<Message> Messages { get; set; } = new List<Message>();
+		public int AttackUpgradeLevel { get; set; }
+		public int DefenseUpgradeLevel { get; set; }
+		public int UpgradeResearchTimer { get; set; }
+		public UpgradeType UpgradeBeingResearched { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -26,7 +30,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
 				MineralWorkers: playerState.MineralWorkers,
 				GasWorkers: playerState.GasWorkers,
-				Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList()
+				Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList(),
+				AttackUpgradeLevel: playerState.AttackUpgradeLevel,
+				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
+				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
+				UpgradeBeingResearched: playerState.UpgradeBeingResearched
 			);
 		}
 
@@ -39,8 +47,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList(),
 				MineralWorkers = playerStateImmutable.MineralWorkers,
 				GasWorkers = playerStateImmutable.GasWorkers,
-				Messages = (playerStateImmutable.Messages ?? new List<MessageImmutable>()).Select(x => x.ToMutable()).ToList()
-		};
+				Messages = (playerStateImmutable.Messages ?? new List<MessageImmutable>()).Select(x => x.ToMutable()).ToList(),
+				AttackUpgradeLevel = playerStateImmutable.AttackUpgradeLevel,
+				DefenseUpgradeLevel = playerStateImmutable.DefenseUpgradeLevel,
+				UpgradeResearchTimer = playerStateImmutable.UpgradeResearchTimer,
+				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched
+			};
 		}
 	}
 }
