@@ -78,6 +78,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 			}
 		}
 
+		public DateTime NextTickAt => worldState.GameTickState.LastUpdate + EffectiveTickDuration;
+
 		private bool AreAllPlayersUpToDate() {
 			return worldState.GetPlayersForGameTick().Length == 0;
 		}
