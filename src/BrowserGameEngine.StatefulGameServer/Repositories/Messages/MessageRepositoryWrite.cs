@@ -7,11 +7,12 @@ using System.Threading;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class MessageRepositoryWrite {
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly TimeProvider timeProvider;
 
-		public MessageRepositoryWrite(WorldState world, TimeProvider timeProvider) {
-			this.world = world;
+		public MessageRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider) {
+			this.worldStateAccessor = worldStateAccessor;
 			this.timeProvider = timeProvider;
 		}
 

@@ -1,8 +1,6 @@
-using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +8,9 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
-		internal IDictionary<PlayerId, Player> Players { get; set; } = new ConcurrentDictionary<PlayerId, Player>();
+		internal GameId GameId { get; set; } = new GameId("default");
 
-		internal IDictionary<string, User> Users { get; set; } = new ConcurrentDictionary<string, User>();
+		internal IDictionary<PlayerId, Player> Players { get; set; } = new ConcurrentDictionary<PlayerId, Player>();
 
 		internal IDictionary<AllianceId, Alliance> Alliances { get; set; } = new ConcurrentDictionary<AllianceId, Alliance>();
 
@@ -60,27 +58,28 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public static class WorldStateImmutableExtensions {
 		public static void ReplaceFrom(this WorldState worldState, WorldStateImmutable snapshot) {
 			var mutable = snapshot.ToMutable();
+			worldState.GameId = mutable.GameId;
 			worldState.Players = mutable.Players;
-			worldState.Users = mutable.Users;
 			worldState.Alliances = mutable.Alliances;
 			worldState.GameTickState = mutable.GameTickState;
 			worldState.GameActionQueue = mutable.GameActionQueue;
 		}
+
 
 		public static WorldStateImmutable ToImmutable(this WorldState worldState) {
 			return new WorldStateImmutable(
 				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				GameTickState: worldState.GameTickState.ToImmutable(),
 				GameActionQueue: worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList(),
-				Users: worldState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
-				Alliances: worldState.Alliances.ToDictionary(x => x.Key, y => y.Value.ToImmutable())
+				Alliances: worldState.Alliances.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
+				GameId: worldState.GameId
 			);
 		}
 
 		public static WorldState ToMutable(this WorldStateImmutable worldStateImmutable) {
 			return new WorldState {
+				GameId = worldStateImmutable.GameId ?? new GameId("default"),
 				Players = new ConcurrentDictionary<PlayerId, Player>(worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable())),
-				Users = new ConcurrentDictionary<string, User>(worldStateImmutable.Users?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<string, User>()),
 				Alliances = new ConcurrentDictionary<AllianceId, Alliance>(worldStateImmutable.Alliances?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<AllianceId, Alliance>()),
 				GameTickState = worldStateImmutable.GameTickState.ToMutable(),
 				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList()

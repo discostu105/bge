@@ -9,10 +9,11 @@ using System.Threading;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ActionQueueRepository {
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public ActionQueueRepository(WorldState world) {
-			this.world = world;
+		public ActionQueueRepository(IWorldStateAccessor worldStateAccessor) {
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		private IList<GameAction> Actions => world.GameActionQueue;

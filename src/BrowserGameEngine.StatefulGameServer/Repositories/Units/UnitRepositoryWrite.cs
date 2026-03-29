@@ -12,7 +12,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepositoryWrite {
 		private readonly Lock _lock = new();
 		private readonly ILogger<UnitRepositoryWrite> logger;
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly GameDef gameDef;
 		private readonly UnitRepository unitRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
@@ -23,7 +24,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly UpgradeRepository upgradeRepository;
 
 		public UnitRepositoryWrite(ILogger<UnitRepositoryWrite> logger
-				, WorldState world
+				, IWorldStateAccessor worldStateAccessor
 				, GameDef gameDef
 				, UnitRepository unitRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
@@ -34,7 +35,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, UpgradeRepository upgradeRepository
 			) {
 			this.logger = logger;
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.gameDef = gameDef;
 			this.unitRepository = unitRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;

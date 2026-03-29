@@ -6,10 +6,11 @@ using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class BuildQueueRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public BuildQueueRepository(WorldState world) {
-			this.world = world;
+		public BuildQueueRepository(IWorldStateAccessor worldStateAccessor) {
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		private List<BuildQueueEntry> Queue(PlayerId playerId) => world.GetPlayer(playerId).State.BuildQueue;

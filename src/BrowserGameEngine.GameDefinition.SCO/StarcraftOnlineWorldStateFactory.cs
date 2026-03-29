@@ -75,9 +75,10 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 			}
 
 			return new WorldStateImmutable(
-				players.ToDictionary(x => x.PlayerId), 
-				new GameTickStateImmutable(gameTick, DateTime.Now - TimeSpan.FromMinutes(1)),
-				new List<GameActionImmutable>()
+				Players: players.ToDictionary(x => x.PlayerId),
+				GameTickState: new GameTickStateImmutable(gameTick, DateTime.Now - TimeSpan.FromMinutes(1)),
+				GameActionQueue: new List<GameActionImmutable>(),
+				GameId: new GameId("default")
 			);
 		}
 	}

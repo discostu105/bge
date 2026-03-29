@@ -10,11 +10,12 @@ using System.Threading;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AllianceRepositoryWrite {
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly AllianceRepository allianceRepository;
 
-		public AllianceRepositoryWrite(WorldState world, AllianceRepository allianceRepository) {
-			this.world = world;
+		public AllianceRepositoryWrite(IWorldStateAccessor worldStateAccessor, AllianceRepository allianceRepository) {
+			this.worldStateAccessor = worldStateAccessor;
 			this.allianceRepository = allianceRepository;
 		}
 

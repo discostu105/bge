@@ -7,17 +7,18 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly GameDef gameDef;
 		private readonly PlayerRepository playerRepository;
 		private readonly AssetRepository assetRepository;
 
-		public UnitRepository(WorldState world
+		public UnitRepository(IWorldStateAccessor worldStateAccessor
 				, GameDef gameDef
 				, PlayerRepository playerRepository
 				, AssetRepository assetRepository
 			) {
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.gameDef = gameDef;
 			this.playerRepository = playerRepository;
 			this.assetRepository = assetRepository;

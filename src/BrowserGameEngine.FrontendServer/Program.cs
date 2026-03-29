@@ -1,20 +1,25 @@
 using Amazon.S3;
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.FrontendServer.Middleware;
+using BrowserGameEngine.FrontendServer.Services;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.Persistence.S3;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.GameTicks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
 using Prometheus;
 using Prometheus.DotNetRuntime;
 using Serilog;
 using Serilog.Events;
+using System.Linq;
 using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
@@ -34,6 +39,7 @@ builder.Host.UseSerilog();
  */
 builder.Services.AddHostedService<GameTickTimerService>();
 builder.Services.AddHostedService<PersistenceHostedService>();
+builder.Services.AddHostedService<GlobalPersistenceHostedService>();
 
 builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptions.Position));
 builder.Services.AddControllersWithViews();
@@ -103,6 +109,12 @@ await ConfigureGameServices(builder.Services);
  */
 var app = builder.Build();
 
+// Wire tick engine into game instances (Phase 1: single game)
+var tickEngine = app.Services.GetRequiredService<GameTickEngine>();
+foreach (var instance in app.Services.GetRequiredService<BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry>().GetAllInstances()) {
+    instance.SetTickEngine(tickEngine);
+}
+
 var forwardedHeadersOptions = new ForwardedHeadersOptions {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 };
@@ -167,17 +179,56 @@ async Task ConfigureGameServices(IServiceCollection services) {
     var stateFactory = new StarcraftOnlineWorldStateFactory();
     var gameDef = gameDefFactory.CreateGameDef();
     new GameDefVerifier().Verify(gameDef);
-    services.AddSingleton<GameDef>(gameDef);
 
     var s3BucketName = builder.Configuration["Bge:S3BucketName"];
     IBlobStorage storage = !string.IsNullOrEmpty(s3BucketName)
         ? new S3Storage(new AmazonS3Client(), s3BucketName, builder.Configuration["Bge:S3KeyPrefix"] ?? "")
         : new FileStorage(new DirectoryInfo("storage"));
 
-    var worldState = stateFactory.CreateDevWorldState();
-    new WorldStateVerifier().Verify(gameDef, worldState); // todo: maybe make this more graceful.
+    var defaultWorldState = stateFactory.CreateDevWorldState();
+    new WorldStateVerifier().Verify(gameDef, defaultWorldState);
 
-    await services.AddGameServer(storage, worldState); // todo: init state for non-development
+    var serializer = new GameStateJsonSerializer();
+    var persistenceService = new PersistenceService(storage, serializer);
+    var globalSerializer = new GlobalStateJsonSerializer();
+    var globalPersistenceService = new GlobalPersistenceService(storage, globalSerializer);
+
+    var migrationLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<MigrationService>();
+    var migrationService = new MigrationService(storage, persistenceService, globalPersistenceService, migrationLogger);
+    await migrationService.MigrateIfNeeded();
+
+    GlobalState globalState;
+    if (globalPersistenceService.GlobalStateExists()) {
+        var globalStateImm = await globalPersistenceService.LoadGlobalState();
+        globalState = globalStateImm.ToMutable();
+    } else {
+        globalState = new GlobalState();
+    }
+
+    var gameRegistry = new BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry(globalState);
+
+    foreach (var gameRecord in globalState.Games.Where(g => g.Status != GameStatus.Finished)) {
+        WorldStateImmutable wsImm;
+        if (persistenceService.GameStateExists(gameRecord.GameId)) {
+            wsImm = await persistenceService.LoadGameState(gameRecord.GameId);
+        } else {
+            wsImm = defaultWorldState;
+        }
+        var ws = wsImm.ToMutable();
+        var gd = new StarcraftOnlineGameDefFactory().CreateGameDef();
+        gameRegistry.Register(new BrowserGameEngine.StatefulGameServer.GameRegistry.GameInstance(gameRecord, ws, gd));
+    }
+
+    if (!gameRegistry.GetAllInstances().Any()) {
+        var ws = defaultWorldState.ToMutable();
+        var gameRecord = new GameRecordImmutable(
+            new GameId("default"), "Default Game", "sco", GameStatus.Active,
+            DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromDays(3650), TimeSpan.FromSeconds(10));
+        var gd = new StarcraftOnlineGameDefFactory().CreateGameDef();
+        gameRegistry.Register(new BrowserGameEngine.StatefulGameServer.GameRegistry.GameInstance(gameRecord, ws, gd));
+    }
+
+    services.AddGameServer(storage, gameRegistry);
 
     services.AddScoped(_ => CurrentUserContext.Inactive());
 
