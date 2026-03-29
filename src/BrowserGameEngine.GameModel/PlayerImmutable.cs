@@ -10,5 +10,7 @@ namespace BrowserGameEngine.GameModel {
 		string Name,
 		DateTime Created,
 		PlayerStateImmutable State
-	);
+	) {
+		public bool IsBot { get; init; } = false;
+	}
 }

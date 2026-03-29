@@ -11,6 +11,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public string Name { get; set; }
 		public DateTime Created { get; init; }
 		public PlayerState State { get; init; }
+		public bool IsBot { get; init; } = false;
 	}
 
 	internal static class PlayerExtensions {
@@ -21,7 +22,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Name: player.Name,
 				Created: player.Created,
 				State: player.State.ToImmutable()
-			);
+			) { IsBot = player.IsBot };
 		}
 
 		internal static Player ToMutable(this PlayerImmutable playerImmutable) {
@@ -30,7 +31,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				PlayerType = playerImmutable.PlayerType,
 				Name = playerImmutable.Name,
 				Created = playerImmutable.Created,
-				State = playerImmutable.State.ToMutable()
+				State = playerImmutable.State.ToMutable(),
+				IsBot = playerImmutable.IsBot
 			};
 		}
 	}

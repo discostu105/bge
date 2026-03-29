@@ -1,6 +1,7 @@
 ﻿using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
+using BrowserGameEngine.StatefulGameServer.Bots;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
@@ -30,10 +31,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
 			services.AddSingleton<IGameTickModule, UnitReturn>();
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();
+			services.AddSingleton<IGameTickModule, BotTickModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
 			services.AddSingleton<GameTickEngine>();
 
 			services.AddSingleton<IBattleBehavior, BattleBehaviorScoOriginal>(); // TODO: make this configurable through GameDef
+			services.AddSingleton<IBotStrategy, SimpleBotStrategy>();
 		}
 
 		private static async Task InitPersistenceAndGameState(IServiceCollection services, IBlobStorage storage, WorldStateImmutable defaultWorldState) {

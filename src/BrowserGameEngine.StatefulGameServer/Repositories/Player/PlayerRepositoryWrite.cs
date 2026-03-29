@@ -70,6 +70,34 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
+		public void CreateBotPlayer(PlayerId playerId, string name, PlayerTypeDefId playerType, AssetDefId hqAsset) {
+			lock (_lock) {
+				if (world.PlayerExists(playerId)) return;
+				world.Players[playerId] = new Player() {
+					Created = timeProvider.GetLocalNow().DateTime,
+					PlayerId = playerId,
+					Name = name,
+					PlayerType = playerType,
+					IsBot = true,
+					State = new PlayerState {
+						LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
+						CurrentGameTick = world.GameTickState.CurrentGameTick,
+						Resources = new Dictionary<ResourceDefId, decimal> {
+							{ Id.ResDef("land"), 50 },
+							{ Id.ResDef("minerals"), 5000 },
+							{ Id.ResDef("gas"), 3000 }
+						},
+						Assets = new HashSet<Asset> {
+							new Asset {
+								AssetDefId = hqAsset,
+								Level = 1
+							},
+						}
+					}
+				};
+			}
+		}
+
 		public void CreatePlayer(PlayerId playerId) {
 			lock (_lock) {
 				if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);

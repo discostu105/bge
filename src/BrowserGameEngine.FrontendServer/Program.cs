@@ -7,6 +7,7 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.Persistence.S3;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.Bots;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -31,10 +32,12 @@ builder.Host.UseSerilog();
 /*
 /* Add services to the container.
  */
+builder.Services.AddHostedService<BotSpawnerHostedService>();
 builder.Services.AddHostedService<GameTickTimerService>();
 builder.Services.AddHostedService<PersistenceHostedService>();
 
 builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptions.Position));
+builder.Services.Configure<BotOptions>(builder.Configuration.GetSection(BotOptions.Position));
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddLogging();
