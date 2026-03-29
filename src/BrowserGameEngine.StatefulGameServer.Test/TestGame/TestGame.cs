@@ -32,10 +32,12 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 		public PlayerId Player1 => WorldStateFactory.Player1;
 
-		public TestGame(int playerCount = 1) {
+		public TestGame(int playerCount = 1) : this(new TestWorldStateFactory().CreateDevWorldState(playerCount)) { }
+
+		public TestGame(WorldStateImmutable initialState) {
 			LoggerFactory = new Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory();
 			WorldStateFactory = new TestWorldStateFactory();
-			World = WorldStateFactory.CreateDevWorldState(playerCount).ToMutable();
+			World = initialState.ToMutable();
 			GameDef = new TestGameDefFactory().CreateGameDef();
 			ScoreRepository = new ScoreRepository(GameDef, World);
 			PlayerRepository = new PlayerRepository(World, ScoreRepository);
