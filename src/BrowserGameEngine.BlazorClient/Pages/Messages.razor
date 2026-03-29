@@ -1,0 +1,108 @@
+@page "/messages"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Messages</h1>
+
+<h2>Compose</h2>
+<EditForm Model="@composeModel" OnValidSubmit="HandleSend">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	<div>
+		<label>To (Player ID):</label>
+		<InputText @bind-Value="composeModel.RecipientId" placeholder="Player ID" />
+	</div>
+	<div>
+		<label>Subject:</label>
+		<InputText @bind-Value="composeModel.Subject" placeholder="Subject" />
+	</div>
+	<div>
+		<label>Message:</label>
+		<InputTextArea @bind-Value="composeModel.Body" placeholder="Write your message..." rows="4" />
+	</div>
+	<button type="submit">Send</button>
+	@if (!string.IsNullOrEmpty(sendResult)) {
+		<span style="margin-left:1em">@sendResult</span>
+	}
+</EditForm>
+
+<h2>Inbox</h2>
+
+@if (inbox == null) {
+	<p><em>Loading...</em></p>
+} else if (inbox.Count == 0) {
+	<p>No messages.</p>
+} else {
+	<table class="table">
+		<thead>
+			<tr>
+				<th>From</th>
+				<th>Subject</th>
+				<th>Date</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var msg in inbox) {
+				<tr style="@(msg.IsRead ? "" : "font-weight:bold")">
+					<td>@msg.SenderName</td>
+					<td>
+						<span @onclick="() => ToggleMessage(msg)" style="cursor:pointer">@msg.Subject</span>
+					</td>
+					<td>@msg.SentAt.ToLocalTime().ToString("g")</td>
+					<td>
+						@if (!msg.IsRead) {
+							<button @onclick="() => HandleMarkRead(msg)">Mark read</button>
+						}
+					</td>
+				</tr>
+				@if (expandedMessageId == msg.MessageId) {
+					<tr>
+						<td colspan="4" style="background:#f5f5f5; padding:1em">
+							@msg.Body
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	private List<MessageViewModel>? inbox;
+	private SendMessageViewModel composeModel = new();
+	private string? sendResult;
+	private string? expandedMessageId;
+
+	protected override async Task OnInitializedAsync() {
+		await LoadInbox();
+	}
+
+	private async Task LoadInbox() {
+		var result = await Http.GetFromJsonAsync<MessageInboxViewModel>("api/messages/inbox");
+		inbox = result?.Messages ?? new();
+	}
+
+	private async Task HandleSend() {
+		sendResult = null;
+		var response = await Http.PostAsJsonAsync("api/messages/send", composeModel);
+		if (response.IsSuccessStatusCode) {
+			composeModel = new();
+			sendResult = "Message sent.";
+		} else {
+			var error = await response.Content.ReadAsStringAsync();
+			sendResult = $"Error: {error}";
+		}
+	}
+
+	private async Task HandleMarkRead(MessageViewModel msg) {
+		var response = await Http.PostAsJsonAsync($"api/messages/{msg.MessageId}/read", new { });
+		if (response.IsSuccessStatusCode) {
+			msg.IsRead = true;
+		}
+	}
+
+	private void ToggleMessage(MessageViewModel msg) {
+		expandedMessageId = expandedMessageId == msg.MessageId ? null : msg.MessageId;
+	}
+}

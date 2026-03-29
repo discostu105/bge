@@ -7,6 +7,7 @@ namespace BrowserGameEngine.GameModel {
 		string Subject,
 		string Body,
 		DateTime CreatedAt,
-		bool IsRead = false
+		bool IsRead = false,
+		PlayerId? SenderId = null
 	);
 }

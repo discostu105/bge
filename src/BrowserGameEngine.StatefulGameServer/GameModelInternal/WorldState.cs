@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.Persistence;
+using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
@@ -86,6 +86,5 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList()
 			};
 		}
-
 	}
 }

@@ -7,6 +7,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class Message {
 		public Guid Id { get; set; }
 		public required PlayerId RecipientId { get; set; }
+		public PlayerId? SenderId { get; set; }
 		public string Subject { get; set; } = string.Empty;
 		public string Body { get; set; } = string.Empty;
 		public DateTime CreatedAt { get; set; }
@@ -21,7 +22,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Subject: message.Subject,
 				Body: message.Body,
 				CreatedAt: message.CreatedAt,
-				IsRead: message.IsRead
+				IsRead: message.IsRead,
+				SenderId: message.SenderId
 			);
 		}
 
@@ -29,6 +31,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new Message {
 				Id = message.Id,
 				RecipientId = message.RecipientId,
+				SenderId = message.SenderId,
 				Subject = message.Subject,
 				Body = message.Body,
 				CreatedAt = message.CreatedAt,
