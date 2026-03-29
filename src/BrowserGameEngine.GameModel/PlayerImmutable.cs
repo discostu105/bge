@@ -12,6 +12,7 @@ namespace BrowserGameEngine.GameModel {
 		PlayerStateImmutable State,
 		string? UserId = null,
 		string? ApiKeyHash = null,
-		DateTime? LastOnline = null
+		DateTime? LastOnline = null,
+		AllianceId? AllianceId = null
 	);
 }

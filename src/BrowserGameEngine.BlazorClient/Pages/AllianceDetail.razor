@@ -1,0 +1,126 @@
+@page "/alliances/{AllianceId}"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Alliance: @(detail?.Name ?? "...")</h1>
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <div class="alert alert-danger">@lastError</div>
+}
+
+@if (detail == null || myStatus == null) {
+    <p><em>Loading...</em></p>
+} else {
+    @if (detail.Message != null) {
+        <div class="alert alert-info">@detail.Message</div>
+    }
+
+    <p>Founded: @detail.Created.ToString("yyyy-MM-dd")</p>
+
+    <h3>Members</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Votes</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in detail.Members) {
+                <tr>
+                    <td>@m.PlayerName @(m.IsLeader ? "★" : "")</td>
+                    <td>@(m.IsPending ? "Pending" : "Member")</td>
+                    <td>@m.VoteCount</td>
+                    <td>
+                        @if (myStatus.IsMember && !myStatus.IsPending && myStatus.IsLeader && m.IsPending) {
+                            <button class="btn btn-sm btn-success me-1" @onclick="() => Accept(m.PlayerId)">Accept</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => Reject(m.PlayerId)">Reject</button>
+                        }
+                        @if (myStatus.IsMember && !myStatus.IsPending && myStatus.IsLeader && !m.IsPending && !m.IsLeader) {
+                            <button class="btn btn-sm btn-warning me-1" @onclick="() => Kick(m.PlayerId)">Kick</button>
+                        }
+                        @if (myStatus.IsMember && !myStatus.IsPending && !m.IsPending && m.PlayerId != myStatus.AllianceId) {
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => Vote(m.PlayerId)">Vote Leader</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (myStatus.IsMember && myStatus.IsLeader) {
+        <div class="card mb-3">
+            <div class="card-header">Leader Controls</div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label>Alliance Message</label>
+                    <input class="form-control" @bind="newMessage" placeholder="Set message..." />
+                    <button class="btn btn-sm btn-primary mt-1" @onclick="SetMessage">Save Message</button>
+                </div>
+                <div class="mb-2">
+                    <label>Change Password</label>
+                    <input class="form-control" type="password" @bind="newPassword" placeholder="New password..." />
+                    <button class="btn btn-sm btn-secondary mt-1" @onclick="SetPassword">Change Password</button>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public string AllianceId { get; set; }
+
+    private AllianceDetailViewModel? detail;
+    private MyAllianceStatusViewModel? myStatus;
+    private string newMessage = "";
+    private string newPassword = "";
+    private string? lastError;
+
+    protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+
+    private async Task Update() {
+        detail = await Http.GetFromJsonAsync<AllianceDetailViewModel>($"api/alliances/{AllianceId}");
+        myStatus = await Http.GetFromJsonAsync<MyAllianceStatusViewModel>("api/alliances/my-status");
+        lastError = null;
+    }
+
+    private async Task Accept(string playerId) {
+        var r = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/members/{playerId}/accept", "");
+        if (r.IsSuccessStatusCode) await Update();
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task Reject(string playerId) {
+        var r = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/members/{playerId}/reject", "");
+        if (r.IsSuccessStatusCode) await Update();
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task Kick(string playerId) {
+        var r = await Http.DeleteAsync($"api/alliances/{AllianceId}/members/{playerId}");
+        if (r.IsSuccessStatusCode) await Update();
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task Vote(string playerId) {
+        var r = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/leader-vote", new VoteLeaderRequest { VoteePlayerId = playerId });
+        if (r.IsSuccessStatusCode) await Update();
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task SetMessage() {
+        var r = await Http.PatchAsJsonAsync($"api/alliances/{AllianceId}/message", new SetAllianceMessageRequest { Message = newMessage });
+        if (r.IsSuccessStatusCode) { newMessage = ""; await Update(); }
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task SetPassword() {
+        var r = await Http.PatchAsJsonAsync($"api/alliances/{AllianceId}/password", new SetAlliancePasswordRequest { NewPassword = newPassword });
+        if (r.IsSuccessStatusCode) { newPassword = ""; await Update(); }
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+}
