@@ -33,6 +33,11 @@ variable "github_client_secret" {
   sensitive = true
 }
 
+variable "alarm_email" {
+  description = "Email address to receive CloudWatch alarm notifications (leave empty to skip subscription)"
+  default     = ""
+}
+
 # --- VPC (default) ---
 
 data "aws_vpc" "default" {
@@ -212,6 +217,13 @@ resource "aws_lb" "app" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = data.aws_subnets.default.ids
+
+  access_logs {
+    bucket  = aws_s3_bucket.alb_logs.id
+    enabled = true
+  }
+
+  depends_on = [aws_s3_bucket_policy.alb_logs]
 }
 
 resource "aws_lb_target_group" "app" {
@@ -305,6 +317,293 @@ resource "aws_ecs_service" "app" {
   depends_on = [aws_lb_listener.http]
 }
 
+# --- ALB Access Logs ---
+
+# S3 bucket for ALB access logs
+resource "aws_s3_bucket" "alb_logs" {
+  bucket = "${var.app_name}-alb-logs"
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  rule {
+    id     = "expire-old-logs"
+    status = "Enabled"
+
+    expiration {
+      days = 30
+    }
+  }
+}
+
+# ELB service account for eu-central-1 needs s3:PutObject permission
+data "aws_elb_service_account" "main" {}
+
+resource "aws_s3_bucket_policy" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { AWS = data.aws_elb_service_account.main.arn }
+      Action    = "s3:PutObject"
+      Resource  = "${aws_s3_bucket.alb_logs.arn}/*"
+    }]
+  })
+}
+
+# --- SNS Topic for Alarms ---
+
+resource "aws_sns_topic" "alarms" {
+  name = "${var.app_name}-alarms"
+}
+
+resource "aws_sns_topic_subscription" "alarms_email" {
+  count     = var.alarm_email != "" ? 1 : 0
+  topic_arn = aws_sns_topic.alarms.arn
+  protocol  = "email"
+  endpoint  = var.alarm_email
+}
+
+# --- CloudWatch Alarms ---
+
+# Alarm: ECS service running task count drops below 1
+resource "aws_cloudwatch_metric_alarm" "ecs_task_count" {
+  alarm_name          = "${var.app_name}-ecs-task-count-low"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "RunningTaskCount"
+  namespace           = "ECS/ContainerInsights"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 1
+  alarm_description   = "ECS running task count dropped below 1 — service may be down"
+  treat_missing_data  = "breaching"
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.app.name
+    ServiceName = aws_ecs_service.app.name
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+}
+
+# Alarm: ALB 5xx error rate > 1% over 5 minutes
+resource "aws_cloudwatch_metric_alarm" "alb_5xx_rate" {
+  alarm_name          = "${var.app_name}-alb-5xx-rate-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  threshold           = 1
+  alarm_description   = "ALB 5xx error rate exceeded 1% over 5 minutes"
+  treat_missing_data  = "notBreaching"
+
+  metric_query {
+    id          = "error_rate"
+    expression  = "IF(requests > 0, 100 * errors / requests, 0)"
+    label       = "5xx Error Rate (%)"
+    return_data = true
+  }
+
+  metric_query {
+    id = "errors"
+    metric {
+      metric_name = "HTTPCode_Target_5XX_Count"
+      namespace   = "AWS/ApplicationELB"
+      period      = 300
+      stat        = "Sum"
+      dimensions = {
+        LoadBalancer = aws_lb.app.arn_suffix
+      }
+    }
+  }
+
+  metric_query {
+    id = "requests"
+    metric {
+      metric_name = "RequestCount"
+      namespace   = "AWS/ApplicationELB"
+      period      = 300
+      stat        = "Sum"
+      dimensions = {
+        LoadBalancer = aws_lb.app.arn_suffix
+      }
+    }
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+}
+
+# Alarm: ECS memory utilization > 80%
+resource "aws_cloudwatch_metric_alarm" "ecs_memory_high" {
+  alarm_name          = "${var.app_name}-ecs-memory-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "ECS memory utilization exceeded 80%"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.app.name
+    ServiceName = aws_ecs_service.app.name
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+}
+
+# Alarm: ECS CPU utilization > 80%
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_high" {
+  alarm_name          = "${var.app_name}-ecs-cpu-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "ECS CPU utilization exceeded 80%"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.app.name
+    ServiceName = aws_ecs_service.app.name
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+}
+
+# --- CloudWatch Dashboard ---
+
+resource "aws_cloudwatch_dashboard" "app" {
+  dashboard_name = var.app_name
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title  = "ECS Running Task Count"
+          region = var.aws_region
+          metrics = [[
+            "ECS/ContainerInsights", "RunningTaskCount",
+            "ClusterName", aws_ecs_cluster.app.name,
+            "ServiceName", aws_ecs_service.app.name
+          ]]
+          stat   = "Average"
+          period = 60
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0 } }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 6
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title  = "ECS CPU & Memory Utilization (%)"
+          region = var.aws_region
+          metrics = [
+            ["AWS/ECS", "CPUUtilization", "ClusterName", aws_ecs_cluster.app.name, "ServiceName", aws_ecs_service.app.name],
+            ["AWS/ECS", "MemoryUtilization", "ClusterName", aws_ecs_cluster.app.name, "ServiceName", aws_ecs_service.app.name]
+          ]
+          stat   = "Average"
+          period = 300
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0, max = 100 } }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title  = "ALB Request Count"
+          region = var.aws_region
+          metrics = [[
+            "AWS/ApplicationELB", "RequestCount",
+            "LoadBalancer", aws_lb.app.arn_suffix
+          ]]
+          stat   = "Sum"
+          period = 60
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 18
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          title  = "ALB 5xx / 4xx Error Count"
+          region = var.aws_region
+          metrics = [
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", aws_lb.app.arn_suffix],
+            ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", aws_lb.app.arn_suffix]
+          ]
+          stat   = "Sum"
+          period = 60
+          view   = "timeSeries"
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          title  = "ALB Target Response Time (p50 / p95 / p99)"
+          region = var.aws_region
+          metrics = [
+            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.app.arn_suffix, { stat = "p50", label = "p50" }],
+            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.app.arn_suffix, { stat = "p95", label = "p95" }],
+            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.app.arn_suffix, { stat = "p99", label = "p99" }]
+          ]
+          period = 60
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0 } }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          title  = "ALB Target Health"
+          region = var.aws_region
+          metrics = [
+            ["AWS/ApplicationELB", "HealthyHostCount", "TargetGroup", aws_lb_target_group.app.arn_suffix, "LoadBalancer", aws_lb.app.arn_suffix],
+            ["AWS/ApplicationELB", "UnHealthyHostCount", "TargetGroup", aws_lb_target_group.app.arn_suffix, "LoadBalancer", aws_lb.app.arn_suffix]
+          ]
+          stat   = "Average"
+          period = 60
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0 } }
+        }
+      }
+    ]
+  })
+}
+
 # --- Outputs ---
 
 output "alb_dns_name" {
@@ -313,4 +612,12 @@ output "alb_dns_name" {
 
 output "ecr_repository_url" {
   value = aws_ecr_repository.app.repository_url
+}
+
+output "cloudwatch_dashboard_url" {
+  value = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${var.app_name}"
+}
+
+output "sns_alarms_topic_arn" {
+  value = aws_sns_topic.alarms.arn
 }
