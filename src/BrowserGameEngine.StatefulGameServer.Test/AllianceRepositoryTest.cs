@@ -182,5 +182,44 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Throws<AllianceNameTakenException>(() =>
 				game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player2, "TestAlliance", "secret")));
 		}
+
+		[Fact]
+		public void ShareStatsWithAlliance_Default_IsFalse() {
+			var game = new TestGame(playerCount: 1);
+			var player = game.PlayerRepository.Get(Player1);
+			Assert.False(player.State.ShareStatsWithAlliance);
+		}
+
+		[Fact]
+		public void SetAllianceStatShare_Enable_FlagPersists() {
+			var game = new TestGame(playerCount: 1);
+			game.PlayerRepositoryWrite.SetAllianceStatShare(new SetAllianceStatShareCommand(Player1, true));
+
+			var player = game.PlayerRepository.Get(Player1);
+			Assert.True(player.State.ShareStatsWithAlliance);
+		}
+
+		[Fact]
+		public void SetAllianceStatShare_Disable_FlagCleared() {
+			var game = new TestGame(playerCount: 1);
+			game.PlayerRepositoryWrite.SetAllianceStatShare(new SetAllianceStatShareCommand(Player1, true));
+			game.PlayerRepositoryWrite.SetAllianceStatShare(new SetAllianceStatShareCommand(Player1, false));
+
+			var player = game.PlayerRepository.Get(Player1);
+			Assert.False(player.State.ShareStatsWithAlliance);
+		}
+
+		[Fact]
+		public void ShareStatsWithAlliance_DeserializationBackcompat() {
+			// Simulate a PlayerStateImmutable deserialized without ShareStatsWithAlliance (defaults to false)
+			var state = new BrowserGameEngine.GameModel.PlayerStateImmutable(
+				LastGameTickUpdate: null,
+				CurrentGameTick: new BrowserGameEngine.GameDefinition.GameTick(0),
+				Resources: new System.Collections.Generic.Dictionary<BrowserGameEngine.GameDefinition.ResourceDefId, decimal>(),
+				Assets: new System.Collections.Generic.HashSet<BrowserGameEngine.GameModel.AssetImmutable>(),
+				Units: new System.Collections.Generic.List<BrowserGameEngine.GameModel.UnitImmutable>()
+			);
+			Assert.False(state.ShareStatsWithAlliance);
+		}
 	}
 }

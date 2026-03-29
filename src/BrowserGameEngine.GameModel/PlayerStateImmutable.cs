@@ -16,6 +16,7 @@ namespace BrowserGameEngine.GameModel {
 		int AttackUpgradeLevel = 0,
 		int DefenseUpgradeLevel = 0,
 		int UpgradeResearchTimer = 0,
-		UpgradeType UpgradeBeingResearched = UpgradeType.None
+		UpgradeType UpgradeBeingResearched = UpgradeType.None,
+		bool ShareStatsWithAlliance = false
 	);
 }

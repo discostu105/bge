@@ -114,6 +114,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
+		public void SetAllianceStatShare(SetAllianceStatShareCommand command) {
+			lock (_lock) {
+				var state = world.GetPlayer(command.PlayerId).State;
+				state.ShareStatsWithAlliance = command.ShareStats;
+			}
+		}
+
 		public void DeletePlayer(PlayerId playerId) {
 			lock (_lock) {
 				if (!world.PlayerExists(playerId)) return;

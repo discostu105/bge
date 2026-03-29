@@ -56,4 +56,18 @@ namespace BrowserGameEngine.Shared {
 	public class SetAllianceMessageRequest {
 		public string Message { get; set; }
 	}
+
+	public class AllianceMemberStatsViewModel {
+		public string PlayerId { get; set; }
+		public string PlayerName { get; set; }
+		public bool SharesStats { get; set; }
+		public decimal? Land { get; set; }
+		public decimal? Minerals { get; set; }
+		public decimal? Gas { get; set; }
+		public int? ArmySize { get; set; }
+	}
+
+	public class SetAllianceStatShareRequest {
+		public bool ShareStats { get; set; }
+	}
 }

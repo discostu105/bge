@@ -17,17 +17,26 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly AllianceRepository allianceRepository;
 		private readonly AllianceRepositoryWrite allianceRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
+		private readonly PlayerRepositoryWrite playerRepositoryWrite;
+		private readonly UnitRepository unitRepository;
+		private readonly ResourceRepository resourceRepository;
 
 		public AlliancesController(
 			CurrentUserContext currentUserContext,
 			AllianceRepository allianceRepository,
 			AllianceRepositoryWrite allianceRepositoryWrite,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			PlayerRepositoryWrite playerRepositoryWrite,
+			UnitRepository unitRepository,
+			ResourceRepository resourceRepository
 		) {
 			this.currentUserContext = currentUserContext;
 			this.allianceRepository = allianceRepository;
 			this.allianceRepositoryWrite = allianceRepositoryWrite;
 			this.playerRepository = playerRepository;
+			this.playerRepositoryWrite = playerRepositoryWrite;
+			this.unitRepository = unitRepository;
+			this.resourceRepository = resourceRepository;
 		}
 
 		[HttpGet]
@@ -56,6 +65,51 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				IsPending = member?.IsPending ?? false,
 				IsLeader = alliance.LeaderId == currentUserContext.PlayerId
 			});
+		}
+
+		[HttpGet("members/stats")]
+		public ActionResult<IEnumerable<AllianceMemberStatsViewModel>> GetMemberStats() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var alliance = allianceRepository.GetByPlayerId(currentUserContext.PlayerId);
+			if (alliance == null) return StatusCode(403, "Not in an alliance.");
+			var member = alliance.Members.FirstOrDefault(m => m.PlayerId == currentUserContext.PlayerId);
+			if (member == null || member.IsPending) return StatusCode(403, "Not an accepted alliance member.");
+
+			var stats = alliance.Members
+				.Where(m => !m.IsPending)
+				.Select(m => {
+					var player = playerRepository.Get(m.PlayerId);
+					if (player.State.ShareStatsWithAlliance) {
+						return new AllianceMemberStatsViewModel {
+							PlayerId = m.PlayerId.Id,
+							PlayerName = player.Name,
+							SharesStats = true,
+							Land = resourceRepository.GetAmount(m.PlayerId, Id.ResDef("land")),
+							Minerals = resourceRepository.GetAmount(m.PlayerId, Id.ResDef("minerals")),
+							Gas = resourceRepository.GetAmount(m.PlayerId, Id.ResDef("gas")),
+							ArmySize = unitRepository.GetTotalUnitCount(m.PlayerId)
+						};
+					}
+					return new AllianceMemberStatsViewModel {
+						PlayerId = m.PlayerId.Id,
+						PlayerName = player.Name,
+						SharesStats = false
+					};
+				});
+			return Ok(stats);
+		}
+
+		[HttpPost("my-stat-share")]
+		public ActionResult SetStatShare([FromBody] SetAllianceStatShareRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var alliance = allianceRepository.GetByPlayerId(currentUserContext.PlayerId);
+			if (alliance == null) return StatusCode(403, "Not in an alliance.");
+			var member = alliance.Members.FirstOrDefault(m => m.PlayerId == currentUserContext.PlayerId);
+			if (member == null || member.IsPending) return StatusCode(403, "Not an accepted alliance member.");
+
+			playerRepositoryWrite.SetAllianceStatShare(
+				new SetAllianceStatShareCommand(currentUserContext.PlayerId, request.ShareStats));
+			return Ok();
 		}
 
 		[HttpGet("{id}")]
