@@ -88,6 +88,50 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public void GetOrCreateUser_NewUser_CreatesAndReturnsUser() {
+			var game = new TestGame();
+			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+
+			var user = userRepoWrite.GetOrCreateUser("gh-new", "newuser", "New User");
+
+			Assert.NotNull(user);
+			Assert.Equal("gh-new", user.GithubId);
+			Assert.Equal("newuser", user.GithubLogin);
+			Assert.Equal("New User", user.DisplayName);
+		}
+
+		[Fact]
+		public void GetOrCreateUser_ExistingUser_ReturnsSameUser() {
+			var game = new TestGame();
+			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+
+			var first = userRepoWrite.GetOrCreateUser("gh-dup", "dupuser", "Dup User");
+			var second = userRepoWrite.GetOrCreateUser("gh-dup", "dupuser-2", "Dup User 2");
+
+			Assert.Equal(first.UserId, second.UserId);
+			Assert.Equal("dupuser", second.GithubLogin);
+		}
+
+		[Fact]
+		public void GetOrCreateUser_ConcurrentCalls_ReturnSameUser() {
+			var game = new TestGame();
+			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			UserImmutable? result1 = null;
+			UserImmutable? result2 = null;
+
+			var t1 = new System.Threading.Thread(() => result1 = userRepoWrite.GetOrCreateUser("gh-race", "racer", "Racer"));
+			var t2 = new System.Threading.Thread(() => result2 = userRepoWrite.GetOrCreateUser("gh-race", "racer", "Racer"));
+			t1.Start();
+			t2.Start();
+			t1.Join();
+			t2.Join();
+
+			Assert.NotNull(result1);
+			Assert.NotNull(result2);
+			Assert.Equal(result1!.UserId, result2!.UserId);
+		}
+
+		[Fact]
 		public void RevokeApiKey_ClearsHash() {
 			var game = new TestGame();
 			var userRepo = new UserRepository(game.World);
