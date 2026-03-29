@@ -8,5 +8,6 @@ namespace BrowserGameEngine.Shared {
 	public record PlayerResourcesViewModel {
 		public CostViewModel PrimaryResource { get; init; }
 		public CostViewModel SecondaryResources { get; init; }
+		public decimal ColonizationCostPerLand { get; init; }
 	}
 }

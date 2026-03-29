@@ -10,6 +10,21 @@
 
     <_WorkerAssignment />
 
+    <div class="bge-colonize mt-3">
+        <h3>Kolonisieren</h3>
+        @if (resources != null) {
+            <div>Kosten: @resources.ColonizationCostPerLand Mineralien pro Land</div>
+            <div>
+                <input type="number" min="1" max="24" @bind="colonizeAmount" class="form-control d-inline-block" style="width:100px" />
+                <span class="ms-2">= @(colonizeAmount * resources.ColonizationCostPerLand) Mineralien</span>
+                <button class="btn btn-success ms-2" @onclick="Colonize">Kolonisieren</button>
+            </div>
+            @if (!string.IsNullOrEmpty(colonizeError)) {
+                <span class="error">@colonizeError</span>
+            }
+        }
+    </div>
+
     @if (model == null) {
         <p><em>Lade...</em></p>
     } else {
@@ -52,9 +67,11 @@
 
 @code {
 
-
     private AssetsViewModel? model;
+    private PlayerResourcesViewModel? resources;
     private string? lastError;
+    private string? colonizeError;
+    private int colonizeAmount = 1;
 
     protected override async Task OnInitializedAsync() {
         await Update();
@@ -70,8 +87,19 @@
         }
     }
 
+    private async Task Colonize() {
+        colonizeError = null;
+        var response = await Http.PostAsJsonAsync($"api/colonize/colonize?amount={colonizeAmount}", "");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            colonizeError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
     private async Task Update() {
         model = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
+        resources = await Http.GetFromJsonAsync<PlayerResourcesViewModel>("api/resources");
     }
 
 }
