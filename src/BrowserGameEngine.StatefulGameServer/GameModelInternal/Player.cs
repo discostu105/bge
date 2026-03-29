@@ -11,6 +11,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public string Name { get; set; }
 		public DateTime Created { get; init; }
 		public PlayerState State { get; init; }
+		public string? UserId { get; set; }
+		public string? ApiKeyHash { get; set; }
 	}
 
 	internal static class PlayerExtensions {
@@ -20,7 +22,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				PlayerType: player.PlayerType,
 				Name: player.Name,
 				Created: player.Created,
-				State: player.State.ToImmutable()
+				State: player.State.ToImmutable(),
+				UserId: player.UserId,
+				ApiKeyHash: player.ApiKeyHash
 			);
 		}
 
@@ -30,7 +34,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				PlayerType = playerImmutable.PlayerType,
 				Name = playerImmutable.Name,
 				Created = playerImmutable.Created,
-				State = playerImmutable.State.ToMutable()
+				State = playerImmutable.State.ToMutable(),
+				UserId = playerImmutable.UserId,
+				ApiKeyHash = playerImmutable.ApiKeyHash
 			};
 		}
 	}

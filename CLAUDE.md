@@ -14,7 +14,7 @@ dotnet test --filter "FullyQualifiedName~BattleTest.AttackEnemy_WithUnits_Return
 dotnet run --project BrowserGameEngine.StatefulGameServer.Benchmarks  # Run benchmarks
 ```
 
-Local dev with Docker (requires `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` env vars):
+Local dev with Docker (requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` env vars):
 ```bash
 docker-compose up
 ```
@@ -83,8 +83,8 @@ Governed by `.editorconfig`:
 | `Bge:DevAuth` | Enable password-less dev login (default: `true`) |
 | `Bge:S3BucketName` | S3 bucket; empty = local `FileStorage` |
 | `Bge:S3KeyPrefix` | S3 key prefix |
-| `Discord:ClientId` | Discord OAuth client ID |
-| `Discord:ClientSecret` | Discord OAuth client secret |
+| `GitHub:ClientId` | GitHub OAuth client ID |
+| `GitHub:ClientSecret` | GitHub OAuth client secret |
 
 ## Testing
 

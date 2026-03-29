@@ -15,6 +15,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public static async Task AddGameServer(this IServiceCollection services, IBlobStorage storage, WorldStateImmutable defaultWorldState) {
 			await InitPersistenceAndGameState(services, storage, defaultWorldState);
 			services.AddSingleton(TimeProvider.System);
+			services.AddSingleton<UserRepository>();
+			services.AddSingleton<UserRepositoryWrite>();
 			services.AddSingleton<PlayerRepository>();
 			services.AddSingleton<PlayerRepositoryWrite>();
 			services.AddSingleton<ResourceRepository>();
