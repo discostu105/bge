@@ -18,6 +18,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		internal IList<GameAction> GameActionQueue { get; set; } = new List<GameAction>();
 
+		internal IDictionary<MessageId, Message> Messages { get; set; } = new ConcurrentDictionary<MessageId, Message>();
+
 		// throws if player not found
 		internal Player GetPlayer(PlayerId playerId) {
 			if (Players.TryGetValue(playerId, out Player? player)) return player;
@@ -56,6 +58,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			worldState.Users = mutable.Users;
 			worldState.GameTickState = mutable.GameTickState;
 			worldState.GameActionQueue = mutable.GameActionQueue;
+			worldState.Messages = mutable.Messages;
 		}
 
 		public static WorldStateImmutable ToImmutable(this WorldState worldState) {
@@ -63,7 +66,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				GameTickState: worldState.GameTickState.ToImmutable(),
 				GameActionQueue: worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList(),
-				Users: worldState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable())
+				Users: worldState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
+				Messages: worldState.Messages.ToDictionary(x => x.Key, y => y.Value.ToImmutable())
 			);
 		}
 
@@ -72,7 +76,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Players = new ConcurrentDictionary<PlayerId, Player>(worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable())),
 				Users = new ConcurrentDictionary<string, User>(worldStateImmutable.Users?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<string, User>()),
 				GameTickState = worldStateImmutable.GameTickState.ToMutable(),
-				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList()
+				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList(),
+				Messages = new ConcurrentDictionary<MessageId, Message>(worldStateImmutable.Messages?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<MessageId, Message>())
 			};
 		}
 

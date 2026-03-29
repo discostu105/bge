@@ -5,6 +5,7 @@ namespace BrowserGameEngine.GameModel {
 		IDictionary<PlayerId, PlayerImmutable> Players,
 		GameTickStateImmutable GameTickState,
 		IList<GameActionImmutable> GameActionQueue,
-		IDictionary<string, UserImmutable>? Users = null
+		IDictionary<string, UserImmutable>? Users = null,
+		IDictionary<MessageId, MessageImmutable>? Messages = null
 	);
 }
