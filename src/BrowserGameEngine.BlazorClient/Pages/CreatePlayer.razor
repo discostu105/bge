@@ -1,38 +1,170 @@
-﻿@page "/createplayer"
+@page "/createplayer"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
 
-<h1>Create Player</h1>
+<div class="create-player-container">
+	<div class="create-player-card">
+		<div class="create-player-header">
+			<svg class="create-player-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<path d="M7.97 16L5 19.03A2 2 0 0 1 2 17.56V17l2.5-9.5A5 5 0 0 1 9.37 4h5.26a5 5 0 0 1 4.87 3.5L22 17v.56a2 2 0 0 1-3 1.47L16.03 16H7.97zM6 10h2v2h2v-2h2V8h-2V6h-2v2H6v2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm2-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+			</svg>
+			<h1 class="create-player-title">Welcome to BGE</h1>
+			<p class="create-player-subtitle">Choose your commander name to begin</p>
+		</div>
 
-@if (model == null) {
-    <p><em>Loading...</em></p>
-} else {
-    <div>
-        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+		@if (model == null) {
+			<div class="create-player-loading">
+				<div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+				<span>Loading...</span>
+			</div>
+		} else {
+			<EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+				<DataAnnotationsValidator />
 
-            <InputText id="PlayerName" @bind-Value="model.PlayerName" />
+				<div class="form-group">
+					<label class="form-label" for="PlayerName">Commander name</label>
+					<InputText id="PlayerName" class="form-control form-control-dark" @bind-Value="model.PlayerName" placeholder="Enter your name" />
+					<ValidationMessage For="@(() => model.PlayerName)" class="validation-message" />
+				</div>
 
-            <button type="submit">Submit</button>
-        </EditForm>
-    </div>
-}
+				<button type="submit" class="btn-enter" disabled="@submitting">
+					@if (submitting) {
+						<span class="spinner-border spinner-border-sm" role="status"></span>
+						<span>Entering game...</span>
+					} else {
+						<span>Enter the game</span>
+					}
+				</button>
+			</EditForm>
+		}
+	</div>
+</div>
+
+<style>
+	.create-player-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 80vh;
+		padding: 1.5rem;
+	}
+
+	.create-player-card {
+		background: #161b22;
+		border: 1px solid #30363d;
+		border-radius: 10px;
+		padding: 2rem;
+		width: 100%;
+		max-width: 380px;
+	}
+
+	.create-player-header {
+		text-align: center;
+		margin-bottom: 1.75rem;
+	}
+
+	.create-player-icon {
+		width: 44px;
+		height: 44px;
+		fill: #58a6ff;
+		margin-bottom: 0.75rem;
+	}
+
+	.create-player-title {
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: #e6edf3;
+		margin: 0;
+	}
+
+	.create-player-subtitle {
+		font-size: 0.85rem;
+		color: #8b949e;
+		margin: 0.3rem 0 0;
+	}
+
+	.create-player-loading {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: #8b949e;
+		font-size: 0.875rem;
+		justify-content: center;
+		padding: 1rem 0;
+	}
+
+	.form-label {
+		display: block;
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: #e6edf3;
+		margin-bottom: 0.4rem;
+	}
+
+	.form-control-dark {
+		background: #0d1117;
+		color: #e6edf3;
+		border: 1px solid #30363d;
+		border-radius: 6px;
+		padding: 0.55rem 0.75rem;
+		font-size: 0.9rem;
+		width: 100%;
+		transition: border-color 0.15s, box-shadow 0.15s;
+	}
+
+	.form-control-dark::placeholder { color: #8b949e; }
+
+	.form-control-dark:focus {
+		outline: none;
+		border-color: #58a6ff;
+		box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+		background: #0d1117;
+		color: #e6edf3;
+	}
+
+	.btn-enter {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		width: 100%;
+		margin-top: 1.25rem;
+		padding: 0.65rem 1rem;
+		background: #1f6feb;
+		color: #fff;
+		border: 1px solid #388bfd;
+		border-radius: 6px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background-color 0.15s;
+	}
+
+	.btn-enter:hover:not(:disabled) { background: #388bfd; }
+
+	.btn-enter:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+</style>
 
 @code {
-    private CreatePlayerViewModel? model;
+	private CreatePlayerViewModel? model;
+	private bool submitting = false;
 
-    protected override async Task OnInitializedAsync() {
-        model = await Http.GetFromJsonAsync<CreatePlayerViewModel>("api/playerprofile/init");
-    }
+	protected override async Task OnInitializedAsync() {
+		model = await Http.GetFromJsonAsync<CreatePlayerViewModel>("api/playerprofile/init");
+	}
 
-    private async Task HandleValidSubmit() {
-        if (model == null) return;
-        var response = await Http.PostAsJsonAsync("api/playerprofile/create", model);
-        if (response.IsSuccessStatusCode) {
-            Nav.NavigateTo("/", forceLoad: true);
-        }
-    }
-
+	private async Task HandleValidSubmit() {
+		if (model == null) return;
+		submitting = true;
+		var response = await Http.PostAsJsonAsync("api/playerprofile/create", model);
+		if (response.IsSuccessStatusCode) {
+			Nav.NavigateTo("/", forceLoad: true);
+		} else {
+			submitting = false;
+		}
+	}
 }
