@@ -18,6 +18,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int DefenseUpgradeLevel { get; set; }
 		public int UpgradeResearchTimer { get; set; }
 		public UpgradeType UpgradeBeingResearched { get; set; }
+		public bool ShareStatsWithAlliance { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -34,7 +35,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				AttackUpgradeLevel: playerState.AttackUpgradeLevel,
 				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
 				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
-				UpgradeBeingResearched: playerState.UpgradeBeingResearched
+				UpgradeBeingResearched: playerState.UpgradeBeingResearched,
+				ShareStatsWithAlliance: playerState.ShareStatsWithAlliance
 			);
 		}
 
@@ -51,7 +53,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				AttackUpgradeLevel = playerStateImmutable.AttackUpgradeLevel,
 				DefenseUpgradeLevel = playerStateImmutable.DefenseUpgradeLevel,
 				UpgradeResearchTimer = playerStateImmutable.UpgradeResearchTimer,
-				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched
+				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched,
+				ShareStatsWithAlliance = playerStateImmutable.ShareStatsWithAlliance
 			};
 		}
 	}

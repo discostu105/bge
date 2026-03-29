@@ -73,6 +73,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 				.Select(x => x.ToImmutable());
 		}
 
+		public int GetTotalUnitCount(PlayerId playerId) {
+			world.ValidatePlayer(playerId);
+			return Units(playerId).Sum(x => x.Count);
+		}
+
 		public IEnumerable<UnitImmutable> GetDefendingEnemyUnits(PlayerId playerId, PlayerId enemyPlayerId) {
 			world.ValidatePlayer(playerId);
 			world.ValidatePlayer(enemyPlayerId);

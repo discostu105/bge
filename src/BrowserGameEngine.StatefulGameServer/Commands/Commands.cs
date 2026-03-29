@@ -14,6 +14,7 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record VoteLeaderCommand(PlayerId PlayerId, PlayerId VoteePlayerId) : ICommand;
 	public record SetAlliancePasswordCommand(PlayerId PlayerId, string NewPassword) : ICommand;
 	public record SetAllianceMessageCommand(PlayerId PlayerId, string Message) : ICommand;
+	public record SetAllianceStatShareCommand(PlayerId PlayerId, bool ShareStats) : ICommand;
 
 	public record BuildAssetCommand(PlayerId PlayerId, AssetDefId AssetDefId) : ICommand;
 	public record BuildUnitCommand(PlayerId PlayerId, UnitDefId UnitDefId, int Count) : ICommand;

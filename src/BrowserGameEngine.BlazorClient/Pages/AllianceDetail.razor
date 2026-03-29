@@ -50,6 +50,44 @@
         </tbody>
     </table>
 
+    @if (myStatus.IsMember && !myStatus.IsPending) {
+        <div class="card mb-3">
+            <div class="card-header">Alliance Stats</div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label>
+                        <input type="checkbox" checked="@shareMyStats" @onchange="ToggleStatShare" />
+                        Share my stats with this alliance
+                    </label>
+                </div>
+                @if (memberStats != null) {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Land</th>
+                                <th>Minerals</th>
+                                <th>Gas</th>
+                                <th>Army Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in memberStats) {
+                                <tr>
+                                    <td>@s.PlayerName</td>
+                                    <td>@(s.SharesStats ? s.Land?.ToString("N0") : "-")</td>
+                                    <td>@(s.SharesStats ? s.Minerals?.ToString("N0") : "-")</td>
+                                    <td>@(s.SharesStats ? s.Gas?.ToString("N0") : "-")</td>
+                                    <td>@(s.SharesStats ? s.ArmySize?.ToString("N0") : "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    }
+
     @if (myStatus.IsMember && myStatus.IsLeader) {
         <div class="card mb-3">
             <div class="card-header">Leader Controls</div>
@@ -74,6 +112,9 @@
 
     private AllianceDetailViewModel? detail;
     private MyAllianceStatusViewModel? myStatus;
+    private List<AllianceMemberStatsViewModel>? memberStats;
+    private bool shareMyStats;
+    private string? myPlayerId;
     private string newMessage = "";
     private string newPassword = "";
     private string? lastError;
@@ -85,7 +126,20 @@
     private async Task Update() {
         detail = await Http.GetFromJsonAsync<AllianceDetailViewModel>($"api/alliances/{AllianceId}");
         myStatus = await Http.GetFromJsonAsync<MyAllianceStatusViewModel>("api/alliances/my-status");
+        if (myStatus?.IsMember == true && myStatus.IsPending == false) {
+            var profile = await Http.GetFromJsonAsync<PlayerProfileViewModel>("api/playerprofile");
+            myPlayerId = profile?.PlayerId;
+            memberStats = await Http.GetFromJsonAsync<List<AllianceMemberStatsViewModel>>("api/alliances/members/stats");
+            shareMyStats = memberStats?.FirstOrDefault(s => s.PlayerId == myPlayerId)?.SharesStats ?? false;
+        }
         lastError = null;
+    }
+
+    private async Task ToggleStatShare(ChangeEventArgs e) {
+        shareMyStats = (bool)(e.Value ?? false);
+        var r = await Http.PostAsJsonAsync("api/alliances/my-stat-share", new SetAllianceStatShareRequest { ShareStats = shareMyStats });
+        if (r.IsSuccessStatusCode) await Update();
+        else lastError = await r.Content.ReadAsStringAsync();
     }
 
     private async Task Accept(string playerId) {
