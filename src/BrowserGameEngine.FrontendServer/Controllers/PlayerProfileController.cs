@@ -22,18 +22,24 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly PlayerRepository playerRepository;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly UserRepository userRepository;
+		private readonly ScoreRepository scoreRepository;
+		private readonly OnlineStatusRepository onlineStatusRepository;
 
 		public PlayerProfileController(ILogger<PlayerProfileController> logger
 				, CurrentUserContext currentUserContext
 				, PlayerRepository playerRepository
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, UserRepository userRepository
+				, ScoreRepository scoreRepository
+				, OnlineStatusRepository onlineStatusRepository
 			) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.playerRepository = playerRepository;
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.userRepository = userRepository;
+			this.scoreRepository = scoreRepository;
+			this.onlineStatusRepository = onlineStatusRepository;
 		}
 
 		[HttpGet]
@@ -43,7 +49,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new PlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
-				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining
+				Score = scoreRepository.GetScore(player.PlayerId),
+				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
+				IsOnline = onlineStatusRepository.IsOnline(player.PlayerId),
+				LastOnline = player.LastOnline
 			};
 		}
 

@@ -17,21 +17,24 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ScoreRepository scoreRepository;
 		private readonly PlayerRepository playerRepository;
 		private readonly UserRepository userRepository;
+		private readonly OnlineStatusRepository onlineStatusRepository;
 
 		public PlayerRankingController(ILogger<PlayerRankingController> logger
 				, ScoreRepository scoreRepository
 				, PlayerRepository playerRepository
 				, UserRepository userRepository
+				, OnlineStatusRepository onlineStatusRepository
 			) {
 			this.logger = logger;
 			this.scoreRepository = scoreRepository;
 			this.playerRepository = playerRepository;
 			this.userRepository = userRepository;
+			this.onlineStatusRepository = onlineStatusRepository;
 		}
 
 		[HttpGet]
 		public IEnumerable<PublicPlayerViewModel> Get() {
-			return playerRepository.GetAll().Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository));
+			return playerRepository.GetAll().Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository));
 		}
 
 	}

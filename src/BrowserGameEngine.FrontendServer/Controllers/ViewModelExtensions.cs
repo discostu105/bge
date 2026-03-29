@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	public static class ViewModelExtensions {
-		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ScoreRepository scoreRepository, UserRepository userRepository) {
+		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ScoreRepository scoreRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository) {
 			return new PublicPlayerViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
@@ -18,7 +18,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				UserId = player.UserId,
 				UserDisplayName = player.UserId != null ? userRepository.GetDisplayNameByUserId(player.UserId) : null,
 				IsAgent = player.ApiKeyHash != null,
-				LastOnline = player.LastOnline
+				LastOnline = player.LastOnline,
+				IsOnline = onlineStatusRepository.IsOnline(player.PlayerId)
 			};
 		}
 

@@ -32,7 +32,7 @@
                     <td>@item.PlayerName</td>
                     <td>@item.Score</td>
                     <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
-                    <td>@(IsOnline(item) ? "Online" : "Offline")</td>
+                    <td>@(item.IsOnline ? "🟢 Online" : "⚫ Offline")</td>
                     <td>@(item.ProtectionTicksRemaining > 0 ? $"🛡 {item.ProtectionTicksRemaining}" : "")</td>
                 </tr>
                 }
@@ -62,7 +62,4 @@
             .Select(g => (g.Key, g.First().UserDisplayName, (IEnumerable<PublicPlayerViewModel>)g));
     }
 
-    private bool IsOnline(PublicPlayerViewModel p) {
-        return p.LastOnline.HasValue && (DateTime.UtcNow - p.LastOnline.Value).TotalMinutes < 8;
-    }
 }
