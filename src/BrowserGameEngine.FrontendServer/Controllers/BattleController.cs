@@ -23,6 +23,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly ScoreRepository scoreRepository;
 		private readonly PlayerRepository playerRepository;
+		private readonly UserRepository userRepository;
 		private readonly UnitRepository unitRepository;
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 
@@ -31,6 +32,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, CurrentUserContext currentUserContext
 				, ScoreRepository scoreRepository
 				, PlayerRepository playerRepository
+				, UserRepository userRepository
 				, UnitRepository unitRepository
 				, UnitRepositoryWrite unitRepositoryWrite
 			) {
@@ -39,6 +41,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.currentUserContext = currentUserContext;
 			this.scoreRepository = scoreRepository;
 			this.playerRepository = playerRepository;
+			this.userRepository = userRepository;
 			this.unitRepository = unitRepository;
 			this.unitRepositoryWrite = unitRepositoryWrite;
 		}
@@ -46,7 +49,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public SelectEnemyViewModel AttackablePlayers() {
 			return new SelectEnemyViewModel {
-				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId).Select(p => p.ToPublicPlayerViewModel(scoreRepository)).ToList()
+				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId).Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository)).ToList()
 			};
 		}
 
