@@ -14,8 +14,8 @@ namespace BrowserGameEngine.StatefulGameServer.Benchmarks {
     [ShortRunJob]
     [MemoryDiagnoser]
     public class GameTickEngineBenchmarks {
-        private TestGame singlePlayerGame;
-        private TestGame thousandPlayerGame;
+        private TestGame singlePlayerGame = null!;
+        private TestGame thousandPlayerGame = null!;
 
         [GlobalSetup]
         public void Setup() {

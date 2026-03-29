@@ -43,14 +43,14 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public UnitsViewModel Get() {
 			return new UnitsViewModel {
-				Units = unitRepository.GetAll(currentUserContext.PlayerId).Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
+				Units = unitRepository.GetAll(currentUserContext.PlayerId!).Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
 			};
 		}
 
 		[HttpPost]
 		public async Task<ActionResult> Build([FromQuery] string unitDefId, [FromQuery] int count) {
 			try {
-				unitRepositoryWrite.BuildUnit(new BuildUnitCommand(currentUserContext.PlayerId, Id.UnitDef(unitDefId), count));
+				unitRepositoryWrite.BuildUnit(new BuildUnitCommand(currentUserContext.PlayerId!, Id.UnitDef(unitDefId), count));
 				return Ok();
 			} catch (InvalidGameDefException e) {
 				return BadRequest(e.Message);
@@ -63,9 +63,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public async Task<ActionResult> Merge([FromQuery] string? unitDefId) {
 			try {
 				if (string.IsNullOrEmpty(unitDefId)) {
-					unitRepositoryWrite.MergeUnits(new MergeAllUnitsCommand(currentUserContext.PlayerId));
+					unitRepositoryWrite.MergeUnits(new MergeAllUnitsCommand(currentUserContext.PlayerId!));
 				} else {
-					unitRepositoryWrite.MergeUnits(new MergeUnitsCommand(currentUserContext.PlayerId, Id.UnitDef(unitDefId)));
+					unitRepositoryWrite.MergeUnits(new MergeUnitsCommand(currentUserContext.PlayerId!, Id.UnitDef(unitDefId)));
 				}
 				return Ok();
 			} catch (InvalidGameDefException e) {
@@ -76,7 +76,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPost]
 		public async Task<ActionResult> Split([FromQuery] Guid unitId, [FromQuery] int splitCount) {
 			try {
-				unitRepositoryWrite.SplitUnit(new SplitUnitCommand(currentUserContext.PlayerId, Id.UnitId(unitId), splitCount));
+				unitRepositoryWrite.SplitUnit(new SplitUnitCommand(currentUserContext.PlayerId!, Id.UnitId(unitId), splitCount));
 				return Ok();
 			} catch (InvalidGameDefException e) {
 				return BadRequest(e.Message);

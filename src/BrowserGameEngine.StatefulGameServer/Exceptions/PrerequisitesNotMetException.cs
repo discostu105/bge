@@ -1,8 +1,6 @@
-﻿using System;
-using System.Runtime.Serialization;
+using System;
 
 namespace BrowserGameEngine.StatefulGameServer {
-	[Serializable]
 	public class PrerequisitesNotMetException : Exception {
 		public PrerequisitesNotMetException() {
 		}
@@ -11,9 +9,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public PrerequisitesNotMetException(string? message, Exception? innerException) : base(message, innerException) {
-		}
-
-		protected PrerequisitesNotMetException(SerializationInfo info, StreamingContext context) : base(info, context) {
 		}
 	}
 }

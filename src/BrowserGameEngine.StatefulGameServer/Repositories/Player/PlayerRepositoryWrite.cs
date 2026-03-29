@@ -81,6 +81,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
+		public void UpdateLastOnline(PlayerId playerId, DateTime time) {
+			if (!world.PlayerExists(playerId)) return;
+			world.Players[playerId].LastOnline = time;
+		}
+
 		public void CreatePlayer(PlayerId playerId, string? userId = null) {
 			lock (_lock) {
 				if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);

@@ -35,7 +35,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						{ "gas-resource", "gas" },
 						{ "constraint-resource", "land" },
 					}.ToFrozenDictionary()),
-					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary())
+					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
+					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary())
 				},
 
 				Assets = new List<AssetDef> {
@@ -288,7 +289,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 1,
 						Hitpoints = 60,
 						Speed = 8,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("commandcenter") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("commandcenter") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [0, 0, 0]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("spacemarine"),
@@ -299,7 +302,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 4,
 						Hitpoints = 60,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") },
+						AttackBonuses = [1, 2, 3],
+						DefenseBonuses = [1, 2, 3]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("firebat"),
@@ -310,7 +315,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 6,
 						Hitpoints = 50,
 						Speed = 7,
-						Prerequisites =  new List<AssetDefId> { Id.AssetDef("barracks") }
+						Prerequisites =  new List<AssetDefId> { Id.AssetDef("barracks") },
+						AttackBonuses = [2, 4, 6],
+						DefenseBonuses = [1, 2, 3]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("siegetank"),
@@ -321,7 +328,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 40,
 						Hitpoints = 130,
 						Speed = 9,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") },
+						AttackBonuses = [2, 4, 6],
+						DefenseBonuses = [3, 6, 9]
 					},
 					//new UnitDef {
 					//	Id = Id.Unit("ghost",
@@ -343,7 +352,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 2,
 						Hitpoints = 70,
 						Speed = 5,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("armory") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("armory") },
+						AttackBonuses = [2, 4, 6],
+						DefenseBonuses = [1, 2, 3]
 					},
 					//new UnitDef {
 					//	Id = Id.Unit("goliath",
@@ -365,7 +376,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 14,
 						Hitpoints = 230,
 						Speed = 5,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") },
+						AttackBonuses = [3, 6, 9],
+						DefenseBonuses = [2, 4, 6]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("battlecruiser"),
@@ -376,7 +389,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 45,
 						Hitpoints = 500,
 						Speed = 11,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") },
+						AttackBonuses = [5, 10, 15],
+						DefenseBonuses = [4, 8, 12]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("missileturret"),
@@ -401,7 +416,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 1,
 						Hitpoints = 40,
 						Speed = 8,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("hive") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("hive") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [0, 0, 0]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("zergling"),
@@ -412,7 +429,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 1,
 						Hitpoints = 25,
 						Speed = 6,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("spawningpool") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spawningpool") },
+						AttackBonuses = [1, 2, 3],
+						DefenseBonuses = [1, 2, 3]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("hydralisk"),
@@ -423,7 +442,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 5,
 						Hitpoints = 80,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("hydraliskden") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("hydraliskden") },
+						AttackBonuses = [2, 4, 6],
+						DefenseBonuses = [1, 2, 3]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("lurker"),
@@ -434,7 +455,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 26,
 						Hitpoints = 195,
 						Speed = 10,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") },
+						AttackBonuses = [2, 4, 6],
+						DefenseBonuses = [2, 4, 6]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("ultralisk"),
@@ -445,7 +468,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 30,
 						Hitpoints = 450,
 						Speed = 10,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("ultraliskcavern") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("ultraliskcavern") },
+						AttackBonuses = [4, 8, 12],
+						DefenseBonuses = [3, 6, 9]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("mutalisk"),
@@ -456,7 +481,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 26,
 						Hitpoints = 120,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") },
+						AttackBonuses = [3, 6, 9],
+						DefenseBonuses = [2, 4, 6]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("guardian"),
@@ -467,7 +494,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 35,
 						Hitpoints = 200,
 						Speed = 12,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") },
+						AttackBonuses = [4, 8, 12],
+						DefenseBonuses = [3, 6, 9]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("devourer"),
@@ -478,7 +507,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 30,
 						Hitpoints = 295,
 						Speed = 9,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") },
+						AttackBonuses = [3, 6, 9],
+						DefenseBonuses = [3, 6, 9]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("sunkencolony"),
@@ -490,7 +521,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Hitpoints = 180,
 						Speed = 0,
 						IsMobile = false,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [2, 4, 6]
 					},
 
 					// Protoss units
@@ -503,7 +536,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 1,
 						Hitpoints = 40,
 						Speed = 8,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("nexus") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("nexus") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [0, 0, 0]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("zealot"),
@@ -514,7 +549,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 6,
 						Hitpoints = 130,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("gateway") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("gateway") },
+						AttackBonuses = [1, 2, 3],
+						DefenseBonuses = [1, 2, 3]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("dragoon"),
@@ -525,7 +562,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 18,
 						Hitpoints = 180,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("cyberneticscore") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("cyberneticscore") },
+						AttackBonuses = [2, 4, 6],
+						DefenseBonuses = [2, 4, 6]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("archon"),
@@ -536,7 +575,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 42,
 						Hitpoints = 380,
 						Speed = 8,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") },
+						AttackBonuses = [3, 6, 9],
+						DefenseBonuses = [4, 8, 12]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("darktemplar"),
@@ -547,7 +588,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 30,
 						Hitpoints = 80,
 						Speed = 6,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("templararchives") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("templararchives") },
+						AttackBonuses = [3, 6, 9],
+						DefenseBonuses = [3, 6, 9]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("reaver"),
@@ -558,7 +601,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 160,
 						Speed = 12,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("roboticsfacility") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("roboticsfacility") },
+						AttackBonuses = [5, 10, 15],
+						DefenseBonuses = [0, 0, 0]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("observer"),
@@ -569,7 +614,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 0,
 						Hitpoints = 20,
 						Speed = 4,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("observatory") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("observatory") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [0, 0, 0]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("scout"),
@@ -580,7 +627,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 49,
 						Hitpoints = 310,
 						Speed = 6,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("stargate") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("stargate") },
+						AttackBonuses = [3, 6, 9],
+						DefenseBonuses = [4, 8, 12]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("carrier"),
@@ -591,7 +640,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 55,
 						Hitpoints = 600,
 						Speed = 12,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("stargate") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("stargate") },
+						AttackBonuses = [5, 10, 15],
+						DefenseBonuses = [4, 8, 12]
 					},
 					new UnitDef {
 						Id = Id.UnitDef("photoncannon"),
@@ -603,7 +654,9 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Hitpoints = 200,
 						Speed = 0,
 						IsMobile = false,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [2, 4, 6]
 					}
 				}
 			};

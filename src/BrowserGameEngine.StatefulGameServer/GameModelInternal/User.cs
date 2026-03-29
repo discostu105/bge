@@ -3,10 +3,10 @@ using System;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class User {
-		public string UserId { get; init; }
-		public string GithubId { get; init; }
-		public string GithubLogin { get; set; }
-		public string DisplayName { get; set; }
+		public required string UserId { get; init; }
+		public required string GithubId { get; init; }
+		public required string GithubLogin { get; set; }
+		public required string DisplayName { get; set; }
 		public DateTime Created { get; init; }
 	}
 

@@ -17,7 +17,7 @@
 }
 
 @code {
-    public BrowserGameEngine.Shared.PlayerResourcesViewModel model { get; set; }
+    public BrowserGameEngine.Shared.PlayerResourcesViewModel? model { get; set; }
 
     protected override async Task OnInitializedAsync() {
         await Update();

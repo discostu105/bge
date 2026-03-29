@@ -17,10 +17,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(15, g.UnitRepository.CountByUnitDefId(g.WorldStateFactory.Player1, Id.UnitDef("unit1")));
 			Assert.Equal(25, g.UnitRepository.CountByUnitDefId(g.WorldStateFactory.Player1, Id.UnitDef("unit2")));
 
-			Assert.True(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit1"))));
-			Assert.True(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit2"))));
-			Assert.False(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit3"))));
-			Assert.False(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit4"))));
+			Assert.True(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit1"))!));
+			Assert.True(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit2"))!));
+			Assert.False(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit3"))!));
+			Assert.False(g.UnitRepository.PrerequisitesMet(g.WorldStateFactory.Player1, g.GameDef.GetUnitDef(Id.UnitDef("unit4"))!));
 		}
 
 		[Fact]

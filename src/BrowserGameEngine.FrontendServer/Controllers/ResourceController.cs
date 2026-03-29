@@ -33,9 +33,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpGet]
 		public async Task<PlayerResourcesViewModel> Get() {
+			var playerId = currentUserContext.PlayerId!;
+			var currentLand = resourceRepository.GetAmount(playerId, Id.ResDef("land"));
 			return new PlayerResourcesViewModel {
-				PrimaryResource = CostViewModel.Create(resourceRepository.GetPrimaryResource(currentUserContext.PlayerId)),
-				SecondaryResources = CostViewModel.Create(resourceRepository.GetSecondaryResources(currentUserContext.PlayerId))
+				PrimaryResource = CostViewModel.Create(resourceRepository.GetPrimaryResource(playerId)),
+				SecondaryResources = CostViewModel.Create(resourceRepository.GetSecondaryResources(playerId)),
+				ColonizationCostPerLand = ColonizeRepositoryWrite.GetCostPerLand(currentLand)
 			};
 		}
 	}

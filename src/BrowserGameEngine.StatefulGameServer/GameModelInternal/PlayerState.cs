@@ -7,13 +7,18 @@ using System.Linq;
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class PlayerState {
 		public DateTime? LastGameTickUpdate { get; set; }
-		public GameTick CurrentGameTick { get; set; }
+		public GameTick CurrentGameTick { get; set; } = new GameTick(0);
 		public IDictionary<ResourceDefId, decimal> Resources { get; set; } = new Dictionary<ResourceDefId, decimal>();
 		public ISet<Asset> Assets { get; set; } = new HashSet<Asset>();
 		public List<Unit> Units { get; set; } = new List<Unit>();
 		public int MineralWorkers { get; set; }
 		public int GasWorkers { get; set; }
 		public int ProtectionTicksRemaining { get; set; }
+		public List<Message> Messages { get; set; } = new List<Message>();
+		public int AttackUpgradeLevel { get; set; }
+		public int DefenseUpgradeLevel { get; set; }
+		public int UpgradeResearchTimer { get; set; }
+		public UpgradeType UpgradeBeingResearched { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -26,7 +31,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
 				MineralWorkers: playerState.MineralWorkers,
 				GasWorkers: playerState.GasWorkers,
-				ProtectionTicksRemaining: playerState.ProtectionTicksRemaining
+				ProtectionTicksRemaining: playerState.ProtectionTicksRemaining,
+				Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList(),
+				AttackUpgradeLevel: playerState.AttackUpgradeLevel,
+				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
+				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
+				UpgradeBeingResearched: playerState.UpgradeBeingResearched
 			);
 		}
 
@@ -39,8 +49,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList(),
 				MineralWorkers = playerStateImmutable.MineralWorkers,
 				GasWorkers = playerStateImmutable.GasWorkers,
-				ProtectionTicksRemaining = playerStateImmutable.ProtectionTicksRemaining
-		};
+				ProtectionTicksRemaining = playerStateImmutable.ProtectionTicksRemaining,
+				Messages = (playerStateImmutable.Messages ?? new List<MessageImmutable>()).Select(x => x.ToMutable()).ToList(),
+				AttackUpgradeLevel = playerStateImmutable.AttackUpgradeLevel,
+				DefenseUpgradeLevel = playerStateImmutable.DefenseUpgradeLevel,
+				UpgradeResearchTimer = playerStateImmutable.UpgradeResearchTimer,
+				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched
+			};
 		}
 	}
 }

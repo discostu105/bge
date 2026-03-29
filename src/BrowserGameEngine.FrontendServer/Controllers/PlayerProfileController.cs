@@ -39,7 +39,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public ActionResult<PlayerProfileViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var player = playerRepository.Get(currentUserContext.PlayerId);
+			var player = playerRepository.Get(currentUserContext.PlayerId!);
 			return new PlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
@@ -68,7 +68,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[Route("changename")]
 		public ActionResult ChangePlayerName(PlayerProfileViewModel playerProfile) {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(currentUserContext.PlayerId, playerProfile.PlayerName));
+			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(currentUserContext.PlayerId!, playerProfile.PlayerName!));
 			return Ok();
 		}
 
@@ -83,7 +83,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			playerRepositoryWrite.CreatePlayer(playerId, currentUserContext.UserId);
-			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, model.PlayerName));
+			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, model.PlayerName!));
 			currentUserContext.Activate(playerId);
 			return Ok();
 		}

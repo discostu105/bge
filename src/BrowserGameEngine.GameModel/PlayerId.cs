@@ -20,7 +20,7 @@ namespace BrowserGameEngine.GameModel {
 	public class PlayerIdConverter : JsonConverter<PlayerId> {
 		[return: MaybeNull]
 		public override PlayerId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-			return PlayerIdFactory.Create(reader.GetString());
+			return PlayerIdFactory.Create(reader.GetString()!);
 		}
 
 		public override void Write(Utf8JsonWriter writer, PlayerId value, JsonSerializerOptions options) {
