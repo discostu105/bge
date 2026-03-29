@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.Shared {
 	public class BattleResultViewModel {
-		public UnitsViewModel PlayerLostUnits { get; set; }
-		public UnitsViewModel EnemyLostUnits { get; set; }
+		public UnitsViewModel? PlayerLostUnits { get; set; }
+		public UnitsViewModel? EnemyLostUnits { get; set; }
 	}
 }

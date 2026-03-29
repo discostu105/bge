@@ -6,7 +6,7 @@ using System.Linq;
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class Message {
 		public Guid Id { get; set; }
-		public PlayerId RecipientId { get; set; }
+		public required PlayerId RecipientId { get; set; }
 		public string Subject { get; set; } = string.Empty;
 		public string Body { get; set; } = string.Empty;
 		public DateTime CreatedAt { get; set; }

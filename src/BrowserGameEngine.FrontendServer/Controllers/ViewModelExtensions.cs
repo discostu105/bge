@@ -27,7 +27,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			return new UnitViewModel {
 				UnitId = unit.UnitId.Id,
-				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId, unitDef)),
+				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId!, unitDef)),
 				Count = unit.Count,
 				PositionPlayerId = unit.Position?.Id
 			};

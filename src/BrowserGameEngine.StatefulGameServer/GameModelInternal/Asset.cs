@@ -6,7 +6,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	// can be anything that enables stuff or improves capabilities
 	// e.g. buildings or upgrades
 	internal class Asset {
-		public AssetDefId AssetDefId { get; init; }
+		public required AssetDefId AssetDefId { get; init; }
 		public int Level { get; set; }
 	}
 

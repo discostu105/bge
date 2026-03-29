@@ -78,7 +78,7 @@
     private string? lastError;
 
     [Parameter]
-    public string EnemeyPlayerId { get; set; }
+    public required string EnemeyPlayerId { get; set; }
 
     protected override async Task OnInitializedAsync() {
         model = await Http.GetFromJsonAsync<EnemyBaseViewModel>($"api/battle/enemybase?enemyPlayerId={Uri.EscapeDataString(EnemeyPlayerId)}");

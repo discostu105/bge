@@ -5,10 +5,10 @@ namespace BrowserGameEngine.GameDefinition {
 		public override string ToString() => Id;
 	}
 	public record UnitDef {
-		public UnitDefId Id { get; init; }
-		public string Name { get; init; }
-		public PlayerTypeDefId PlayerTypeRestriction { get; init; }
-		public Cost Cost { get; init; }
+		public UnitDefId Id { get; init; } = null!;
+		public string Name { get; init; } = null!;
+		public PlayerTypeDefId PlayerTypeRestriction { get; init; } = null!;
+		public Cost Cost { get; init; } = null!;
 		public int Attack { get; init; }
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }

@@ -7,7 +7,7 @@ using System.Linq;
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class PlayerState {
 		public DateTime? LastGameTickUpdate { get; set; }
-		public GameTick CurrentGameTick { get; set; }
+		public GameTick CurrentGameTick { get; set; } = new GameTick(0);
 		public IDictionary<ResourceDefId, decimal> Resources { get; set; } = new Dictionary<ResourceDefId, decimal>();
 		public ISet<Asset> Assets { get; set; } = new HashSet<Asset>();
 		public List<Unit> Units { get; set; } = new List<Unit>();

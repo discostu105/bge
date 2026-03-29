@@ -145,7 +145,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				var units = Units(playerId).Where(x => x.Position == enemyPlayerId).ToList();
 				foreach (var unit in units) {
-					unit.ReturnTimer = gameDef.GetUnitDef(unit.UnitDefId).Speed;
+					unit.ReturnTimer = gameDef.GetUnitDef(unit.UnitDefId)!.Speed;
 				}
 			}
 		}
@@ -190,7 +190,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private int TryRemoveUnitCount(PlayerId playerId, UnitId unitId, int count) {
-			var unit = Unit(playerId, unitId);
+			var unit = Unit(playerId, unitId)!;
 			if (count >= unit.Count) {
 				// remove full unit
 				RemoveUnit(playerId, unitId);
@@ -237,7 +237,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			bool attackerWon = !battleResult.BtlResult.DefendingUnitsSurvived.Any() && battleResult.BtlResult.AttackingUnitsSurvived.Any();
 			if (attackerWon) {
 				int remainingAttackDamage = battleResult.BtlResult.AttackingUnitsSurvived
-					.Sum(uc => uc.Count * gameDef.GetUnitDef(uc.UnitDefId).Attack);
+					.Sum(uc => uc.Count * gameDef.GetUnitDef(uc.UnitDefId)!.Attack);
 				ApplyLandTransfer(battleResult, remainingAttackDamage);
 			}
 
@@ -251,7 +251,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> units, int attackLevel, int defenseLevel) {
 			return units.Select(x => {
-				var unitDef = gameDef.GetUnitDef(x.UnitDefId);
+				var unitDef = gameDef.GetUnitDef(x.UnitDefId)!;
 				int attackBonus = attackLevel > 0 ? unitDef.AttackBonuses[attackLevel - 1] : 0;
 				int defenseBonus = defenseLevel > 0 ? unitDef.DefenseBonuses[defenseLevel - 1] : 0;
 				return new BtlUnit {

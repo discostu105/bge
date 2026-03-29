@@ -22,10 +22,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 		private readonly IActionLogger actionLogger;
 
-		private UnitDefId workerUnit;
-		private ResourceDefId mineralResource;
-		private ResourceDefId gasResource; // null = gas income disabled
-		private ResourceDefId constraintResource;
+		private UnitDefId workerUnit = null!;
+		private ResourceDefId mineralResource = null!;
+		private ResourceDefId? gasResource; // null = gas income disabled
+		private ResourceDefId constraintResource = null!;
 
 		// Base income added every tick regardless of workers (spec 2.3)
 		private const decimal BaseIncomeMinerals = 10m;

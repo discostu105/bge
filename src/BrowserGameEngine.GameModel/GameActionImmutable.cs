@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace BrowserGameEngine.GameModel {
 	public record GameActionImmutable {
-		public string Name { get; init; }
-		public GameTick DueTick { get; init; }
-		public PlayerId PlayerId { get; init; }
-		public Dictionary<string, string> Properties { get; init; }
+		public required string Name { get; init; }
+		public required GameTick DueTick { get; init; }
+		public required PlayerId PlayerId { get; init; }
+		public required Dictionary<string, string> Properties { get; init; }
 	}
 }

@@ -6,11 +6,11 @@ using System.Text;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class Player {
-		public PlayerId PlayerId { get; init; }
-		public PlayerTypeDefId PlayerType { get; init; }
-		public string Name { get; set; }
+		public required PlayerId PlayerId { get; init; }
+		public required PlayerTypeDefId PlayerType { get; init; }
+		public required string Name { get; set; }
 		public DateTime Created { get; init; }
-		public PlayerState State { get; init; }
+		public required PlayerState State { get; init; }
 		public string? UserId { get; set; }
 		public string? ApiKeyHash { get; set; }
 		public DateTime? LastOnline { get; set; }

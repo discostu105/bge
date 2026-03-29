@@ -12,7 +12,7 @@ namespace BrowserGameEngine.Persistence {
 		}
 
 		public WorldStateImmutable Deserialize(byte[] blob) {
-			return JsonSerializer.Deserialize<WorldStateImmutable>(blob, GetOptions());
+			return JsonSerializer.Deserialize<WorldStateImmutable>(blob, GetOptions())!;
 		}
 
 		private static JsonSerializerOptions GetOptions() {

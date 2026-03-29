@@ -9,7 +9,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public bool IsValid(GameDef gameDef) {
 			try {
 				Verify(gameDef);
-			} catch (Exception e) {
+			} catch (Exception) {
 				return false;
 			}
 			return true;

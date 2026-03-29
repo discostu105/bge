@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.Shared {
 	public class SelectEnemyViewModel {
-		public List<PublicPlayerViewModel> AttackablePlayers { get; set; }
+		public required List<PublicPlayerViewModel> AttackablePlayers { get; set; }
 	}
 }
