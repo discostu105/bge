@@ -9,13 +9,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 	public class PlayerRepository {
 		private readonly WorldState world;
 		private readonly ScoreRepository scoreRepository;
+		private readonly AllianceRepository allianceRepository;
 
 		private IDictionary<PlayerId, Player> Players => world.Players;
 
 		public PlayerRepository(WorldState world
-			, ScoreRepository scoreRepository) {
+			, ScoreRepository scoreRepository
+			, AllianceRepository allianceRepository) {
 			this.world = world;
 			this.scoreRepository = scoreRepository;
+			this.allianceRepository = allianceRepository;
 		}
 
 		public PlayerImmutable Get(PlayerId playerId) {
@@ -61,8 +64,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private bool AreAllied(PlayerId a, PlayerId b) {
-			// BGE-33: check alliance membership when alliances are implemented
-			return false;
+			return allianceRepository.IsSameAlliance(a, b);
 		}
 
 		public bool Exists(PlayerId playerId) {

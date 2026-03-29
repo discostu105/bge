@@ -5,6 +5,16 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace BrowserGameEngine.StatefulGameServer.Commands {
+	public record CreateAllianceCommand(PlayerId PlayerId, string AllianceName, string Password) : ICommand;
+	public record JoinAllianceCommand(PlayerId PlayerId, AllianceId AllianceId, string Password) : ICommand;
+	public record AcceptMemberCommand(PlayerId PlayerId, PlayerId MemberPlayerId) : ICommand;
+	public record RejectMemberCommand(PlayerId PlayerId, PlayerId MemberPlayerId) : ICommand;
+	public record LeaveAllianceCommand(PlayerId PlayerId) : ICommand;
+	public record KickMemberCommand(PlayerId PlayerId, PlayerId MemberPlayerId) : ICommand;
+	public record VoteLeaderCommand(PlayerId PlayerId, PlayerId VoteePlayerId) : ICommand;
+	public record SetAlliancePasswordCommand(PlayerId PlayerId, string NewPassword) : ICommand;
+	public record SetAllianceMessageCommand(PlayerId PlayerId, string Message) : ICommand;
+
 	public record BuildAssetCommand(PlayerId PlayerId, AssetDefId AssetDefId) : ICommand;
 	public record BuildUnitCommand(PlayerId PlayerId, UnitDefId UnitDefId, int Count) : ICommand;
 	public record MergeUnitsCommand(PlayerId PlayerId, UnitDefId UnitDefId) : ICommand;

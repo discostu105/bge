@@ -1,0 +1,133 @@
+@page "/alliances"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Alliances</h1>
+
+@if (myStatus != null && myStatus.IsMember) {
+    <div class="alert @(myStatus.IsPending ? "alert-warning" : "alert-success")">
+        @if (myStatus.IsPending) {
+            <span>Your request to join <strong>@myStatus.AllianceName</strong> is pending leader approval.</span>
+        } else {
+            <span>You are a member of <strong><a href="alliances/@myStatus.AllianceId">@myStatus.AllianceName</a></strong>@(myStatus.IsLeader ? " (Leader)" : "").</span>
+        }
+        <button class="btn btn-sm btn-danger ms-2" @onclick="LeaveAlliance">Leave</button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <div class="alert alert-danger">@lastError</div>
+}
+
+@if (myStatus != null && !myStatus.IsMember) {
+    <div class="card mb-3">
+        <div class="card-header">Create Alliance</div>
+        <div class="card-body">
+            <div class="mb-2">
+                <input class="form-control" placeholder="Alliance name" @bind="createName" />
+            </div>
+            <div class="mb-2">
+                <input class="form-control" type="password" placeholder="Password" @bind="createPassword" />
+            </div>
+            <button class="btn btn-primary" @onclick="CreateAlliance">Create</button>
+        </div>
+    </div>
+}
+
+@if (alliances == null) {
+    <p><em>Loading...</em></p>
+} else {
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Members</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in alliances) {
+                <tr>
+                    <td><a href="alliances/@a.AllianceId">@a.Name</a></td>
+                    <td>@a.MemberCount</td>
+                    <td>@a.Created.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @if (myStatus != null && !myStatus.IsMember) {
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => StartJoin(a)">Join</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (joiningAlliance != null) {
+    <div class="card mb-3">
+        <div class="card-header">Join @joiningAlliance.Name</div>
+        <div class="card-body">
+            <input class="form-control mb-2" type="password" placeholder="Password" @bind="joinPassword" />
+            <button class="btn btn-primary" @onclick="JoinAlliance">Join</button>
+            <button class="btn btn-secondary ms-2" @onclick="() => joiningAlliance = null">Cancel</button>
+        </div>
+    </div>
+}
+
+@code {
+    private AllianceViewModel[]? alliances;
+    private MyAllianceStatusViewModel? myStatus;
+    private string createName = "";
+    private string createPassword = "";
+    private string joinPassword = "";
+    private AllianceViewModel? joiningAlliance;
+    private string? lastError;
+
+    protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+
+    private async Task Update() {
+        alliances = await Http.GetFromJsonAsync<AllianceViewModel[]>("api/alliances");
+        myStatus = await Http.GetFromJsonAsync<MyAllianceStatusViewModel>("api/alliances/my-status");
+        lastError = null;
+    }
+
+    private async Task CreateAlliance() {
+        var response = await Http.PostAsJsonAsync("api/alliances", new CreateAllianceRequest { AllianceName = createName, Password = createPassword });
+        if (response.IsSuccessStatusCode) {
+            createName = "";
+            createPassword = "";
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private void StartJoin(AllianceViewModel alliance) {
+        joiningAlliance = alliance;
+        joinPassword = "";
+        lastError = null;
+    }
+
+    private async Task JoinAlliance() {
+        if (joiningAlliance == null) return;
+        var response = await Http.PostAsJsonAsync($"api/alliances/{joiningAlliance.AllianceId}/join", new JoinAllianceRequest { Password = joinPassword });
+        if (response.IsSuccessStatusCode) {
+            joiningAlliance = null;
+            joinPassword = "";
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task LeaveAlliance() {
+        var response = await Http.DeleteAsync("api/alliances/leave");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+}
