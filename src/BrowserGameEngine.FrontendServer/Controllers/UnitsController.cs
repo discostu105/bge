@@ -41,7 +41,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public UnitsViewModel Get() {
+		public ActionResult<UnitsViewModel> Get() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			return new UnitsViewModel {
 				Units = unitRepository.GetAll(currentUserContext.PlayerId!).Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
 			};
@@ -49,6 +50,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost]
 		public async Task<ActionResult> Build([FromQuery] string unitDefId, [FromQuery] int count) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				unitRepositoryWrite.BuildUnit(new BuildUnitCommand(currentUserContext.PlayerId!, Id.UnitDef(unitDefId), count));
 				return Ok();
@@ -61,6 +63,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost]
 		public async Task<ActionResult> Merge([FromQuery] string? unitDefId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				if (string.IsNullOrEmpty(unitDefId)) {
 					unitRepositoryWrite.MergeUnits(new MergeAllUnitsCommand(currentUserContext.PlayerId!));
@@ -75,6 +78,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost]
 		public async Task<ActionResult> Split([FromQuery] Guid unitId, [FromQuery] int splitCount) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				unitRepositoryWrite.SplitUnit(new SplitUnitCommand(currentUserContext.PlayerId!, Id.UnitId(unitId), splitCount));
 				return Ok();

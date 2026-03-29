@@ -47,7 +47,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<AssetsViewModel> Get() {
+		public async Task<ActionResult<AssetsViewModel>> Get() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			return new AssetsViewModel {
 				Assets = gameDef.GetAssetsByPlayerType(playerRepository.GetPlayerType(currentUserContext.PlayerId!)).Select(x => CreateAssetViewModel(x)).ToList()
 			};
@@ -55,6 +56,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost]
 		public async Task<ActionResult> Build([FromQuery] string assetDefId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				assetRepositoryWrite.BuildAsset(new BuildAssetCommand(currentUserContext.PlayerId!, Id.AssetDef(assetDefId)));
 				return Ok();

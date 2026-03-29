@@ -32,7 +32,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<PlayerResourcesViewModel> Get() {
+		public async Task<ActionResult<PlayerResourcesViewModel>> Get() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			var playerId = currentUserContext.PlayerId!;
 			var currentLand = resourceRepository.GetAmount(playerId, Id.ResDef("land"));
 			return new PlayerResourcesViewModel {

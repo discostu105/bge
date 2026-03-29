@@ -53,7 +53,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public SelectEnemyViewModel AttackablePlayers() {
+		public ActionResult<SelectEnemyViewModel> AttackablePlayers() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			return new SelectEnemyViewModel {
 				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId!).Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository)).ToList()
 			};
@@ -61,6 +62,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost]
 		public ActionResult SendUnits([FromQuery] string unitId, [FromQuery] string enemyPlayerId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				unitRepositoryWrite.SendUnit(new SendUnitCommand(currentUserContext.PlayerId!, Id.UnitId(unitId), PlayerIdFactory.Create(enemyPlayerId)));
 				return Ok();
@@ -77,6 +79,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpGet]
 		public ActionResult<EnemyBaseViewModel> EnemyBase([FromQuery] string enemyPlayerId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				return new EnemyBaseViewModel {
 					PlayerAttackingUnits = new UnitsViewModel {
@@ -95,7 +98,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 
 		[HttpPost]
-		public BattleResultViewModel Attack([FromQuery] string enemyPlayerId) {
+		public ActionResult<BattleResultViewModel> Attack([FromQuery] string enemyPlayerId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId));
 			battleReportGenerator.GenerateReports(result);
 			return new BattleResultViewModel {

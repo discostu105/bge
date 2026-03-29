@@ -79,14 +79,21 @@ builder.Services.AddAuthentication(options => {
             context.Response.Redirect(context.RedirectUri);
             return Task.CompletedTask;
         };
-    })
-    .AddGitHub(options => {
-        options.ClientId = builder.Configuration["GitHub:ClientId"] ?? throw new InvalidOperationException("GitHub:ClientId not configured");
-        options.ClientSecret = builder.Configuration["GitHub:ClientSecret"] ?? throw new InvalidOperationException("GitHub:ClientSecret not configured");
+    });
+
+var githubClientId = builder.Configuration["GitHub:ClientId"];
+var githubClientSecret = builder.Configuration["GitHub:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(githubClientSecret)) {
+    builder.Services.AddAuthentication().AddGitHub(options => {
+        options.ClientId = githubClientId;
+        options.ClientSecret = githubClientSecret;
         options.SaveTokens = true;
         options.CorrelationCookie.SameSite = SameSiteMode.Lax;
         options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     });
+} else {
+    Log.Warning("GitHub OAuth is disabled because GitHub:ClientId or GitHub:ClientSecret is not configured.");
+}
 
 
 await ConfigureGameServices(builder.Services);
@@ -106,7 +113,10 @@ app.UseForwardedHeaders(forwardedHeadersOptions);
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
     app.UseWebAssemblyDebugging();
-    app.UseHttpsRedirection();
+    var urls = app.Configuration["ASPNETCORE_URLS"] ?? string.Empty;
+    if (urls.Contains("https://", StringComparison.OrdinalIgnoreCase)) {
+        app.UseHttpsRedirection();
+    }
 }
 app.UseExceptionHandler("/Error");
 app.MapOpenApi();

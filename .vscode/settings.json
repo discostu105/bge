@@ -1,0 +1,13 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^bash -x \\./dev\\.sh 2>&1 \\| head -30$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /home/chris/repos/my/bge/src && bash -x \\.\\./dev\\.sh 2>&1 \\| head -20$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "./dev.sh": true
+    }
+}
