@@ -377,6 +377,18 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Speed = 11,
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
 					},
+					new UnitDef {
+						Id = Id.UnitDef("missileturret"),
+						Name = "Raketenturm",
+						PlayerTypeRestriction = Id.PlayerType("terran"),
+						Cost = CostHelper.Create(("minerals", 100)),
+						Attack = 0,
+						Defense = 12,
+						Hitpoints = 135,
+						Speed = 0,
+						IsMobile = false,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("commandcenter"), Id.AssetDef("academy") }
+					},
 
 					// Zerg units
 					new UnitDef {
@@ -476,6 +488,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 24,
 						Hitpoints = 180,
 						Speed = 0,
+						IsMobile = false,
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") }
 					},
 
@@ -588,6 +601,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 20,
 						Hitpoints = 200,
 						Speed = 0,
+						IsMobile = false,
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") }
 					}
 				}

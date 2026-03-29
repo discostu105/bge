@@ -13,6 +13,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }
 		public int Speed { get; init; }
+		public bool IsMobile { get; init; } = true;
 		public List<AssetDefId> Prerequisites { get; init; } = new List<AssetDefId>();
 
 		public override string ToString() => Id.Id;

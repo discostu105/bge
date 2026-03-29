@@ -118,6 +118,18 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Hitpoints = 60,
 						Speed = 7,
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset3"), Id.AssetDef("asset2"), Id.AssetDef("asset1") }
+					},
+					new UnitDef {
+						Id = Id.UnitDef("staticunit1"),
+						Name = "staticunit1",
+						PlayerTypeRestriction = Id.PlayerType("type1"),
+						Cost = CostHelper.Create(("res1", 100)),
+						Attack = 0,
+						Defense = 10,
+						Hitpoints = 100,
+						Speed = 0,
+						IsMobile = false,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("asset1") }
 					}
 				}
 			};

@@ -65,7 +65,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var g = new TestGame();
 			Assert.Collection(g.GameDef.GetUnitsForAsset(Id.AssetDef("asset1")).Select(x => x.Id.Id),
 				item => Assert.Equal("unit1", item),
-				item => Assert.Equal("unit2", item)
+				item => Assert.Equal("unit2", item),
+				item => Assert.Equal("staticunit1", item)
 			);
 			Assert.Collection(g.GameDef.GetUnitsForAsset(Id.AssetDef("asset2")).Select(x => x.Id.Id),
 				item => Assert.Equal("unit3", item)
@@ -174,6 +175,34 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				g.UnitRepositoryWrite.SplitUnit(new Commands.SplitUnitCommand(g.Player1,
 					g.UnitRepository.GetByUnitDefId(g.Player1, Id.UnitDef("unit2")).Single().UnitId, 999))
 			);
+		}
+
+		[Fact]
+		public void SendUnit_WithImmobileUnit_Throws() {
+			var g = new TestGame(playerCount: 2);
+			var player1 = PlayerIdFactory.Create("player0");
+			var player2 = PlayerIdFactory.Create("player1");
+
+			g.UnitRepositoryWrite.GrantUnits(player1, Id.UnitDef("staticunit1"), 5);
+			var staticUnit = g.UnitRepository.GetByUnitDefId(player1, Id.UnitDef("staticunit1")).Single();
+
+			Assert.Throws<UnitImmobileException>(() =>
+				g.UnitRepositoryWrite.SendUnit(new Commands.SendUnitCommand(player1, staticUnit.UnitId, player2))
+			);
+		}
+
+		[Fact]
+		public void SendUnit_WithMobileUnit_Succeeds() {
+			var g = new TestGame(playerCount: 2);
+			var player1 = PlayerIdFactory.Create("player0");
+			var player2 = PlayerIdFactory.Create("player1");
+
+			var mobileUnit = g.UnitRepository.GetByUnitDefId(player1, Id.UnitDef("unit2")).Single();
+
+			g.UnitRepositoryWrite.SendUnit(new Commands.SendUnitCommand(player1, mobileUnit.UnitId, player2));
+
+			var sentUnit = g.UnitRepository.GetByUnitDefId(player1, Id.UnitDef("unit2")).Single();
+			Assert.Equal(player2, sentUnit.Position);
 		}
 	}
 }

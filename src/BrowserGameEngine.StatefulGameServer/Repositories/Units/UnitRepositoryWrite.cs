@@ -118,6 +118,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				var unit = Unit(command.PlayerId, command.UnitId);
 				if (unit == null) throw new UnitNotFoundException(command.UnitId);
+				if (!gameDef.GetUnitDef(unit.UnitDefId)!.IsMobile) throw new UnitImmobileException(command.UnitId);
 				if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot move unit.");
 				world.ValidatePlayer(command.EnemyPlayerId);
 				if (!playerRepository.IsPlayerAttackable(command.PlayerId, command.EnemyPlayerId)) throw new PlayerNotAttackableException(command.EnemyPlayerId);
