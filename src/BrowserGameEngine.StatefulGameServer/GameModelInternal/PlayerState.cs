@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int DefenseUpgradeLevel { get; set; }
 		public int UpgradeResearchTimer { get; set; }
 		public UpgradeType UpgradeBeingResearched { get; set; }
+		public List<BuildQueueEntry> BuildQueue { get; set; } = new List<BuildQueueEntry>();
 	}
 
 	internal static class PlayerStateExtensions {
@@ -36,7 +37,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				AttackUpgradeLevel: playerState.AttackUpgradeLevel,
 				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
 				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
-				UpgradeBeingResearched: playerState.UpgradeBeingResearched
+				UpgradeBeingResearched: playerState.UpgradeBeingResearched,
+				BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList()
 			);
 		}
 
@@ -54,7 +56,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				AttackUpgradeLevel = playerStateImmutable.AttackUpgradeLevel,
 				DefenseUpgradeLevel = playerStateImmutable.DefenseUpgradeLevel,
 				UpgradeResearchTimer = playerStateImmutable.UpgradeResearchTimer,
-				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched
+				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched,
+				BuildQueue = (playerStateImmutable.BuildQueue ?? new List<BuildQueueEntryImmutable>())
+					.Select(x => x.ToMutable()).ToList()
 			};
 		}
 	}

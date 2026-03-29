@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
@@ -31,6 +31,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public UnitRepositoryWrite UnitRepositoryWrite { get; }
 		public MessageRepository MessageRepository { get; }
 		public MessageRepositoryWrite MessageRepositoryWrite { get; }
+		public BuildQueueRepository BuildQueueRepository { get; }
+		public BuildQueueRepositoryWrite BuildQueueRepositoryWrite { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
@@ -60,6 +62,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), World, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
 			MessageRepository = new MessageRepository(World);
 			MessageRepositoryWrite = new MessageRepositoryWrite(World, TimeProvider.System);
+			BuildQueueRepository = new BuildQueueRepository(World);
+			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), World, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));

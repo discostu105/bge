@@ -23,5 +23,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return world.GetPlayer(playerId).State.Messages
 				.Any(m => m.Id == messageId);
 		}
+
+		public int GetUnreadCount(PlayerId playerId) {
+			return world.GetPlayer(playerId).State.Messages.Count(x => !x.IsRead);
+		}
 	}
 }

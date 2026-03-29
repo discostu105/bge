@@ -1,0 +1,61 @@
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h3>Bauaufträge</h3>
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <span class="error">@lastError</span>
+}
+
+@if (model == null) {
+    <p><em>Lade...</em></p>
+} else if (!model.Entries.Any()) {
+    <p>Keine Bauaufträge in der Warteschlange.</p>
+} else {
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Priorität</th>
+                <th>Typ</th>
+                <th>Name</th>
+                <th>Anzahl</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in model.Entries.OrderBy(x => x.Priority)) {
+                <tr>
+                    <td>@entry.Priority</td>
+                    <td>@(entry.Type == "asset" ? "Gebäude" : "Einheit")</td>
+                    <td>@entry.Name</td>
+                    <td>@entry.Count</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveEntry(entry.Id)">Entfernen</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private BuildQueueViewModel? model;
+    private string? lastError;
+
+    protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+
+    public async Task Update() {
+        model = await Http.GetFromJsonAsync<BuildQueueViewModel>("api/buildqueue");
+    }
+
+    private async Task RemoveEntry(Guid entryId) {
+        var response = await Http.DeleteAsync($"api/buildqueue/remove?entryId={entryId}");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+}

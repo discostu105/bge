@@ -1,30 +1,55 @@
-﻿@inject HttpClient Http
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject BrowserGameEngine.BlazorClient.Code.RefreshService RefreshService
+@implements IDisposable
 
-<span>Resourcen</span>
-@if (model != null) {
-    <div>
-        <span>@model.PrimaryResource.Cost.Single().Key</span>: <span>@model.PrimaryResource.Cost.Single().Value</span>
-    </div>
-
-    <div>
-
-        @foreach (var res in model.SecondaryResources.Cost) {
-            <div>
-                <span>@res.Key</span>: <span>@res.Value</span>
-            </div>
+@if (resources != null) {
+    <div class="d-flex flex-wrap gap-3 align-items-center small text-muted">
+        <span><strong>@resources.PrimaryResource.Cost.Single().Key</strong>: @resources.PrimaryResource.Cost.Single().Value</span>
+        @foreach (var res in resources.SecondaryResources.Cost) {
+            <span><strong>@res.Key</strong>: @res.Value</span>
+        }
+        @if (tickInfo != null) {
+            <span><strong>Server:</strong> @tickInfo.ServerTime.ToString("HH:mm:ss") UTC</span>
+            <span><strong>Next tick:</strong> @FormatCountdown(tickInfo.NextTickAt)</span>
+            @if (tickInfo.UnreadMessageCount > 0) {
+                <span class="badge bg-danger">@tickInfo.UnreadMessageCount unread</span>
+            }
         }
     </div>
 }
 
 @code {
-    public BrowserGameEngine.Shared.PlayerResourcesViewModel? model { get; set; }
+    private PlayerResourcesViewModel? resources;
+    private TickInfoViewModel? tickInfo;
+    private System.Threading.Timer? countdownTimer;
 
     protected override async Task OnInitializedAsync() {
+        RefreshService.RefreshRequested += OnRefresh;
         await Update();
+        countdownTimer = new System.Threading.Timer(async _ => {
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private async void OnRefresh() {
+        await Update();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task Update() {
-        model = await Http.GetFromJsonAsync<BrowserGameEngine.Shared.PlayerResourcesViewModel>("api/resources");
+        resources = await Http.GetFromJsonAsync<PlayerResourcesViewModel>("api/resources");
+        tickInfo = await Http.GetFromJsonAsync<TickInfoViewModel>("api/game/tick-info");
     }
 
+    private string FormatCountdown(DateTime nextTickAt) {
+        var remaining = nextTickAt - DateTime.UtcNow;
+        if (remaining <= TimeSpan.Zero) return "now";
+        return $"{(int)remaining.TotalSeconds}s";
+    }
+
+    public void Dispose() {
+        RefreshService.RefreshRequested -= OnRefresh;
+        countdownTimer?.Dispose();
+    }
 }

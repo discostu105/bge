@@ -1,4 +1,4 @@
-﻿@using BrowserGameEngine.Shared
+@using BrowserGameEngine.Shared
 @using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject NavigationManager NavManager
@@ -16,12 +16,19 @@
             <option value="@x.Id">@x.Name</option>
         }
     </InputSelect>
-    <button type="submit">Submit</button>
+    <button type="submit">Bauen</button>
+    <button type="button" @onclick="QueueUnit">In Warteschlange</button>
 </EditForm>
 
 @code {
     [Parameter]
     public required List<UnitDefinitionViewModel> AvailableUnits { get; set; }
+
+    [Parameter]
+    public _BuildQueue? BuildQueue { get; set; }
+
+    [Parameter]
+    public EventCallback OnQueueChanged { get; set; }
 
     private BuildUnitFormModel model = new BuildUnitFormModel();
     private string? lastError;
@@ -37,6 +44,17 @@
         } else {
             var error = await response.Content.ReadAsStringAsync();
             lastError = error;
+        }
+    }
+
+    private async Task QueueUnit() {
+        var request = new AddToQueueRequest { Type = "unit", DefId = model.UnitDefId, Count = model.Count };
+        var response = await Http.PostAsJsonAsync("api/buildqueue/add", request);
+        if (response.IsSuccessStatusCode) {
+            if (BuildQueue != null) await BuildQueue.Update();
+            await OnQueueChanged.InvokeAsync();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
         }
     }
 

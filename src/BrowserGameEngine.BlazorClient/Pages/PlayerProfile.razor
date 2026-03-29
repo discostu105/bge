@@ -7,6 +7,12 @@
 @if (model == null) {
     <p><em>Loading...</em></p>
 } else {
+    <div class="mb-3">
+        <span>@(model.IsOnline ? "🟢 Online" : "⚫ Offline")</span>
+        @if (model.LastOnline.HasValue) {
+            <span class="text-muted ms-2">Last seen: @model.LastOnline.Value.ToLocalTime().ToString("g")</span>
+        }
+    </div>
     <div>
         <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />

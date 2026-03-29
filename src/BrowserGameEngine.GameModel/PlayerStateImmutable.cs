@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,6 +17,7 @@ namespace BrowserGameEngine.GameModel {
 		int AttackUpgradeLevel = 0,
 		int DefenseUpgradeLevel = 0,
 		int UpgradeResearchTimer = 0,
-		UpgradeType UpgradeBeingResearched = UpgradeType.None
+		UpgradeType UpgradeBeingResearched = UpgradeType.None,
+		IList<BuildQueueEntryImmutable>? BuildQueue = null
 	);
 }
