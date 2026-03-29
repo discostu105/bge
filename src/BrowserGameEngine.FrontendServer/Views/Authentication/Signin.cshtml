@@ -5,51 +5,262 @@
 @model AuthenticationScheme[]
 @inject IOptions<BgeOptions> options
 @inject PlayerRepository playerRepository
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Sign In — Browser Game Engine</title>
+	<link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+	<style>
+		* { box-sizing: border-box; }
 
-@if (options.Value.DevAuth) {
-    var players = playerRepository.GetAll().Select(p => p.PlayerId.Id).OrderBy(x => x).ToList();
-    <div class="jumbotron">
-        <h3>Dev Login</h3>
-        @if (players.Any()) {
-            <p class="text-muted">Click to log in as an existing player:</p>
-            @foreach (var playerId in players) {
-                <form action="/signindev" method="post" style="display:inline">
-                    <input type="hidden" name="PlayerId" value="@playerId" />
-                    <button class="btn btn-outline-primary m-1" type="submit">@playerId</button>
-                </form>
-            }
-            <hr />
-        }
-        <p class="text-muted">Or create and log in as a new player:</p>
-        <form action="/signindev" method="post" class="form-inline">
-            <input type="text" name="PlayerId" class="form-control mr-2" placeholder="New player ID" />
-            <button class="btn btn-success" type="submit">Create &amp; Login</button>
-        </form>
-    </div>
-}
+		body {
+			margin: 0;
+			min-height: 100vh;
+			background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+		}
 
-<div class="jumbotron">
-    <h1>Sign In</h1>
-    <p class="lead text-left">Sign in with GitHub to play:</p>
+		.signin-wrapper {
+			width: 100%;
+			max-width: 400px;
+			padding: 1.5rem;
+		}
 
-    @foreach (var scheme in Model.OrderBy(p => p.DisplayName)) {
-        <form action="/signin" method="post">
-            <input type="hidden" name="Provider" value="@scheme.Name" />
-            <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+		.signin-logo {
+			text-align: center;
+			margin-bottom: 1.5rem;
+		}
 
-            <button class="btn btn-lg btn-dark m-1" type="submit">
-                Sign in with @scheme.DisplayName
-            </button>
-        </form>
-    }
-</div>
+		.signin-logo svg {
+			width: 48px;
+			height: 48px;
+			fill: #58a6ff;
+			margin-bottom: 0.75rem;
+		}
 
-<div class="jumbotron">
-    @if (User?.Identity?.IsAuthenticated ?? false) {
-        <h1>Welcome, @User.Identity.Name</h1>
-        <a class="btn btn-lg btn-danger" href="/signout?returnUrl=%2F">Sign out</a>
-    } else {
-        <h1>Welcome, anonymous</h1>
-        <a class="btn btn-lg btn-success" href="/signin?returnUrl=%2F">Sign in</a>
-    }
-</div>
+		.signin-logo h1 {
+			font-size: 1.25rem;
+			font-weight: 600;
+			color: #e6edf3;
+			margin: 0;
+			letter-spacing: -0.3px;
+		}
+
+		.signin-logo p {
+			font-size: 0.85rem;
+			color: #8b949e;
+			margin: 0.25rem 0 0;
+		}
+
+		.signin-card {
+			background: #161b22;
+			border: 1px solid #30363d;
+			border-radius: 10px;
+			padding: 1.75rem;
+		}
+
+		.signin-card h2 {
+			font-size: 1rem;
+			font-weight: 600;
+			color: #e6edf3;
+			margin: 0 0 1.25rem;
+			text-align: center;
+		}
+
+		.btn-github {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			width: 100%;
+			padding: 0.65rem 1rem;
+			background-color: #21262d;
+			color: #e6edf3;
+			border: 1px solid #30363d;
+			border-radius: 6px;
+			font-size: 0.9rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: background-color 0.15s, border-color 0.15s;
+			margin-bottom: 0.75rem;
+		}
+
+		.btn-github:hover {
+			background-color: #30363d;
+			border-color: #8b949e;
+			color: #e6edf3;
+		}
+
+		.btn-github svg {
+			width: 20px;
+			height: 20px;
+			fill: #e6edf3;
+			flex-shrink: 0;
+		}
+
+		.signin-footer {
+			text-align: center;
+			margin-top: 1rem;
+			font-size: 0.78rem;
+			color: #8b949e;
+		}
+
+		/* Dev auth section */
+		.dev-auth {
+			margin-top: 1.25rem;
+			border: 1px solid #30363d;
+			border-radius: 6px;
+			overflow: hidden;
+		}
+
+		.dev-auth summary {
+			padding: 0.6rem 0.85rem;
+			font-size: 0.78rem;
+			color: #8b949e;
+			cursor: pointer;
+			user-select: none;
+			background: #0d1117;
+			list-style: none;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.dev-auth summary::-webkit-details-marker { display: none; }
+
+		.dev-auth summary::before {
+			content: '▶';
+			font-size: 0.6rem;
+			display: inline-block;
+			transition: transform 0.2s;
+		}
+
+		.dev-auth[open] summary::before {
+			transform: rotate(90deg);
+		}
+
+		.dev-auth-body {
+			padding: 0.85rem;
+			background: #0d1117;
+			border-top: 1px solid #30363d;
+		}
+
+		.dev-player-buttons {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.4rem;
+			margin-bottom: 0.75rem;
+		}
+
+		.btn-dev-player {
+			padding: 0.3rem 0.65rem;
+			font-size: 0.75rem;
+			background: #21262d;
+			color: #e6edf3;
+			border: 1px solid #30363d;
+			border-radius: 4px;
+			cursor: pointer;
+			transition: background-color 0.15s;
+		}
+
+		.btn-dev-player:hover { background: #30363d; }
+
+		.dev-auth-new {
+			display: flex;
+			gap: 0.5rem;
+		}
+
+		.dev-auth-new input {
+			flex: 1;
+			padding: 0.35rem 0.6rem;
+			font-size: 0.8rem;
+			background: #161b22;
+			color: #e6edf3;
+			border: 1px solid #30363d;
+			border-radius: 4px;
+		}
+
+		.dev-auth-new input::placeholder { color: #8b949e; }
+
+		.dev-auth-new input:focus {
+			outline: none;
+			border-color: #58a6ff;
+			box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+		}
+
+		.btn-dev-create {
+			padding: 0.35rem 0.75rem;
+			font-size: 0.8rem;
+			background: #238636;
+			color: #fff;
+			border: 1px solid #2ea043;
+			border-radius: 4px;
+			cursor: pointer;
+			white-space: nowrap;
+			transition: background-color 0.15s;
+		}
+
+		.btn-dev-create:hover { background: #2ea043; }
+	</style>
+</head>
+<body>
+	<div class="signin-wrapper">
+		<div class="signin-logo">
+			<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<path d="M7.97 16L5 19.03A2 2 0 0 1 2 17.56V17l2.5-9.5A5 5 0 0 1 9.37 4h5.26a5 5 0 0 1 4.87 3.5L22 17v.56a2 2 0 0 1-3 1.47L16.03 16H7.97zM6 10h2v2h2v-2h2V8h-2V6h-2v2H6v2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm2-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+			</svg>
+			<h1>Browser Game Engine</h1>
+			<p>Strategy. Build. Conquer.</p>
+		</div>
+
+		<div class="signin-card">
+			<h2>Sign in to your account</h2>
+
+			@foreach (var scheme in Model.OrderBy(p => p.DisplayName)) {
+				<form action="/signin" method="post">
+					<input type="hidden" name="Provider" value="@scheme.Name" />
+					<input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+					<button class="btn-github" type="submit">
+						<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+						</svg>
+						Sign in with @scheme.DisplayName
+					</button>
+				</form>
+			}
+
+			<div class="signin-footer">
+				By signing in you agree to play fair and have fun.
+			</div>
+		</div>
+
+		@if (options.Value.DevAuth) {
+			var players = playerRepository.GetAll().Select(p => p.PlayerId.Id).OrderBy(x => x).ToList();
+			<details class="dev-auth">
+				<summary>Dev login</summary>
+				<div class="dev-auth-body">
+					@if (players.Any()) {
+						<div class="dev-player-buttons">
+							@foreach (var playerId in players) {
+								<form action="/signindev" method="post" style="display:contents">
+									<input type="hidden" name="PlayerId" value="@playerId" />
+									<button class="btn-dev-player" type="submit">@playerId</button>
+								</form>
+							}
+						</div>
+					}
+					<form action="/signindev" method="post" class="dev-auth-new">
+						<input type="text" name="PlayerId" placeholder="New player ID" />
+						<button class="btn-dev-create" type="submit">Create &amp; Login</button>
+					</form>
+				</div>
+			</details>
+		}
+	</div>
+</body>
+</html>
