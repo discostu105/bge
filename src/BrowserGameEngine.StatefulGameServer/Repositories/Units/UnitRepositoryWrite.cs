@@ -120,7 +120,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				if (unit == null) throw new UnitNotFoundException(command.UnitId);
 				if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot move unit.");
 				world.ValidatePlayer(command.EnemyPlayerId);
-				if (!playerRepository.IsPlayerAttackable(command.PlayerId, command.EnemyPlayerId)) throw new PlayerNotAttackableException(command.EnemyPlayerId);
+				var attackReason = playerRepository.GetIneligibilityReason(command.PlayerId, command.EnemyPlayerId);
+				if (attackReason != null) throw new PlayerNotAttackableException(command.EnemyPlayerId, attackReason.Value);
 
 				unit.Position = command.EnemyPlayerId;
 			}
