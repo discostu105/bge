@@ -59,6 +59,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return BadRequest(e.Message);
 			} catch (UnitNotFoundException e) {
 				return BadRequest(e.Message);
+			} catch (UnitImmobileException e) {
+				return BadRequest(e.Message);
 			} catch (UnitNotHomeException e) {
 				return BadRequest(e.Message);
 			}
