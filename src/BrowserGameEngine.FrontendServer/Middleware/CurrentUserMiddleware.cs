@@ -38,14 +38,11 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 
 				if (githubIdClaim != null) {
 					var githubId = githubIdClaim.Value;
-					var user = userRepository.GetByGithubId(githubId);
-					if (user == null) {
-						user = userRepositoryWrite.CreateUser(
-							githubId: githubId,
-							githubLogin: githubLoginClaim?.Value ?? githubId,
-							displayName: displayNameClaim?.Value ?? githubId
-						);
-					}
+					var user = userRepositoryWrite.GetOrCreateUser(
+						githubId: githubId,
+						githubLogin: githubLoginClaim?.Value ?? githubId,
+						displayName: displayNameClaim?.Value ?? githubId
+					);
 
 					// Select active player: first player belonging to this user
 					var players = userRepository.GetPlayersForUser(user.UserId).ToList();
