@@ -122,7 +122,13 @@ app.UseExceptionHandler("/Error");
 app.MapOpenApi();
 
 app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions {
+	OnPrepareResponse = ctx => {
+		if (string.Equals(ctx.File.Name, "index.html", StringComparison.OrdinalIgnoreCase)) {
+			ctx.Context.Response.Headers.CacheControl = "no-store";
+		}
+	}
+});
 
 app.UseRouting();
 app.UseHttpMetrics();
@@ -147,7 +153,11 @@ app.MapDefaultControllerRoute();
 app.MapRazorPages();
 app.MapControllers();
 app.MapMetrics();
-app.MapFallbackToFile("index.html");
+app.MapFallbackToFile("index.html", new StaticFileOptions {
+	OnPrepareResponse = ctx => {
+		ctx.Context.Response.Headers.CacheControl = "no-store";
+	}
+});
 
 app.Run();
 
