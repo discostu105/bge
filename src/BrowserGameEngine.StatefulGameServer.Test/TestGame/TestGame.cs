@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
@@ -29,6 +29,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public IBattleBehavior BattleBehavior { get; }
 		public UpgradeRepository UpgradeRepository { get; }
 		public UnitRepositoryWrite UnitRepositoryWrite { get; }
+		public BuildQueueRepository BuildQueueRepository { get; }
+		public BuildQueueRepositoryWrite BuildQueueRepositoryWrite { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
@@ -56,6 +58,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
 			UpgradeRepository = new UpgradeRepository(World);
 			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), World, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
+			BuildQueueRepository = new BuildQueueRepository(World);
+			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), World, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
