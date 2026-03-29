@@ -31,12 +31,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public IEnumerable<PlayerImmutable> GetAttackablePlayers(PlayerId playerId) {
-			var playerScore = scoreRepository.GetScore(playerId);
-			var minScore = GetMinScore(playerScore);
 			return Players
-				.Where(x => scoreRepository.GetScore(x.Key) >= minScore)
-				.Where(x => x.Key != playerId)
-				// TODO: consider alliance members here
+				.Where(x => GetIneligibilityReason(playerId, x.Key) == null)
 				.Select(x => x.Value.ToImmutable());
 		}
 
@@ -45,13 +41,28 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public bool IsPlayerAttackable(PlayerId attacker, PlayerId defender) {
+			return GetIneligibilityReason(attacker, defender) == null;
+		}
+
+		public AttackIneligibilityReason? GetIneligibilityReason(PlayerId attacker, PlayerId defender) {
+			if (attacker == defender) return AttackIneligibilityReason.SelfAttack;
+			if (IsProtected(attacker)) return AttackIneligibilityReason.AttackerProtected;
+			if (IsProtected(defender)) return AttackIneligibilityReason.DefenderProtected;
+			if (AreAllied(attacker, defender)) return AttackIneligibilityReason.SameAlliance;
 			var attackerScore = scoreRepository.GetScore(attacker);
 			var defenderScore = scoreRepository.GetScore(defender);
-			var minScore = GetMinScore(attackerScore);
-			return attacker != defender
-				&& defenderScore >= minScore
-				// TODO: consider alliance members
-				;
+			if (defenderScore < GetMinScore(attackerScore)) return AttackIneligibilityReason.LandTooSmall;
+			return null;
+		}
+
+		private bool IsProtected(PlayerId id) {
+			// BGE-30: check player.State.Protection > 0 when protection field is added
+			return false;
+		}
+
+		private bool AreAllied(PlayerId a, PlayerId b) {
+			// BGE-33: check alliance membership when alliances are implemented
+			return false;
 		}
 
 		public bool Exists(PlayerId playerId) {
