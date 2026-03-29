@@ -1,0 +1,90 @@
+@page "/upgrades"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Forschung</h1>
+
+<div class="container">
+
+    <_PlayerResources />
+
+    @if (model == null) {
+        <p><em>Lade...</em></p>
+    } else {
+        if (!string.IsNullOrEmpty(lastError)) {
+            <span class="error">@lastError</span>
+        }
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Angriffs-Upgrades</h5>
+                        <p>Level: @model.AttackUpgradeLevel / @model.MaxUpgradeLevel</p>
+
+                        @if (model.UpgradeBeingResearched == "Attack") {
+                            <p>Wird erforscht... (@model.UpgradeResearchTimer Runden verbleibend)</p>
+                        } else if (model.AttackUpgradeLevel >= model.MaxUpgradeLevel) {
+                            <p>Maximales Level erreicht!</p>
+                        } else if (model.UpgradeBeingResearched != "None") {
+                            <p>Eine andere Forschung läuft gerade.</p>
+                        } else {
+                            <div>Kosten: <_Cost Cost="@model.NextAttackUpgradeCost" /></div>
+                            <button class="btn btn-danger mt-2" @onclick="ResearchAttack">
+                                Angriffs-Upgrade erforschen (Level @(model.AttackUpgradeLevel + 1))
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Verteidigungs-Upgrades</h5>
+                        <p>Level: @model.DefenseUpgradeLevel / @model.MaxUpgradeLevel</p>
+
+                        @if (model.UpgradeBeingResearched == "Defense") {
+                            <p>Wird erforscht... (@model.UpgradeResearchTimer Runden verbleibend)</p>
+                        } else if (model.DefenseUpgradeLevel >= model.MaxUpgradeLevel) {
+                            <p>Maximales Level erreicht!</p>
+                        } else if (model.UpgradeBeingResearched != "None") {
+                            <p>Eine andere Forschung läuft gerade.</p>
+                        } else {
+                            <div>Kosten: <_Cost Cost="@model.NextDefenseUpgradeCost" /></div>
+                            <button class="btn btn-primary mt-2" @onclick="ResearchDefense">
+                                Verteidigungs-Upgrade erforschen (Level @(model.DefenseUpgradeLevel + 1))
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private UpgradesViewModel? model;
+    private string? lastError;
+
+    protected override async Task OnInitializedAsync() {
+        await Update();
+    }
+
+    private async Task ResearchAttack() => await Research("Attack");
+    private async Task ResearchDefense() => await Research("Defense");
+
+    private async Task Research(string upgradeType) {
+        lastError = null;
+        var response = await Http.PostAsJsonAsync($"api/upgrades/research?upgradeType={upgradeType}", "");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task Update() {
+        model = await Http.GetFromJsonAsync<UpgradesViewModel>("api/upgrades");
+    }
+}

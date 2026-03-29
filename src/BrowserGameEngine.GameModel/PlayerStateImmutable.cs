@@ -12,6 +12,10 @@ namespace BrowserGameEngine.GameModel {
 		List<UnitImmutable> Units,
 		int MineralWorkers = 0,
 		int GasWorkers = 0,
-		IList<MessageImmutable>? Messages = null
+		IList<MessageImmutable>? Messages = null,
+		int AttackUpgradeLevel = 0,
+		int DefenseUpgradeLevel = 0,
+		int UpgradeResearchTimer = 0,
+		UpgradeType UpgradeBeingResearched = UpgradeType.None
 	);
 }
