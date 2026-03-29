@@ -49,7 +49,7 @@ builder.Services.AddOpenTelemetry()
     );
 
 builder.Services.AddRateLimiter(options => {
-    options.AddPolicy("api-key", context => {
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context => {
         var apiKeyHash = context.Items["ApiKeyHash"] as string;
         var partitionKey = apiKeyHash ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions {
@@ -116,7 +116,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseHttpMetrics();
-app.UseRateLimiter();
 
 IDisposable collector = DotNetRuntimeStatsBuilder
     .Customize()
@@ -129,6 +128,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder
 
 app.UseAuthentication();
 app.UseMiddleware<BearerTokenMiddleware>();
+app.UseRateLimiter();
 app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
