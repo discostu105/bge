@@ -13,7 +13,8 @@ These features exist and are functional in the current codebase.
 | 1.1 | Tick-based game world | Per-player tick engine with pluggable modules. 30s ticks (configurable). |
 | 1.2 | Race selection at registration | Terran/Zerg/Protoss choice, permanent. Terran fully defined; Zerg & Protoss partially defined. |
 | 2.1 | Two resource types (Minerals, Gas) | Tracked per player. Land is the score resource. |
-| 2.3 | Resource income per round | `ResourceGrowthSco` tick module. Current formula is a simple stub (workers x 1.2), not the full spec formula. |
+| 2.3 | Resource income per round | `ResourceGrowthSco` tick module. Full efficiency formula implemented: `efficiency = clamp(land / (workers * factor), 0.2, 100)`. |
+| 2.5 | Emergency respawn | `ResourceGrowthSco` tick module. If 0 workers and low resources, auto-grants 1 mineral + 1 gas worker. |
 | 3.1-3.2 | Building construction | `BuildAssetCommand` with resource cost, build time countdown, prerequisites. Terran buildings defined. |
 | 3.3 | Tech tree prerequisites | Prerequisite chain enforced before building. |
 | 4.1 | Instant unit training | `BuildUnitCommand` — costs resources, requires building, no build time. |
@@ -39,8 +40,6 @@ These features are specified, not yet implemented, and slot cleanly into the exi
 | Spec Section | Feature | What to Build |
 |---|---|---|
 | 2.2 | Worker roles (mineral / gas / idle) | Add `MineralWorkers` and `GasWorkers` fields to player state. Build a worker-assignment command. Workers are already units; this adds role tracking. |
-| 2.3 | Full resource income formula | Replace the `ResourceGrowthSco` stub with the real formula: efficiency = land / (workers * factor), clamped. This is the heart of the economic tension. |
-| 2.5 | Emergency respawn | If a player has 0 workers and low resources, auto-grant 1 mineral + 1 gas worker. Add to tick processing. |
 | 6.4 | Land transfer on victory | After `BattleBehaviorScoOriginal` resolves, calculate percent from remaining attacker damage, transfer land. Also capture/destroy defender workers. |
 | 4.1 | Static defense structures | Missile Turret / Sunken Colony / Photon Cannon: units with `is_mobile = false`, 0 attack, participate in defense only. The unit framework supports this; just needs a flag and combat filter. |
 | 4.1 | Troop return timer | `UnitReturn` tick module exists as a stub. Implement: after battle, surviving attackers get `return_timer = speed`, decremented each tick, unavailable for defense until home. |
