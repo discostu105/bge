@@ -9,7 +9,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<UnitDef> Units { get; init; } = new List<UnitDef>();
 		public IEnumerable<AssetDef> Assets { get; init; } = new List<AssetDef>();
 		public IEnumerable<ResourceDef> Resources { get; init; } = new List<ResourceDef>();
-		public ResourceDefId ScoreResource { get; init; } // player ranking is based on this resource
+		public ResourceDefId ScoreResource { get; init; } = null!; // player ranking is based on this resource
 		public IEnumerable<GameTickModuleDef> GameTickModules { get; init; } = new List<GameTickModuleDef>();
 		public TimeSpan TickDuration { get; init; } = TimeSpan.FromMinutes(20);
 
@@ -37,7 +37,7 @@ namespace BrowserGameEngine.GameDefinition {
 		}
 
 		public static IEnumerable<string> GetAssetNames(this GameDef gameDef, IList<AssetDefId> assetDefIds) {
-			return assetDefIds.Select(x => gameDef.GetAssetDef(x)).Where(x => x != null).Select(x => x.Name);
+			return assetDefIds.Select(x => gameDef.GetAssetDef(x)).Where(x => x != null).Select(x => x!.Name);
 		}
 
 		// The first asset in prerequisites is the primary asset, where the unit can be built

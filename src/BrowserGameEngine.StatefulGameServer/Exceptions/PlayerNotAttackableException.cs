@@ -1,10 +1,7 @@
-﻿using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
-using System.Runtime.Serialization;
 
 namespace BrowserGameEngine.StatefulGameServer {
-	[Serializable]
 	public class PlayerNotAttackableException : Exception {
 		public AttackIneligibilityReason? Reason { get; }
 
@@ -13,9 +10,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public PlayerNotAttackableException(PlayerId playerId, AttackIneligibilityReason reason) : base(BuildMessage(playerId, reason)) {
 			Reason = reason;
-		}
-
-		protected PlayerNotAttackableException(SerializationInfo info, StreamingContext context) : base(info, context) {
 		}
 
 		private static string BuildMessage(PlayerId playerId, AttackIneligibilityReason reason) {

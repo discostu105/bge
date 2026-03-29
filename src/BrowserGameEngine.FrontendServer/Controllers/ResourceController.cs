@@ -33,7 +33,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpGet]
 		public async Task<PlayerResourcesViewModel> Get() {
-			var playerId = currentUserContext.PlayerId;
+			var playerId = currentUserContext.PlayerId!;
 			var currentLand = resourceRepository.GetAmount(playerId, Id.ResDef("land"));
 			return new PlayerResourcesViewModel {
 				PrimaryResource = CostViewModel.Create(resourceRepository.GetPrimaryResource(playerId)),

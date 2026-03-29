@@ -31,7 +31,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult Colonize([FromQuery] int amount) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
-				colonizeRepositoryWrite.Colonize(new ColonizeCommand(currentUserContext.PlayerId, amount));
+				colonizeRepositoryWrite.Colonize(new ColonizeCommand(currentUserContext.PlayerId!, amount));
 				return Ok();
 			} catch (ArgumentOutOfRangeException e) {
 				return BadRequest(e.Message);

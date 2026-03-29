@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace BrowserGameEngine.Shared {
 	public record CostViewModel {
-		public IDictionary<string, decimal> Cost { get; init; }
+		public required IDictionary<string, decimal> Cost { get; init; }
 
 		public static CostViewModel Create(Cost cost) {
 			return new CostViewModel {

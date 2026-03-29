@@ -132,15 +132,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 	}
 
 	internal class BattleState {
-		public List<BtlUnit> AttackingUnits { get; set; }
-		public List<BtlUnit> DefendingUnits { get; set; }
+		public required List<BtlUnit> AttackingUnits { get; set; }
+		public required List<BtlUnit> DefendingUnits { get; set; }
 
 		public List<UnitCount> AttackingUnitsDestroyed { get; set; } = new();
 		public List<UnitCount> DefendingUnitsDestroyed { get; set; } = new();
 	}
 
 	public class BtlUnit {
-		public UnitDefId UnitDefId { get; set; }
+		public required UnitDefId UnitDefId { get; set; }
 		public int Count { get; set; }
 		public int Hitpoints { get; set; }
 		public int Attack { get; set; }

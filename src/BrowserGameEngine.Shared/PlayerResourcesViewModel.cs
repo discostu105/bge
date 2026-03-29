@@ -6,8 +6,8 @@ using System.Text;
 
 namespace BrowserGameEngine.Shared {
 	public record PlayerResourcesViewModel {
-		public CostViewModel PrimaryResource { get; init; }
-		public CostViewModel SecondaryResources { get; init; }
+		public required CostViewModel PrimaryResource { get; init; }
+		public required CostViewModel SecondaryResources { get; init; }
 		public decimal ColonizationCostPerLand { get; init; }
 	}
 }

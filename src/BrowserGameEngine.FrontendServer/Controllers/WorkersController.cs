@@ -39,7 +39,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public ActionResult<WorkerAssignmentViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var playerId = currentUserContext.PlayerId;
+			var playerId = currentUserContext.PlayerId!;
 			var workerUnit = Id.UnitDef("wbf");
 			int totalWorkers = unitRepository.CountByUnitDefId(playerId, workerUnit);
 			return new WorkerAssignmentViewModel {
@@ -53,7 +53,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public async Task<ActionResult> Assign([FromQuery] int mineralWorkers, [FromQuery] int gasWorkers) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
-				var playerId = currentUserContext.PlayerId;
+				var playerId = currentUserContext.PlayerId!;
 				var workerUnit = Id.UnitDef("wbf");
 				int totalWorkers = unitRepository.CountByUnitDefId(playerId, workerUnit);
 				playerRepositoryWrite.AssignWorkers(

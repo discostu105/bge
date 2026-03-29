@@ -52,14 +52,14 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public SelectEnemyViewModel AttackablePlayers() {
 			return new SelectEnemyViewModel {
-				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId).Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository)).ToList()
+				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId!).Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository)).ToList()
 			};
 		}
 
 		[HttpPost]
 		public ActionResult SendUnits([FromQuery] string unitId, [FromQuery] string enemyPlayerId) {
 			try {
-				unitRepositoryWrite.SendUnit(new SendUnitCommand(currentUserContext.PlayerId, Id.UnitId(unitId), PlayerIdFactory.Create(enemyPlayerId)));
+				unitRepositoryWrite.SendUnit(new SendUnitCommand(currentUserContext.PlayerId!, Id.UnitId(unitId), PlayerIdFactory.Create(enemyPlayerId)));
 				return Ok();
 			} catch (PlayerNotAttackableException e) {
 				return BadRequest(e.Message);
@@ -77,11 +77,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			try {
 				return new EnemyBaseViewModel {
 					PlayerAttackingUnits = new UnitsViewModel {
-						Units = unitRepository.GetAttackingUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
+						Units = unitRepository.GetAttackingUnits(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId))
 							.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
 					},
 					EnemyDefendingUnits = new UnitsViewModel {
-						Units = unitRepository.GetDefendingEnemyUnits(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId))
+						Units = unitRepository.GetDefendingEnemyUnits(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId))
 							.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
 					}
 				};
@@ -93,7 +93,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost]
 		public BattleResultViewModel Attack([FromQuery] string enemyPlayerId) {
-			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId, PlayerIdFactory.Create(enemyPlayerId));
+			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId));
 			battleReportGenerator.GenerateReports(result);
 			return new BattleResultViewModel {
 

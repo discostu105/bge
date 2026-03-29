@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal record GameTickState {
-		internal GameTick CurrentGameTick { get; set; }
+		internal GameTick CurrentGameTick { get; set; } = new GameTick(0);
 		internal DateTime LastUpdate { get; set; }
 	}
 

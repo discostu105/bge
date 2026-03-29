@@ -13,8 +13,8 @@ namespace BrowserGameEngine.FrontendServer {
 		public bool DevAuth { get; set; }
 
 		// "localfile", "s3"
-		public string StorageType { get; set; }
+		public required string StorageType { get; set; }
 
-		public string S3BucketName { get; set; }
+		public required string S3BucketName { get; set; }
     }
 }

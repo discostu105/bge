@@ -7,15 +7,15 @@ namespace BrowserGameEngine.GameDefinition {
 	}
 
 	public record AssetDef {
-		public AssetDefId Id { get; init; }
-		public string Name { get; init; }
-		public PlayerTypeDefId PlayerTypeRestriction { get; init; }
-		public Cost Cost { get; init; }
+		public AssetDefId Id { get; init; } = null!;
+		public string Name { get; init; } = null!;
+		public PlayerTypeDefId PlayerTypeRestriction { get; init; } = null!;
+		public Cost Cost { get; init; } = null!;
 		public int Attack { get; init; }
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }
 		public List<AssetDefId> Prerequisites { get; init; } = new List<AssetDefId>();
-		public GameTick BuildTimeTicks { get; init; }
+		public GameTick BuildTimeTicks { get; init; } = null!;
 
 		public override string ToString() => Id.Id;
 	}

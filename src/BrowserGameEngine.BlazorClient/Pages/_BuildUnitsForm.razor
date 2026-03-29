@@ -21,7 +21,7 @@
 
 @code {
     [Parameter]
-    public List<UnitDefinitionViewModel> AvailableUnits { get; set; }
+    public required List<UnitDefinitionViewModel> AvailableUnits { get; set; }
 
     private BuildUnitFormModel model = new BuildUnitFormModel();
     private string? lastError;
@@ -42,7 +42,7 @@
 
     internal class BuildUnitFormModel {
         [Required]
-        public string UnitDefId { get; set; }
+        public string UnitDefId { get; set; } = string.Empty;
         [Required]
         [Range(1, 100000, ErrorMessage = "Accommodation invalid (1-100000).")]
         public int Count { get; set; }

@@ -5,8 +5,8 @@ using System;
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 	internal class Unit {
-		public UnitId UnitId { get; init; }
-		public UnitDefId UnitDefId { get; init; }
+		public required UnitId UnitId { get; init; }
+		public required UnitDefId UnitDefId { get; init; }
 		public int Count { get; set; }
 		public PlayerId? Position { get; set; }
 		public int ReturnTimer { get; set; }
