@@ -38,6 +38,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
 			services.AddSingleton<IGameTickModule, UnitReturn>();
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();
+			services.AddSingleton<IGameTickModule, NewPlayerProtectionModule>();
 			services.AddSingleton<IGameTickModule, UpgradeTimer>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
 			services.AddSingleton<GameTickEngine>();

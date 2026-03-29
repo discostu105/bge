@@ -13,6 +13,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public List<Unit> Units { get; set; } = new List<Unit>();
 		public int MineralWorkers { get; set; }
 		public int GasWorkers { get; set; }
+		public int ProtectionTicksRemaining { get; set; }
 		public List<Message> Messages { get; set; } = new List<Message>();
 		public int AttackUpgradeLevel { get; set; }
 		public int DefenseUpgradeLevel { get; set; }
@@ -30,6 +31,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
 				MineralWorkers: playerState.MineralWorkers,
 				GasWorkers: playerState.GasWorkers,
+				ProtectionTicksRemaining: playerState.ProtectionTicksRemaining,
 				Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList(),
 				AttackUpgradeLevel: playerState.AttackUpgradeLevel,
 				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
@@ -47,6 +49,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList(),
 				MineralWorkers = playerStateImmutable.MineralWorkers,
 				GasWorkers = playerStateImmutable.GasWorkers,
+				ProtectionTicksRemaining = playerStateImmutable.ProtectionTicksRemaining,
 				Messages = (playerStateImmutable.Messages ?? new List<MessageImmutable>()).Select(x => x.ToMutable()).ToList(),
 				AttackUpgradeLevel = playerStateImmutable.AttackUpgradeLevel,
 				DefenseUpgradeLevel = playerStateImmutable.DefenseUpgradeLevel,

@@ -108,7 +108,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 								AssetDefId = Id.AssetDef("commandcenter"),
 								Level = 1
 							},
-						}
+						},
+						ProtectionTicksRemaining = 32
 					}
 				};
 			}

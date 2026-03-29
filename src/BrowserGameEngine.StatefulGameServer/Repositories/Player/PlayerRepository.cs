@@ -56,8 +56,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private bool IsProtected(PlayerId id) {
-			// BGE-30: check player.State.Protection > 0 when protection field is added
-			return false;
+			return world.GetPlayer(id).State.ProtectionTicksRemaining > 0;
 		}
 
 		private bool AreAllied(PlayerId a, PlayerId b) {

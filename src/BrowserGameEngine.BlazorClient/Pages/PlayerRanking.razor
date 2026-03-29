@@ -23,6 +23,7 @@
                     <th>Score</th>
                     <th>Type</th>
                     <th>Status</th>
+                    <th>Schutz</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,6 +33,7 @@
                     <td>@item.Score</td>
                     <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
                     <td>@(IsOnline(item) ? "Online" : "Offline")</td>
+                    <td>@(item.ProtectionTicksRemaining > 0 ? $"🛡 {item.ProtectionTicksRemaining}" : "")</td>
                 </tr>
                 }
             </tbody>
