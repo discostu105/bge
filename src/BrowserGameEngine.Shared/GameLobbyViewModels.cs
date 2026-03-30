@@ -16,5 +16,5 @@ namespace BrowserGameEngine.Shared {
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);
 
-	public record JoinGameRequest(string PlayerName, string Race = "terran");
+	public record JoinGameRequest(string PlayerName);
 }
