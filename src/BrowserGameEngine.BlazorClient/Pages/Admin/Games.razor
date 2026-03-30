@@ -1,5 +1,7 @@
 @page "/admin/games"
 @using BrowserGameEngine.Shared
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject HttpClient Http
 @inject NavigationManager Nav
 
@@ -51,6 +53,7 @@
 				<th>Players</th>
 				<th>Start Time</th>
 				<th>End Time</th>
+				<th>Created By</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -62,6 +65,7 @@
 					<td>@game.PlayerCount</td>
 					<td>@game.StartTime.ToLocalTime().ToString("g")</td>
 					<td>@game.EndTime.ToLocalTime().ToString("g")</td>
+					<td>@game.CreatedBy</td>
 					<td><a href="/games/@game.GameId">View</a></td>
 				</tr>
 			}
