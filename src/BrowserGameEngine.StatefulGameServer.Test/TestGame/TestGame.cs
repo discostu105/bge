@@ -52,7 +52,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			PlayerRepository = new PlayerRepository(World, ScoreRepository, AllianceRepository);
 			PlayerRepositoryWrite = new PlayerRepositoryWrite(World, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(World, GameDef);
-			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository);
+			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository, GameDef);
 			ActionQueueRepository = new ActionQueueRepository(World);
 			AssetRepository = new AssetRepository(World, PlayerRepository, ActionQueueRepository);
 			AssetRepositoryWrite = new AssetRepositoryWrite(LoggerFactory.CreateLogger<AssetRepositoryWrite>(), World, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
