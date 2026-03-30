@@ -46,7 +46,8 @@ builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptio
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddLogging();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck<BlobStorageHealthCheck>("blob-storage");
 builder.Services.AddOpenApi();
 
 builder.Services.AddOpenTelemetry()
@@ -161,7 +162,21 @@ app.UseRateLimiter();
 app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    ResponseWriter = async (ctx, report) => {
+        ctx.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                data = e.Value.Data
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        });
+        await ctx.Response.WriteAsync(result);
+    }
+});
 app.MapDefaultControllerRoute();
 app.MapRazorPages();
 app.MapControllers();
@@ -230,6 +245,12 @@ async Task ConfigureGameServices(IServiceCollection services) {
     }
 
     services.AddGameServer(storage, gameRegistry, stateFactory);
+
+    var bucketDisplay = string.IsNullOrEmpty(s3BucketName) ? "(local FileStorage)" : s3BucketName;
+    Log.Information("Startup: games loaded={GameCount}, users={UserCount}, storage={Storage}",
+        gameRegistry.GetAllInstances().Count,
+        globalState.ToImmutable().Users.Count,
+        bucketDisplay);
 
     services.AddScoped(_ => CurrentUserContext.Inactive());
 
