@@ -108,7 +108,8 @@ if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(git
 
 var s3BucketForDp = builder.Configuration["Bge:S3BucketName"];
 if (!string.IsNullOrEmpty(s3BucketForDp)) {
-    var s3KeyPrefixForDp = (builder.Configuration["Bge:S3KeyPrefix"] ?? "") + "data-protection-keys/";
+    var rawPrefix = builder.Configuration["Bge:S3KeyPrefix"] ?? "";
+    var s3KeyPrefixForDp = (string.IsNullOrEmpty(rawPrefix) ? "" : rawPrefix.TrimEnd('/') + "/") + "data-protection-keys/";
     var s3ClientForDp = new AmazonS3Client();
     builder.Services.AddDataProtection()
         .AddKeyManagementOptions(opts =>
