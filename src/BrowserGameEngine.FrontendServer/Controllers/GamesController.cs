@@ -102,7 +102,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				StartTime: request.StartTime.ToUniversalTime(),
 				EndTime: request.EndTime.ToUniversalTime(),
 				TickDuration: tickDuration,
-				DiscordWebhookUrl: request.DiscordWebhookUrl
+				DiscordWebhookUrl: request.DiscordWebhookUrl,
+				CreatedByUserId: currentUserContext.UserId
 			);
 
 			// Create a fresh world state for the new game
@@ -117,6 +118,48 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			logger.LogInformation("Game {GameId} created: {Name}", gameId.Id, request.Name);
 
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
+		}
+
+		/// <summary>Updates game settings (name, end time, Discord webhook). Only the game creator may update.</summary>
+		/// <param name="gameId">The game identifier.</param>
+		[HttpPatch("{gameId}")]
+		public ActionResult<GameDetailViewModel> Update(string gameId, [FromBody] UpdateGameRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+
+			if (record.CreatedByUserId != null && record.CreatedByUserId != currentUserContext.UserId)
+				return StatusCode(403, "Only the game creator can edit this game.");
+
+			if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required.");
+
+			var newEndTime = request.EndTime.ToUniversalTime();
+			if (newEndTime <= record.StartTime) return BadRequest("EndTime must be after StartTime.");
+			if (record.Status != GameStatus.Upcoming && newEndTime < record.EndTime)
+				return BadRequest("Cannot shorten EndTime of an active or finished game.");
+
+			var updated = record with {
+				Name = request.Name,
+				EndTime = newEndTime,
+				DiscordWebhookUrl = request.DiscordWebhookUrl
+			};
+
+			globalState.UpdateGame(record, updated);
+			logger.LogInformation("Game {GameId} updated by {UserId}", gameId, currentUserContext.UserId);
+
+			return Ok(new GameDetailViewModel(
+				GameId: updated.GameId.Id,
+				Name: updated.Name,
+				GameDefType: updated.GameDefType,
+				Status: updated.Status.ToString(),
+				StartTime: updated.StartTime,
+				EndTime: updated.EndTime,
+				PlayerCount: GetPlayerCount(updated),
+				WinnerId: updated.WinnerId?.Id,
+				ActualEndTime: updated.ActualEndTime,
+				DiscordWebhookUrl: updated.DiscordWebhookUrl
+			));
 		}
 
 		/// <summary>Joins an upcoming game with the current player. Requires authentication.</summary>
@@ -195,7 +238,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: record.EndTime,
 				CanJoin: record.Status == GameStatus.Upcoming,
 				WinnerId: record.WinnerId?.Id,
-				WinnerName: winnerName
+				WinnerName: winnerName,
+				DiscordWebhookUrl: record.DiscordWebhookUrl
 			);
 		}
 
