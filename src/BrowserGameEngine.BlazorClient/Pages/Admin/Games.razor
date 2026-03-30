@@ -53,7 +53,6 @@
 				<th>Players</th>
 				<th>Start Time</th>
 				<th>End Time</th>
-				<th>Created By</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -63,9 +62,8 @@
 					<td>@game.Name</td>
 					<td>@game.Status</td>
 					<td>@game.PlayerCount</td>
-					<td>@game.StartTime.ToLocalTime().ToString("g")</td>
-					<td>@game.EndTime.ToLocalTime().ToString("g")</td>
-					<td>@game.CreatedBy</td>
+					<td>@game.StartTime?.ToLocalTime().ToString("g")</td>
+					<td>@game.EndTime?.ToLocalTime().ToString("g")</td>
 					<td><a href="/games/@game.GameId">View</a></td>
 				</tr>
 			}
