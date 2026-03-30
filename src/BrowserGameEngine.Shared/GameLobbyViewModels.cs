@@ -11,7 +11,9 @@ namespace BrowserGameEngine.Shared {
 		int MaxPlayers,
 		DateTime? StartTime,
 		DateTime? EndTime,
-		bool CanJoin
+		bool CanJoin,
+		string? WinnerId = null,
+		string? WinnerName = null
 	);
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);
