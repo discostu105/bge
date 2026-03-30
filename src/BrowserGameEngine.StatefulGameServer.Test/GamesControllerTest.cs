@@ -1,9 +1,11 @@
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.FrontendServer.Controllers;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.Persistence;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
@@ -50,6 +52,22 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userCtx.Activate(PlayerIdFactory.Create(userId));
 			}
 
+			var storage = new InMemoryBlobStorage();
+			var persistenceService = new PersistenceService(storage, new GameStateJsonSerializer());
+			var globalPersistenceService = new GlobalPersistenceService(storage, new GlobalStateJsonSerializer());
+			var userRepositoryWrite = new UserRepositoryWrite(globalState, game.World, TimeProvider.System);
+			var lifecycleEngine = new GameRegistry.GameLifecycleEngine(
+				gameRegistry,
+				globalState,
+				persistenceService,
+				globalPersistenceService,
+				new NullGameNotificationService(),
+				new InMemoryPlayerNotificationService(),
+				userRepositoryWrite,
+				TimeProvider.System,
+				NullLogger<GameRegistry.GameLifecycleEngine>.Instance
+			);
+
 			return new GamesController(
 				NullLogger<GamesController>.Instance,
 				gameRegistry,
@@ -57,7 +75,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				game.WorldStateFactory,
 				game.GameDef,
 				userCtx,
-				TimeProvider.System
+				TimeProvider.System,
+				lifecycleEngine
 			);
 		}
 

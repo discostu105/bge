@@ -24,7 +24,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly TimeProvider timeProvider;
-		private readonly GameLifecycleEngine? gameLifecycleEngine;
+		private readonly GameLifecycleEngine gameLifecycleEngine;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -34,7 +34,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			GameDef gameDef,
 			CurrentUserContext currentUserContext,
 			TimeProvider timeProvider,
-			GameLifecycleEngine? gameLifecycleEngine = null
+			GameLifecycleEngine gameLifecycleEngine
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;

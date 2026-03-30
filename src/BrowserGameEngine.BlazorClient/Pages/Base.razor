@@ -12,11 +12,7 @@
     <div class="alert alert-warning d-flex align-items-center gap-3 mb-3" role="alert">
         <div>
             <strong>Game Over!</strong>
-            @if (!string.IsNullOrEmpty(gameDetail.WinnerId)) {
-                <span> The game has ended. <a href="games/@GameId/results">View final results</a>.</span>
-            } else {
-                <span> The game has ended. <a href="games/@GameId/results">View final results</a>.</span>
-            }
+            <span> The game has ended. <a href="games/@GameId/results">View final results</a>.</span>
         </div>
     </div>
 }
