@@ -59,6 +59,7 @@
     private System.Threading.Timer? displayTimer;
     private int _lastUnreadCount = -1;
     private string? _lastGameStatus;
+    private bool _endingSoonAlertShown;
 
     protected override void OnInitialized() {
         CurrentGameService.OnChanged += OnGameChanged;
@@ -124,6 +125,7 @@
         var game = CurrentGameService.CurrentGame;
         if (game != null) {
             if (_lastGameStatus != null && _lastGameStatus != game.Status) {
+                _endingSoonAlertShown = false;
                 if (game.Status == "Active") {
                     AlertService.AddAlert($"Game \"{game.Name}\" has started!", AlertType.Info);
                 } else if (game.Status == "Finished") {
@@ -131,12 +133,13 @@
                 }
             }
 
-            // Ending soon: within 1 minute
-            if (game.Status == "Active") {
+            // Ending soon: within 1 minute — fire once only
+            if (game.Status == "Active" && !_endingSoonAlertShown) {
                 var remaining = game.EndTime - DateTime.UtcNow;
                 if (remaining > TimeSpan.Zero && remaining <= TimeSpan.FromMinutes(1)
                     && _lastGameStatus == "Active") {
                     AlertService.AddAlert($"Game \"{game.Name}\" ends in less than a minute!", AlertType.Danger);
+                    _endingSoonAlertShown = true;
                 }
             }
 
