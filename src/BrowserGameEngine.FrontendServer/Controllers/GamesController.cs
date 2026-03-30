@@ -154,6 +154,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		private GameSummaryViewModel ToSummary(GameRecordImmutable record) {
+			string? winnerName = null;
+			if (record.WinnerId != null) {
+				winnerName = globalState.GetAchievements()
+					.FirstOrDefault(a => a.GameId == record.GameId && a.PlayerId == record.WinnerId)
+					?.PlayerName;
+			}
 			return new GameSummaryViewModel(
 				GameId: record.GameId.Id,
 				Name: record.Name,
@@ -163,7 +169,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				MaxPlayers: 0,
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
-				CanJoin: record.Status == GameStatus.Upcoming
+				CanJoin: record.Status == GameStatus.Upcoming,
+				WinnerId: record.WinnerId?.Id,
+				WinnerName: winnerName
 			);
 		}
 

@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@implements IDisposable
 
 <h1>My Players</h1>
 
@@ -72,9 +73,20 @@
 	private CreatePlayerForUserViewModel createModel = new();
 	private string? createError;
 	private string? newApiKey;
+	private CancellationTokenSource? _cts;
 
 	protected override async Task OnInitializedAsync() {
 		await LoadPlayers();
+		_cts = new CancellationTokenSource();
+		_ = RunRefreshLoop(_cts.Token);
+	}
+
+	private async Task RunRefreshLoop(CancellationToken ct) {
+		using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+		while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+			await InvokeAsync(LoadPlayers);
+			await InvokeAsync(StateHasChanged);
+		}
 	}
 
 	private async Task LoadPlayers() {
@@ -118,5 +130,10 @@
 
 	private async Task CopyToClipboard(string text) {
 		await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+	}
+
+	public void Dispose() {
+		_cts?.Cancel();
+		_cts?.Dispose();
 	}
 }
