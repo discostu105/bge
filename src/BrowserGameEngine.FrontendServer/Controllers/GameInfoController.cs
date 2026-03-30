@@ -35,7 +35,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<TickInfoViewModel> GetTickInfo() {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			int unreadCount = messageRepository.GetUnreadCount(currentUserContext.PlayerId);
+			int unreadCount = messageRepository.GetUnreadCount(currentUserContext.PlayerId!);
 			return Ok(new TickInfoViewModel {
 				ServerTime = timeProvider.GetUtcNow().UtcDateTime,
 				NextTickAt = gameTickEngine.NextTickAt,

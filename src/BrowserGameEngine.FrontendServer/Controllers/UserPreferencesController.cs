@@ -25,7 +25,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		public ActionResult<UserPreferencesViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var user = userRepository.GetByGithubId(currentUserContext.GithubId);
+			var user = userRepository.GetByGithubId(currentUserContext.GithubId!);
 			if (user == null) return NotFound();
 			return Ok(new UserPreferencesViewModel(
 				WantsGameNotification: user.WantsGameNotification,
@@ -36,11 +36,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPatch]
 		public ActionResult Patch([FromBody] UpdateUserPreferencesRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var user = userRepository.GetByGithubId(currentUserContext.GithubId);
+			var user = userRepository.GetByGithubId(currentUserContext.GithubId!);
 			if (user == null) return NotFound();
 			var wantsNotification = request.WantsGameNotification ?? user.WantsGameNotification;
 			var autoJoin = request.AutoJoinNextGame ?? user.AutoJoinNextGame;
-			userRepositoryWrite.SetGamePreferences(currentUserContext.GithubId, wantsNotification, autoJoin);
+			userRepositoryWrite.SetGamePreferences(currentUserContext.GithubId!, wantsNotification, autoJoin);
 			return NoContent();
 		}
 	}

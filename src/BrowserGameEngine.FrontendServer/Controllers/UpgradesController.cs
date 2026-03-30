@@ -34,7 +34,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet]
 		[ProducesResponseType(typeof(UpgradesViewModel), StatusCodes.Status200OK)]
 		public UpgradesViewModel Get() {
-			var playerId = currentUserContext.PlayerId;
+			var playerId = currentUserContext.PlayerId!;
 			int attackLevel = upgradeRepository.GetAttackUpgradeLevel(playerId);
 			int defenseLevel = upgradeRepository.GetDefenseUpgradeLevel(playerId);
 			return new UpgradesViewModel {
@@ -58,7 +58,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return BadRequest("Invalid upgradeType. Use 'Attack' or 'Defense'.");
 			}
 			try {
-				upgradeRepositoryWrite.ResearchUpgrade(new ResearchUpgradeCommand(currentUserContext.PlayerId, type));
+				upgradeRepositoryWrite.ResearchUpgrade(new ResearchUpgradeCommand(currentUserContext.PlayerId!, type));
 				return Ok();
 			} catch (UpgradeAlreadyMaxLevelException e) {
 				return BadRequest(e.Message);

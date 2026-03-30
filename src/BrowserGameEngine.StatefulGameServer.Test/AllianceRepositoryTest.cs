@@ -47,7 +47,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
 			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
 
-			var alliance = game.AllianceRepository.Get(allianceId);
+			var alliance = game.AllianceRepository.Get(allianceId)!;
 			var member = alliance.Members.Single(m => m.PlayerId == Player2);
 			Assert.True(member.IsPending);
 			var player = game.PlayerRepository.Get(Player2);
@@ -61,7 +61,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
 			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
 
-			var alliance = game.AllianceRepository.Get(allianceId);
+			var alliance = game.AllianceRepository.Get(allianceId)!;
 			var member = alliance.Members.Single(m => m.PlayerId == Player2);
 			Assert.False(member.IsPending);
 		}
@@ -73,7 +73,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
 			game.AllianceRepositoryWrite.RejectMember(new RejectMemberCommand(Player1, Player2));
 
-			var alliance = game.AllianceRepository.Get(allianceId);
+			var alliance = game.AllianceRepository.Get(allianceId)!;
 			Assert.DoesNotContain(alliance.Members, m => m.PlayerId == Player2);
 			var player = game.PlayerRepository.Get(Player2);
 			Assert.Null(player.AllianceId);
@@ -112,7 +112,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
 			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
 
-			var alliance = game.AllianceRepository.Get(allianceId);
+			var alliance = game.AllianceRepository.Get(allianceId)!;
 			Assert.Equal(Player2, alliance.LeaderId);
 		}
 

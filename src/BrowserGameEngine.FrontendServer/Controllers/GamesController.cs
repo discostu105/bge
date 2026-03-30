@@ -169,6 +169,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		/// <summary>Updates game settings (name, end time, Discord webhook). Only the game creator may update.</summary>
 		/// <param name="gameId">The game identifier.</param>
+		/// <param name="request">Game update parameters.</param>
 		[HttpPatch("{gameId}")]
 		public ActionResult<GameDetailViewModel> Update(string gameId, [FromBody] UpdateGameRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
@@ -211,6 +212,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		/// <summary>Joins an upcoming game with the current player. Requires authentication.</summary>
 		/// <param name="gameId">The game identifier.</param>
+		/// <param name="request">Join request containing the player name.</param>
 		[HttpPost("{gameId}/join")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -229,7 +231,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (instance == null) return NotFound();
 
 			// Check if user already has a player in this game (by UserId)
-			if (instance.HasUserPlayer(currentUserContext.UserId)) return Conflict("You have already joined this game.");
+			if (instance.HasUserPlayer(currentUserContext.UserId!)) return Conflict("You have already joined this game.");
 
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
