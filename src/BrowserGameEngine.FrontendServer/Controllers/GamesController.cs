@@ -42,15 +42,22 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.timeProvider = timeProvider;
 		}
 
+		/// <summary>Lists all games (upcoming, active, and finished).</summary>
+		/// <returns>Summary list of all games.</returns>
 		[AllowAnonymous]
 		[HttpGet]
+		[ProducesResponseType(typeof(GameListViewModel), StatusCodes.Status200OK)]
 		public ActionResult<GameListViewModel> GetAll() {
 			var summaries = globalState.GetGames().Select(ToSummary).ToList();
 			return Ok(new GameListViewModel(summaries));
 		}
 
+		/// <summary>Returns detailed information about a single game.</summary>
+		/// <param name="gameId">The game identifier.</param>
 		[AllowAnonymous]
 		[HttpGet("{gameId}")]
+		[ProducesResponseType(typeof(GameDetailViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult<GameDetailViewModel> GetById(string gameId) {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
@@ -69,7 +76,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			));
 		}
 
+		/// <summary>Creates a new game. Requires authentication.</summary>
+		/// <param name="request">Game creation parameters.</param>
+		/// <returns>Summary of the newly created game.</returns>
 		[HttpPost]
+		[ProducesResponseType(typeof(GameSummaryViewModel), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<GameSummaryViewModel> Create([FromBody] CreateGameRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required");
@@ -104,7 +117,14 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
 		}
 
+		/// <summary>Joins an upcoming game with the current player. Requires authentication.</summary>
+		/// <param name="gameId">The game identifier.</param>
 		[HttpPost("{gameId}/join")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
 		public ActionResult Join(string gameId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
@@ -123,8 +143,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok();
 		}
 
+		/// <summary>Returns the final standings and scores for a completed game.</summary>
+		/// <param name="gameId">The game identifier.</param>
 		[Authorize]
 		[HttpGet("{gameId}/results")]
+		[ProducesResponseType(typeof(GameResultsViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
