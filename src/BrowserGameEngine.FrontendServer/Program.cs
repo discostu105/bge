@@ -40,6 +40,7 @@ builder.Host.UseSerilog();
 builder.Services.AddHostedService<GameTickTimerService>();
 builder.Services.AddHostedService<PersistenceHostedService>();
 builder.Services.AddHostedService<GlobalPersistenceHostedService>();
+builder.Services.AddHostedService<GameLifecycleService>();
 
 builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptions.Position));
 builder.Services.AddControllersWithViews();
@@ -176,7 +177,7 @@ app.Run();
 
 async Task ConfigureGameServices(IServiceCollection services) {
     var gameDefFactory = new StarcraftOnlineGameDefFactory();
-    var stateFactory = new StarcraftOnlineWorldStateFactory();
+    IWorldStateFactory stateFactory = new StarcraftOnlineWorldStateFactory();
     var gameDef = gameDefFactory.CreateGameDef();
     new GameDefVerifier().Verify(gameDef);
 
@@ -228,7 +229,7 @@ async Task ConfigureGameServices(IServiceCollection services) {
         gameRegistry.Register(new BrowserGameEngine.StatefulGameServer.GameRegistry.GameInstance(gameRecord, ws, gd));
     }
 
-    services.AddGameServer(storage, gameRegistry);
+    services.AddGameServer(storage, gameRegistry, stateFactory);
 
     services.AddScoped(_ => CurrentUserContext.Inactive());
 

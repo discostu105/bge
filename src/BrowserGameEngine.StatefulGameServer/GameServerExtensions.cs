@@ -9,10 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public static class GameServerExtensions {
-		public static void AddGameServer(this IServiceCollection services, IBlobStorage storage, BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry gameRegistry) {
+		public static void AddGameServer(this IServiceCollection services, IBlobStorage storage, BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry gameRegistry, IWorldStateFactory worldStateFactory) {
 			var defaultInstance = gameRegistry.GetDefaultInstance();
 			services.AddSingleton(gameRegistry);
 			services.AddSingleton(gameRegistry.GlobalState);
@@ -67,6 +68,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(persistenceService);
 			services.AddSingleton(globalSerializer);
 			services.AddSingleton(globalPersistenceService);
+			services.AddSingleton<IWorldStateFactory>(worldStateFactory);
+			services.AddSingleton<GameLifecycleEngine>();
 		}
 	}
 }

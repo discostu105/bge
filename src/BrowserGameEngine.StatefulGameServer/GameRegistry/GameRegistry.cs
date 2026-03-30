@@ -19,6 +19,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 
 		public IReadOnlyCollection<GameInstance> GetAllInstances() => _instances.Values.ToList();
 
+		public bool Remove(GameId gameId) => _instances.TryRemove(gameId.Id, out _);
+
 		public GameInstance GetDefaultInstance() =>
 			_instances.Values.FirstOrDefault()
 			?? throw new InvalidOperationException("GameRegistry is empty — no game instances have been registered.");
