@@ -74,7 +74,10 @@ public class AdminController : ControllerBase
 
 	// ── Existing cheat endpoints ──────────────────────────────────────────────
 
+	/// <summary>Dev-only: Sets a player's resource amount to the specified value. Requires Bge:DevAuth=true.</summary>
 	[HttpPost("set-resources")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult SetResources([FromBody] SetResourcesRequest request)
 	{
 		if (!options.Value.DevAuth) return NotFound();
@@ -86,7 +89,11 @@ public class AdminController : ControllerBase
 		return Ok();
 	}
 
+	/// <summary>Dev-only: Grants a building to a player instantly. Requires Bge:DevAuth=true.</summary>
 	[HttpPost("grant-building")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult GrantBuilding([FromBody] GrantBuildingRequest request)
 	{
 		if (!options.Value.DevAuth) return NotFound();
@@ -98,7 +105,11 @@ public class AdminController : ControllerBase
 		return Ok();
 	}
 
+	/// <summary>Dev-only: Grants units to a player instantly. Requires Bge:DevAuth=true.</summary>
 	[HttpPost("grant-units")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult GrantUnits([FromBody] GrantUnitsRequest request)
 	{
 		if (!options.Value.DevAuth) return NotFound();
@@ -110,7 +121,10 @@ public class AdminController : ControllerBase
 		return Ok();
 	}
 
+	/// <summary>Dev-only: Resets a player's state to initial values. Requires Bge:DevAuth=true.</summary>
 	[HttpPost("reset-player")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult ResetPlayer([FromBody] ResetPlayerRequest request)
 	{
 		if (!options.Value.DevAuth) return NotFound();
@@ -121,7 +135,12 @@ public class AdminController : ControllerBase
 		return Ok();
 	}
 
+	/// <summary>Dev-only: Forces N game ticks to run immediately. Requires Bge:DevAuth=true.</summary>
+	/// <param name="count">Number of ticks to run (1–1000).</param>
 	[HttpPost("force-tick")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult ForceTick([FromQuery] int count = 1)
 	{
 		if (!options.Value.DevAuth) return NotFound();

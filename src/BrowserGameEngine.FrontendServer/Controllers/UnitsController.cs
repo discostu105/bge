@@ -40,7 +40,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
+		/// <summary>Returns all units currently owned by the current player.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(UnitsViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<UnitsViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			return new UnitsViewModel {
@@ -48,7 +51,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Trains a given number of units of the specified type.</summary>
+		/// <param name="unitDefId">Unit definition ID (e.g. "marine").</param>
+		/// <param name="count">Number of units to train.</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Build([FromQuery] string unitDefId, [FromQuery] int count) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
@@ -61,7 +70,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
+		/// <summary>Merges multiple unit groups of the same type into one. If unitDefId is omitted, merges all unit types.</summary>
+		/// <param name="unitDefId">Optional unit definition ID to merge only that type.</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Merge([FromQuery] string? unitDefId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
@@ -76,7 +90,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
+		/// <summary>Splits a unit group into two groups.</summary>
+		/// <param name="unitId">The unit group ID to split.</param>
+		/// <param name="splitCount">Number of units to move to the new group.</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Split([FromQuery] Guid unitId, [FromQuery] int splitCount) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
