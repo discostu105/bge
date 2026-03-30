@@ -17,7 +17,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ILogger<MarketController> logger;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly MarketRepository marketRepository;
-		private readonly MarketRepositoryWrite marketRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
 		private readonly GameDef gameDef;
 
@@ -25,14 +24,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			ILogger<MarketController> logger,
 			CurrentUserContext currentUserContext,
 			MarketRepository marketRepository,
-			MarketRepositoryWrite marketRepositoryWrite,
 			PlayerRepository playerRepository,
 			GameDef gameDef
 		) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.marketRepository = marketRepository;
-			this.marketRepositoryWrite = marketRepositoryWrite;
 			this.playerRepository = playerRepository;
 			this.gameDef = gameDef;
 		}
@@ -58,7 +55,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return BadRequest("Resource IDs are required.");
 
 			try {
-				marketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+				marketRepository.CreateOrder(new CreateMarketOrderCommand(
 					PlayerId: currentUserContext.PlayerId!,
 					OfferedResourceId: Id.ResDef(request.OfferedResourceId),
 					OfferedAmount: request.OfferedAmount,
@@ -78,7 +75,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
 			try {
-				marketRepositoryWrite.AcceptOrder(new AcceptMarketOrderCommand(
+				marketRepository.AcceptOrder(new AcceptMarketOrderCommand(
 					BuyerPlayerId: currentUserContext.PlayerId!,
 					OrderId: MarketOrderIdFactory.Create(orderId)
 				));
@@ -95,7 +92,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
 			try {
-				marketRepositoryWrite.CancelOrder(new CancelMarketOrderCommand(
+				marketRepository.CancelOrder(new CancelMarketOrderCommand(
 					PlayerId: currentUserContext.PlayerId!,
 					OrderId: MarketOrderIdFactory.Create(orderId)
 				));

@@ -12,7 +12,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var seller = game.WorldStateFactory.Player1;
 			var initialRes1 = game.ResourceRepository.GetAmount(seller, Id.ResDef("res1"));
 
-			game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+			game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 				PlayerId: seller,
 				OfferedResourceId: Id.ResDef("res1"),
 				OfferedAmount: 100,
@@ -29,7 +29,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var game = new TestGame(playerCount: 1);
 			var seller = game.WorldStateFactory.Player1;
 
-			game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+			game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 				PlayerId: seller,
 				OfferedResourceId: Id.ResDef("res1"),
 				OfferedAmount: 100,
@@ -55,7 +55,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var buyerRes1Before = game.ResourceRepository.GetAmount(buyer, Id.ResDef("res1"));
 			var buyerRes2Before = game.ResourceRepository.GetAmount(buyer, Id.ResDef("res2"));
 
-			var orderId = game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+			var orderId = game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 				PlayerId: seller,
 				OfferedResourceId: Id.ResDef("res1"),
 				OfferedAmount: 100,
@@ -63,7 +63,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				WantedAmount: 200
 			));
 
-			game.MarketRepositoryWrite.AcceptOrder(new AcceptMarketOrderCommand(
+			game.MarketRepository.AcceptOrder(new AcceptMarketOrderCommand(
 				BuyerPlayerId: buyer,
 				OrderId: orderId
 			));
@@ -87,7 +87,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var seller = game.WorldStateFactory.Player1;
 			var initialRes1 = game.ResourceRepository.GetAmount(seller, Id.ResDef("res1"));
 
-			var orderId = game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+			var orderId = game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 				PlayerId: seller,
 				OfferedResourceId: Id.ResDef("res1"),
 				OfferedAmount: 100,
@@ -95,7 +95,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				WantedAmount: 200
 			));
 
-			game.MarketRepositoryWrite.CancelOrder(new CancelMarketOrderCommand(
+			game.MarketRepository.CancelOrder(new CancelMarketOrderCommand(
 				PlayerId: seller,
 				OrderId: orderId
 			));
@@ -113,7 +113,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var game = new TestGame(playerCount: 1);
 			var seller = game.WorldStateFactory.Player1;
 
-			var orderId = game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+			var orderId = game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 				PlayerId: seller,
 				OfferedResourceId: Id.ResDef("res1"),
 				OfferedAmount: 100,
@@ -122,7 +122,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			));
 
 			Assert.Throws<InvalidOperationException>(() =>
-				game.MarketRepositoryWrite.AcceptOrder(new AcceptMarketOrderCommand(
+				game.MarketRepository.AcceptOrder(new AcceptMarketOrderCommand(
 					BuyerPlayerId: seller,
 					OrderId: orderId
 				))
@@ -135,7 +135,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var seller = game.WorldStateFactory.Player1;
 
 			Assert.Throws<CannotAffordException>(() =>
-				game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+				game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 					PlayerId: seller,
 					OfferedResourceId: Id.ResDef("res1"),
 					OfferedAmount: 999999,  // more than player has
@@ -150,7 +150,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var game = new TestGame(playerCount: 1);
 			var seller = game.WorldStateFactory.Player1;
 
-			game.MarketRepositoryWrite.CreateOrder(new CreateMarketOrderCommand(
+			game.MarketRepository.CreateOrder(new CreateMarketOrderCommand(
 				PlayerId: seller,
 				OfferedResourceId: Id.ResDef("res1"),
 				OfferedAmount: 50,
