@@ -294,7 +294,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private void ApplyBatteResult(BattleResult battleResult) {
 			RemoveUnits(battleResult.Attacker, battleResult.Defender, battleResult.BtlResult.AttackingUnitsDestroyed);
 			RemoveUnits(battleResult.Defender, null, battleResult.BtlResult.DefendingUnitsDestroyed);
-			// TODO: apply resourses stolen/lost
 		}
 
 		private void RemoveUnits(PlayerId playerId, PlayerId? position, List<UnitCount> unitCounts) {

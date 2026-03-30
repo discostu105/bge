@@ -71,7 +71,29 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var result = game.UnitRepositoryWrite.Attack(game.Player1, Player2);
 
 			Assert.True(result.BtlResult.TotalAttackerStrengthBefore > 0, "TotalAttackerStrengthBefore should be populated");
-			Assert.True(result.BtlResult.TotalDefenderStrengthBefore >= 0, "TotalDefenderStrengthBefore should be populated");
+			Assert.True(result.BtlResult.TotalDefenderStrengthBefore > 0, "TotalDefenderStrengthBefore should be populated");
+		}
+
+		[Fact]
+		public void Attack_Win_PillageCapEnforced() {
+			var game = new TestGame(playerCount: 2);
+			// Give defender a huge stockpile so 10% would exceed the 5000 cap
+			game.ResourceRepositoryWrite.AddResources(Player2, Id.ResDef("res1"), 100_000m);
+
+			game.UnitRepositoryWrite.GrantUnits(game.Player1, Id.UnitDef("unit2"), 1000);
+			var bigStack = game.UnitRepository.GetAll(game.Player1)
+				.Where(u => u.UnitDefId == Id.UnitDef("unit2") && u.Position == null && u.Count == 1000)
+				.Single();
+			game.UnitRepositoryWrite.SendUnit(new SendUnitCommand(game.Player1, bigStack.UnitId, Player2));
+
+			var result = game.UnitRepositoryWrite.Attack(game.Player1, Player2);
+
+			var stolen = result.BtlResult.ResourcesStolen
+				.SelectMany(c => c.Resources)
+				.ToDictionary(x => x.Key.Id, x => x.Value);
+
+			// 10% of (1000 + 100000) = 10100, but cap is 5000
+			Assert.Equal(5000m, stolen["res1"]);
 		}
 	}
 }

@@ -28,9 +28,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var attacker = playerRepository.Get(battleResult.Attacker);
 			var defender = playerRepository.Get(battleResult.Defender);
 
-			if (defender.UserId != null) {
-				playerNotificationService.Push(defender.UserId, $"Your base was attacked by {attacker.Name}!", NotificationKind.Warning);
-			}
 			var attackerRace = GetRaceName(attacker.PlayerType);
 			var defenderRace = GetRaceName(defender.PlayerType);
 
@@ -65,6 +62,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 				$"Battle Report vs {attacker.Name}",
 				body
 			);
+
+			if (defender.UserId != null) {
+				playerNotificationService.Push(defender.UserId, $"Your base was attacked by {attacker.Name}! ({outcome})", NotificationKind.Warning);
+			}
+			if (attacker.UserId != null) {
+				string pillageNote = resourcesStolen.Count > 0
+					? $" Pillaged: {string.Join(", ", resourcesStolen.Select(kv => $"{kv.Value} {kv.Key}"))}"
+					: string.Empty;
+				playerNotificationService.Push(attacker.UserId, $"Battle vs {defender.Name}: {outcome}.{pillageNote}", attackerWon ? NotificationKind.Info : NotificationKind.Warning);
+			}
 		}
 
 		private string GetRaceName(PlayerTypeDefId playerTypeDefId) {
