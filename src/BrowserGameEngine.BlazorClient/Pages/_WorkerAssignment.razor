@@ -1,5 +1,7 @@
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 
 @if (!string.IsNullOrEmpty(lastError)) {
 	<span class="error">@lastError</span>
@@ -41,6 +43,7 @@
 		lastError = null;
 		var response = await Http.PostAsJsonAsync($"api/workers/assign?mineralWorkers={mineralWorkers}&gasWorkers={gasWorkers}", "");
 		if (response.IsSuccessStatusCode) {
+			await Tutorial.MarkStepAsync(1);
 			await Load();
 		} else {
 			lastError = await response.Content.ReadAsStringAsync();

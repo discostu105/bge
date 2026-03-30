@@ -1,7 +1,9 @@
 @page "/base"
 @page "/games/{GameId}/base"
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 @implements IDisposable
 
 <h1>Base</h1>
@@ -90,6 +92,8 @@
     <_BuildQueue @ref="buildQueue" />
 
 </div>
+
+<_TutorialChecklist GameId="@GameId" />
 
 @code {
     [Parameter]
