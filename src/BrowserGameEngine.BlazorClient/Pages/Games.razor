@@ -3,7 +3,7 @@
 @inject HttpClient Http
 @inject NavigationManager Nav
 
-<h1>Game Lobby</h1>
+<h1>Season Schedule</h1>
 
 @if (!string.IsNullOrEmpty(lastError)) {
 	<div class="alert alert-danger">@lastError</div>
@@ -11,43 +11,104 @@
 
 @if (games == null) {
 	<p><em>Loading...</em></p>
-} else if (games.Count == 0) {
-	<p>No games available yet.</p>
 } else {
-	<table class="table table-hover">
-		<thead>
-			<tr>
-				<th>Game</th>
-				<th>Status</th>
-				<th>Players</th>
-				<th>Start</th>
-				<th>End</th>
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var game in games) {
-				<tr>
-					<td><strong>@game.Name</strong></td>
-					<td>
-						<span class="badge @GetStatusBadge(game.Status)">@game.Status</span>
-					</td>
-					<td>@game.PlayerCount</td>
-					<td>@(game.StartTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
-					<td>@(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
-					<td>
-						@if (game.Status == "Active") {
-							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play</a>
-						} else if (game.Status == "Upcoming") {
-							<span class="text-muted">Upcoming</span>
-						} else {
-							<a class="btn btn-sm btn-secondary" href="games/@game.GameId/results">Results</a>
-						}
-					</td>
-				</tr>
+	var active = games.Where(g => g.Status == "Active").ToList();
+	var upcoming = games.Where(g => g.Status == "Upcoming").ToList();
+	var finished = games.Where(g => g.Status == "Finished").ToList();
+
+	<h2>Active</h2>
+	@if (active.Count == 0) {
+		<p class="text-muted">No games are currently running.</p>
+	} else {
+		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+			@foreach (var game in active) {
+				<div class="col">
+					<div class="card h-100">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-start mb-2">
+								<h5 class="card-title mb-0">@game.Name</h5>
+								<span class="badge bg-success">LIVE</span>
+							</div>
+							<p class="card-text mb-0">
+								<small class="text-muted">Players: @game.PlayerCount@(game.MaxPlayers > 0 ? $" / {game.MaxPlayers}" : "")</small>
+							</p>
+							<p class="card-text">
+								<small class="text-muted">Ends: @(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</small>
+							</p>
+						</div>
+						<div class="card-footer d-flex gap-2">
+							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play Now</a>
+							<a class="btn btn-sm btn-outline-secondary" href="games/@game.GameId/ranking">Spectate</a>
+						</div>
+					</div>
+				</div>
 			}
-		</tbody>
-	</table>
+		</div>
+	}
+
+	<h2>Upcoming</h2>
+	@if (upcoming.Count == 0) {
+		<p class="text-muted">No upcoming games are scheduled yet.</p>
+	} else {
+		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+			@foreach (var game in upcoming) {
+				<div class="col">
+					<div class="card h-100">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-start mb-2">
+								<h5 class="card-title mb-0">@game.Name</h5>
+								<span class="badge bg-warning text-dark">UPCOMING</span>
+							</div>
+							<p class="card-text mb-0">
+								<small class="text-muted">Players: @game.PlayerCount@(game.MaxPlayers > 0 ? $" / {game.MaxPlayers}" : "")</small>
+							</p>
+							<p class="card-text">
+								<small class="text-muted">Starts: @(game.StartTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</small>
+							</p>
+						</div>
+						<div class="card-footer">
+							@if (game.CanJoin) {
+								<button class="btn btn-sm btn-success" @onclick="() => JoinGame(game.GameId)">Register Now</button>
+							} else if (game.MaxPlayers > 0 && game.PlayerCount >= game.MaxPlayers) {
+								<span class="badge bg-danger">Full</span>
+							} else {
+								<span class="badge bg-secondary">Registered</span>
+							}
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
+
+	@if (finished.Count > 0) {
+		<h2>Finished</h2>
+		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+			@foreach (var game in finished) {
+				<div class="col">
+					<div class="card h-100">
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-start mb-2">
+								<h5 class="card-title mb-0">@game.Name</h5>
+								<span class="badge bg-secondary">FINISHED</span>
+							</div>
+							@if (!string.IsNullOrEmpty(game.WinnerName)) {
+								<p class="card-text mb-0">
+									<small class="text-muted">Winner: <strong>@game.WinnerName</strong></small>
+								</p>
+							}
+							<p class="card-text">
+								<small class="text-muted">Ended: @(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</small>
+							</p>
+						</div>
+						<div class="card-footer">
+							<a class="btn btn-sm btn-outline-secondary" href="games/@game.GameId/results">View Results</a>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
 }
 
 @code {
@@ -64,10 +125,13 @@
 		}
 	}
 
-	private static string GetStatusBadge(string status) => status switch {
-		"Active" => "bg-success",
-		"Upcoming" => "bg-warning text-dark",
-		"Finished" => "bg-secondary",
-		_ => "bg-light text-dark"
-	};
+	private async Task JoinGame(string gameId) {
+		lastError = null;
+		var response = await Http.PostAsync($"api/games/{gameId}/join", null);
+		if (response.IsSuccessStatusCode) {
+			Nav.NavigateTo($"games/{gameId}/base");
+		} else {
+			lastError = await response.Content.ReadAsStringAsync();
+		}
+	}
 }
