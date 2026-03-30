@@ -142,7 +142,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			await engine.ProcessLifecycleAsync();
 
-			var achievements = registry.GlobalState.Achievements
+			var achievements = registry.GlobalState.GetAchievements()
 				.OrderBy(a => a.FinalRank)
 				.ToList();
 
@@ -153,7 +153,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal("Player 2", achievements[1].PlayerName);
 			Assert.Equal(2, achievements[1].FinalRank);
 			// Rank-1 player is the winner recorded on the game record
-			var finalRecord = registry.GlobalState.Games[0];
+			var finalRecord = registry.GlobalState.GetGames()[0];
 			Assert.Equal(achievements[0].PlayerId.Id, finalRecord.WinnerId?.Id);
 		}
 

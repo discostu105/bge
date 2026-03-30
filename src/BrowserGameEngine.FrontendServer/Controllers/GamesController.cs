@@ -103,10 +103,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[Authorize]
 		[HttpGet("{gameId}/results")]
 		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
-			var record = globalState.Games.FirstOrDefault(g => g.GameId.Id == gameId);
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
 
-			var standings = globalState.Achievements
+			var standings = globalState.GetAchievements()
 				.Where(a => a.GameId.Id == gameId)
 				.OrderBy(a => a.FinalRank)
 				.Select(a => new GameResultEntryViewModel(
