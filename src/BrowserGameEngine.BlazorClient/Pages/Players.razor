@@ -73,19 +73,19 @@
 	private CreatePlayerForUserViewModel createModel = new();
 	private string? createError;
 	private string? newApiKey;
-	private System.Threading.Timer? _refreshTimer;
+	private CancellationTokenSource? _cts;
 
 	protected override async Task OnInitializedAsync() {
 		await LoadPlayers();
-		_refreshTimer = new System.Threading.Timer(
-			async _ => {
-				await LoadPlayers();
-				await InvokeAsync(StateHasChanged);
-			},
-			null,
-			TimeSpan.FromSeconds(10),
-			TimeSpan.FromSeconds(10)
-		);
+		_cts = new CancellationTokenSource();
+		_ = RunRefreshLoop(_cts.Token);
+	}
+
+	private async Task RunRefreshLoop(CancellationToken ct) {
+		using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+		while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+			await InvokeAsync(LoadPlayers);
+		}
 	}
 
 	private async Task LoadPlayers() {
@@ -132,6 +132,7 @@
 	}
 
 	public void Dispose() {
-		_refreshTimer?.Dispose();
+		_cts?.Cancel();
+		_cts?.Dispose();
 	}
 }

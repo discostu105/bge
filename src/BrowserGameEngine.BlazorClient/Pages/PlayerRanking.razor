@@ -91,19 +91,19 @@
     private AllTimeStandingViewModel[]? allTimeModel;
     private string filter = "all";
     private string activeTab = "current";
-    private System.Threading.Timer? _refreshTimer;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
         await LoadData();
-        _refreshTimer = new System.Threading.Timer(
-            async _ => {
-                await LoadData();
-                await InvokeAsync(StateHasChanged);
-            },
-            null,
-            TimeSpan.FromSeconds(10),
-            TimeSpan.FromSeconds(10)
-        );
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(LoadData);
+        }
     }
 
     private async Task SwitchTab(string tab) {
@@ -136,6 +136,7 @@
     }
 
     public void Dispose() {
-        _refreshTimer?.Dispose();
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }
