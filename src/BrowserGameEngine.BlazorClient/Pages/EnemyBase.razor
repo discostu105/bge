@@ -23,6 +23,76 @@
     @if (battleResult != null) {
         <h2>Battle Result</h2>
 
+        <p class="fs-4 fw-bold @(battleResult.Outcome == "AttackerWon" ? "text-success" : battleResult.Outcome == "DefenderWon" ? "text-danger" : "text-warning")">
+            @(battleResult.Outcome == "AttackerWon" ? "Victory!" : battleResult.Outcome == "DefenderWon" ? "Defeat" : "Draw")
+        </p>
+        <p><strong>@battleResult.AttackerName</strong> vs <strong>@battleResult.DefenderName</strong></p>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong>Attacker strength:</strong> @battleResult.TotalAttackerStrengthBefore</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Defender strength:</strong> @battleResult.TotalDefenderStrengthBefore</p>
+            </div>
+        </div>
+
+        @if (battleResult.LandTransferred > 0 || battleResult.WorkersCaptured > 0 || battleResult.ResourcesPillaged.Count > 0) {
+            <h4>Spoils of War</h4>
+            @if (battleResult.LandTransferred > 0) {
+                <p><span class="badge bg-success">+@battleResult.LandTransferred land captured</span></p>
+            }
+            @if (battleResult.WorkersCaptured > 0) {
+                <p><span class="badge bg-success">+@battleResult.WorkersCaptured workers captured</span></p>
+            }
+            @if (battleResult.ResourcesPillaged.Count > 0) {
+                <p>
+                    @foreach (var kv in battleResult.ResourcesPillaged) {
+                        <span class="badge bg-warning text-dark me-1">+@kv.Value @kv.Key pillaged</span>
+                    }
+                </p>
+            }
+        }
+
+        <details>
+            <summary><strong>Unit Losses</strong></summary>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <h5>Your losses (@battleResult.AttackerName)</h5>
+                    @if (!battleResult.UnitsLostByAttacker.Any()) {
+                        <p class="text-muted">No losses</p>
+                    } else {
+                        <table class="table table-sm">
+                            <thead><tr><th>Unit</th><th>Lost</th></tr></thead>
+                            <tbody>
+                                @foreach (var loss in battleResult.UnitsLostByAttacker.OrderByDescending(x => x.Count)) {
+                                    <tr><td>@loss.UnitName</td><td>@loss.Count</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+                <div class="col-md-6">
+                    <h5>Enemy losses (@battleResult.DefenderName)</h5>
+                    @if (!battleResult.UnitsLostByDefender.Any()) {
+                        <p class="text-muted">No losses</p>
+                    } else {
+                        <table class="table table-sm">
+                            <thead><tr><th>Unit</th><th>Lost</th></tr></thead>
+                            <tbody>
+                                @foreach (var loss in battleResult.UnitsLostByDefender.OrderByDescending(x => x.Count)) {
+                                    <tr><td>@loss.UnitName</td><td>@loss.Count</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+            @if (battleResult.TotalAttackerStrengthBefore > 0 && battleResult.TotalDefenderStrengthBefore > 0) {
+                <p class="text-muted"><small>Kill ratio (defender:attacker): @GetKillRatio(battleResult)</small></p>
+            }
+        </details>
+
     } else {
         <h2>Your Troops</h2>
 
@@ -113,6 +183,12 @@
             var error = await response.Content.ReadAsStringAsync();
             lastError = error;
         }
+    }
+
+    private string GetKillRatio(BattleResultViewModel r) {
+        var attackerLost = r.UnitsLostByAttacker.Sum(x => x.Count);
+        var defenderLost = r.UnitsLostByDefender.Sum(x => x.Count);
+        return attackerLost == 0 ? "∞" : $"{(decimal)defenderLost / attackerLost:F2}";
     }
 
     public void Dispose() {

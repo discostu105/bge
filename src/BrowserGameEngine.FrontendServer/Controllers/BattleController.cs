@@ -120,8 +120,35 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId));
 			battleReportGenerator.GenerateReports(result);
-			return new BattleResultViewModel {
 
+			var attacker = playerRepository.Get(result.Attacker);
+			var defender = playerRepository.Get(result.Defender);
+			bool attackerWon = !result.BtlResult.DefendingUnitsSurvived.Any() && result.BtlResult.AttackingUnitsSurvived.Any();
+			bool draw = !result.BtlResult.AttackingUnitsSurvived.Any() && !result.BtlResult.DefendingUnitsSurvived.Any();
+			string outcome = attackerWon ? "AttackerWon" : draw ? "Draw" : "DefenderWon";
+
+			return new BattleResultViewModel {
+				AttackerName = attacker.Name,
+				DefenderName = defender.Name,
+				Outcome = outcome,
+				TotalAttackerStrengthBefore = result.BtlResult.TotalAttackerStrengthBefore,
+				TotalDefenderStrengthBefore = result.BtlResult.TotalDefenderStrengthBefore,
+				UnitsLostByAttacker = result.BtlResult.AttackingUnitsDestroyed
+					.Select(uc => new UnitLossViewModel {
+						UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+						Count = uc.Count
+					}).ToList(),
+				UnitsLostByDefender = result.BtlResult.DefendingUnitsDestroyed
+					.Select(uc => new UnitLossViewModel {
+						UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+						Count = uc.Count
+					}).ToList(),
+				ResourcesPillaged = result.BtlResult.ResourcesStolen
+					.SelectMany(c => c.Resources)
+					.GroupBy(x => x.Key.Id)
+					.ToDictionary(g => g.Key, g => g.Sum(x => x.Value)),
+				LandTransferred = (int)result.BtlResult.LandTransferred,
+				WorkersCaptured = result.BtlResult.WorkersCaptured,
 			};
 		}
 	}

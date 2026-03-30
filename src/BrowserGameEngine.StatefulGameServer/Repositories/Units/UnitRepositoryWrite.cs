@@ -182,6 +182,29 @@ namespace BrowserGameEngine.StatefulGameServer {
 			battleResult.BtlResult.WorkersCaptured = workersToCapture;
 		}
 
+		private void StealResources(BattleResult battleResult) {
+			const decimal pillagePercent = 0.10m;
+			const decimal maxPillage = 5000m;
+			var stolen = new Dictionary<ResourceDefId, decimal>();
+
+			foreach (var resourceDef in gameDef.Resources) {
+				if (resourceDef.Id.Equals(Id.ResDef("land"))) continue;
+				var defenderAmount = resourceRepository.GetAmount(battleResult.Defender, resourceDef.Id);
+				if (defenderAmount <= 0) continue;
+
+				decimal amountToSteal = Math.Min(Math.Floor(defenderAmount * pillagePercent), maxPillage);
+				if (amountToSteal <= 0) continue;
+
+				resourceRepositoryWrite.AddResources(battleResult.Defender, resourceDef.Id, -amountToSteal);
+				resourceRepositoryWrite.AddResources(battleResult.Attacker, resourceDef.Id, amountToSteal);
+				stolen[resourceDef.Id] = amountToSteal;
+			}
+
+			if (stolen.Count > 0) {
+				battleResult.BtlResult.ResourcesStolen.Add(Cost.FromDict(stolen));
+			}
+		}
+
 		private void RemoveUnitsOfType(PlayerId playerId, UnitDefId unitDefId) {
 			Units(playerId).RemoveAll(x => x.UnitDefId == unitDefId);
 		}
@@ -213,6 +236,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				Defender = enemyPlayerId,
 				BtlResult = battleBehavior.CalculateResult(attackingUnits, defendingUnits)
 			};
+			battleResult.BtlResult.TotalAttackerStrengthBefore = attackingUnits.Sum(u => u.TotalAttack);
+			battleResult.BtlResult.TotalDefenderStrengthBefore = defendingUnits.Sum(u => u.TotalDefense);
 			ApplyBatteResult(battleResult);
 
 			logger.LogInformation(@"Battle {Attacker}->{Defender}
@@ -240,6 +265,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				int remainingAttackDamage = battleResult.BtlResult.AttackingUnitsSurvived
 					.Sum(uc => uc.Count * gameDef.GetUnitDef(uc.UnitDefId)!.Attack);
 				ApplyLandTransfer(battleResult, remainingAttackDamage);
+				StealResources(battleResult);
 			}
 
 			SetReturnTimers(playerId, enemyPlayerId);
@@ -268,7 +294,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private void ApplyBatteResult(BattleResult battleResult) {
 			RemoveUnits(battleResult.Attacker, battleResult.Defender, battleResult.BtlResult.AttackingUnitsDestroyed);
 			RemoveUnits(battleResult.Defender, null, battleResult.BtlResult.DefendingUnitsDestroyed);
-			// TODO: apply resourses stolen/lost
 		}
 
 		private void RemoveUnits(PlayerId playerId, PlayerId? position, List<UnitCount> unitCounts) {
