@@ -27,7 +27,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.colonizeRepositoryWrite = colonizeRepositoryWrite;
 		}
 
+		/// <summary>Colonizes additional land by spending the required resources.</summary>
+		/// <param name="amount">Number of land tiles to colonize.</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult Colonize([FromQuery] int amount) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {

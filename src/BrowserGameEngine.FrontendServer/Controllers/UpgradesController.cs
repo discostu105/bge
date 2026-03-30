@@ -27,7 +27,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.upgradeRepositoryWrite = upgradeRepositoryWrite;
 		}
 
+		/// <summary>Returns the current player's attack and defense upgrade levels, plus costs for the next upgrade tier.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(UpgradesViewModel), StatusCodes.Status200OK)]
 		public UpgradesViewModel Get() {
 			var playerId = currentUserContext.PlayerId;
 			int attackLevel = upgradeRepository.GetAttackUpgradeLevel(playerId);
@@ -42,7 +44,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Starts researching an upgrade. Only one upgrade can be researched at a time.</summary>
+		/// <param name="upgradeType">Upgrade type: "Attack" or "Defense".</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult Research([FromQuery] string upgradeType) {
 			if (!System.Enum.TryParse<UpgradeType>(upgradeType, ignoreCase: true, out var type) || type == UpgradeType.None) {
 				return BadRequest("Invalid upgradeType. Use 'Attack' or 'Defense'.");
