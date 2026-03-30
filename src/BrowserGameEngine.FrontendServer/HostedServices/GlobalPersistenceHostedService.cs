@@ -12,6 +12,7 @@ namespace BrowserGameEngine.FrontendServer {
 		private readonly ILogger<GlobalPersistenceHostedService> logger;
 		private readonly GlobalPersistenceService globalPersistenceService;
 		private readonly GameRegistry gameRegistry;
+		private int isactive = 0;
 		private Timer? timer;
 
 		public GlobalPersistenceHostedService(ILogger<GlobalPersistenceHostedService> logger, GlobalPersistenceService globalPersistenceService, GameRegistry gameRegistry) {
@@ -26,16 +27,22 @@ namespace BrowserGameEngine.FrontendServer {
 		}
 
 		private void DoWork(object? state) {
+			if (Interlocked.CompareExchange(ref isactive, 1, 0) != 0) return;
 			try {
-				_ = globalPersistenceService.StoreGlobalState(gameRegistry.GlobalState.ToImmutable());
+				SaveGlobalState().GetAwaiter().GetResult();
 			} catch (Exception ex) {
 				logger.LogError(ex, "GlobalPersistenceHostedService: error storing global state");
+			} finally {
+				Interlocked.Exchange(ref isactive, 0);
 			}
 		}
 
-		public Task StopAsync(CancellationToken stoppingToken) {
+		private async Task SaveGlobalState() =>
+			await globalPersistenceService.StoreGlobalState(gameRegistry.GlobalState.ToImmutable());
+
+		public async Task StopAsync(CancellationToken stoppingToken) {
 			timer?.Change(Timeout.Infinite, 0);
-			return Task.CompletedTask;
+			await SaveGlobalState();
 		}
 
 		public void Dispose() => timer?.Dispose();

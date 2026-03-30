@@ -112,7 +112,7 @@ var app = builder.Build();
 // Wire tick engine into game instances (Phase 1: single game)
 var tickEngine = app.Services.GetRequiredService<GameTickEngine>();
 foreach (var instance in app.Services.GetRequiredService<BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry>().GetAllInstances()) {
-    instance.SetTickEngine(tickEngine);
+	instance.SetTickEngine(tickEngine);
 }
 
 var forwardedHeadersOptions = new ForwardedHeadersOptions {
