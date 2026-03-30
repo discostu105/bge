@@ -1,9 +1,10 @@
-﻿@page "/enemybase/{EnemeyPlayerId}"
+@page "/enemybase/{EnemeyPlayerId}"
 @page "/games/{GameId}/enemybase/{EnemeyPlayerId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
-<h1>Angriff</h1>
+<h1>Attack</h1>
 
 @if (!string.IsNullOrEmpty(lastError)) {
     <span class="error">@lastError</span>
@@ -13,24 +14,24 @@
     <p><em>Loading...</em></p>
 } else {
 
-    <NavLink class="nav-link" href="units">Nachschub anfordern</NavLink>
+    <NavLink class="nav-link" href="units">Request Reinforcements</NavLink>
 
     <button class="btn btn-primary" @onclick="Attack">
-        Angreifen
+        Attack
     </button>
 
     @if (battleResult != null) {
-        <h2>Schlachtergebnis</h2>
+        <h2>Battle Result</h2>
 
     } else {
-        <h2>Eigene Truppen</h2>
+        <h2>Your Troops</h2>
 
         <table class="table">
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Anzahl</th>
-                    <th>Eigenschaften</th>
+                    <th>Count</th>
+                    <th>Properties</th>
                     <th>Position</th>
                 </tr>
             </thead>
@@ -41,19 +42,19 @@
                         <td>@item.Count</td>
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
                         <td>@item.PositionPlayerId</td>
-                        <td>Rückzug</td>
+                        <td>Retreat</td>
                     </tr>
                 }
             </tbody>
         </table>
 
-        <h2>Feindliche Truppen</h2>
+        <h2>Enemy Troops</h2>
         <table class="table">
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Anzahl</th>
-                    <th>Eigenschaften</th>
+                    <th>Count</th>
+                    <th>Properties</th>
                     <th>Position</th>
                 </tr>
             </thead>
@@ -84,7 +85,23 @@
     [Parameter]
     public required string EnemeyPlayerId { get; set; }
 
+    private CancellationTokenSource? _cts;
+
     protected override async Task OnInitializedAsync() {
+        await LoadData();
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(LoadData);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadData() {
         model = await Http.GetFromJsonAsync<EnemyBaseViewModel>($"api/battle/enemybase?enemyPlayerId={Uri.EscapeDataString(EnemeyPlayerId)}");
     }
 
@@ -96,5 +113,10 @@
             var error = await response.Content.ReadAsStringAsync();
             lastError = error;
         }
+    }
+
+    public void Dispose() {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

@@ -42,7 +42,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.onlineStatusRepository = onlineStatusRepository;
 		}
 
+		/// <summary>Returns the current player's profile including name, score, and protection status.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(PlayerProfileViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<PlayerProfileViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var player = playerRepository.Get(currentUserContext.PlayerId!);
@@ -56,8 +59,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Returns initial data for the player creation form, pre-filled from the authenticated user's display name.</summary>
 		[HttpGet]
 		[Route("init")]
+		[ProducesResponseType(typeof(CreatePlayerViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<CreatePlayerViewModel> Init() {
 			if (currentUserContext.UserId == null) return Unauthorized();
 			return new CreatePlayerViewModel {
@@ -65,24 +71,34 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Returns whether the authenticated user already has a player registered in the current game.</summary>
 		[HttpGet]
 		[Route("exists")]
+		[ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<bool> Exists() {
 			if (currentUserContext.UserId == null) return Unauthorized();
 			var players = userRepository.GetPlayersForUser(currentUserContext.UserId);
 			return players.Any();
 		}
 
+		/// <summary>Changes the current player's display name.</summary>
 		[HttpPost]
 		[Route("changename")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult ChangePlayerName(PlayerProfileViewModel playerProfile) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(currentUserContext.PlayerId!, playerProfile.PlayerName!));
 			return Ok();
 		}
 
+		/// <summary>Creates a new player for the authenticated user in the current game.</summary>
 		[HttpPost]
 		[Route("create")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
 		public ActionResult Create(CreatePlayerViewModel model) {
 			if (currentUserContext.UserId == null) return Unauthorized();
 

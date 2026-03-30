@@ -5,7 +5,7 @@
 @implements IDisposable
 
 <div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">BrowserGameEngine</a>
+    <a class="navbar-brand" href="">Age of Agents</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -30,27 +30,32 @@
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="base">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Basis
+                <span class="oi oi-layers" aria-hidden="true"></span> Base
             </NavLink>
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="units">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Einheiten
+                <span class="oi oi-shield" aria-hidden="true"></span> Units
             </NavLink>
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="unitdefinitions">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Einheitentypen
+                <span class="oi oi-spreadsheet" aria-hidden="true"></span> Unit Types
             </NavLink>
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="upgrades">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Forschung
+                <span class="oi oi-beaker" aria-hidden="true"></span> Research
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="market">
+                <span class="oi oi-cart" aria-hidden="true"></span> Market
             </NavLink>
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="ranking">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Ranking
+                <span class="oi oi-bar-chart" aria-hidden="true"></span> Ranking
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -60,12 +65,12 @@
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="allianceranking">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Alliance Ranking
+                <span class="oi oi-graph" aria-hidden="true"></span> Alliance Ranking
             </NavLink>
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="players">
-                <span class="oi oi-people" aria-hidden="true"></span> My Players
+                <span class="oi oi-person" aria-hidden="true"></span> Players
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -78,13 +83,13 @@
         </li>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="profile">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Profile
+                <span class="oi oi-account-login" aria-hidden="true"></span> Profile
             </NavLink>
         </li>
         <AuthorizeView>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="history">
-                <span class="oi oi-clock" aria-hidden="true"></span> My History
+                <span class="oi oi-clock" aria-hidden="true"></span> History
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -95,7 +100,7 @@
         </AuthorizeView>
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="signout">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Logout
+                <span class="oi oi-account-logout" aria-hidden="true"></span> Sign Out
             </NavLink>
         </li>
     </ul>

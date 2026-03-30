@@ -35,6 +35,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public MessageRepositoryWrite MessageRepositoryWrite { get; }
 		public BuildQueueRepository BuildQueueRepository { get; }
 		public BuildQueueRepositoryWrite BuildQueueRepositoryWrite { get; }
+		public MarketRepository MarketRepository { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
@@ -68,6 +69,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			MessageRepositoryWrite = new MessageRepositoryWrite(Accessor, TimeProvider.System);
 			BuildQueueRepository = new BuildQueueRepository(Accessor);
 			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), Accessor, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
+			MarketRepository = new MarketRepository(Accessor, ResourceRepository, ResourceRepositoryWrite);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));

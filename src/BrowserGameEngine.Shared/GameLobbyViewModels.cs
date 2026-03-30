@@ -13,7 +13,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime? EndTime,
 		bool CanJoin,
 		string? WinnerId = null,
-		string? WinnerName = null
+		string? WinnerName = null,
+		string? DiscordWebhookUrl = null
 	);
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);

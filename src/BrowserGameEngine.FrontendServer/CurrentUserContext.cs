@@ -11,6 +11,8 @@ namespace BrowserGameEngine.FrontendServer {
 
 		public string? UserId { get; set; }
 
+		public string? GithubId { get; set; }
+
 		public bool IsValid { get; set; } = false;
 
 		public static CurrentUserContext Create(string playerId) {

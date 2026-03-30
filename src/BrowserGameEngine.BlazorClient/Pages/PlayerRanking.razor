@@ -3,6 +3,7 @@
 @using BrowserGameEngine.Shared
 @using System.Linq
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Ranking</h1>
 
@@ -90,9 +91,20 @@
     private AllTimeStandingViewModel[]? allTimeModel;
     private string filter = "all";
     private string activeTab = "current";
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
-        await LoadCurrentGame();
+        await LoadData();
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(LoadData);
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task SwitchTab(string tab) {
@@ -102,7 +114,7 @@
         }
     }
 
-    private async Task LoadCurrentGame() {
+    private async Task LoadData() {
         model = await Http.GetFromJsonAsync<PublicPlayerViewModel[]>("api/playerranking");
     }
 
@@ -122,5 +134,10 @@
             .OrderByDescending(x => x.Score)
             .GroupBy(p => p.UserId)
             .Select(g => (g.Key, g.First().UserDisplayName, (IEnumerable<PublicPlayerViewModel>)g));
+    }
+
+    public void Dispose() {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

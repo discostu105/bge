@@ -1,6 +1,7 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -12,6 +13,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly GlobalState globalState;
 		private readonly PersistenceService persistenceService;
 		private readonly GlobalPersistenceService globalPersistenceService;
+		private readonly IGameNotificationService notificationService;
+		private readonly IPlayerNotificationService playerNotificationService;
+		private readonly UserRepositoryWrite userRepositoryWrite;
+		private readonly TimeProvider timeProvider;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -19,25 +24,33 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			GlobalState globalState,
 			PersistenceService persistenceService,
 			GlobalPersistenceService globalPersistenceService,
+			IGameNotificationService notificationService,
+			IPlayerNotificationService playerNotificationService,
+			UserRepositoryWrite userRepositoryWrite,
+			TimeProvider timeProvider,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
 			this.globalState = globalState;
 			this.persistenceService = persistenceService;
 			this.globalPersistenceService = globalPersistenceService;
+			this.notificationService = notificationService;
+			this.playerNotificationService = playerNotificationService;
+			this.userRepositoryWrite = userRepositoryWrite;
+			this.timeProvider = timeProvider;
 			this.logger = logger;
 		}
 
 		public async Task ProcessLifecycleAsync() {
 			var utcNow = DateTime.UtcNow;
-			bool changed = ActivateUpcomingGames(utcNow);
+			bool changed = await ActivateUpcomingGamesAsync(utcNow);
 			changed |= await FinalizeEndedGamesAsync(utcNow);
 			if (changed) {
 				await globalPersistenceService.StoreGlobalState(globalState.ToImmutable());
 			}
 		}
 
-		private bool ActivateUpcomingGames(DateTime utcNow) {
+		private async Task<bool> ActivateUpcomingGamesAsync(DateTime utcNow) {
 			var toActivate = globalState.GetGames()
 				.Where(g => g.Status == GameStatus.Upcoming && g.StartTime <= utcNow)
 				.ToList();
@@ -46,6 +59,32 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				var updated = record with { Status = GameStatus.Active };
 				globalState.UpdateGame(record, updated);
 				logger.LogInformation("Game {GameId} activated", record.GameId.Id);
+				var instance = gameRegistry.TryGetInstance(record.GameId);
+				var playerCount = instance?.PlayerCount ?? 0;
+				await notificationService.NotifyGameStartedAsync(updated, playerCount);
+
+				// Auto-join users who opted in
+				if (instance != null) {
+					var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+					var usersToAutoJoin = globalState.Users.Values
+						.Where(u => u.AutoJoinNextGame)
+						.ToList();
+					foreach (var user in usersToAutoJoin) {
+						var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString("N")[..12]);
+						if (!instance.HasPlayer(playerId)) {
+							playerRepoWrite.CreatePlayer(playerId, user.UserId);
+							logger.LogInformation("Auto-joined user {UserId} as player {PlayerId} in game {GameId}",
+								user.UserId, playerId.Id, record.GameId.Id);
+						}
+						userRepositoryWrite.SetGamePreferences(user.GithubId, user.WantsGameNotification, false);
+					}
+
+					foreach (var player in instance.WorldState.Players.Values) {
+						if (player.UserId != null) {
+							playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has started!", NotificationKind.GameEvent);
+						}
+					}
+				}
 			}
 			return toActivate.Count > 0;
 		}
@@ -81,8 +120,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				.ToList();
 
 			var winnerId = rankings.Count > 0 ? rankings[0].PlayerId : null;
-
-			// Write PlayerAchievement records for players that have a linked user
+			var winnerName = winnerId != null && instance.WorldState.Players.TryGetValue(winnerId, out var winner) ? winner.Name : null;
 			for (int i = 0; i < rankings.Count; i++) {
 				var (playerId, score) = rankings[i];
 				var player = instance.WorldState.Players[playerId];
@@ -111,11 +149,20 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			// Persist final world state before freeing memory
 			await persistenceService.StoreGameState(record.GameId, instance.WorldState.ToImmutable());
 
+			// Notify players that the game has ended
+			foreach (var player in instance.WorldState.Players.Values) {
+				if (player.UserId != null) {
+					playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has ended. Check results!", NotificationKind.GameEvent);
+				}
+			}
+
 			// Remove instance from registry to free memory
 			gameRegistry.Remove(record.GameId);
 
 			logger.LogInformation("Game {GameId} finalized. Winner: {WinnerId}, Players: {PlayerCount}",
 				record.GameId.Id, winnerId?.Id ?? "(none)", rankings.Count);
+
+			await notificationService.NotifyGameFinishedAsync(updated, winnerId, winnerName, rankings.Count);
 		}
 
 	}
