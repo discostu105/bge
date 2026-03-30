@@ -122,7 +122,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId);
+			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId, request.Race);
 			playerRepoWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, request.PlayerName));
 
 			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName}", playerId.Id, gameId, request.PlayerName);
