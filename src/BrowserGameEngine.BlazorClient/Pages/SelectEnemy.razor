@@ -1,8 +1,10 @@
 @page "/selectenemy/{UnitId}"
 @page "/games/{GameId}/selectenemy/{UnitId}"
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
 @inject NavigationManager Nav
+@inject TutorialService Tutorial
 
 <h1>Select Enemy</h1>
 
@@ -53,6 +55,7 @@
         }
         var response = await Http.PostAsJsonAsync($"api/battle/sendunits?unitId={UnitId}&enemyPlayerId={Uri.EscapeDataString(SelectedPlayerId)}", "");
         if (response.IsSuccessStatusCode) {
+            await Tutorial.MarkStepAsync(3);
             Nav.NavigateTo($"/enemybase/{Uri.EscapeDataString(SelectedPlayerId)}");
         } else {
             var error = await response.Content.ReadAsStringAsync();
