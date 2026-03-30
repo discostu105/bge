@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using BrowserGameEngine.BlazorClient;
 using BrowserGameEngine.BlazorClient.Auth;
+using BrowserGameEngine.BlazorClient.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("app");
@@ -17,6 +18,7 @@ builder.Services.AddHttpClient("ServerAPI", client => {
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
 builder.Services.AddSingleton<BrowserGameEngine.BlazorClient.Code.RefreshService>();
+builder.Services.AddScoped<ICurrentGameService, CurrentGameService>();
 
 await builder.Build().RunAsync();
 
