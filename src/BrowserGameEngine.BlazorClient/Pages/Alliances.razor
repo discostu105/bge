@@ -2,6 +2,7 @@
 @page "/games/{GameId}/alliances"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Alliances</h1>
 
@@ -86,9 +87,19 @@
     private string joinPassword = "";
     private AllianceViewModel? joiningAlliance;
     private string? lastError;
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync() {
         await Update();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await Update();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
     }
 
     private async Task Update() {
@@ -133,5 +144,9 @@
         } else {
             lastError = await response.Content.ReadAsStringAsync();
         }
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 }

@@ -2,6 +2,7 @@
 @page "/games/{GameId}/enemybase/{EnemeyPlayerId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Angriff</h1>
 
@@ -84,7 +85,22 @@
     [Parameter]
     public required string EnemeyPlayerId { get; set; }
 
+    private System.Threading.Timer? _refreshTimer;
+
     protected override async Task OnInitializedAsync() {
+        await LoadData();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await LoadData();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
+    }
+
+    private async Task LoadData() {
         model = await Http.GetFromJsonAsync<EnemyBaseViewModel>($"api/battle/enemybase?enemyPlayerId={Uri.EscapeDataString(EnemeyPlayerId)}");
     }
 
@@ -96,5 +112,9 @@
             var error = await response.Content.ReadAsStringAsync();
             lastError = error;
         }
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 }
