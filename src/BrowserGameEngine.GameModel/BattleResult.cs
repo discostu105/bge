@@ -17,5 +17,7 @@ namespace BrowserGameEngine.GameModel {
 		public required List<Cost> ResourcesStolen { get; set; }
 		public decimal LandTransferred { get; set; }
 		public int WorkersCaptured { get; set; }
+		public int TotalAttackerStrengthBefore { get; set; }
+		public int TotalDefenderStrengthBefore { get; set; }
 	}
 }

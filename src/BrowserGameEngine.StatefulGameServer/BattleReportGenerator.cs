@@ -36,13 +36,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 			bool attackerWon = !battleResult.BtlResult.DefendingUnitsSurvived.Any()
 				&& battleResult.BtlResult.AttackingUnitsSurvived.Any();
-			string outcome = attackerWon ? "Attacker won" : "Defender won";
+			bool draw = !battleResult.BtlResult.AttackingUnitsSurvived.Any() && !battleResult.BtlResult.DefendingUnitsSurvived.Any();
+			string outcome = attackerWon ? "Attacker won" : draw ? "Draw" : "Defender won";
+
+			var resourcesStolen = battleResult.BtlResult.ResourcesStolen
+				.SelectMany(c => c.Resources)
+				.GroupBy(x => x.Key.Id)
+				.ToDictionary(g => g.Key, g => g.Sum(x => x.Value));
 
 			string body = BuildBody(
 				attacker.Name, attackerRace,
 				defender.Name, defenderRace,
 				outcome,
 				(int)battleResult.BtlResult.LandTransferred,
+				battleResult.BtlResult.WorkersCaptured,
+				resourcesStolen,
 				battleResult.BtlResult.AttackingUnitsDestroyed,
 				battleResult.BtlResult.DefendingUnitsDestroyed
 			);
@@ -68,6 +76,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			string defenderName, string defenderRace,
 			string outcome,
 			int landTransferred,
+			int workersCaptured,
+			Dictionary<string, decimal> resourcesStolen,
 			List<UnitCount> attackerLosses,
 			List<UnitCount> defenderLosses
 		) {
@@ -76,6 +86,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			sb.AppendLine($"Defender: {defenderName} ({defenderRace})");
 			sb.AppendLine($"Outcome: {outcome}");
 			sb.AppendLine($"Land transferred: {landTransferred}");
+			if (workersCaptured > 0) sb.AppendLine($"Workers captured: {workersCaptured}");
+			if (resourcesStolen.Count > 0) {
+				var stolen = string.Join(", ", resourcesStolen.Select(kv => $"{kv.Value} {kv.Key}"));
+				sb.AppendLine($"Resources pillaged: {stolen}");
+			}
 			sb.AppendLine($"Attacker losses: {FormatUnitBreakdown(attackerLosses)}");
 			sb.AppendLine($"Defender losses: {FormatUnitBreakdown(defenderLosses)}");
 			return sb.ToString();
