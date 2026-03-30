@@ -1,6 +1,10 @@
 @inherits LayoutComponentBase
 @inject ICurrentGameService CurrentGameService
 @inject NavigationManager Nav
+@inject AlertService AlertService
+@inject HttpClient Http
+@using BrowserGameEngine.BlazorClient.Code
+@using BrowserGameEngine.Shared
 @implements IDisposable
 
 <div class="sidebar">
@@ -48,9 +52,14 @@
     </div>
 </div>
 
+<_ToastAlerts />
+
 @code {
     private System.Threading.CancellationTokenSource? pollCts;
     private System.Threading.Timer? displayTimer;
+    private int _lastUnreadCount = -1;
+    private string? _lastGameStatus;
+    private bool _endingSoonAlertShown;
 
     protected override void OnInitialized() {
         CurrentGameService.OnChanged += OnGameChanged;
@@ -85,11 +94,56 @@
 
     private async Task PollGameStatusAsync(System.Threading.CancellationToken ct) {
         while (!ct.IsCancellationRequested) {
-            await Task.Delay(TimeSpan.FromSeconds(30), ct).ContinueWith(_ => { });
+            await Task.Delay(TimeSpan.FromSeconds(10), ct).ContinueWith(_ => { });
             if (ct.IsCancellationRequested) break;
             if (CurrentGameService.CurrentGameId != null) {
                 await CurrentGameService.RefreshAsync();
             }
+            await DetectAlertsAsync();
+        }
+    }
+
+    private async Task DetectAlertsAsync() {
+        try {
+            var tickInfo = await Http.GetFromJsonAsync<BrowserGameEngine.Shared.TickInfoViewModel>("api/game/tick-info");
+            if (tickInfo == null) return;
+
+            // New messages
+            if (_lastUnreadCount >= 0 && tickInfo.UnreadMessageCount > _lastUnreadCount) {
+                var diff = tickInfo.UnreadMessageCount - _lastUnreadCount;
+                AlertService.AddAlert(
+                    diff == 1 ? "You have 1 new message." : $"You have {diff} new messages.",
+                    AlertType.Info
+                );
+            }
+            _lastUnreadCount = tickInfo.UnreadMessageCount;
+        } catch {
+            // Ignore errors — user may not be logged in
+        }
+
+        // Game phase events from CurrentGameService
+        var game = CurrentGameService.CurrentGame;
+        if (game != null) {
+            if (_lastGameStatus != null && _lastGameStatus != game.Status) {
+                _endingSoonAlertShown = false;
+                if (game.Status == "Active") {
+                    AlertService.AddAlert($"Game \"{game.Name}\" has started!", AlertType.Info);
+                } else if (game.Status == "Finished") {
+                    AlertService.AddAlert($"Game \"{game.Name}\" has ended.", AlertType.Warning);
+                }
+            }
+
+            // Ending soon: within 1 minute — fire once only
+            if (game.Status == "Active" && !_endingSoonAlertShown) {
+                var remaining = game.EndTime - DateTime.UtcNow;
+                if (remaining > TimeSpan.Zero && remaining <= TimeSpan.FromMinutes(1)
+                    && _lastGameStatus == "Active") {
+                    AlertService.AddAlert($"Game \"{game.Name}\" ends in less than a minute!", AlertType.Danger);
+                    _endingSoonAlertShown = true;
+                }
+            }
+
+            _lastGameStatus = game.Status;
         }
     }
 
