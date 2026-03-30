@@ -162,7 +162,7 @@
 		submitting = true;
 		var response = await Http.PostAsJsonAsync("api/playerprofile/create", model);
 		if (response.IsSuccessStatusCode) {
-			Nav.NavigateTo("/", forceLoad: true);
+			Nav.NavigateTo("/games?welcome=1", forceLoad: true);
 		} else {
 			submitting = false;
 		}
