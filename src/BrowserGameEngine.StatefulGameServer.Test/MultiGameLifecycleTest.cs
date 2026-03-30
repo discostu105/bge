@@ -54,6 +54,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new PersistenceService(storage, serializer),
 				new GlobalPersistenceService(storage, globalSerializer),
 				new GameRegistryNs.NullGameNotificationService(),
+				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
