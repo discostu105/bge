@@ -1,6 +1,7 @@
 @page "/allianceranking"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Alliance Ranking</h1>
 
@@ -38,8 +39,26 @@
 
 @code {
     private AllianceRankingViewModel[]? model;
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync() {
+        await LoadData();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await LoadData();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
+    }
+
+    private async Task LoadData() {
         model = await Http.GetFromJsonAsync<AllianceRankingViewModel[]>("api/allianceranking");
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 }

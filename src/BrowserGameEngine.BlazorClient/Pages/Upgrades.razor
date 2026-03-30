@@ -1,6 +1,7 @@
 @page "/upgrades"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Forschung</h1>
 
@@ -66,9 +67,19 @@
 @code {
     private UpgradesViewModel? model;
     private string? lastError;
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync() {
         await Update();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await Update();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
     }
 
     private async Task ResearchAttack() => await Research("Attack");
@@ -86,5 +97,9 @@
 
     private async Task Update() {
         model = await Http.GetFromJsonAsync<UpgradesViewModel>("api/upgrades");
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 }

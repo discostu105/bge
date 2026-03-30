@@ -2,6 +2,7 @@
 @using BrowserGameEngine.Shared
 @using System.Linq
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Ranking</h1>
 
@@ -44,8 +45,22 @@
 @code {
     private PublicPlayerViewModel[]? model;
     private string filter = "all";
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync() {
+        await LoadData();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await LoadData();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
+    }
+
+    private async Task LoadData() {
         model = await Http.GetFromJsonAsync<PublicPlayerViewModel[]>("api/playerranking");
     }
 
@@ -60,6 +75,10 @@
             .OrderByDescending(x => x.Score)
             .GroupBy(p => p.UserId)
             .Select(g => (g.Key, g.First().UserDisplayName, (IEnumerable<PublicPlayerViewModel>)g));
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 
 }

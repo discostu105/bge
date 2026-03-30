@@ -1,6 +1,7 @@
 @page "/base"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Basis</h1>
 
@@ -100,9 +101,19 @@
     private int tradeAmount = 1;
     private string? tradeError;
     private _BuildQueue? buildQueue;
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync() {
         await Update();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await Update();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
     }
 
     private async Task BuildAsset(AssetViewModel asset) {
@@ -153,6 +164,10 @@
     private async Task Update() {
         model = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
         resources = await Http.GetFromJsonAsync<PlayerResourcesViewModel>("api/resources");
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 
 }
