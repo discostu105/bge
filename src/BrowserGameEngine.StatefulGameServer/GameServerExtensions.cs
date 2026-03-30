@@ -20,6 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(defaultInstance.WorldState);
 			services.AddSingleton(defaultInstance.GameDef);
 			services.AddSingleton(TimeProvider.System);
+			services.AddSingleton<GameRepository>();
 
 			services.AddSingleton<UserRepository>();
 			services.AddSingleton<UserRepositoryWrite>();
