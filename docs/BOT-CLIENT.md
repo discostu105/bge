@@ -83,7 +83,11 @@ Tick info response:
 }
 ```
 
-`POST /api/resources/Trade?fromResource=minerals&amount=500` — trade one resource for another.
+`POST /api/resources/Trade` — trade one resource for another.
+
+```json
+{ "fromResource": "minerals", "amount": 500 }
+```
 
 ---
 

@@ -124,7 +124,7 @@ BUILD_ORDER = [
 def manage_assets() -> None:
     """Queue the next building in the build order if not already built."""
     assets = get("/api/assets")
-    built_ids = {a["assetDefId"] for a in assets.get("assets", []) if a.get("isBuilt")}
+    built_ids = {a["definition"]["id"] for a in assets.get("assets", []) if a.get("built")}
 
     for asset_def_id in BUILD_ORDER:
         if asset_def_id not in built_ids:
@@ -176,14 +176,14 @@ def attack_weakest() -> None:
         log.info("No matching attackable players in ranking list")
         return
 
-    target = max(candidates, key=lambda p: p.get("rank", 0))
+    target = min(candidates, key=lambda p: p.get("score", 0))
     target_id   = target["playerId"]
     target_name = target.get("playerName", target_id)
 
     # Scout first so we know what we're walking into.
     enemy_base = get("/api/battle/EnemyBase", params={"enemyPlayerId": target_id})
     defender_count = sum(
-        u.get("count", 0) for u in enemy_base.get("enemyDefendingUnits", [])
+        u.get("count", 0) for u in enemy_base.get("enemyDefendingUnits", {}).get("units", [])
     )
     log.info("Target: %s (rank %s, %d defenders)", target_name, target.get("rank"), defender_count)
 
