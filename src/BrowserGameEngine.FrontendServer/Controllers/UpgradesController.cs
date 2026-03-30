@@ -15,16 +15,19 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly UpgradeRepository upgradeRepository;
 		private readonly UpgradeRepositoryWrite upgradeRepositoryWrite;
+		private readonly PlayerRepository playerRepository;
 
 		public UpgradesController(
 			ILogger<UpgradesController> logger,
 			CurrentUserContext currentUserContext,
 			UpgradeRepository upgradeRepository,
-			UpgradeRepositoryWrite upgradeRepositoryWrite) {
+			UpgradeRepositoryWrite upgradeRepositoryWrite,
+			PlayerRepository playerRepository) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.upgradeRepository = upgradeRepository;
 			this.upgradeRepositoryWrite = upgradeRepositoryWrite;
+			this.playerRepository = playerRepository;
 		}
 
 		/// <summary>Returns the current player's attack and defense upgrade levels, plus costs for the next upgrade tier.</summary>
@@ -40,7 +43,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				UpgradeResearchTimer = upgradeRepository.GetUpgradeResearchTimer(playerId),
 				UpgradeBeingResearched = upgradeRepository.GetUpgradeBeingResearched(playerId).ToString(),
 				NextAttackUpgradeCost = attackLevel < 3 ? CostViewModel.Create(upgradeRepositoryWrite.GetUpgradeCost(attackLevel + 1)) : null,
-				NextDefenseUpgradeCost = defenseLevel < 3 ? CostViewModel.Create(upgradeRepositoryWrite.GetUpgradeCost(defenseLevel + 1)) : null
+				NextDefenseUpgradeCost = defenseLevel < 3 ? CostViewModel.Create(upgradeRepositoryWrite.GetUpgradeCost(defenseLevel + 1)) : null,
+				PlayerType = playerRepository.GetPlayerType(playerId).Id
 			};
 		}
 
