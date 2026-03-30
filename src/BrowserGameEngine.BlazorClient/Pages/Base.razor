@@ -1,4 +1,5 @@
 @page "/base"
+@page "/games/{GameId}/base"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
@@ -90,6 +91,8 @@
 </div>
 
 @code {
+    [Parameter]
+    public string? GameId { get; set; }
 
     private AssetsViewModel? model;
     private PlayerResourcesViewModel? resources;

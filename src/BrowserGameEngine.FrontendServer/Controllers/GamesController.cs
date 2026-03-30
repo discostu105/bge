@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
@@ -97,6 +98,34 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			logger.LogInformation("Game {GameId} created: {Name}", gameId.Id, request.Name);
 
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
+		}
+
+		[Authorize]
+		[HttpGet("{gameId}/results")]
+		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+
+			var standings = globalState.GetAchievements()
+				.Where(a => a.GameId.Id == gameId)
+				.OrderBy(a => a.FinalRank)
+				.Select(a => new GameResultEntryViewModel(
+					Rank: a.FinalRank,
+					PlayerName: a.PlayerName,
+					PlayerId: a.PlayerId.Id,
+					Score: a.FinalScore,
+					IsWinner: a.FinalRank == 1
+				))
+				.ToList();
+
+			return Ok(new GameResultsViewModel(
+				GameId: gameId,
+				Name: record.Name,
+				StartTime: record.StartTime,
+				ActualEndTime: record.ActualEndTime,
+				EndTime: record.EndTime,
+				Standings: standings
+			));
 		}
 
 		private GameSummaryViewModel ToSummary(GameRecordImmutable record) {
