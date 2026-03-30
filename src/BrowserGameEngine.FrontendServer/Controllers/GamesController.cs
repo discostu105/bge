@@ -22,6 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly IWorldStateFactory worldStateFactory;
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
+		private readonly TimeProvider timeProvider;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -29,7 +30,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			GlobalState globalState,
 			IWorldStateFactory worldStateFactory,
 			GameDef gameDef,
-			CurrentUserContext currentUserContext
+			CurrentUserContext currentUserContext,
+			TimeProvider timeProvider
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -37,6 +39,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.worldStateFactory = worldStateFactory;
 			this.gameDef = gameDef;
 			this.currentUserContext = currentUserContext;
+			this.timeProvider = timeProvider;
 		}
 
 		[AllowAnonymous]
@@ -112,8 +115,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
 			try {
-				instance.PlayerRepositoryWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+				playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
 			} catch (PlayerAlreadyExistsException) {
 				return Conflict("You have already joined this game.");
 			}
@@ -131,8 +135,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
 			try {
-				instance.PlayerRepositoryWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+				playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
 			} catch (PlayerAlreadyExistsException) {
 				return Conflict("You have already joined this game.");
 			}

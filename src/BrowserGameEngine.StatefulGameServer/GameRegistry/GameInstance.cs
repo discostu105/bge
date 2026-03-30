@@ -1,4 +1,3 @@
-using System;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -11,14 +10,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		public IWorldStateAccessor WorldStateAccessor { get; }
 		public GameDef GameDef { get; }
 		public GameTickEngine? TickEngine { get; private set; }
-		public PlayerRepositoryWrite PlayerRepositoryWrite { get; }
 
 		public GameInstance(GameRecordImmutable record, WorldState worldState, GameDef gameDef) {
 			Record = record;
 			WorldState = worldState;
 			WorldStateAccessor = new SingletonWorldStateAccessor(worldState);
 			GameDef = gameDef;
-			PlayerRepositoryWrite = new PlayerRepositoryWrite(WorldStateAccessor, TimeProvider.System);
 		}
 
 		public int PlayerCount => WorldState.Players.Count;
