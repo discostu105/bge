@@ -23,7 +23,9 @@ CI runs `dotnet build --configuration Release` and `dotnet test` on push/PR to m
 
 ## Architecture
 
-Stateful monolith: all game state lives in a singleton `WorldState` in memory, serialized to blob storage every 10 seconds. Blazor WebAssembly client communicates via REST API (no SignalR).
+Stateful monolith: per-game world state lives in `WorldState` (one per active game), cross-game state in `GlobalState` (users, game registry, achievements). Both are serialized to blob storage every 10 seconds. A `GameRegistry` singleton manages all active `GameInstance` objects. Blazor WebAssembly client communicates via REST API (no SignalR).
+
+See `docs/ARCHITECTURE.md` for the full architecture reference.
 
 ### Project Dependency Graph (dependencies flow downward only)
 
@@ -42,10 +44,10 @@ GameDefinition          → (nothing)
 ### Layer Responsibilities
 
 - **GameDefinition** — Pure immutable game config (resources, units, assets, costs). No logic, no state.
-- **GameModel** — Immutable snapshot types (`WorldStateImmutable`, `PlayerImmutable`, etc.) for serialization.
+- **GameModel** — Immutable snapshot types (`WorldStateImmutable`, `GlobalStateImmutable`, `GameRecordImmutable`, `PlayerAchievementImmutable`, etc.) for serialization.
 - **GameDefinition.SCO** — StarCraft Online concrete game data. To make a different game, create a new `GameDefinition.XXX` project.
-- **Persistence** — `IBlobStorage` abstraction. `FileStorage` (local dev) or `S3Storage` (prod).
-- **StatefulGameServer** — Core engine. Owns mutable `WorldState`. Read/write repositories are strictly separated (e.g., `PlayerRepository` vs `PlayerRepositoryWrite`). Game tick modules implement `IGameTickModule`.
+- **Persistence** — `IBlobStorage` abstraction. `FileStorage` (local dev) or `S3Storage` (prod). Per-game state at `games/{gameId}/state.json`; global state at `global/state.json`.
+- **StatefulGameServer** — Core engine. `GameRegistry` holds all active `GameInstance` objects. Repositories inject `IWorldStateAccessor` to access the appropriate `WorldState`. Read/write repositories are strictly separated. Game tick modules implement `IGameTickModule`.
 - **Shared** — ViewModels/DTOs. The API contract between server and client.
 - **FrontendServer** — ASP.NET Core host (composition root). Controllers, hosted services, middleware. All game endpoints require `[Authorize]` and must check `CurrentUserContext.IsValid`.
 - **BlazorClient** — Blazor WASM SPA. Only references Shared. Uses `RefreshService` event bus for cross-component updates.
@@ -53,15 +55,16 @@ GameDefinition          → (nothing)
 ### Key Patterns
 
 - **Immutable/mutable duality**: `GameModel` types are immutable snapshots; `StatefulGameServer/GameModelInternal/` has mutable counterparts. Convert via `ToImmutable()`/`ToMutable()`.
+- **`IWorldStateAccessor`**: Repositories inject this interface (not `WorldState` directly) so the same class works for any game instance.
 - **Read/write repository separation**: Different classes for queries vs mutations. Write repos use `lock` for thread safety.
-- **Tick-based simulation**: `GameTickEngine` runs every 10s via `GameTickTimerService`. New periodic behavior = new `IGameTickModule` registered in `GameServerExtensions`.
+- **Tick-based simulation**: Each `GameInstance` has its own `GameTickEngine`. `GameTickTimerService` iterates all active instances. New periodic behavior = new `IGameTickModule` registered in `GameServerExtensions`.
 - **Commands as records**: Player actions are record types in `Commands/` (e.g., `BuildAssetCommand`, `SendUnitCommand`).
-- **Thread safety**: `ConcurrentDictionary` for players, `lock` in write repos, `Interlocked` guards in tick engine.
+- **Thread safety**: `WorldState.Players` and `GlobalState.Users` use `ConcurrentDictionary`. Write repos use `lock`. Tick engine uses `Interlocked` guards.
 
 ### Adding a New Game Feature
 
 1. Add command record in `StatefulGameServer/Commands/`
-2. Add or extend repository (read + write)
+2. Add or extend repository (read + write); inject `IWorldStateAccessor`, not `WorldState`
 3. Add ViewModel in `Shared`
 4. Add controller endpoint in `FrontendServer/Controllers/`
 5. Add Blazor page in `BlazorClient/Pages/`
