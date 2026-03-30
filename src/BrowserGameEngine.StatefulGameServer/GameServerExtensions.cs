@@ -5,6 +5,7 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -72,6 +73,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(globalPersistenceService);
 			services.AddSingleton<IWorldStateFactory>(worldStateFactory);
 			services.AddSingleton<IGameNotificationService, NullGameNotificationService>();
+			services.AddSingleton<IPlayerNotificationService, InMemoryPlayerNotificationService>();
 			services.AddSingleton<GameLifecycleEngine>();
 		}
 	}

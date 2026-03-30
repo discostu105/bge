@@ -1,6 +1,7 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly PersistenceService persistenceService;
 		private readonly GlobalPersistenceService globalPersistenceService;
 		private readonly IGameNotificationService notificationService;
+		private readonly IPlayerNotificationService playerNotificationService;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -21,6 +23,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			PersistenceService persistenceService,
 			GlobalPersistenceService globalPersistenceService,
 			IGameNotificationService notificationService,
+			IPlayerNotificationService playerNotificationService,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -28,6 +31,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.persistenceService = persistenceService;
 			this.globalPersistenceService = globalPersistenceService;
 			this.notificationService = notificationService;
+			this.playerNotificationService = playerNotificationService;
 			this.logger = logger;
 		}
 
@@ -49,8 +53,17 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				var updated = record with { Status = GameStatus.Active };
 				globalState.UpdateGame(record, updated);
 				logger.LogInformation("Game {GameId} activated", record.GameId.Id);
-				var playerCount = gameRegistry.TryGetInstance(record.GameId)?.PlayerCount ?? 0;
+				var instance = gameRegistry.TryGetInstance(record.GameId);
+				var playerCount = instance?.PlayerCount ?? 0;
 				await notificationService.NotifyGameStartedAsync(updated, playerCount);
+
+				if (instance != null) {
+					foreach (var player in instance.WorldState.Players.Values) {
+						if (player.UserId != null) {
+							playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has started!", NotificationKind.GameEvent);
+						}
+					}
+				}
 			}
 			return toActivate.Count > 0;
 		}
@@ -114,6 +127,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 
 			// Persist final world state before freeing memory
 			await persistenceService.StoreGameState(record.GameId, instance.WorldState.ToImmutable());
+
+			// Notify players that the game has ended
+			foreach (var player in instance.WorldState.Players.Values) {
+				if (player.UserId != null) {
+					playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has ended. Check results!", NotificationKind.GameEvent);
+				}
+			}
 
 			// Remove instance from registry to free memory
 			gameRegistry.Remove(record.GameId);
