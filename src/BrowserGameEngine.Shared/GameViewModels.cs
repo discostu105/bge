@@ -11,7 +11,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		int PlayerCount,
 		string? WinnerId,
-		DateTime? ActualEndTime
+		DateTime? ActualEndTime,
+		string? DiscordWebhookUrl = null
 	);
 
 	public record CreateGameRequest(
@@ -19,7 +20,8 @@ namespace BrowserGameEngine.Shared {
 		string GameDefType,
 		DateTime StartTime,
 		DateTime EndTime,
-		string TickDuration
+		string TickDuration,
+		string? DiscordWebhookUrl = null
 	);
 
 	public record GameResultEntryViewModel(

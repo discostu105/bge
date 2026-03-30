@@ -71,6 +71,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(globalSerializer);
 			services.AddSingleton(globalPersistenceService);
 			services.AddSingleton<IWorldStateFactory>(worldStateFactory);
+			services.AddSingleton<IGameNotificationService, NullGameNotificationService>();
 			services.AddSingleton<GameLifecycleEngine>();
 		}
 	}

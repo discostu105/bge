@@ -43,6 +43,8 @@ builder.Services.AddHostedService<GlobalPersistenceHostedService>();
 builder.Services.AddHostedService<GameLifecycleService>();
 
 builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptions.Position));
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<BrowserGameEngine.StatefulGameServer.GameRegistry.IGameNotificationService, BrowserGameEngine.FrontendServer.Services.DiscordWebhookNotificationService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddLogging();
