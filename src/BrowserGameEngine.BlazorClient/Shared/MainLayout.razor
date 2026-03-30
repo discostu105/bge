@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject ICurrentGameService CurrentGameService
+@inject NavigationManager Nav
 @implements IDisposable
 
 <div class="sidebar">
@@ -33,12 +34,49 @@
 </div>
 
 @code {
+    private System.Threading.CancellationTokenSource? pollCts;
+
     protected override void OnInitialized() {
-        CurrentGameService.OnChanged += StateHasChanged;
+        CurrentGameService.OnChanged += OnGameChanged;
+        StartPolling();
+    }
+
+    private void OnGameChanged() {
+        StateHasChanged();
+        RedirectIfFinished();
+    }
+
+    private void StartPolling() {
+        pollCts?.Cancel();
+        pollCts = new System.Threading.CancellationTokenSource();
+        _ = PollGameStatusAsync(pollCts.Token);
+    }
+
+    private async Task PollGameStatusAsync(System.Threading.CancellationToken ct) {
+        while (!ct.IsCancellationRequested) {
+            await Task.Delay(TimeSpan.FromSeconds(30), ct).ContinueWith(_ => { });
+            if (ct.IsCancellationRequested) break;
+            if (CurrentGameService.CurrentGameId != null) {
+                await CurrentGameService.RefreshAsync();
+            }
+        }
+    }
+
+    private void RedirectIfFinished() {
+        var game = CurrentGameService.CurrentGame;
+        if (game == null || game.Status != "Finished") return;
+        var relative = Nav.ToBaseRelativePath(Nav.Uri);
+        // Only redirect if we're on an in-game page, not already on the results page
+        if (relative.StartsWith($"games/{game.GameId}/", StringComparison.OrdinalIgnoreCase)
+            && !relative.Equals($"games/{game.GameId}/results", StringComparison.OrdinalIgnoreCase)) {
+            Nav.NavigateTo($"games/{game.GameId}/results");
+        }
     }
 
     public void Dispose() {
-        CurrentGameService.OnChanged -= StateHasChanged;
+        CurrentGameService.OnChanged -= OnGameChanged;
+        pollCts?.Cancel();
+        pollCts?.Dispose();
     }
 
     private static string GetStatusBadge(string status) => status switch {

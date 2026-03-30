@@ -5,6 +5,7 @@ namespace BrowserGameEngine.GameModel {
 		string UserId,
 		GameId GameId,
 		PlayerId PlayerId,
+		string PlayerName,
 		int FinalRank,
 		decimal FinalScore,
 		string GameDefType,
