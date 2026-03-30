@@ -2,13 +2,8 @@
 @inject HttpClient Http
 @inject NavigationManager Nav
 
-<h3>Hello</h3>
-
 @code {
-    protected override async Task OnInitializedAsync() {
-        var exists = await Http.GetFromJsonAsync<bool>("api/playerprofile/exists");
-        if (!exists) {
-            Nav.NavigateTo("/createplayer");
-        }
+    protected override void OnInitialized() {
+        Nav.NavigateTo("games");
     }
 }

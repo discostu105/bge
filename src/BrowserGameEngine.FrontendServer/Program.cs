@@ -136,6 +136,12 @@ if (app.Environment.IsDevelopment()) {
 }
 app.UseExceptionHandler("/Error");
 app.MapOpenApi();
+if (app.Configuration["Bge:EnableSwagger"] == "true") {
+    app.UseSwaggerUI(c => {
+        c.SwaggerEndpoint("/openapi/v1.json", "BGE API v1");
+        c.RoutePrefix = "swagger";
+    });
+}
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles(new StaticFileOptions {

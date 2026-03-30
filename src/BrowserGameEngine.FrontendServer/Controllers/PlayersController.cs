@@ -16,6 +16,25 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		/// <summary>
+		/// Public achievements for any user, identified by their OAuth user ID.
+		/// Returns empty list when the user has no achievements.
+		/// </summary>
+		[AllowAnonymous]
+		[HttpGet("{userId}/achievements")]
+		public ActionResult<PlayerAchievementsViewModel> GetAchievements(string userId) {
+			var gameMap = globalState.GetGames().ToDictionary(g => g.GameId.Id);
+			var achievements = globalState.GetAchievements()
+				.Where(a => a.UserId == userId)
+				.OrderByDescending(a => a.FinishedAt)
+				.Select(a => {
+					gameMap.TryGetValue(a.GameId.Id, out var rec);
+					return AchievementMapper.ToViewModel(a, rec?.Name ?? a.GameId.Id);
+				})
+				.ToList();
+			return Ok(new PlayerAchievementsViewModel(achievements));
+		}
+
+		/// <summary>
 		/// Public cross-game stats for any user, identified by their OAuth user ID (e.g. GitHub login).
 		/// Returns NotFound when the user has no game history.
 		/// </summary>
@@ -54,5 +73,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Games: entries
 			));
 		}
+
 	}
 }

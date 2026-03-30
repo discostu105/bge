@@ -24,28 +24,27 @@
                 }
             </div>
             @if (_showNotifications) {
-                <div class="position-absolute bg-white border rounded shadow" style="top:3.5rem;right:1rem;width:340px;max-height:400px;overflow-y:auto;z-index:1050;">
-                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                <div class="position-absolute border rounded shadow" style="top:3.5rem;right:1rem;width:340px;max-height:400px;overflow-y:auto;z-index:1050;background:var(--color-bg-elevated);border-color:var(--color-border-default) !important;color:var(--color-text-primary);">
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2" style="border-bottom:1px solid var(--color-border-default);">
                         <strong>Notifications</strong>
                         @if (_notifications.Count > 0) {
                             <button class="btn btn-sm btn-outline-secondary" @onclick="DismissAll">Clear all</button>
                         }
                     </div>
                     @if (_notifications.Count == 0) {
-                        <div class="px-3 py-3 text-muted text-center">No notifications</div>
+                        <div class="px-3 py-3 text-center" style="color:var(--color-text-muted);">No notifications</div>
                     } else {
                         @foreach (var n in _notifications) {
-                            <div class="d-flex align-items-start px-3 py-2 border-bottom @GetNotificationClass(n.Kind)">
+                            <div class="d-flex align-items-start px-3 py-2 @GetNotificationClass(n.Kind)" style="border-bottom:1px solid var(--color-border-default);">
                                 <div class="flex-grow-1">
                                     <div style="font-size:0.85rem;">@n.Message</div>
-                                    <div class="text-muted" style="font-size:0.75rem;">@FormatNotificationTime(n.CreatedAt)</div>
+                                    <div style="font-size:0.75rem;color:var(--color-text-muted);">@FormatNotificationTime(n.CreatedAt)</div>
                                 </div>
                             </div>
                         }
                     }
                 </div>
             }
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
         </div>
     </div>
 

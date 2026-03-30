@@ -23,7 +23,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDefinition = gameDefinition;
 		}
 
+		/// <summary>Returns all unit type definitions for the current game, including stats, costs, and prerequisites.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<UnitDefinitionViewModel>), StatusCodes.Status200OK)]
 		public IEnumerable<UnitDefinitionViewModel> Get() {
 			return gameDefinition.Units.Select(x => UnitDefinitionViewModel.Create(x, true /* TODO */)).ToArray();
 		}

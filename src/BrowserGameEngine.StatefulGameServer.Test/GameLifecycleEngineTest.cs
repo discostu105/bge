@@ -86,6 +86,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var persistenceService = new PersistenceService(storage, serializer);
 			var globalSerializer = new GlobalStateJsonSerializer();
 			var globalPersistenceService = new GlobalPersistenceService(storage, globalSerializer);
+			var defaultInstance = gameRegistry.GetDefaultInstance();
+			var userRepositoryWrite = new UserRepositoryWrite(gameRegistry.GlobalState, defaultInstance.WorldState, TimeProvider.System);
 			return new GameRegistryNs.GameLifecycleEngine(
 				gameRegistry,
 				gameRegistry.GlobalState,
@@ -93,6 +95,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				globalPersistenceService,
 				new GameRegistryNs.NullGameNotificationService(),
 				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(),
+				userRepositoryWrite,
+				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}

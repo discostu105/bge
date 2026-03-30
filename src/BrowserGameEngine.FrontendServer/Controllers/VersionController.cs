@@ -9,7 +9,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private static readonly string CommitHash =
 			Environment.GetEnvironmentVariable("APP_VERSION") ?? "dev";
 
+		/// <summary>Returns the deployed version (git commit hash) of the server.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(VersionInfoViewModel), StatusCodes.Status200OK)]
 		public ActionResult<VersionInfoViewModel> GetVersion() {
 			return Ok(new VersionInfoViewModel(CommitHash));
 		}

@@ -34,6 +34,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<ScoreRepository>();
 			services.AddSingleton<AllianceRepository>();
 			services.AddSingleton<AllianceRepositoryWrite>();
+			services.AddSingleton<AllianceChatRepository>();
+			services.AddSingleton<AllianceChatRepositoryWrite>();
 			services.AddSingleton<AllianceScoreRepository>();
 			services.AddSingleton<AssetRepository>();
 			services.AddSingleton<AssetRepositoryWrite>();
@@ -48,6 +50,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<UpgradeRepositoryWrite>();
 			services.AddSingleton<BuildQueueRepository>();
 			services.AddSingleton<BuildQueueRepositoryWrite>();
+			services.AddSingleton<MarketRepository>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();

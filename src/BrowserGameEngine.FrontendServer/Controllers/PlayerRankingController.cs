@@ -32,7 +32,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.onlineStatusRepository = onlineStatusRepository;
 		}
 
+		/// <summary>Returns the current game's player ranking list with scores and online status.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<PublicPlayerViewModel>), StatusCodes.Status200OK)]
 		public IEnumerable<PublicPlayerViewModel> Get() {
 			return playerRepository.GetAll().Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository));
 		}

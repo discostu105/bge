@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
@@ -42,15 +43,22 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.timeProvider = timeProvider;
 		}
 
+		/// <summary>Lists all games (upcoming, active, and finished).</summary>
+		/// <returns>Summary list of all games.</returns>
 		[AllowAnonymous]
 		[HttpGet]
+		[ProducesResponseType(typeof(GameListViewModel), StatusCodes.Status200OK)]
 		public ActionResult<GameListViewModel> GetAll() {
 			var summaries = globalState.GetGames().Select(ToSummary).ToList();
 			return Ok(new GameListViewModel(summaries));
 		}
 
+		/// <summary>Returns detailed information about a single game.</summary>
+		/// <param name="gameId">The game identifier.</param>
 		[AllowAnonymous]
 		[HttpGet("{gameId}")]
+		[ProducesResponseType(typeof(GameDetailViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult<GameDetailViewModel> GetById(string gameId) {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
@@ -70,7 +78,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			));
 		}
 
+		/// <summary>Creates a new game. Requires authentication.</summary>
+		/// <param name="request">Game creation parameters.</param>
+		/// <returns>Summary of the newly created game.</returns>
 		[HttpPost]
+		[ProducesResponseType(typeof(GameSummaryViewModel), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<GameSummaryViewModel> Create([FromBody] CreateGameRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required");
@@ -89,7 +103,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				StartTime: request.StartTime.ToUniversalTime(),
 				EndTime: request.EndTime.ToUniversalTime(),
 				TickDuration: tickDuration,
-				DiscordWebhookUrl: request.DiscordWebhookUrl
+				DiscordWebhookUrl: request.DiscordWebhookUrl,
+				CreatedByUserId: currentUserContext.UserId
 			);
 
 			// Create a fresh world state for the new game
@@ -106,27 +121,106 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
 		}
 
-		[HttpPost("{gameId}/join")]
-		public ActionResult Join(string gameId) {
+		[HttpPost("{gameId}/players")]
+		public ActionResult<JoinGameViewModel> JoinGame(string gameId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
-			if (record.Status != GameStatus.Upcoming) return BadRequest("This game is not open for joining.");
+			if (record.Status != GameStatus.Upcoming && record.Status != GameStatus.Active)
+				return BadRequest("This game is not open for joining.");
 
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
-			if (instance.HasPlayer(currentUserContext.PlayerId!)) {
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+			try {
+				playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+			} catch (PlayerAlreadyExistsException) {
 				return Conflict("You have already joined this game.");
 			}
-			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
 			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
-			return Ok();
+			return Ok(new JoinGameViewModel(currentUserContext.PlayerId!.Id));
 		}
 
-		[Authorize]
+		/// <summary>Updates game settings (name, end time, Discord webhook). Only the game creator may update.</summary>
+		/// <param name="gameId">The game identifier.</param>
+		[HttpPatch("{gameId}")]
+		public ActionResult<GameDetailViewModel> Update(string gameId, [FromBody] UpdateGameRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+
+			if (record.CreatedByUserId != null && record.CreatedByUserId != currentUserContext.UserId)
+				return StatusCode(403, "Only the game creator can edit this game.");
+
+			if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required.");
+
+			var newEndTime = request.EndTime.ToUniversalTime();
+			if (newEndTime <= record.StartTime) return BadRequest("EndTime must be after StartTime.");
+			if (record.Status != GameStatus.Upcoming && newEndTime < record.EndTime)
+				return BadRequest("Cannot shorten EndTime of an active or finished game.");
+
+			var updated = record with {
+				Name = request.Name,
+				EndTime = newEndTime,
+				DiscordWebhookUrl = request.DiscordWebhookUrl
+			};
+
+			globalState.UpdateGame(record, updated);
+			logger.LogInformation("Game {GameId} updated by {UserId}", gameId, currentUserContext.UserId);
+
+			return Ok(new GameDetailViewModel(
+				GameId: updated.GameId.Id,
+				Name: updated.Name,
+				GameDefType: updated.GameDefType,
+				Status: updated.Status.ToString(),
+				StartTime: updated.StartTime,
+				EndTime: updated.EndTime,
+				PlayerCount: GetPlayerCount(updated),
+				WinnerId: updated.WinnerId?.Id,
+				ActualEndTime: updated.ActualEndTime,
+				DiscordWebhookUrl: updated.DiscordWebhookUrl
+			));
+		}
+
+		/// <summary>Joins an upcoming game with the current player. Requires authentication.</summary>
+		/// <param name="gameId">The game identifier.</param>
+		[HttpPost("{gameId}/join")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public ActionResult Join(string gameId, [FromBody] JoinGameRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			if (string.IsNullOrWhiteSpace(request.PlayerName)) return BadRequest("Player name is required");
+
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+			if (record.Status == GameStatus.Finished) return BadRequest("This game has ended.");
+
+			var instance = gameRegistry.TryGetInstance(record.GameId);
+			if (instance == null) return NotFound();
+
+			// Check if user already has a player in this game (by UserId)
+			if (instance.HasUserPlayer(currentUserContext.UserId)) return Conflict("You have already joined this game.");
+
+			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId);
+			playerRepoWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, request.PlayerName));
+
+			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName}", playerId.Id, gameId, request.PlayerName);
+			return Ok(new { PlayerId = playerId.Id });
+		}
+
+		/// <summary>Returns the final standings and scores for a completed game.</summary>
+		/// <param name="gameId">The game identifier.</param>
+		[AllowAnonymous]
 		[HttpGet("{gameId}/results")]
+		[ProducesResponseType(typeof(GameResultsViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
@@ -169,9 +263,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				MaxPlayers: 0,
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
-				CanJoin: record.Status == GameStatus.Upcoming,
+				CanJoin: record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active,
 				WinnerId: record.WinnerId?.Id,
-				WinnerName: winnerName
+				WinnerName: winnerName,
+				DiscordWebhookUrl: record.DiscordWebhookUrl
 			);
 		}
 

@@ -32,7 +32,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.playerRepository = playerRepository;
 		}
 
+		/// <summary>Returns all messages in the current player's inbox.</summary>
 		[HttpGet("inbox")]
+		[ProducesResponseType(typeof(MessageInboxViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<MessageInboxViewModel> Inbox() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var messages = messageRepository.GetMessages(currentUserContext.PlayerId!)
@@ -41,7 +44,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new MessageInboxViewModel { Messages = messages };
 		}
 
+		/// <summary>Sends a message to another player.</summary>
 		[HttpPost("send")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult Send([FromBody] SendMessageViewModel model) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var recipientId = PlayerIdFactory.Create(model.RecipientId);
@@ -58,7 +65,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok();
 		}
 
+		/// <summary>Marks a message as read.</summary>
+		/// <param name="id">The message ID.</param>
 		[HttpPost("{id}/read")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		public ActionResult MarkRead(string id) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var messageId = MessageIdFactory.Create(id);

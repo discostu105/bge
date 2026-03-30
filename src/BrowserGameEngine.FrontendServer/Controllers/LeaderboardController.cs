@@ -15,8 +15,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.globalState = globalState;
 		}
 
+		/// <summary>Returns the all-time leaderboard ranked by total wins, then best rank, then aggregate score. Public — no authentication required.</summary>
 		[AllowAnonymous]
 		[HttpGet("alltime")]
+		[ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<AllTimeStandingViewModel>), StatusCodes.Status200OK)]
 		public IActionResult GetAllTime() {
 			var achievements = globalState.GetAchievements();
 

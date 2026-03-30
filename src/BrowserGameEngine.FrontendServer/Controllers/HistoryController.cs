@@ -18,7 +18,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.currentUser = currentUser;
 		}
 
+		/// <summary>Returns the current user's complete game history: all games played with final rank, score, and win/loss result.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(PlayerHistoryViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public IActionResult GetMyHistory() {
 			if (!currentUser.IsValid) return Unauthorized();
 
