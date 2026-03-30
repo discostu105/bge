@@ -6,6 +6,7 @@ using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using BrowserGameEngine.StatefulGameServer.Notifications;
+using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<AllianceRepositoryWrite>();
 			services.AddSingleton<AllianceChatRepository>();
 			services.AddSingleton<AllianceChatRepositoryWrite>();
+			services.AddSingleton<ChatRepository>();
+			services.AddSingleton<ChatRepositoryWrite>();
 			services.AddSingleton<AllianceScoreRepository>();
 			services.AddSingleton<AssetRepository>();
 			services.AddSingleton<AssetRepositoryWrite>();

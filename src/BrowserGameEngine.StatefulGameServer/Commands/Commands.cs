@@ -38,4 +38,6 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record CreateMarketOrderCommand(PlayerId PlayerId, ResourceDefId OfferedResourceId, decimal OfferedAmount, ResourceDefId WantedResourceId, decimal WantedAmount) : ICommand;
 	public record AcceptMarketOrderCommand(PlayerId BuyerPlayerId, MarketOrderId OrderId) : ICommand;
 	public record CancelMarketOrderCommand(PlayerId PlayerId, MarketOrderId OrderId) : ICommand;
+
+	public record PostChatMessageCommand(PlayerId AuthorPlayerId, string Body) : ICommand;
 }
