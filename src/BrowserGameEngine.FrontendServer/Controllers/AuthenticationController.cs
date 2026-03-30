@@ -44,6 +44,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (string.IsNullOrWhiteSpace(provider)) return BadRequest();
 			if (!await HttpContext.IsProviderSupportedAsync(provider)) return BadRequest();
 
+			// Redirect back to the original page after login, or home if none/external.
 			var redirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
 
 			// Instruct the middleware corresponding to the requested external identity
