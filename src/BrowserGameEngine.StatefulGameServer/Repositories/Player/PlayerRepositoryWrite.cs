@@ -110,7 +110,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 								Level = 1
 							},
 						},
-						ProtectionTicksRemaining = 32
+						ProtectionTicksRemaining = 480  // 4 hours at 30s/tick
 					}
 				};
 			}

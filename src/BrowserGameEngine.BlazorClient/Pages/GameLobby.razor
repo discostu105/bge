@@ -1,0 +1,102 @@
+@page "/lobby"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Game Lobby</h1>
+
+@if (!string.IsNullOrEmpty(successMessage)) {
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(lastError)) {
+    <div class="alert alert-danger">@lastError</div>
+}
+
+@if (games == null) {
+    <p><em>Loading...</em></p>
+} else if (games.Count == 0) {
+    <p>No games available.</p>
+} else {
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Status</th>
+                    <th>Players</th>
+                    <th>Start Time</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var game in games) {
+                    <tr>
+                        <td><strong>@game.Name</strong></td>
+                        <td>
+                            <span class="badge @GetStatusBadgeClass(game.Status)">
+                                @GetStatusLabel(game.Status)
+                            </span>
+                        </td>
+                        <td>@game.PlayerCount / @game.MaxPlayers</td>
+                        <td>
+                            @if (game.StartTime.HasValue) {
+                                @game.StartTime.Value.ToString("yyyy-MM-dd HH:mm")
+                                <span class="text-muted"> UTC</span>
+                            } else {
+                                <span class="text-muted">TBD</span>
+                            }
+                        </td>
+                        <td>
+                            @if (game.CanJoin) {
+                                <button class="btn btn-sm btn-primary" @onclick="() => JoinGame(game)">
+                                    Join
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<GameSummaryViewModel>? games;
+    private string? lastError;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync() {
+        await LoadGames();
+    }
+
+    private async Task LoadGames() {
+        var result = await Http.GetFromJsonAsync<GameListViewModel>("api/games");
+        games = result?.Games ?? new();
+    }
+
+    private async Task JoinGame(GameSummaryViewModel game) {
+        lastError = null;
+        successMessage = null;
+        var response = await Http.PostAsJsonAsync($"api/games/{game.GameId}/join", new { });
+        if (response.IsSuccessStatusCode) {
+            successMessage = $"You have joined \"{game.Name}\"!";
+            await LoadGames();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private static string GetStatusBadgeClass(string status) => status switch {
+        "upcoming" => "bg-warning text-dark",
+        "active"   => "bg-success",
+        "finished" => "bg-secondary",
+        _          => "bg-light text-dark"
+    };
+
+    private static string GetStatusLabel(string status) => status switch {
+        "upcoming" => "Upcoming",
+        "active"   => "Active",
+        "finished" => "Finished",
+        _          => status
+    };
+}

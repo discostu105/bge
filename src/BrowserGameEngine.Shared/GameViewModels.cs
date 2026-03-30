@@ -2,16 +2,6 @@ using System;
 using System.Collections.Generic;
 
 namespace BrowserGameEngine.Shared {
-	public record GameSummaryViewModel(
-		string GameId,
-		string Name,
-		string GameDefType,
-		string Status,
-		DateTime StartTime,
-		DateTime EndTime,
-		int PlayerCount
-	);
-
 	public record GameDetailViewModel(
 		string GameId,
 		string Name,

@@ -20,6 +20,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 
 		public int PlayerCount => WorldState.Players.Count;
 
+		public bool HasPlayer(PlayerId playerId) => WorldState.PlayerExists(playerId);
+
 		public void SetTickEngine(GameTickEngine tickEngine) { TickEngine = tickEngine; }
 	}
 }

@@ -11,7 +11,7 @@
 
 @if (games == null) {
 	<p><em>Loading...</em></p>
-} else if (games.Length == 0) {
+} else if (games.Count == 0) {
 	<p>No games available yet.</p>
 } else {
 	<table class="table table-hover">
@@ -33,8 +33,8 @@
 						<span class="badge @GetStatusBadge(game.Status)">@game.Status</span>
 					</td>
 					<td>@game.PlayerCount</td>
-					<td>@game.StartTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-					<td>@game.EndTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+					<td>@(game.StartTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
+					<td>@(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
 					<td>
 						@if (game.Status == "Active") {
 							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play</a>
@@ -51,15 +51,16 @@
 }
 
 @code {
-	private GameSummaryViewModel[]? games;
+	private List<GameSummaryViewModel>? games;
 	private string? lastError;
 
 	protected override async Task OnInitializedAsync() {
 		try {
-			games = await Http.GetFromJsonAsync<GameSummaryViewModel[]>("api/games");
+			var result = await Http.GetFromJsonAsync<GameListViewModel>("api/games");
+			games = result?.Games ?? new List<GameSummaryViewModel>();
 		} catch (Exception ex) {
 			lastError = ex.Message;
-			games = Array.Empty<GameSummaryViewModel>();
+			games = new List<GameSummaryViewModel>();
 		}
 	}
 

@@ -1,6 +1,7 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
+using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly IWorldStateFactory worldStateFactory;
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
+		private readonly TimeProvider timeProvider;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -28,7 +30,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			GlobalState globalState,
 			IWorldStateFactory worldStateFactory,
 			GameDef gameDef,
-			CurrentUserContext currentUserContext
+			CurrentUserContext currentUserContext,
+			TimeProvider timeProvider
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -36,13 +39,14 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.worldStateFactory = worldStateFactory;
 			this.gameDef = gameDef;
 			this.currentUserContext = currentUserContext;
+			this.timeProvider = timeProvider;
 		}
 
 		[AllowAnonymous]
 		[HttpGet]
-		public IActionResult GetAll() {
+		public ActionResult<GameListViewModel> GetAll() {
 			var summaries = globalState.GetGames().Select(ToSummary).ToList();
-			return Ok(summaries);
+			return Ok(new GameListViewModel(summaries));
 		}
 
 		[AllowAnonymous]
@@ -100,6 +104,25 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
 		}
 
+		[HttpPost("{gameId}/join")]
+		public ActionResult Join(string gameId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+			if (record.Status != GameStatus.Upcoming) return BadRequest("This game is not open for joining.");
+
+			var instance = gameRegistry.TryGetInstance(record.GameId);
+			if (instance == null) return NotFound();
+
+			if (instance.HasPlayer(currentUserContext.PlayerId!)) {
+				return Conflict("You have already joined this game.");
+			}
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+			playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
+			return Ok();
+		}
+
 		[Authorize]
 		[HttpGet("{gameId}/results")]
 		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
@@ -134,9 +157,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Name: record.Name,
 				GameDefType: record.GameDefType,
 				Status: record.Status.ToString(),
+				PlayerCount: GetPlayerCount(record),
+				MaxPlayers: 0,
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
-				PlayerCount: GetPlayerCount(record)
+				CanJoin: record.Status == GameStatus.Upcoming
 			);
 		}
 
