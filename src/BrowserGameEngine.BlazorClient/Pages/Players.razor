@@ -85,6 +85,7 @@
 		using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
 		while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
 			await InvokeAsync(LoadPlayers);
+			await InvokeAsync(StateHasChanged);
 		}
 	}
 
