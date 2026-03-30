@@ -23,7 +23,12 @@
                         }
                         <div class="mb-2">
                             <label class="form-label">Offer resource</label>
-                            <input class="form-control" @bind="offerResourceId" placeholder="e.g. minerals" />
+                            <select class="form-select" @bind="offerResourceId">
+                                <option value="">-- select resource --</option>
+                                @foreach (var res in model.ResourceOptions) {
+                                    <option value="@res.Id">@res.Name</option>
+                                }
+                            </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Amount to offer</label>
@@ -31,7 +36,12 @@
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Want resource</label>
-                            <input class="form-control" @bind="wantResourceId" placeholder="e.g. gas" />
+                            <select class="form-select" @bind="wantResourceId">
+                                <option value="">-- select resource --</option>
+                                @foreach (var res in model.ResourceOptions) {
+                                    <option value="@res.Id">@res.Name</option>
+                                }
+                            </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Amount wanted</label>

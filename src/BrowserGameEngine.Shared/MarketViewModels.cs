@@ -13,11 +13,18 @@ namespace BrowserGameEngine.Shared {
 		public string WantedResourceName { get; set; } = "";
 		public decimal WantedAmount { get; set; }
 		public DateTime CreatedAt { get; set; }
+		public bool IsOwnOrder { get; set; }
+	}
+
+	public record ResourceOptionViewModel {
+		public string Id { get; set; } = "";
+		public string Name { get; set; } = "";
 	}
 
 	public record MarketViewModel {
 		public List<MarketOrderViewModel> OpenOrders { get; set; } = new();
 		public string CurrentPlayerId { get; set; } = "";
+		public List<ResourceOptionViewModel> ResourceOptions { get; set; } = new();
 	}
 
 	public record CreateMarketOrderRequest {
