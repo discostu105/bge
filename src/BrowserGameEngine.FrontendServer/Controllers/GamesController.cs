@@ -22,7 +22,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly IWorldStateFactory worldStateFactory;
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
-		private readonly TimeProvider timeProvider;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -30,8 +29,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			GlobalState globalState,
 			IWorldStateFactory worldStateFactory,
 			GameDef gameDef,
-			CurrentUserContext currentUserContext,
-			TimeProvider timeProvider
+			CurrentUserContext currentUserContext
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -39,7 +37,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.worldStateFactory = worldStateFactory;
 			this.gameDef = gameDef;
 			this.currentUserContext = currentUserContext;
-			this.timeProvider = timeProvider;
 		}
 
 		[AllowAnonymous]
@@ -115,11 +112,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
-			if (instance.HasPlayer(currentUserContext.PlayerId!))
+			try {
+				instance.PlayerRepositoryWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+			} catch (PlayerAlreadyExistsException) {
 				return Conflict("You have already joined this game.");
-
-			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+			}
 			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
 			return Ok(new JoinGameViewModel(currentUserContext.PlayerId!.Id));
 		}
@@ -134,11 +131,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
-			if (instance.HasPlayer(currentUserContext.PlayerId!)) {
+			try {
+				instance.PlayerRepositoryWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+			} catch (PlayerAlreadyExistsException) {
 				return Conflict("You have already joined this game.");
 			}
-			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
 			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
 			return Ok();
 		}
