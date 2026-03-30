@@ -1,5 +1,7 @@
 @inject HttpClient Http
 @inject AlertService AlertService
+@inject ICurrentGameService CurrentGameService
+@inject NavigationManager Nav
 @using BrowserGameEngine.Shared
 @using BrowserGameEngine.BlazorClient.Code
 @implements IDisposable
@@ -11,51 +13,78 @@
     </button>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+<div class="@NavMenuCssClass">
+
+    @* ── Workspace / game selector ─────────────────── *@
+    <div class="nav-section-label">MY GAMES</div>
+    @if (_myGames == null) {
+        <div class="px-3 py-2" style="color:var(--color-text-muted);font-size:0.8rem;">Loading...</div>
+    } else if (_myGames.Count == 0) {
+        <div class="px-3 py-1" style="color:var(--color-text-muted);font-size:0.8rem;">No active games</div>
+    } else {
+        @foreach (var game in _myGames) {
+            var isActive = CurrentGameService.CurrentGameId == game.GameId;
+            <button class="workspace-item @(isActive ? "workspace-item--active" : "")"
+                    @onclick="() => SwitchToGame(game)"
+                    title="Play as @game.PlayerName in @game.GameName">
+                <div class="workspace-dot @GetStatusDotClass(game.GameStatus)"></div>
+                <div class="workspace-info">
+                    <div class="workspace-name">@game.GameName</div>
+                    <div class="workspace-player">@game.PlayerName</div>
+                </div>
+                @if (isActive) {
+                    <span class="workspace-check">&#10003;</span>
+                }
+            </button>
+        }
+    }
+    <a class="workspace-browse" href="lobby">
+        <span class="oi oi-plus" aria-hidden="true"></span> Browse / Join Games
+    </a>
+
+    @* ── In-game navigation (only when a game is active) ── *@
+    @if (CurrentGameService.CurrentGameId != null) {
+        <div class="nav-section-label">GAME</div>
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/base")">
+                    <span class="oi oi-layers" aria-hidden="true"></span> Base
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/units")">
+                    <span class="oi oi-shield" aria-hidden="true"></span> Units
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/unitdefinitions")">
+                    <span class="oi oi-spreadsheet" aria-hidden="true"></span> Unit Types
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/upgrades")">
+                    <span class="oi oi-beaker" aria-hidden="true"></span> Research
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/market")">
+                    <span class="oi oi-cart" aria-hidden="true"></span> Market
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/ranking")">
+                    <span class="oi oi-bar-chart" aria-hidden="true"></span> Ranking
+                </NavLink>
+            </li>
+        </ul>
+    }
+
+    @* ── General navigation ────────────────────────── *@
+    <div class="nav-section-label">GENERAL</div>
     <ul class="nav flex-column">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="lobby">
-                <span class="oi oi-globe" aria-hidden="true"></span> Game Lobby
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="games">
-                <span class="oi oi-grid-three-up" aria-hidden="true"></span> Games
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="base">
-                <span class="oi oi-layers" aria-hidden="true"></span> Base
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="units">
-                <span class="oi oi-shield" aria-hidden="true"></span> Units
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="unitdefinitions">
-                <span class="oi oi-spreadsheet" aria-hidden="true"></span> Unit Types
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="upgrades">
-                <span class="oi oi-beaker" aria-hidden="true"></span> Research
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="market">
-                <span class="oi oi-cart" aria-hidden="true"></span> Market
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="ranking">
-                <span class="oi oi-bar-chart" aria-hidden="true"></span> Ranking
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -114,6 +143,7 @@
             </NavLink>
         </li>
     </ul>
+
     @if (version != null) {
         <div class="px-3 py-2" style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
             v@version.CommitHash
@@ -124,24 +154,50 @@
 @code {
     private bool collapseNavMenu = true;
     private VersionInfoViewModel? version;
+    private List<MyGameViewModel>? _myGames;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
-    {
+    private void ToggleNavMenu() {
         collapseNavMenu = !collapseNavMenu;
     }
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         AlertService.AlertsChanged += OnAlertsChanged;
+        CurrentGameService.OnChanged += OnGameChanged;
         version = await Http.GetFromJsonAsync<VersionInfoViewModel>("api/version");
+        await LoadMyGamesAsync();
+    }
+
+    private async Task LoadMyGamesAsync() {
+        try {
+            _myGames = await Http.GetFromJsonAsync<List<MyGameViewModel>>("api/games/mine");
+        } catch {
+            _myGames = new List<MyGameViewModel>();
+        }
     }
 
     private void OnAlertsChanged() => InvokeAsync(StateHasChanged);
 
-    public void Dispose()
-    {
+    private void OnGameChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task SwitchToGame(MyGameViewModel game) {
+        try {
+            await Http.PostAsJsonAsync("api/playerprofile/switch", new SwitchPlayerViewModel { PlayerId = game.PlayerId });
+        } catch {
+            // Ignore — navigate anyway
+        }
+        Nav.NavigateTo($"games/{game.GameId}/base", forceLoad: true);
+    }
+
+    private static string GetStatusDotClass(string status) => status switch {
+        "Active" => "workspace-dot--active",
+        "Upcoming" => "workspace-dot--upcoming",
+        _ => "workspace-dot--finished"
+    };
+
+    public void Dispose() {
         AlertService.AlertsChanged -= OnAlertsChanged;
+        CurrentGameService.OnChanged -= OnGameChanged;
     }
 }

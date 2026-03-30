@@ -46,4 +46,13 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		List<GameResultEntryViewModel> Standings
 	);
+
+	/// <summary>A game the current user is actively playing in, with their player info.</summary>
+	public record MyGameViewModel(
+		string GameId,
+		string GameName,
+		string GameStatus,
+		string PlayerId,
+		string PlayerName
+	);
 }

@@ -46,6 +46,28 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameLifecycleEngine = gameLifecycleEngine;
 		}
 
+		/// <summary>Returns games where the authenticated user has an active player.</summary>
+		[HttpGet("mine")]
+		[ProducesResponseType(typeof(List<MyGameViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<List<MyGameViewModel>> GetMyGames() {
+			if (currentUserContext.UserId == null) return Unauthorized();
+			var result = new List<MyGameViewModel>();
+			foreach (var instance in gameRegistry.GetAllInstances()) {
+				if (instance.Record.Status == GameModel.GameStatus.Finished) continue;
+				var playerInfo = instance.TryGetUserPlayer(currentUserContext.UserId);
+				if (playerInfo == null) continue;
+				result.Add(new MyGameViewModel(
+					GameId: instance.Record.GameId.Id,
+					GameName: instance.Record.Name,
+					GameStatus: instance.Record.Status.ToString(),
+					PlayerId: playerInfo.Value.PlayerId.Id,
+					PlayerName: playerInfo.Value.Name
+				));
+			}
+			return Ok(result);
+		}
+
 		/// <summary>Lists all games (upcoming, active, and finished).</summary>
 		/// <returns>Summary list of all games.</returns>
 		[AllowAnonymous]

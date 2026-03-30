@@ -452,6 +452,136 @@ tbody tr:hover {
     }
 }
 
+.bge-asset {
+    border: 1px solid black;
+    overflow: auto;
+}
+
+/* ── Workspace / game selector ────────────────────────────────────────── */
+
+/* Section label (MY GAMES, GAME, GENERAL) */
+.nav-section-label {
+    padding: 1rem 0.75rem 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+}
+
+/* Workspace card button (one per game) */
+.workspace-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 0.375rem;
+    margin: 0.15rem 0.5rem;
+    padding: 0.4rem 0.5rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.75);
+    transition: background 0.12s ease;
+    width: calc(100% - 1rem);
+}
+
+.workspace-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+}
+
+.workspace-item--active {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    border-left: 3px solid #4da6ff;
+    padding-left: calc(0.5rem - 3px);
+}
+
+/* Status dot */
+.workspace-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.workspace-dot--active {
+    background: #4ade80;
+    box-shadow: 0 0 5px rgba(74, 222, 128, 0.6);
+}
+
+.workspace-dot--upcoming {
+    background: #fbbf24;
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+}
+
+.workspace-dot--finished {
+    background: #6b7280;
+}
+
+/* Game name + player name lines */
+.workspace-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.workspace-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.workspace-player {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.workspace-item--active .workspace-player {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Checkmark for active workspace */
+.workspace-check {
+    font-size: 0.8rem;
+    color: #4da6ff;
+    flex-shrink: 0;
+}
+
+/* Browse / Join Games link */
+.workspace-browse {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.25rem 0.5rem 0.5rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.45);
+    border-radius: 0.25rem;
+    text-decoration: none;
+    transition: color 0.12s ease, background 0.12s ease;
+}
+
+.workspace-browse:hover {
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+}
+
+.workspace-browse .oi {
+    font-size: 0.7rem;
+    width: auto;
+}
+
 /* Tutorial checklist */
 .bge-tutorial-card {
     position: fixed;
