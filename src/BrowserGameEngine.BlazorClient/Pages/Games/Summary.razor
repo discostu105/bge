@@ -1,0 +1,101 @@
+@page "/games/{GameId}/summary"
+@namespace BrowserGameEngine.BlazorClient.Pages.GameSummary
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+@if (error != null) {
+	<div class="alert alert-warning">
+		<p class="mb-1">⚠️ No summary available for this game.</p>
+		<p class="mb-2">@error</p>
+		<a class="btn btn-sm btn-secondary" href="games">← Back to Games List</a>
+	</div>
+} else if (model == null) {
+	<div class="d-flex align-items-center gap-2">
+		<div class="spinner-border spinner-border-sm" role="status"></div>
+		<span>Loading game summary...</span>
+	</div>
+} else {
+	var end = model.ActualEndTime ?? model.EndTime;
+	var duration = end - model.StartTime;
+	var winner = model.Standings.FirstOrDefault(s => s.IsWinner);
+
+	<h1>🏆 Game Over: @model.Name</h1>
+	<p class="text-muted">
+		Ended @end.ToLocalTime().ToString("dd MMM yyyy HH:mm") UTC
+		&nbsp;·&nbsp; Duration: @FormatDuration(duration)
+	</p>
+
+	@if (winner != null) {
+		<div class="alert alert-warning d-flex align-items-center gap-3 mb-4">
+			<span style="font-size: 2rem;">🏆</span>
+			<div>
+				<strong class="fs-5">@winner.PlayerName wins!</strong>
+				<div class="text-muted">Final Score: @winner.Score.ToString("N0")</div>
+			</div>
+		</div>
+	}
+
+	<h2>Final Standings</h2>
+	@if (model.Standings.Count == 0) {
+		<p class="text-muted">No standings recorded for this game.</p>
+	} else {
+		<table class="table table-sm table-hover">
+			<thead>
+				<tr>
+					<th>Rank</th>
+					<th>Player</th>
+					<th>Score</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var entry in model.Standings) {
+					<tr class="@(entry.IsWinner ? "table-warning" : "")">
+						<td>
+							@if (entry.IsWinner) {
+								<span>🏆 1</span>
+							} else {
+								<span>#@entry.Rank</span>
+							}
+						</td>
+						<td>@entry.PlayerName</td>
+						<td>@entry.Score.ToString("N0")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+	<div class="mt-4 d-flex gap-2 flex-wrap">
+		<a class="btn btn-success" href="games">🎮 Join Next Game</a>
+		<a class="btn btn-secondary" href="games">← Back to Games List</a>
+		<a class="btn btn-outline-secondary" href="games/@GameId/results">Detailed Results</a>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? GameId { get; set; }
+
+	private GameResultsViewModel? model;
+	private string? error;
+
+	protected override async Task OnParametersSetAsync() {
+		model = null;
+		error = null;
+		try {
+			model = await Http.GetFromJsonAsync<GameResultsViewModel>($"api/games/{GameId}/results");
+			if (model == null) {
+				error = "Game results are not available yet.";
+			}
+		} catch (Exception ex) {
+			error = ex.Message;
+		}
+	}
+
+	private static string FormatDuration(TimeSpan ts) {
+		if (ts.TotalDays >= 1) return $"{(int)ts.TotalDays}d {ts.Hours}h";
+		if (ts.TotalHours >= 1) return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+		return $"{ts.Minutes}m";
+	}
+}
