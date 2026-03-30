@@ -1,0 +1,45 @@
+@page "/allianceranking"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Alliance Ranking</h1>
+
+@if (model == null) {
+    <p><em>Loading...</em></p>
+} else if (!model.Any()) {
+    <p>No alliances with 2 or more members yet.</p>
+} else {
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Members</th>
+                <th>Total Land</th>
+                <th>Avg Land</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < model.Length; i++) {
+                var item = model[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td><a href="alliances/@item.AllianceId">@item.Name</a></td>
+                    <td>@item.MemberCount</td>
+                    <td>@item.TotalLand.ToString("N0")</td>
+                    <td>@item.AvgLand.ToString("N0")</td>
+                    <td>@item.Score.ToString("N1")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private AllianceRankingViewModel[]? model;
+
+    protected override async Task OnInitializedAsync() {
+        model = await Http.GetFromJsonAsync<AllianceRankingViewModel[]>("api/allianceranking");
+    }
+}

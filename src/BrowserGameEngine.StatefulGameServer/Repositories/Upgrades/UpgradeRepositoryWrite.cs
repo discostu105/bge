@@ -12,7 +12,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private const int ResearchTimerTicks = 10;
 
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 
@@ -23,10 +24,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 		];
 
 		public UpgradeRepositoryWrite(
-			WorldState world,
+			IWorldStateAccessor worldStateAccessor,
 			ResourceRepository resourceRepository,
 			ResourceRepositoryWrite resourceRepositoryWrite) {
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.resourceRepository = resourceRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 		}

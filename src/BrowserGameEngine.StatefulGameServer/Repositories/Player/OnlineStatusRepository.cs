@@ -6,10 +6,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 	public class OnlineStatusRepository {
 		private static readonly TimeSpan OnlineThreshold = TimeSpan.FromMinutes(8);
 
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public OnlineStatusRepository(WorldState world) {
-			this.world = world;
+		public OnlineStatusRepository(IWorldStateAccessor worldStateAccessor) {
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public bool IsOnline(PlayerId playerId) {

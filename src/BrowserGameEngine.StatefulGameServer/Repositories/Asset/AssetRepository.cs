@@ -9,15 +9,16 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly PlayerRepository playerRepository;
 		private readonly ActionQueueRepository actionQueueRepository;
 
-		public AssetRepository(WorldState world
+		public AssetRepository(IWorldStateAccessor worldStateAccessor
 				, PlayerRepository playerRepository
 				, ActionQueueRepository actionQueueRepository
 			) {
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.playerRepository = playerRepository;
 			this.actionQueueRepository = actionQueueRepository;
 		}

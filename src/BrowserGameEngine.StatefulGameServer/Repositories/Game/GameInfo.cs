@@ -1,12 +1,7 @@
+using BrowserGameEngine.GameModel;
 using System;
 
 namespace BrowserGameEngine.StatefulGameServer {
-	public enum GameStatus {
-		Upcoming,
-		Active,
-		Finished
-	}
-
 	public class GameInfo {
 		public string GameId { get; set; } = "";
 		public string Name { get; set; } = "";

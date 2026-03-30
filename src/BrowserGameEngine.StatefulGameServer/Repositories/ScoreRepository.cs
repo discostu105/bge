@@ -8,13 +8,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 	public class ScoreRepository {
 		private readonly GameDef gameDef;
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
 		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
 
-		public ScoreRepository(GameDef gameDef, WorldState world) {
+		public ScoreRepository(GameDef gameDef, IWorldStateAccessor worldStateAccessor) {
 			this.gameDef = gameDef;
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public decimal GetScore(PlayerId playerId) {

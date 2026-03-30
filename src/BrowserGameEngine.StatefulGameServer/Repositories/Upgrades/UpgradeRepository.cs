@@ -3,10 +3,11 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UpgradeRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public UpgradeRepository(WorldState world) {
-			this.world = world;
+		public UpgradeRepository(IWorldStateAccessor worldStateAccessor) {
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public int GetAttackUpgradeLevel(PlayerId playerId) => world.GetPlayer(playerId).State.AttackUpgradeLevel;

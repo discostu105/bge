@@ -1,4 +1,5 @@
 using BrowserGameEngine.FrontendServer;
+using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authorization;
