@@ -11,8 +11,17 @@
 	<DataAnnotationsValidator />
 	<ValidationSummary />
 	<div>
-		<label>To (Player ID):</label>
-		<InputText @bind-Value="composeModel.RecipientId" placeholder="Player ID" />
+		<label>To:</label>
+		@if (players == null) {
+			<InputText @bind-Value="composeModel.RecipientId" placeholder="Player ID" />
+		} else {
+			<select class="form-select" @bind="composeModel.RecipientId">
+				<option value="">— Select a player —</option>
+				@foreach (var p in players) {
+					<option value="@p.PlayerId">@p.PlayerName</option>
+				}
+			</select>
+		}
 	</div>
 	<div>
 		<label>Subject:</label>
@@ -75,13 +84,14 @@
 	public string? GameId { get; set; }
 
 	private List<MessageViewModel>? inbox;
+	private List<PublicPlayerViewModel>? players;
 	private SendMessageViewModel composeModel = new();
 	private string? sendResult;
 	private string? expandedMessageId;
 	private CancellationTokenSource? _cts;
 
 	protected override async Task OnInitializedAsync() {
-		await LoadInbox();
+		await Task.WhenAll(LoadInbox(), LoadPlayers());
 		_cts = new CancellationTokenSource();
 		_ = RunRefreshLoop(_cts.Token);
 	}
@@ -97,6 +107,15 @@
 	private async Task LoadInbox() {
 		var result = await Http.GetFromJsonAsync<MessageInboxViewModel>("api/messages/inbox");
 		inbox = result?.Messages ?? new();
+	}
+
+	private async Task LoadPlayers() {
+		try {
+			var result = await Http.GetFromJsonAsync<List<PublicPlayerViewModel>>("api/playerranking");
+			players = result ?? new();
+		} catch {
+			players = new();
+		}
 	}
 
 	private async Task HandleSend() {

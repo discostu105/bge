@@ -23,15 +23,21 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
-		public static UnitViewModel ToUnitViewModel(this UnitImmutable unit, UnitRepository unitRepository, CurrentUserContext currentUserContext, GameDef gameDef) {
+		public static UnitViewModel ToUnitViewModel(this UnitImmutable unit, UnitRepository unitRepository, CurrentUserContext currentUserContext, GameDef gameDef, PlayerRepository? playerRepository = null) {
 			var unitDef = gameDef.GetUnitDef(unit.UnitDefId);
 			if (unitDef == null) throw new InvalidGameDefException($"Unit '{unit.UnitDefId}' not found");
+
+			string? positionPlayerName = null;
+			if (unit.Position != null && playerRepository != null && playerRepository.Exists(unit.Position)) {
+				positionPlayerName = playerRepository.Get(unit.Position).Name;
+			}
 
 			return new UnitViewModel {
 				UnitId = unit.UnitId.Id,
 				Definition = UnitDefinitionViewModel.Create(unitDef, unitRepository.PrerequisitesMet(currentUserContext.PlayerId!, unitDef)),
 				Count = unit.Count,
-				PositionPlayerId = unit.Position?.Id
+				PositionPlayerId = unit.Position?.Id,
+				PositionPlayerName = positionPlayerName
 			};
 		}
 	}
