@@ -40,7 +40,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			var orders = marketRepository.GetOpenOrders();
 			var viewModel = new MarketViewModel {
-				OpenOrders = orders.Select(o => ToViewModel(o)).ToList()
+				OpenOrders = orders.Select(o => ToViewModel(o)).ToList(),
+				CurrentPlayerId = currentUserContext.PlayerId!.Id
 			};
 			return viewModel;
 		}

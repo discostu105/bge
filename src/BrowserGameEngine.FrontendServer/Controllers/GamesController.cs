@@ -277,9 +277,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
 
-			var standings = globalState.GetAchievements()
+			var achievements = globalState.GetAchievements()
 				.Where(a => a.GameId.Id == gameId)
 				.OrderBy(a => a.FinalRank)
+				.ToList();
+
+			var standings = achievements
 				.Select(a => new GameResultEntryViewModel(
 					Rank: a.FinalRank,
 					PlayerName: a.PlayerName,
@@ -289,13 +292,21 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				))
 				.ToList();
 
+			string? currentPlayerId = null;
+			if (currentUserContext.IsValid) {
+				currentPlayerId = achievements
+					.FirstOrDefault(a => a.UserId == currentUserContext.UserId)
+					?.PlayerId.Id;
+			}
+
 			return Ok(new GameResultsViewModel(
 				GameId: gameId,
 				Name: record.Name,
 				StartTime: record.StartTime,
 				ActualEndTime: record.ActualEndTime,
 				EndTime: record.EndTime,
-				Standings: standings
+				Standings: standings,
+				CurrentPlayerId: currentPlayerId
 			));
 		}
 
@@ -305,6 +316,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				winnerName = globalState.GetAchievements()
 					.FirstOrDefault(a => a.GameId == record.GameId && a.PlayerId == record.WinnerId)
 					?.PlayerName;
+			}
+			bool isPlayerEnrolled = false;
+			if (currentUserContext.IsValid && currentUserContext.UserId != null) {
+				var instance = gameRegistry.TryGetInstance(record.GameId);
+				isPlayerEnrolled = instance?.HasUserPlayer(currentUserContext.UserId) ?? false;
 			}
 			return new GameSummaryViewModel(
 				GameId: record.GameId.Id,
@@ -318,7 +334,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				CanJoin: record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active,
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
-				DiscordWebhookUrl: record.DiscordWebhookUrl
+				DiscordWebhookUrl: record.DiscordWebhookUrl,
+				IsPlayerEnrolled: isPlayerEnrolled
 			);
 		}
 

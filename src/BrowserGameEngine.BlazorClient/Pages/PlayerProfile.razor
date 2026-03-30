@@ -139,8 +139,14 @@
 				<div class="stat-label">Wins</div>
 				<div class="stat-value">@model.Wins</div>
 			</div>
+			<div class="stat-item">
+				<div class="stat-label">Best Rank</div>
+				<div class="stat-value rank">@(model.BestRank > 0 ? $"#{model.BestRank}" : "—")</div>
+			</div>
 		</div>
-		<p style="font-size:0.8rem; color:#607080; margin-top:0.4rem;">Full history available once achievements are implemented.</p>
+		<div style="margin-top:0.5rem;">
+			<a href="history" style="font-size:0.85rem; color:#4a8fd4;">View full history →</a>
+		</div>
 
 		<div class="section-title">Settings</div>
 		<div class="mt-1">
