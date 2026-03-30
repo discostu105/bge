@@ -69,6 +69,9 @@
 						@if (editingGameId != game.GameId) {
 							<button @onclick="() => StartEdit(game)" style="margin-left:8px">Edit</button>
 						}
+						@if (game.Status == "Active") {
+							<button @onclick="() => FinalizeGame(game.GameId)" style="margin-left:8px; color:red">Finalize</button>
+						}
 					</td>
 				</tr>
 				@if (editingGameId == game.GameId) {
@@ -192,6 +195,15 @@
 		} else {
 			var body = await response.Content.ReadAsStringAsync();
 			editError = $"Failed to update game: {body}";
+		}
+	}
+
+	private async Task FinalizeGame(string gameId) {
+		var response = await Http.PostAsync($"api/games/{gameId}/finalize", null);
+		if (response.IsSuccessStatusCode) {
+			await LoadGames();
+		} else {
+			createError = $"Failed to finalize game: {await response.Content.ReadAsStringAsync()}";
 		}
 	}
 

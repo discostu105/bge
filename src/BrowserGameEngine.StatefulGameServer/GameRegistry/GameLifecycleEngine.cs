@@ -101,6 +101,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			return toFinalize.Count > 0;
 		}
 
+		public Task FinalizeGameEarlyAsync(GameRecordImmutable record, DateTime utcNow) {
+			return FinalizeGameAsync(record, utcNow);
+		}
+
 		private async Task FinalizeGameAsync(GameRecordImmutable record, DateTime utcNow) {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) {
