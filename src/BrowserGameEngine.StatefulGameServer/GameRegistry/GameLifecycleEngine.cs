@@ -91,6 +91,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 						UserId: player.UserId,
 						GameId: record.GameId,
 						PlayerId: playerId,
+						PlayerName: player.Name,
 						FinalRank: i + 1,
 						FinalScore: score,
 						GameDefType: record.GameDefType,

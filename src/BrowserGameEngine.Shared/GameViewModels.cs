@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace BrowserGameEngine.Shared {
 	public record GameSummaryViewModel(
@@ -29,5 +30,22 @@ namespace BrowserGameEngine.Shared {
 		DateTime StartTime,
 		DateTime EndTime,
 		string TickDuration
+	);
+
+	public record GameResultEntryViewModel(
+		int Rank,
+		string PlayerName,
+		string PlayerId,
+		decimal Score,
+		bool IsWinner
+	);
+
+	public record GameResultsViewModel(
+		string GameId,
+		string Name,
+		DateTime StartTime,
+		DateTime? ActualEndTime,
+		DateTime EndTime,
+		List<GameResultEntryViewModel> Standings
 	);
 }
