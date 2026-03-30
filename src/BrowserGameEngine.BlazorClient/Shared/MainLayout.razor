@@ -14,7 +14,38 @@
 <div class="main">
     <div class="top-row px-4 d-flex align-items-center justify-content-between">
         <_PlayerResources />
-        <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="position-relative" style="cursor:pointer;" @onclick="ToggleNotifications">
+                <span style="font-size:1.4rem;" title="Notifications">&#128276;</span>
+                @if (_notifications.Count > 0) {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem;">
+                        @(_notifications.Count > 9 ? "9+" : _notifications.Count.ToString())
+                    </span>
+                }
+            </div>
+            @if (_showNotifications) {
+                <div class="position-absolute bg-white border rounded shadow" style="top:3.5rem;right:1rem;width:340px;max-height:400px;overflow-y:auto;z-index:1050;">
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                        <strong>Notifications</strong>
+                        @if (_notifications.Count > 0) {
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="DismissAll">Clear all</button>
+                        }
+                    </div>
+                    @if (_notifications.Count == 0) {
+                        <div class="px-3 py-3 text-muted text-center">No notifications</div>
+                    } else {
+                        @foreach (var n in _notifications) {
+                            <div class="d-flex align-items-start px-3 py-2 border-bottom @GetNotificationClass(n.Kind)">
+                                <div class="flex-grow-1">
+                                    <div style="font-size:0.85rem;">@n.Message</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">@FormatNotificationTime(n.CreatedAt)</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
     </div>
 
     @if (CurrentGameService.CurrentGame != null) {
@@ -61,6 +92,9 @@
     private string? _lastGameStatus;
     private bool _endingSoonAlertShown;
 
+    private List<PlayerNotificationViewModel> _notifications = new();
+    private bool _showNotifications = false;
+
     protected override void OnInitialized() {
         CurrentGameService.OnChanged += OnGameChanged;
         StartPolling();
@@ -93,6 +127,9 @@
     }
 
     private async Task PollGameStatusAsync(System.Threading.CancellationToken ct) {
+        // Initial notification fetch
+        await FetchNotificationsAsync();
+
         while (!ct.IsCancellationRequested) {
             await Task.Delay(TimeSpan.FromSeconds(10), ct).ContinueWith(_ => { });
             if (ct.IsCancellationRequested) break;
@@ -100,7 +137,55 @@
                 await CurrentGameService.RefreshAsync();
             }
             await DetectAlertsAsync();
+
+            // Fetch notifications every 30s (every 3rd 10s poll)
+            if (++_notificationPollCounter >= 3) {
+                _notificationPollCounter = 0;
+                await FetchNotificationsAsync();
+            }
         }
+    }
+
+    private int _notificationPollCounter = 0;
+
+    private async Task FetchNotificationsAsync() {
+        try {
+            var result = await Http.GetFromJsonAsync<List<PlayerNotificationViewModel>>("api/notifications");
+            if (result != null) {
+                _notifications = result;
+                await InvokeAsync(StateHasChanged);
+            }
+        } catch {
+            // Ignore errors — user may not be authenticated yet
+        }
+    }
+
+    private async Task DismissAll() {
+        try {
+            await Http.DeleteAsync("api/notifications");
+            _notifications = new List<PlayerNotificationViewModel>();
+            _showNotifications = false;
+        } catch {
+            // Ignore
+        }
+    }
+
+    private void ToggleNotifications() {
+        _showNotifications = !_showNotifications;
+    }
+
+    private static string GetNotificationClass(NotificationKind kind) => kind switch {
+        NotificationKind.Warning => "bg-warning bg-opacity-10",
+        NotificationKind.GameEvent => "bg-info bg-opacity-10",
+        _ => ""
+    };
+
+    private static string FormatNotificationTime(DateTime createdAt) {
+        var age = DateTime.UtcNow - createdAt;
+        if (age.TotalMinutes < 1) return "just now";
+        if (age.TotalMinutes < 60) return $"{(int)age.TotalMinutes}m ago";
+        if (age.TotalHours < 24) return $"{(int)age.TotalHours}h ago";
+        return createdAt.ToString("MMM d");
     }
 
     private async Task DetectAlertsAsync() {

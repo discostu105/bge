@@ -11,6 +11,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int VoteCount { get; set; }
 	}
 
+	internal class AlliancePost {
+		public AlliancePostId PostId { get; set; } = default!;
+		public AllianceId AllianceId { get; set; } = default!;
+		public PlayerId AuthorPlayerId { get; set; } = default!;
+		public string Body { get; set; } = string.Empty;
+		public DateTime CreatedAt { get; set; }
+	}
+
 	internal class Alliance {
 		public AllianceId AllianceId { get; init; }
 		public string Name { get; set; }
@@ -19,6 +27,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public DateTime Created { get; init; }
 		public List<AllianceMember> Members { get; set; } = new List<AllianceMember>();
 		public string? Message { get; set; }
+		public List<AlliancePost> Posts { get; set; } = new List<AlliancePost>();
 	}
 
 	internal static class AllianceExtensions {
@@ -40,6 +49,26 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			};
 		}
 
+		internal static AlliancePostImmutable ToImmutable(this AlliancePost post) {
+			return new AlliancePostImmutable(
+				PostId: post.PostId,
+				AllianceId: post.AllianceId,
+				AuthorPlayerId: post.AuthorPlayerId,
+				Body: post.Body,
+				CreatedAt: post.CreatedAt
+			);
+		}
+
+		internal static AlliancePost ToMutable(this AlliancePostImmutable post) {
+			return new AlliancePost {
+				PostId = post.PostId,
+				AllianceId = post.AllianceId,
+				AuthorPlayerId = post.AuthorPlayerId,
+				Body = post.Body,
+				CreatedAt = post.CreatedAt
+			};
+		}
+
 		internal static AllianceImmutable ToImmutable(this Alliance alliance) {
 			return new AllianceImmutable(
 				AllianceId: alliance.AllianceId,
@@ -48,7 +77,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				LeaderId: alliance.LeaderId,
 				Created: alliance.Created,
 				Members: alliance.Members.Select(m => m.ToImmutable()).ToList(),
-				Message: alliance.Message
+				Message: alliance.Message,
+				Posts: alliance.Posts.Select(p => p.ToImmutable()).ToList()
 			);
 		}
 
@@ -60,7 +90,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				LeaderId = alliance.LeaderId,
 				Created = alliance.Created,
 				Members = alliance.Members.Select(m => m.ToMutable()).ToList(),
-				Message = alliance.Message
+				Message = alliance.Message,
+				Posts = alliance.Posts?.Select(p => p.ToMutable()).ToList() ?? new List<AlliancePost>()
 			};
 		}
 	}

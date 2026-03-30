@@ -48,12 +48,17 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var storage = new InMemoryBlobStorage();
 			var serializer = new GameStateJsonSerializer();
 			var globalSerializer = new GlobalStateJsonSerializer();
+			var defaultInstance = registry.GetDefaultInstance();
+			var userRepositoryWrite = new UserRepositoryWrite(registry.GlobalState, defaultInstance.WorldState, TimeProvider.System);
 			return new GameRegistryNs.GameLifecycleEngine(
 				registry,
 				registry.GlobalState,
 				new PersistenceService(storage, serializer),
 				new GlobalPersistenceService(storage, globalSerializer),
 				new GameRegistryNs.NullGameNotificationService(),
+				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(),
+				userRepositoryWrite,
+				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}

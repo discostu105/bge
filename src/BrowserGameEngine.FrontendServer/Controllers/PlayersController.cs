@@ -16,6 +16,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		/// <summary>
+		/// Public achievements for any user, identified by their OAuth user ID.
+		/// Returns empty list when the user has no achievements.
+		/// </summary>
+		[AllowAnonymous]
+		[HttpGet("{userId}/achievements")]
+		public ActionResult<PlayerAchievementsViewModel> GetAchievements(string userId) {
+			var achievements = AchievementMapper.GetForUser(globalState, userId);
+			return Ok(new PlayerAchievementsViewModel(achievements));
+		}
+
+		/// <summary>
 		/// Public cross-game stats for any user, identified by their OAuth user ID (e.g. GitHub login).
 		/// Returns NotFound when the user has no game history.
 		/// </summary>
@@ -54,5 +65,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Games: entries
 			));
 		}
+
 	}
 }

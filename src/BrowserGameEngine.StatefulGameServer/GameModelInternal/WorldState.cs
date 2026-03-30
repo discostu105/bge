@@ -18,6 +18,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		internal IList<GameAction> GameActionQueue { get; set; } = new List<GameAction>();
 
+		internal IList<MarketOrder> MarketOrders { get; set; } = new List<MarketOrder>();
+
+		internal IList<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
+
 		// throws if player not found
 		internal Player GetPlayer(PlayerId playerId) {
 			if (Players.TryGetValue(playerId, out Player? player)) return player;
@@ -63,6 +67,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			worldState.Alliances = mutable.Alliances;
 			worldState.GameTickState = mutable.GameTickState;
 			worldState.GameActionQueue = mutable.GameActionQueue;
+			worldState.MarketOrders = mutable.MarketOrders;
+			worldState.ChatMessages = mutable.ChatMessages;
 		}
 
 
@@ -72,7 +78,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				GameTickState: worldState.GameTickState.ToImmutable(),
 				GameActionQueue: worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList(),
 				Alliances: worldState.Alliances.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
-				GameId: worldState.GameId
+				GameId: worldState.GameId,
+				MarketOrders: worldState.MarketOrders.ToImmutable(),
+				ChatMessages: worldState.ChatMessages.ToImmutable()
 			);
 		}
 
@@ -82,7 +90,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Players = new ConcurrentDictionary<PlayerId, Player>(worldStateImmutable.Players.ToDictionary(x => x.Key, y => y.Value.ToMutable())),
 				Alliances = new ConcurrentDictionary<AllianceId, Alliance>(worldStateImmutable.Alliances?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<AllianceId, Alliance>()),
 				GameTickState = worldStateImmutable.GameTickState.ToMutable(),
-				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList()
+				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList(),
+				MarketOrders = worldStateImmutable.MarketOrders?.ToMutable() ?? new List<MarketOrder>(),
+				ChatMessages = worldStateImmutable.ChatMessages?.ToMutable() ?? new List<ChatMessage>()
 			};
 		}
 	}

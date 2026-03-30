@@ -1,7 +1,9 @@
 @using BrowserGameEngine.Shared
 @using System.ComponentModel.DataAnnotations
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
 @inject NavigationManager NavManager
+@inject TutorialService Tutorial
 
 @if (!string.IsNullOrEmpty(lastError)) {
     <span class="error">@lastError</span>
@@ -16,8 +18,8 @@
             <option value="@x.Id">@x.Name</option>
         }
     </InputSelect>
-    <button type="submit">Bauen</button>
-    <button type="button" @onclick="QueueUnit">In Warteschlange</button>
+    <button type="submit">Build</button>
+    <button type="button" @onclick="QueueUnit">Queue</button>
 </EditForm>
 
 @code {
@@ -40,6 +42,7 @@
     private async Task BuildUnits() {
         var response = await Http.PostAsJsonAsync($"api/units/build?unitDefId={model.UnitDefId}&count={model.Count}", "");
         if (response.IsSuccessStatusCode) {
+            await Tutorial.MarkStepAsync(0);
             NavManager.NavigateTo("/units");
         } else {
             var error = await response.Content.ReadAsStringAsync();

@@ -6,6 +6,8 @@ namespace BrowserGameEngine.GameModel {
 		GameTickStateImmutable GameTickState,
 		IList<GameActionImmutable> GameActionQueue,
 		IDictionary<AllianceId, AllianceImmutable>? Alliances = null,
-		GameId? GameId = null  // null = legacy JSON; treated as "default" in ToMutable()
+		GameId? GameId = null,  // null = legacy JSON; treated as "default" in ToMutable()
+		IList<MarketOrderImmutable>? MarketOrders = null,
+		IList<ChatMessageImmutable>? ChatMessages = null
 	);
 }

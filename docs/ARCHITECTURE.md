@@ -100,6 +100,11 @@ public interface IWorldStateAccessor {
 - `GameTickModuleRegistry` — discovers and configures `IGameTickModule` implementations
 - Modules: `ActionQueueExecutor`, `UnitReturn`, `ResourceGrowthSco`, `NewPlayerProtectionModule`, `UpgradeTimer`, `BuildQueueModule`
 
+**Player notifications** (`Notifications/`):
+- `IPlayerNotificationService` — per-player notification interface; implementations are game-instance-scoped
+- `InMemoryPlayerNotificationService` — ring buffer (20 items per player). Receives push calls from `BattleReportGenerator` (incoming attack) and `GameLifecycleEngine` (game start/end)
+- `PlayerNotification` — notification record (id, message, timestamp, read flag)
+
 **Battle** (`Repositories/Battle/`):
 - `IBattleBehavior` — interface for combat resolution
 - `BattleBehaviorScoOriginal` — the original SCO formula; supports attack/defense upgrade bonuses and land transfer on victory
@@ -132,13 +137,19 @@ ASP.NET Core host — the composition root. Wires everything together.
 - `GamesController` — list games, create game, get game details (`[AllowAnonymous]` for reads)
 - `LeaderboardController` — cross-game all-time rankings (`[AllowAnonymous]`)
 - `GameInfoController` — game metadata endpoint
-- `AdminController` — administrative operations
+- `NotificationsController` — per-player in-app notifications: `GET /api/notifications`, `DELETE /api/notifications`
+- `AdminController` — administrative operations (DevAuth-gated)
 
 **Hosted services** (background):
 - `GameTickTimerService` (10s) — calls `GameTickEngine.CheckAllTicks()` for each active game instance
 - `PersistenceHostedService` (10s) — serializes and stores each active game's `WorldState`
 - `GlobalPersistenceHostedService` (10s) — serializes and stores `GlobalState`
 - `GameLifecycleService` (60s) — transitions game statuses, finalizes ended games, writes achievements
+
+**External notification services** (`Services/`):
+- `IGameNotificationService` — interface for external game-level notifications (game start/end events)
+- `DiscordWebhookNotificationService` — posts game start/end messages to a Discord webhook URL
+- `NullGameNotificationService` — no-op implementation used when Discord is not configured
 
 **Middleware**:
 - `CurrentUserMiddleware` — resolves authenticated user to `CurrentUserContext` (scoped)
@@ -152,7 +163,7 @@ Blazor WebAssembly SPA. Calls the REST API via `HttpClient`. No SignalR — poll
 - `RedirectIfUnauthorizedHandler` — intercepts 401s, redirects to `/signin`
 - `RefreshService` — event bus for cross-component refresh
 
-**Pages**: Index, Base, Units, EnemyBase, SelectEnemy, PlayerRanking, PlayerProfile, CreatePlayer, UnitDefinition, Upgrades, Alliances, AllianceDetail, AllianceRanking, Messages, Players
+**Pages**: Index, Base, Units, EnemyBase, SelectEnemy, PlayerRanking, PlayerProfile, CreatePlayer, UnitDefinition, Upgrades, Alliances, AllianceDetail, AllianceRanking, Messages, Players, GameLobby, Games, PlayerHistory, Games/Results, Games/Summary, Games/PublicProfile
 
 ## Data Flow
 
@@ -198,6 +209,7 @@ Background:  GameLifecycleService → GlobalState game records → transitions U
 | `Bge:S3KeyPrefix` | S3 key prefix | `""` |
 | `GitHub:ClientId` | OAuth client ID | required |
 | `GitHub:ClientSecret` | OAuth client secret | required |
+| `Bge:DiscordWebhookUrl` | Discord webhook URL for game start/end notifications | optional |
 
 ## Rules for Future Development
 

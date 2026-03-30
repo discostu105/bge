@@ -52,7 +52,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.onlineStatusRepository = onlineStatusRepository;
 		}
 
+		/// <summary>Lists players that the current player can attack.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(SelectEnemyViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<SelectEnemyViewModel> AttackablePlayers() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			return new SelectEnemyViewModel {
@@ -60,7 +63,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Sends a unit to attack an enemy player's base.</summary>
+		/// <param name="unitId">The unit ID to send.</param>
+		/// <param name="enemyPlayerId">The target enemy player ID.</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult SendUnits([FromQuery] string unitId, [FromQuery] string enemyPlayerId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
@@ -77,7 +86,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
+		/// <summary>Returns information about an enemy player's base, including their defending units and your attacking units en route.</summary>
+		/// <param name="enemyPlayerId">The enemy player ID to scout.</param>
 		[HttpGet]
+		[ProducesResponseType(typeof(EnemyBaseViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<EnemyBaseViewModel> EnemyBase([FromQuery] string enemyPlayerId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
@@ -97,13 +111,44 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 
+		/// <summary>Executes a battle against an enemy player using units already sent to their base.</summary>
+		/// <param name="enemyPlayerId">The enemy player ID to attack.</param>
 		[HttpPost]
+		[ProducesResponseType(typeof(BattleResultViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<BattleResultViewModel> Attack([FromQuery] string enemyPlayerId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var result = unitRepositoryWrite.Attack(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId));
 			battleReportGenerator.GenerateReports(result);
-			return new BattleResultViewModel {
 
+			var attacker = playerRepository.Get(result.Attacker);
+			var defender = playerRepository.Get(result.Defender);
+			bool attackerWon = !result.BtlResult.DefendingUnitsSurvived.Any() && result.BtlResult.AttackingUnitsSurvived.Any();
+			bool draw = !result.BtlResult.AttackingUnitsSurvived.Any() && !result.BtlResult.DefendingUnitsSurvived.Any();
+			string outcome = attackerWon ? "AttackerWon" : draw ? "Draw" : "DefenderWon";
+
+			return new BattleResultViewModel {
+				AttackerName = attacker.Name,
+				DefenderName = defender.Name,
+				Outcome = outcome,
+				TotalAttackerStrengthBefore = result.BtlResult.TotalAttackerStrengthBefore,
+				TotalDefenderStrengthBefore = result.BtlResult.TotalDefenderStrengthBefore,
+				UnitsLostByAttacker = result.BtlResult.AttackingUnitsDestroyed
+					.Select(uc => new UnitLossViewModel {
+						UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+						Count = uc.Count
+					}).ToList(),
+				UnitsLostByDefender = result.BtlResult.DefendingUnitsDestroyed
+					.Select(uc => new UnitLossViewModel {
+						UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+						Count = uc.Count
+					}).ToList(),
+				ResourcesPillaged = result.BtlResult.ResourcesStolen
+					.SelectMany(c => c.Resources)
+					.GroupBy(x => x.Key.Id)
+					.ToDictionary(g => g.Key, g => g.Sum(x => x.Value)),
+				LandTransferred = (int)result.BtlResult.LandTransferred,
+				WorkersCaptured = result.BtlResult.WorkersCaptured,
 			};
 		}
 	}

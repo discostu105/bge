@@ -1,18 +1,24 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 	public class GameLifecycleEngine {
+		private readonly ConcurrentDictionary<string, bool> _finalizingGames = new();
 		private readonly GameRegistry gameRegistry;
 		private readonly GlobalState globalState;
 		private readonly PersistenceService persistenceService;
 		private readonly GlobalPersistenceService globalPersistenceService;
 		private readonly IGameNotificationService notificationService;
+		private readonly IPlayerNotificationService playerNotificationService;
+		private readonly UserRepositoryWrite userRepositoryWrite;
+		private readonly TimeProvider timeProvider;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -21,6 +27,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			PersistenceService persistenceService,
 			GlobalPersistenceService globalPersistenceService,
 			IGameNotificationService notificationService,
+			IPlayerNotificationService playerNotificationService,
+			UserRepositoryWrite userRepositoryWrite,
+			TimeProvider timeProvider,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -28,6 +37,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.persistenceService = persistenceService;
 			this.globalPersistenceService = globalPersistenceService;
 			this.notificationService = notificationService;
+			this.playerNotificationService = playerNotificationService;
+			this.userRepositoryWrite = userRepositoryWrite;
+			this.timeProvider = timeProvider;
 			this.logger = logger;
 		}
 
@@ -49,8 +61,33 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				var updated = record with { Status = GameStatus.Active };
 				globalState.UpdateGame(record, updated);
 				logger.LogInformation("Game {GameId} activated", record.GameId.Id);
-				var playerCount = gameRegistry.TryGetInstance(record.GameId)?.PlayerCount ?? 0;
+				var instance = gameRegistry.TryGetInstance(record.GameId);
+				var playerCount = instance?.PlayerCount ?? 0;
 				await notificationService.NotifyGameStartedAsync(updated, playerCount);
+
+				// Auto-join users who opted in
+				if (instance != null) {
+					var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+					var usersToAutoJoin = globalState.Users.Values
+						.Where(u => u.AutoJoinNextGame)
+						.ToList();
+					foreach (var user in usersToAutoJoin) {
+						bool alreadyJoined = instance.WorldState.Players.Values.Any(p => p.UserId == user.UserId);
+						if (!alreadyJoined) {
+							var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString("N")[..12]);
+							playerRepoWrite.CreatePlayer(playerId, user.UserId);
+							logger.LogInformation("Auto-joined user {UserId} as player {PlayerId} in game {GameId}",
+								user.UserId, playerId.Id, record.GameId.Id);
+						}
+						userRepositoryWrite.SetGamePreferences(user.GithubId, user.WantsGameNotification, false);
+					}
+
+					foreach (var player in instance.WorldState.Players.Values) {
+						if (player.UserId != null) {
+							playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has started!", NotificationKind.GameEvent);
+						}
+					}
+				}
 			}
 			return toActivate.Count > 0;
 		}
@@ -66,7 +103,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			return toFinalize.Count > 0;
 		}
 
+		public Task FinalizeGameEarlyAsync(GameRecordImmutable record, DateTime utcNow) {
+			return FinalizeGameAsync(record, utcNow);
+		}
+
 		private async Task FinalizeGameAsync(GameRecordImmutable record, DateTime utcNow) {
+			if (!_finalizingGames.TryAdd(record.GameId.Id, true)) {
+				logger.LogWarning("Game {GameId} is already being finalized — skipping duplicate finalization", record.GameId.Id);
+				return;
+			}
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) {
 				// Instance already gone; update the record only
@@ -114,6 +159,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 
 			// Persist final world state before freeing memory
 			await persistenceService.StoreGameState(record.GameId, instance.WorldState.ToImmutable());
+
+			// Notify players that the game has ended
+			foreach (var player in instance.WorldState.Players.Values) {
+				if (player.UserId != null) {
+					playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has ended. Check results!", NotificationKind.GameEvent);
+				}
+			}
 
 			// Remove instance from registry to free memory
 			gameRegistry.Remove(record.GameId);

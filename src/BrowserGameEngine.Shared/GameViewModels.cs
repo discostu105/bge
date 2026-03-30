@@ -24,6 +24,12 @@ namespace BrowserGameEngine.Shared {
 		string? DiscordWebhookUrl = null
 	);
 
+	public record UpdateGameRequest(
+		string Name,
+		DateTime EndTime,
+		string? DiscordWebhookUrl = null
+	);
+
 	public record GameResultEntryViewModel(
 		int Rank,
 		string PlayerName,

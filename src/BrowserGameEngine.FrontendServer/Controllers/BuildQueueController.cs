@@ -34,7 +34,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
+		/// <summary>Returns the current player's build queue entries.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(BuildQueueViewModel), StatusCodes.Status200OK)]
 		public BuildQueueViewModel Get() {
 			if (!currentUserContext.IsValid) return new BuildQueueViewModel();
 			var entries = buildQueueRepository.GetQueue(currentUserContext.PlayerId);
@@ -43,7 +45,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Adds a unit or building to the build queue.</summary>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Add([FromBody] AddToQueueRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			if (request.Type != "unit" && request.Type != "asset") {
@@ -59,14 +65,21 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok();
 		}
 
+		/// <summary>Removes an entry from the build queue by its ID.</summary>
+		/// <param name="entryId">The queue entry ID to remove.</param>
 		[HttpDelete]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Remove([FromQuery] Guid entryId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			buildQueueRepositoryWrite.RemoveFromQueue(new RemoveFromQueueCommand(currentUserContext.PlayerId, entryId));
 			return Ok();
 		}
 
+		/// <summary>Changes the priority of a queue entry.</summary>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Reorder([FromBody] ReorderQueueRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			buildQueueRepositoryWrite.ReorderQueue(new ReorderQueueCommand(

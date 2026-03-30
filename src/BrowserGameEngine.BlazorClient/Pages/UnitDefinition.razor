@@ -1,8 +1,8 @@
-﻿@page "/unitdefinitions"
+@page "/unitdefinitions"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
-<h1>Einheiten Definitionen</h1>
+<h1>Unit Definitions</h1>
 
 @if (model == null) {
     <p><em>Loading...</em></p>
@@ -12,9 +12,9 @@
             <tr>
                 <th>Id</th>
                 <th>Name</th>
-                <th>Angriff</th>
-                <th>Verteidigung</th>
-                <th>Kosten</th>
+                <th>Attack</th>
+                <th>Defense</th>
+                <th>Cost</th>
             </tr>
         </thead>
         <tbody>

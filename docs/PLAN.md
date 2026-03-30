@@ -41,17 +41,34 @@ These features exist and are functional in the current codebase.
 | 12.3 | Online status | `OnlineStatusRepository` tracks `last_online` timestamp. Online/offline shown in ranking. |
 | 14.1 | User accounts / auth | GitHub OAuth2 + dev login mode. Player creation with race choice. |
 | 14.2 | Core player state | Land, minerals, gas, race, tick counters all tracked. |
-| 15 | UI pages | Index, Base, Units, UnitDefinition, EnemyBase, SelectEnemy, PlayerRanking, PlayerProfile, CreatePlayer, Upgrades, Alliances, AllianceDetail, AllianceRanking, Messages. |
-| 15.1 | Persistent header | `_PlayerResources.razor` shows minerals, gas, land. |
+| 15 | UI pages | Index, Base, Units, UnitDefinition, EnemyBase, SelectEnemy, PlayerRanking, CreatePlayer, Upgrades, Alliances, AllianceDetail, AllianceRanking, Messages, Players, GameLobby, PlayerHistory, Summary, Results, PublicProfile. |
+| 15.1 | Full UI header | `_PlayerResources.razor`: minerals, gas, land, server time, next-tick countdown, unread message badge. `MainLayout`: game name, status, time-to-end banner, ending-soon and finished alerts. |
 | 16 | Data model | In-memory world state (JSON-serialized to blob storage). Matches spec structure. |
 | — | Multi-game platform | `GameRegistry`, `GameInstance`, `GlobalState`, `GameLifecycleEngine`. Multiple concurrent game rounds. `Upcoming → Active → Finished` lifecycle. |
-| — | Cross-game leaderboard | `PlayerAchievementImmutable` written on game finalization. `LeaderboardController` + `PlayerRanking.razor` all-time view. |
+| — | Game auto-finalization | `GameLifecycleEngine` transitions `Active → Finished` on `EndTime`, writes `PlayerAchievement` records. `GameLifecycleService` polls every 60s. |
+| — | Game list & season schedule | `/games` — Season Schedule view with Bootstrap cards (upcoming, active, finished). (BGE-217) |
+| — | Game lobby & join flow | `GameLobby.razor` at `/games/{gameId}` — player name + race selection, `POST /api/games/{gameId}/players`. (BGE-136) |
+| — | Game-scoped routing | All game-action pages use `/games/{gameId}/...` routes. (BGE-162) |
+| — | Game context in header | `MainLayout` game-context-banner: game name, status, time-to-end. End-of-game countdown banner. (BGE-212) |
+| — | Post-game summary | `/games/{id}/summary` — per-player final stats and score. (BGE-224) |
+| — | Game results screen | `/games/{id}/results` — final standings with auto-redirect. (BGE-165) |
+| — | Cross-game leaderboard | All-time rankings via `PlayerAchievementImmutable`. `LeaderboardController` + all-time view. (BGE-163) |
+| — | Player public profile | `/games/{id}/profile/{playerId}` — public per-player page with cross-game stats. (BGE-213) |
+| — | Player game history | `PlayerHistory.razor` — per-player game history with stats. (BGE-192) |
+| — | Discord webhook notifications | `DiscordWebhookNotificationService` fires on game start/end via `IGameNotificationService`. (BGE-241) |
+| — | In-app notification center | Bell icon in navbar with unread badge. Per-player ring buffer (20 items). `GET/DELETE /api/notifications`. Fires on game start, game end, and incoming attack. (BGE-267) |
+| — | Admin cheat endpoints | `AdminController` (DevAuth-gated): set-resources, grant-building, grant-units, reset-player, force-tick, world-state dump, player list. |
+| — | State snapshots | `AdminController`: save-snapshot, load-snapshot, list snapshots, delete snapshot. |
+| — | Configurable tick speed | `AdminController`: set-tick-duration, pause-ticks, resume-ticks. |
+| — | Action feed / log | `IActionLogger` ring buffer in `StatefulGameServer`. `GET /api/admin/action-log`. |
+| — | 10s auto-refresh | All game-state pages poll every 10s via `PeriodicTimer`. (BGE-189) |
+| — | Bot client support | `BearerTokenMiddleware` + API key auth. Bot quickstart guide in `docs/BOT-CLIENT.md`. |
 
 ---
 
 ## Planned — Fits the Architecture
 
-These features are specified, not yet implemented, and slot cleanly into the existing engine.
+These features are specified, not yet implemented, or have PRs pending merge.
 
 ### Core Game Completeness
 
@@ -59,27 +76,31 @@ These features are specified, not yet implemented, and slot cleanly into the exi
 |---|---|---|
 | 1.2 | Complete Zerg & Protoss definitions | `GameDefinition.SCO` has Terran fully defined. Port the spec tables for Zerg and Protoss buildings + units. Purely data work. |
 
-### Multi-Game UI
+### Multi-Game Registration & Season Flow
 
-| Feature | What to Build |
-|---|---|
-| Game list page | `GameList.razor` at `/games` — shows upcoming, active, finished games with join links and time-until-start countdowns. |
-| Join game flow | `POST /api/games/{gameId}/players` + `JoinGame.razor` — player name + race selection. Validate user doesn't already have a player in this game. |
-| Game-scoped routing | Update all existing Blazor pages to accept `GameId` as a route parameter (`/games/{gameId}/base`, etc.) and pass it in all API calls. Add redirect rules from old routes. |
-| Game context in header | Update `_PlayerResources.razor` to show game name and time-to-end. |
+| Feature | What to Build | Status |
+|---|---|---|
+| Player registration UI | Dedicated registration page with name/race form. (BGE-157) | PR #64 open, pending merge |
+| Join game UI improvements | Polished join-game flow with validation and error states. (BGE-158) | PR #60 open, pending merge |
+| Season subscription + auto-join | Users subscribe to a season; auto-enrolled in the next game start. (BGE-269) | PR #85 open, pending merge |
 
 ### Social & Communication Polish
 
 | Spec Section | Feature | What to Build |
 |---|---|---|
 | 9.1 | Alliance leader election | Voting mechanism for alliance leader. Leader management of members. Currently leader = creator. |
-| 15.1 | Full UI header | Add: time until next round, unread message count, server time. Currently shows resources + land only. |
+
+### Developer Tooling
+
+| Feature | What to Build |
+|---|---|
+| Balance simulation CLI | Standalone console project (`tools/BalanceSim`) — run combat simulations without the server. Critical before completing Zerg/Protoss data. |
 
 ---
 
 ## Deferred — Omit for Now
 
-These features from the spec or era are intentionally excluded. Reasons given for each.
+These features from the spec or era are intentionally excluded.
 
 | Feature | Reason |
 |---|---|
@@ -87,7 +108,6 @@ These features from the spec or era are intentionally excluded. Reasons given fo
 | Forum / MBBS integration | The spec notes this should be dropped. Use external community tools. |
 | Photo album, calendar | Unrelated to the game. Omit permanently. |
 | Multi-account detection | Complex anti-cheat. Not needed for a small player base. Add if abuse becomes a problem. |
-| Admin panel (round management) | `AdminController` covers basic needs. Full admin UI can be built ad-hoc if needed. |
 | Email-based registration | GitHub OAuth is simpler and prevents spam. No email infrastructure needed. |
 | Spatial map | The original had no spatial map — players interact directly. Keep this design; don't add a map. |
 
@@ -106,7 +126,7 @@ These features from the spec or era are intentionally excluded. Reasons given fo
 **What the multi-game platform changes:**
 - **Users are global**, not per-game. `GlobalState` owns user accounts; `WorldState` holds only players (game-scoped characters).
 - **Joining a game** requires a dedicated flow: `POST /api/games/{gameId}/players` to create a player, separate from account creation.
-- **Game-scoped URL routing** (`/games/{gameId}/...`) is the planned final shape for all game-action pages and APIs, but the current routing still uses flat paths as a compatibility bridge.
+- **Game-scoped URL routing** (`/games/{gameId}/...`) is the implemented final shape for all game-action pages and APIs.
 - **Multiple tick engines** — one per active `GameInstance`. The timer service iterates all active instances.
 
 ---
@@ -114,9 +134,9 @@ These features from the spec or era are intentionally excluded. Reasons given fo
 ## Suggested Build Order
 
 ```
-Zerg & Protoss data         (complete core game)
-Game list + join flow       (multi-game UI)
-Game-scoped routing         (complete URL migration)
-Alliance leader election    (social completeness)
-Full UI header              (polish)
+Merge BGE-157/158 PRs            (player registration + join UI)
+Merge BGE-269 PR                 (season subscription + auto-join)
+Balance simulation CLI           (before Zerg/Protoss data)
+Zerg & Protoss data              (complete core game)
+Alliance leader election         (social completeness)
 ```

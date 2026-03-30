@@ -20,6 +20,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().Cre
 builder.Services.AddSingleton<BrowserGameEngine.BlazorClient.Code.RefreshService>();
 builder.Services.AddSingleton<BrowserGameEngine.BlazorClient.Code.AlertService>();
 builder.Services.AddScoped<ICurrentGameService, CurrentGameService>();
+builder.Services.AddScoped<BrowserGameEngine.BlazorClient.Code.TutorialService>();
 builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();

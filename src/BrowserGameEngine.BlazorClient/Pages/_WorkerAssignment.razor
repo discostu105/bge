@@ -1,21 +1,23 @@
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 
 @if (!string.IsNullOrEmpty(lastError)) {
 	<span class="error">@lastError</span>
 }
 @if (model != null) {
 	<div>
-		<h3>Arbeiter</h3>
-		<div>Gesamt: @model.TotalWorkers</div>
-		<div>Untätig: @(model.TotalWorkers - mineralWorkers - gasWorkers)</div>
+		<h3>Workers</h3>
+		<div>Total: @model.TotalWorkers</div>
+		<div>Idle: @(model.TotalWorkers - mineralWorkers - gasWorkers)</div>
 		<div>
-			<label>Mineralien: <InputNumber @bind-Value="mineralWorkers" /></label>
+			<label>Minerals: <InputNumber @bind-Value="mineralWorkers" /></label>
 		</div>
 		<div>
 			<label>Gas: <InputNumber @bind-Value="gasWorkers" /></label>
 		</div>
-		<button @onclick="Assign">Zuweisen</button>
+		<button @onclick="Assign">Assign</button>
 	</div>
 }
 
@@ -41,6 +43,7 @@
 		lastError = null;
 		var response = await Http.PostAsJsonAsync($"api/workers/assign?mineralWorkers={mineralWorkers}&gasWorkers={gasWorkers}", "");
 		if (response.IsSuccessStatusCode) {
+			await Tutorial.MarkStepAsync(1);
 			await Load();
 		} else {
 			lastError = await response.Content.ReadAsStringAsync();

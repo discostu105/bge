@@ -14,6 +14,7 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record VoteLeaderCommand(PlayerId PlayerId, PlayerId VoteePlayerId) : ICommand;
 	public record SetAlliancePasswordCommand(PlayerId PlayerId, string NewPassword) : ICommand;
 	public record SetAllianceMessageCommand(PlayerId PlayerId, string Message) : ICommand;
+	public record PostAllianceChatCommand(PlayerId PlayerId, AllianceId AllianceId, string Body) : ICommand;
 
 	public record BuildAssetCommand(PlayerId PlayerId, AssetDefId AssetDefId) : ICommand;
 	public record BuildUnitCommand(PlayerId PlayerId, UnitDefId UnitDefId, int Count) : ICommand;
@@ -33,4 +34,10 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record RemoveFromQueueCommand(PlayerId PlayerId, Guid EntryId) : ICommand;
 	public record ReorderQueueCommand(PlayerId PlayerId, Guid EntryId, int NewPriority) : ICommand;
 	public record TradeResourceCommand(PlayerId PlayerId, ResourceDefId FromResource, int Amount) : ICommand;
+
+	public record CreateMarketOrderCommand(PlayerId PlayerId, ResourceDefId OfferedResourceId, decimal OfferedAmount, ResourceDefId WantedResourceId, decimal WantedAmount) : ICommand;
+	public record AcceptMarketOrderCommand(PlayerId BuyerPlayerId, MarketOrderId OrderId) : ICommand;
+	public record CancelMarketOrderCommand(PlayerId PlayerId, MarketOrderId OrderId) : ICommand;
+
+	public record PostChatMessageCommand(PlayerId AuthorPlayerId, string Body) : ICommand;
 }

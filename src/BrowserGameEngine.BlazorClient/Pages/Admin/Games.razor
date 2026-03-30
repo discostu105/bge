@@ -64,8 +64,46 @@
 					<td>@game.PlayerCount</td>
 					<td>@game.StartTime?.ToLocalTime().ToString("g")</td>
 					<td>@game.EndTime?.ToLocalTime().ToString("g")</td>
-					<td><a href="/games/@game.GameId">View</a></td>
+					<td>
+						<a href="/games/@game.GameId">View</a>
+						@if (editingGameId != game.GameId) {
+							<button @onclick="() => StartEdit(game)" style="margin-left:8px">Edit</button>
+						}
+						@if (game.Status == "Active") {
+							<button @onclick="() => FinalizeGame(game.GameId)" style="margin-left:8px; color:red">Finalize</button>
+						}
+					</td>
 				</tr>
+				@if (editingGameId == game.GameId) {
+					<tr>
+						<td colspan="6" style="background:#f8f9fa; padding:12px">
+							<div style="display:grid; gap:8px; max-width:480px">
+								<div>
+									<label><strong>Name</strong></label><br />
+									<input type="text" @bind="editModel.Name" style="width:100%" />
+								</div>
+								<div>
+									<label><strong>Discord Webhook URL</strong></label><br />
+									<input type="text" @bind="editModel.DiscordWebhookUrl" placeholder="(optional)" style="width:100%" />
+								</div>
+								<div>
+									<label><strong>End Time</strong></label><br />
+									<input type="datetime-local" value="@editModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => editModel.EndTime = ParseDateTime(e.Value?.ToString())" />
+								</div>
+								<div>
+									<button @onclick="HandleSaveEdit">Save</button>
+									<button @onclick="CancelEdit" style="margin-left:8px">Cancel</button>
+									@if (!string.IsNullOrEmpty(editError)) {
+										<span style="color:red; margin-left:8px">@editError</span>
+									}
+									@if (!string.IsNullOrEmpty(editSuccess)) {
+										<span style="color:green; margin-left:8px">@editSuccess</span>
+									}
+								</div>
+							</div>
+						</td>
+					</tr>
+				}
 			}
 		</tbody>
 	</table>
@@ -77,12 +115,18 @@
 	private string? createError;
 	private string? createSuccess;
 
+	private string? editingGameId;
+	private EditGameFormModel editModel = new();
+	private string? editError;
+	private string? editSuccess;
+
 	protected override async Task OnInitializedAsync() {
 		await LoadGames();
 	}
 
 	private async Task LoadGames() {
-		games = await Http.GetFromJsonAsync<List<GameSummaryViewModel>>("api/games") ?? new();
+		var list = await Http.GetFromJsonAsync<GameListViewModel>("api/games");
+		games = list?.Games ?? new();
 	}
 
 	private async Task HandleCreate() {
@@ -110,6 +154,59 @@
 		}
 	}
 
+	private void StartEdit(GameSummaryViewModel game) {
+		editingGameId = game.GameId;
+		editModel = new EditGameFormModel {
+			Name = game.Name,
+			EndTime = game.EndTime?.ToLocalTime() ?? DateTime.Now.AddDays(7),
+			DiscordWebhookUrl = game.DiscordWebhookUrl
+		};
+		editError = null;
+		editSuccess = null;
+	}
+
+	private void CancelEdit() {
+		editingGameId = null;
+		editError = null;
+		editSuccess = null;
+	}
+
+	private async Task HandleSaveEdit() {
+		editError = null;
+		editSuccess = null;
+
+		if (editingGameId == null) return;
+
+		var request = new UpdateGameRequest(
+			Name: editModel.Name,
+			EndTime: editModel.EndTime.ToUniversalTime(),
+			DiscordWebhookUrl: string.IsNullOrWhiteSpace(editModel.DiscordWebhookUrl) ? null : editModel.DiscordWebhookUrl
+		);
+
+		var response = await Http.PatchAsJsonAsync($"api/games/{editingGameId}", request);
+		if (response.IsSuccessStatusCode) {
+			editSuccess = "Game updated.";
+			editingGameId = null;
+			await LoadGames();
+		} else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) {
+			editError = "Unauthorized.";
+		} else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden) {
+			editError = "Only the game creator can edit this game.";
+		} else {
+			var body = await response.Content.ReadAsStringAsync();
+			editError = $"Failed to update game: {body}";
+		}
+	}
+
+	private async Task FinalizeGame(string gameId) {
+		var response = await Http.PostAsync($"api/games/{gameId}/finalize", null);
+		if (response.IsSuccessStatusCode) {
+			await LoadGames();
+		} else {
+			createError = $"Failed to finalize game: {await response.Content.ReadAsStringAsync()}";
+		}
+	}
+
 	private static DateTime ParseDateTime(string? value) {
 		if (DateTime.TryParse(value, out var dt)) return dt;
 		return DateTime.Now;
@@ -120,5 +217,11 @@
 		public string TickDuration { get; set; } = "00:01:00";
 		public DateTime StartTime { get; set; } = DateTime.Now.AddHours(1);
 		public DateTime EndTime { get; set; } = DateTime.Now.AddDays(7);
+	}
+
+	private class EditGameFormModel {
+		public string Name { get; set; } = string.Empty;
+		public DateTime EndTime { get; set; } = DateTime.Now.AddDays(7);
+		public string? DiscordWebhookUrl { get; set; }
 	}
 }

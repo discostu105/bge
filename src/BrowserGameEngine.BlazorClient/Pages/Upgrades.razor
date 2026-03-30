@@ -1,111 +1,256 @@
 @page "/upgrades"
 @page "/games/{GameId}/upgrades"
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 @implements IDisposable
 
-<h1>Forschung</h1>
+<h1>Research</h1>
+
+<style>
+	.tech-tree {
+		--race-color: #1b6ec2;
+		--race-color-light: #d6e8f8;
+		margin-top: 1.5rem;
+	}
+
+	.tech-tree.race-terran  { --race-color: #1b6ec2; --race-color-light: #d6e8f8; }
+	.tech-tree.race-zerg    { --race-color: #6f42c1; --race-color-light: #ede0f8; }
+	.tech-tree.race-protoss { --race-color: #b8860b; --race-color-light: #f8f0d0; }
+
+	.tech-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 1.5rem;
+		flex-wrap: wrap;
+	}
+
+	.tech-row-label {
+		width: 120px;
+		font-weight: bold;
+		font-size: 0.9rem;
+		color: #555;
+		flex-shrink: 0;
+	}
+
+	.tech-arrow {
+		font-size: 1.4rem;
+		color: #bbb;
+		flex-shrink: 0;
+		user-select: none;
+	}
+
+	.tech-node {
+		border: 2px solid #ddd;
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+		width: 160px;
+		background: #fff;
+		transition: border-color 0.2s, background 0.2s;
+	}
+
+	.tech-node.completed {
+		border-color: #28a745;
+		background: #f0fff4;
+	}
+
+	.tech-node.in-progress {
+		border-color: var(--race-color);
+		background: var(--race-color-light);
+		animation: tech-pulse 1.5s ease-in-out infinite;
+	}
+
+	.tech-node.available {
+		border-color: var(--race-color);
+		box-shadow: 0 0 6px var(--race-color);
+	}
+
+	.tech-node.locked {
+		opacity: 0.45;
+		filter: grayscale(0.5);
+	}
+
+	.tech-node-title {
+		font-weight: bold;
+		font-size: 0.85rem;
+		margin-bottom: 0.4rem;
+	}
+
+	.tech-node-status {
+		font-size: 0.8rem;
+		color: #666;
+	}
+
+	.tech-node-status.done { color: #28a745; font-weight: bold; }
+	.tech-node-status.researching { color: var(--race-color); }
+
+	.tech-node-cost {
+		font-size: 0.75rem;
+		margin: 0.4rem 0 0.2rem;
+		color: #555;
+	}
+
+	.tech-node-btn {
+		margin-top: 0.4rem;
+		font-size: 0.8rem;
+		padding: 0.25rem 0.6rem;
+		background-color: var(--race-color);
+		border: none;
+		border-radius: 4px;
+		color: #fff;
+		cursor: pointer;
+	}
+
+	.tech-node-btn:hover { opacity: 0.85; }
+
+	@@keyframes tech-pulse {
+		0%, 100% { box-shadow: 0 0 4px var(--race-color); }
+		50%       { box-shadow: 0 0 12px var(--race-color); }
+	}
+
+	@@media (max-width: 576px) {
+		.tech-row {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.tech-arrow {
+			transform: rotate(90deg);
+			margin-left: 64px;
+		}
+
+		.tech-row-label {
+			width: auto;
+		}
+	}
+</style>
 
 <div class="container">
 
-    <_PlayerResources />
+	<_PlayerResources />
 
-    @if (model == null) {
-        <p><em>Lade...</em></p>
-    } else {
-        if (!string.IsNullOrEmpty(lastError)) {
-            <span class="error">@lastError</span>
-        }
+	@if (model == null) {
+		<p><em>Loading...</em></p>
+	} else {
+		@if (!string.IsNullOrEmpty(lastError)) {
+			<span class="error">@lastError</span>
+		}
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Angriffs-Upgrades</h5>
-                        <p>Level: @model.AttackUpgradeLevel / @model.MaxUpgradeLevel</p>
+		<div class="tech-tree race-@model.PlayerType.ToLowerInvariant()">
 
-                        @if (model.UpgradeBeingResearched == "Attack") {
-                            <p>Wird erforscht... (@model.UpgradeResearchTimer Runden verbleibend)</p>
-                        } else if (model.AttackUpgradeLevel >= model.MaxUpgradeLevel) {
-                            <p>Maximales Level erreicht!</p>
-                        } else if (model.UpgradeBeingResearched != "None") {
-                            <p>Eine andere Forschung läuft gerade.</p>
-                        } else {
-                            <div>Kosten: <_Cost Cost="@model.NextAttackUpgradeCost" /></div>
-                            <button class="btn btn-danger mt-2" @onclick="ResearchAttack">
-                                Angriffs-Upgrade erforschen (Level @(model.AttackUpgradeLevel + 1))
-                            </button>
-                        }
-                    </div>
-                </div>
-            </div>
+			<div class="tech-row">
+				<div class="tech-row-label">Attack</div>
+				@for (int lvl = 1; lvl <= model.MaxUpgradeLevel; lvl++) {
+					var level = lvl;
+					var nodeClass = NodeClass("Attack", level, model.AttackUpgradeLevel, model.UpgradeBeingResearched);
+					<div class="tech-node @nodeClass">
+						<div class="tech-node-title">Level @level</div>
+						@if (level <= model.AttackUpgradeLevel) {
+							<div class="tech-node-status done">&#10003; Completed</div>
+						} else if (nodeClass == "in-progress") {
+							<div class="tech-node-status researching">Researching&hellip; (@model.UpgradeResearchTimer rounds)</div>
+						} else if (nodeClass == "available") {
+							@if (model.NextAttackUpgradeCost != null) {
+								<div class="tech-node-cost"><_Cost Cost="@model.NextAttackUpgradeCost" /></div>
+							}
+							<button class="tech-node-btn" @onclick="ResearchAttack">Research</button>
+						} else if (level == model.AttackUpgradeLevel + 1 && model.UpgradeBeingResearched != "None") {
+							<div class="tech-node-status">Another research in progress</div>
+						} else {
+							<div class="tech-node-status">Locked</div>
+						}
+					</div>
+					@if (level < model.MaxUpgradeLevel) {
+						<div class="tech-arrow">&#8594;</div>
+					}
+				}
+			</div>
 
-            <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Verteidigungs-Upgrades</h5>
-                        <p>Level: @model.DefenseUpgradeLevel / @model.MaxUpgradeLevel</p>
+			<div class="tech-row">
+				<div class="tech-row-label">Defense</div>
+				@for (int lvl = 1; lvl <= model.MaxUpgradeLevel; lvl++) {
+					var level = lvl;
+					var nodeClass = NodeClass("Defense", level, model.DefenseUpgradeLevel, model.UpgradeBeingResearched);
+					<div class="tech-node @nodeClass">
+						<div class="tech-node-title">Level @level</div>
+						@if (level <= model.DefenseUpgradeLevel) {
+							<div class="tech-node-status done">&#10003; Completed</div>
+						} else if (nodeClass == "in-progress") {
+							<div class="tech-node-status researching">Researching&hellip; (@model.UpgradeResearchTimer rounds)</div>
+						} else if (nodeClass == "available") {
+							@if (model.NextDefenseUpgradeCost != null) {
+								<div class="tech-node-cost"><_Cost Cost="@model.NextDefenseUpgradeCost" /></div>
+							}
+							<button class="tech-node-btn" @onclick="ResearchDefense">Research</button>
+						} else if (level == model.DefenseUpgradeLevel + 1 && model.UpgradeBeingResearched != "None") {
+							<div class="tech-node-status">Another research in progress</div>
+						} else {
+							<div class="tech-node-status">Locked</div>
+						}
+					</div>
+					@if (level < model.MaxUpgradeLevel) {
+						<div class="tech-arrow">&#8594;</div>
+					}
+				}
+			</div>
 
-                        @if (model.UpgradeBeingResearched == "Defense") {
-                            <p>Wird erforscht... (@model.UpgradeResearchTimer Runden verbleibend)</p>
-                        } else if (model.DefenseUpgradeLevel >= model.MaxUpgradeLevel) {
-                            <p>Maximales Level erreicht!</p>
-                        } else if (model.UpgradeBeingResearched != "None") {
-                            <p>Eine andere Forschung läuft gerade.</p>
-                        } else {
-                            <div>Kosten: <_Cost Cost="@model.NextDefenseUpgradeCost" /></div>
-                            <button class="btn btn-primary mt-2" @onclick="ResearchDefense">
-                                Verteidigungs-Upgrade erforschen (Level @(model.DefenseUpgradeLevel + 1))
-                            </button>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+		</div>
+	}
 </div>
 
 @code {
-    [Parameter]
-    public string? GameId { get; set; }
+	[Parameter]
+	public string? GameId { get; set; }
 
-    private UpgradesViewModel? model;
-    private string? lastError;
-    private CancellationTokenSource? _cts;
+	private UpgradesViewModel? model;
+	private string? lastError;
+	private CancellationTokenSource? _cts;
 
-    protected override async Task OnInitializedAsync() {
-        await Update();
-        _cts = new CancellationTokenSource();
-        _ = RunRefreshLoop(_cts.Token);
-    }
+	protected override async Task OnInitializedAsync() {
+		await Update();
+		_cts = new CancellationTokenSource();
+		_ = RunRefreshLoop(_cts.Token);
+	}
 
-    private async Task RunRefreshLoop(CancellationToken ct) {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
-        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
-            await InvokeAsync(Update);
-            await InvokeAsync(StateHasChanged);
-        }
-    }
+	private async Task RunRefreshLoop(CancellationToken ct) {
+		using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+		while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+			await InvokeAsync(Update);
+			await InvokeAsync(StateHasChanged);
+		}
+	}
 
-    private async Task ResearchAttack() => await Research("Attack");
-    private async Task ResearchDefense() => await Research("Defense");
+	private async Task ResearchAttack() => await Research("Attack");
+	private async Task ResearchDefense() => await Research("Defense");
 
-    private async Task Research(string upgradeType) {
-        lastError = null;
-        var response = await Http.PostAsJsonAsync($"api/upgrades/research?upgradeType={upgradeType}", "");
-        if (response.IsSuccessStatusCode) {
-            await Update();
-        } else {
-            lastError = await response.Content.ReadAsStringAsync();
-        }
-    }
+	private async Task Research(string upgradeType) {
+		lastError = null;
+		var response = await Http.PostAsJsonAsync($"api/upgrades/research?upgradeType={upgradeType}", "");
+		if (response.IsSuccessStatusCode) {
+			await Tutorial.MarkStepAsync(2);
+			await Update();
+		} else {
+			lastError = await response.Content.ReadAsStringAsync();
+		}
+	}
 
-    private async Task Update() {
-        model = await Http.GetFromJsonAsync<UpgradesViewModel>("api/upgrades");
-    }
+	private async Task Update() {
+		model = await Http.GetFromJsonAsync<UpgradesViewModel>("api/upgrades");
+	}
 
-    public void Dispose() {
-        _cts?.Cancel();
-        _cts?.Dispose();
-    }
+	private static string NodeClass(string upgradeType, int level, int currentLevel, string upgradeBeingResearched) {
+		if (level <= currentLevel) return "completed";
+		if (level == currentLevel + 1) {
+			if (upgradeBeingResearched == upgradeType) return "in-progress";
+			return "available";
+		}
+		return "locked";
+	}
+
+	public void Dispose() {
+		_cts?.Cancel();
+		_cts?.Dispose();
+	}
 }

@@ -1,0 +1,158 @@
+@page "/market"
+@page "/games/{GameId}/market"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@implements IDisposable
+
+<h1>Market</h1>
+
+<div class="container">
+
+    <_PlayerResources />
+
+    @if (model == null) {
+        <p><em>Loading...</em></p>
+    } else {
+        @if (!string.IsNullOrEmpty(lastError)) {
+            <span class="error">@lastError</span>
+        }
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Post Trade Offer</h5>
+                        <div class="mb-2">
+                            <label class="form-label">Offer resource</label>
+                            <input class="form-control" @bind="offerResourceId" placeholder="e.g. minerals" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Amount to offer</label>
+                            <input type="number" class="form-control" @bind="offerAmount" min="1" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Want resource</label>
+                            <input class="form-control" @bind="wantResourceId" placeholder="e.g. gas" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Amount wanted</label>
+                            <input type="number" class="form-control" @bind="wantAmount" min="1" />
+                        </div>
+                        <button class="btn btn-primary mt-2" @onclick="PostOffer">Post Offer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <h5>Open Orders</h5>
+                @if (!model.OpenOrders.Any()) {
+                    <p>No open orders. Be the first to post one!</p>
+                } else {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Seller</th>
+                                <th>Offering</th>
+                                <th>Wants</th>
+                                <th>Posted</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in model.OpenOrders) {
+                                <tr>
+                                    <td>@order.SellerPlayerName</td>
+                                    <td>@order.OfferedAmount @order.OfferedResourceName</td>
+                                    <td>@order.WantedAmount @order.WantedResourceName</td>
+                                    <td>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success" @onclick="() => Accept(order.OrderId)">Accept</button>
+                                        <button class="btn btn-sm btn-danger ms-1" @onclick="() => Cancel(order.OrderId)">Cancel</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? GameId { get; set; }
+
+    private MarketViewModel? model;
+    private string? lastError;
+    private string offerResourceId = "";
+    private decimal offerAmount = 100;
+    private string wantResourceId = "";
+    private decimal wantAmount = 100;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnInitializedAsync() {
+        await Update();
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(Update);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task Update() {
+        model = await Http.GetFromJsonAsync<MarketViewModel>("api/market");
+    }
+
+    private async Task PostOffer() {
+        lastError = null;
+        var request = new CreateMarketOrderRequest {
+            OfferedResourceId = offerResourceId,
+            OfferedAmount = offerAmount,
+            WantedResourceId = wantResourceId,
+            WantedAmount = wantAmount
+        };
+        var response = await Http.PostAsJsonAsync("api/market", request);
+        if (response.IsSuccessStatusCode) {
+            offerResourceId = "";
+            offerAmount = 100;
+            wantResourceId = "";
+            wantAmount = 100;
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task Accept(Guid orderId) {
+        lastError = null;
+        var response = await Http.PostAsJsonAsync($"api/market/accept?orderId={orderId}", "");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task Cancel(Guid orderId) {
+        lastError = null;
+        var response = await Http.DeleteAsync($"api/market/cancel?orderId={orderId}");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    public void Dispose() {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

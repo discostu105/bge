@@ -5,6 +5,8 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
+using BrowserGameEngine.StatefulGameServer.Notifications;
+using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -33,6 +35,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<ScoreRepository>();
 			services.AddSingleton<AllianceRepository>();
 			services.AddSingleton<AllianceRepositoryWrite>();
+			services.AddSingleton<AllianceChatRepository>();
+			services.AddSingleton<AllianceChatRepositoryWrite>();
+			services.AddSingleton<ChatRepositoryWrite>();
 			services.AddSingleton<AllianceScoreRepository>();
 			services.AddSingleton<AssetRepository>();
 			services.AddSingleton<AssetRepositoryWrite>();
@@ -47,6 +52,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<UpgradeRepositoryWrite>();
 			services.AddSingleton<BuildQueueRepository>();
 			services.AddSingleton<BuildQueueRepositoryWrite>();
+			services.AddSingleton<MarketRepository>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
@@ -72,6 +78,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(globalPersistenceService);
 			services.AddSingleton<IWorldStateFactory>(worldStateFactory);
 			services.AddSingleton<IGameNotificationService, NullGameNotificationService>();
+			services.AddSingleton<IPlayerNotificationService, InMemoryPlayerNotificationService>();
 			services.AddSingleton<GameLifecycleEngine>();
 		}
 	}

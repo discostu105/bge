@@ -86,12 +86,17 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var persistenceService = new PersistenceService(storage, serializer);
 			var globalSerializer = new GlobalStateJsonSerializer();
 			var globalPersistenceService = new GlobalPersistenceService(storage, globalSerializer);
+			var defaultInstance = gameRegistry.GetDefaultInstance();
+			var userRepositoryWrite = new UserRepositoryWrite(gameRegistry.GlobalState, defaultInstance.WorldState, TimeProvider.System);
 			return new GameRegistryNs.GameLifecycleEngine(
 				gameRegistry,
 				gameRegistry.GlobalState,
 				persistenceService,
 				globalPersistenceService,
 				new GameRegistryNs.NullGameNotificationService(),
+				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(),
+				userRepositoryWrite,
+				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
@@ -186,6 +191,62 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			await engine.ProcessLifecycleAsync();
 
 			Assert.Equal(GameStatus.Active, registry.GlobalState.GetGames()[0].Status);
+		}
+
+		[Fact]
+		public async Task ActivateGame_AutoJoin_DoesNotDuplicatePlayerAlreadyInGame() {
+			// A user with AutoJoinNextGame=true who already has a player in the game
+			// must NOT receive a second duplicate player record when the game activates.
+			var globalState = new GlobalState();
+			var record = new GameRecordImmutable(
+				new GameId("upcoming-autojoin"), "Upcoming", "sco", GameStatus.Upcoming,
+				DateTime.UtcNow.AddMinutes(-1),
+				DateTime.UtcNow.AddDays(1),
+				TimeSpan.FromSeconds(10));
+			globalState.AddGame(record);
+
+			var ws = MakeTwoPlayerState("upcoming-autojoin").ToMutable();
+			var registry = new GameRegistryNs.GameRegistry(globalState);
+			var instance = new GameRegistryNs.GameInstance(record, ws, TestGameDef);
+			registry.Register(instance);
+
+			// Set up user with AutoJoinNextGame=true via the write repository
+			var userRepoWrite = new UserRepositoryWrite(globalState, ws, TimeProvider.System);
+			var userImm = userRepoWrite.GetOrCreateUser("gh-autojoin", "autojoin", "AutoJoin User");
+			userRepoWrite.SetGamePreferences("gh-autojoin", false, true);
+
+			// Pre-create the player record for that user in the game (simulates manual join)
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, TimeProvider.System);
+			var existingPlayerId = PlayerIdFactory.Create("existing123");
+			playerRepoWrite.CreatePlayer(existingPlayerId, userImm.UserId);
+
+			int playerCountBefore = instance.PlayerCount;
+
+			var storage = new InMemoryBlobStorage();
+			var serializer = new GameStateJsonSerializer();
+			var persistenceService = new PersistenceService(storage, serializer);
+			var globalSerializer = new GlobalStateJsonSerializer();
+			var globalPersistenceService = new GlobalPersistenceService(storage, globalSerializer);
+			var engine = new GameRegistryNs.GameLifecycleEngine(
+				registry,
+				globalState,
+				persistenceService,
+				globalPersistenceService,
+				new GameRegistryNs.NullGameNotificationService(),
+				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(),
+				userRepoWrite,
+				TimeProvider.System,
+				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
+			);
+
+			await engine.ProcessLifecycleAsync();
+
+			var activatedInstance = registry.TryGetInstance(new GameId("upcoming-autojoin"));
+			Assert.NotNull(activatedInstance);
+			// Player count must not increase from the pre-activation count
+			Assert.Equal(playerCountBefore, activatedInstance.PlayerCount);
+			// The user must still have exactly one player
+			Assert.True(activatedInstance.HasUserPlayer(userImm.UserId));
 		}
 
 		[Fact]
