@@ -1,24 +1,24 @@
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
-<h3>Bauaufträge</h3>
+<h3>Build Queue</h3>
 
 @if (!string.IsNullOrEmpty(lastError)) {
     <span class="error">@lastError</span>
 }
 
 @if (model == null) {
-    <p><em>Lade...</em></p>
+    <p><em>Loading...</em></p>
 } else if (!model.Entries.Any()) {
-    <p>Keine Bauaufträge in der Warteschlange.</p>
+    <p>No items in the build queue.</p>
 } else {
     <table class="table table-sm">
         <thead>
             <tr>
-                <th>Priorität</th>
-                <th>Typ</th>
+                <th>Priority</th>
+                <th>Type</th>
                 <th>Name</th>
-                <th>Anzahl</th>
+                <th>Count</th>
                 <th></th>
             </tr>
         </thead>
@@ -26,11 +26,11 @@
             @foreach (var entry in model.Entries.OrderBy(x => x.Priority)) {
                 <tr>
                     <td>@entry.Priority</td>
-                    <td>@(entry.Type == "asset" ? "Gebäude" : "Einheit")</td>
+                    <td>@(entry.Type == "asset" ? "Building" : "Unit")</td>
                     <td>@entry.Name</td>
                     <td>@entry.Count</td>
                     <td>
-                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveEntry(entry.Id)">Entfernen</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveEntry(entry.Id)">Remove</button>
                     </td>
                 </tr>
             }

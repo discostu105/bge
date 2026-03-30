@@ -4,14 +4,14 @@
 @inject HttpClient Http
 @implements IDisposable
 
-<h1>Forschung</h1>
+<h1>Research</h1>
 
 <div class="container">
 
     <_PlayerResources />
 
     @if (model == null) {
-        <p><em>Lade...</em></p>
+        <p><em>Loading...</em></p>
     } else {
         if (!string.IsNullOrEmpty(lastError)) {
             <span class="error">@lastError</span>
@@ -21,19 +21,19 @@
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Angriffs-Upgrades</h5>
+                        <h5 class="card-title">Attack Upgrades</h5>
                         <p>Level: @model.AttackUpgradeLevel / @model.MaxUpgradeLevel</p>
 
                         @if (model.UpgradeBeingResearched == "Attack") {
-                            <p>Wird erforscht... (@model.UpgradeResearchTimer Runden verbleibend)</p>
+                            <p>Researching... (@model.UpgradeResearchTimer rounds remaining)</p>
                         } else if (model.AttackUpgradeLevel >= model.MaxUpgradeLevel) {
-                            <p>Maximales Level erreicht!</p>
+                            <p>Maximum level reached!</p>
                         } else if (model.UpgradeBeingResearched != "None") {
-                            <p>Eine andere Forschung läuft gerade.</p>
+                            <p>Another research is in progress.</p>
                         } else {
-                            <div>Kosten: <_Cost Cost="@model.NextAttackUpgradeCost" /></div>
+                            <div>Cost: <_Cost Cost="@model.NextAttackUpgradeCost" /></div>
                             <button class="btn btn-danger mt-2" @onclick="ResearchAttack">
-                                Angriffs-Upgrade erforschen (Level @(model.AttackUpgradeLevel + 1))
+                                Research Attack Upgrade (Level @(model.AttackUpgradeLevel + 1))
                             </button>
                         }
                     </div>
@@ -43,19 +43,19 @@
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Verteidigungs-Upgrades</h5>
+                        <h5 class="card-title">Defense Upgrades</h5>
                         <p>Level: @model.DefenseUpgradeLevel / @model.MaxUpgradeLevel</p>
 
                         @if (model.UpgradeBeingResearched == "Defense") {
-                            <p>Wird erforscht... (@model.UpgradeResearchTimer Runden verbleibend)</p>
+                            <p>Researching... (@model.UpgradeResearchTimer rounds remaining)</p>
                         } else if (model.DefenseUpgradeLevel >= model.MaxUpgradeLevel) {
-                            <p>Maximales Level erreicht!</p>
+                            <p>Maximum level reached!</p>
                         } else if (model.UpgradeBeingResearched != "None") {
-                            <p>Eine andere Forschung läuft gerade.</p>
+                            <p>Another research is in progress.</p>
                         } else {
-                            <div>Kosten: <_Cost Cost="@model.NextDefenseUpgradeCost" /></div>
+                            <div>Cost: <_Cost Cost="@model.NextDefenseUpgradeCost" /></div>
                             <button class="btn btn-primary mt-2" @onclick="ResearchDefense">
-                                Verteidigungs-Upgrade erforschen (Level @(model.DefenseUpgradeLevel + 1))
+                                Research Defense Upgrade (Level @(model.DefenseUpgradeLevel + 1))
                             </button>
                         }
                     </div>
