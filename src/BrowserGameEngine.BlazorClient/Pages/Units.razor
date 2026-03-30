@@ -1,11 +1,11 @@
-﻿@page "/units"
+@page "/units"
 @page "/games/{GameId}/units"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
 @implements IDisposable
 
-<h1>Einheiten</h1>
+<h1>Units</h1>
 
 @if (!string.IsNullOrEmpty(lastError)) {
     <span class="error">@lastError</span>
@@ -17,15 +17,15 @@
     <p><em>Loading...</em></p>
 } else {
     <button class="btn btn-primary" @onclick="MergeAll">
-        Truppen zusammenführen
+        Merge All Troops
     </button>
 
     <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Anzahl</th>
-                <th>Eigenschaften</th>
+                <th>Count</th>
+                <th>Properties</th>
                 <th>Position</th>
             </tr>
         </thead>
@@ -43,19 +43,19 @@
                         </td>
                         <td>
                             <button class="btn btn-primary" @onclick="async () => await Merge(item.Definition!.Id!)">
-                                Truppen dieses Typs zusammenführen
+                                Merge units of this type
                             </button>
 
                             @if (item.Count > 1) {
                                 @if (!IsShowSplit(item.UnitId)) {
                                     <button class="btn btn-primary" @onclick="() => ToggleShowSplit(item.UnitId)">
-                                        Truppen aufteilen
+                                        Split troops
                                     </button>
                                 } else {
                                     <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
                                 }
                             }
-                            <NavLink class="nav-link" href="@($"selectenemy/{item.UnitId}")">Angriff</NavLink>
+                            <NavLink class="nav-link" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
                         </td>
                     </tr>
                 }

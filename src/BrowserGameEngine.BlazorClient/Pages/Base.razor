@@ -4,7 +4,7 @@
 @inject HttpClient Http
 @implements IDisposable
 
-<h1>Basis</h1>
+<h1>Base</h1>
 
 <div class="container">
 
@@ -13,15 +13,15 @@
     <_WorkerAssignment />
 
     <div class="bge-trade mt-3">
-        <h3>Handel</h3>
+        <h3>Trade</h3>
         <div>
             <select @bind="tradeFromResource" class="form-select d-inline-block" style="width:150px">
-                <option value="minerals">Mineralien → Gas</option>
-                <option value="gas">Gas → Mineralien</option>
+                <option value="minerals">Minerals → Gas</option>
+                <option value="gas">Gas → Minerals</option>
             </select>
             <input type="number" min="1" @bind="tradeAmount" class="form-control d-inline-block ms-2" style="width:100px" />
-            <span class="ms-2">Kosten: @(tradeAmount * 2) → erhalten: @tradeAmount</span>
-            <button class="btn btn-warning ms-2" @onclick="Trade">Handeln</button>
+            <span class="ms-2">Cost: @(tradeAmount * 2) → receive: @tradeAmount</span>
+            <button class="btn btn-warning ms-2" @onclick="Trade">Trade</button>
         </div>
         @if (!string.IsNullOrEmpty(tradeError)) {
             <span class="text-danger">@tradeError</span>
@@ -29,13 +29,13 @@
     </div>
 
     <div class="bge-colonize mt-3">
-        <h3>Kolonisieren</h3>
+        <h3>Colonize</h3>
         @if (resources != null) {
-            <div>Kosten: @resources.ColonizationCostPerLand Mineralien pro Land</div>
+            <div>Cost: @resources.ColonizationCostPerLand minerals per land</div>
             <div>
                 <input type="number" min="1" max="24" @bind="colonizeAmount" class="form-control d-inline-block" style="width:100px" />
-                <span class="ms-2">= @(colonizeAmount * resources.ColonizationCostPerLand) Mineralien</span>
-                <button class="btn btn-success ms-2" @onclick="Colonize">Kolonisieren</button>
+                <span class="ms-2">= @(colonizeAmount * resources.ColonizationCostPerLand) minerals</span>
+                <button class="btn btn-success ms-2" @onclick="Colonize">Colonize</button>
             </div>
             @if (!string.IsNullOrEmpty(colonizeError)) {
                 <span class="error">@colonizeError</span>
@@ -44,7 +44,7 @@
     </div>
 
     @if (model == null) {
-        <p><em>Lade...</em></p>
+        <p><em>Loading...</em></p>
     } else {
         if (!string.IsNullOrEmpty(lastError)) {
             <span class="error">@lastError</span>
@@ -57,26 +57,26 @@
                         <h2>@item.Definition?.Name</h2>
 
                         @if (item.Built) {
-                            <span>Bereits gebaut!</span>
+                            <span>Already built!</span>
 
                             <div class="bge-recruiting">
                                 <_BuildUnitsForm AvailableUnits="item.AvailableUnits" BuildQueue="buildQueue" OnQueueChanged="OnQueueChanged" />
                             </div>
 
                         } else if (item.AlreadyQueued) {
-                            <span>Wird in @item.TicksLeftForBuild Runden fertig sein.</span>
+                            <span>Will be ready in @item.TicksLeftForBuild rounds.</span>
                         } else {
-                            <div>Kosten: <_Cost Cost="@item.Cost" /></div>
-                            <div>Benötigt: @item.Prerequisites </div>
+                            <div>Requires: <_Cost Cost="@item.Cost" /></div>
+                            <div>Requires: @item.Prerequisites </div>
                             @if (item.PrerequisitesMet) {
                                 <div>
                                     @if (item.CanAfford) {
                                         <button class="btn btn-primary" @onclick="(e) => BuildAsset(item)">
-                                            Bauen
+                                            Build
                                         </button>
                                     }
                                     <button class="btn btn-secondary" @onclick="(e) => QueueAsset(item)">
-                                        In Warteschlange
+                                        Queue
                                     </button>
                                 </div>
                             }
