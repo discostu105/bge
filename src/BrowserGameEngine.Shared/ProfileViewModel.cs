@@ -12,6 +12,7 @@ namespace BrowserGameEngine.Shared {
 		public int TotalPlayers { get; init; }
 		public int GamesPlayed { get; init; }
 		public int Wins { get; init; }
+		public int BestRank { get; init; }
 		public string? CurrentGameId { get; init; }
 	}
 }

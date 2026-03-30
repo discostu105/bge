@@ -17,6 +17,7 @@ namespace BrowserGameEngine.Shared {
 
 	public record MarketViewModel {
 		public List<MarketOrderViewModel> OpenOrders { get; set; } = new();
+		public string CurrentPlayerId { get; set; } = "";
 	}
 
 	public record CreateMarketOrderRequest {

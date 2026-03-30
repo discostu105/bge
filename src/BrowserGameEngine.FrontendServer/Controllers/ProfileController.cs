@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ResourceRepository resourceRepository;
 		private readonly UnitRepository unitRepository;
 		private readonly GameRegistry gameRegistry;
+		private readonly GlobalState globalState;
 
 		public ProfileController(
 			ILogger<ProfileController> logger,
@@ -30,7 +32,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			ScoreRepository scoreRepository,
 			ResourceRepository resourceRepository,
 			UnitRepository unitRepository,
-			GameRegistry gameRegistry
+			GameRegistry gameRegistry,
+			GlobalState globalState
 		) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
@@ -40,6 +43,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.resourceRepository = resourceRepository;
 			this.unitRepository = unitRepository;
 			this.gameRegistry = gameRegistry;
+			this.globalState = globalState;
 		}
 
 		/// <summary>Returns the authenticated user's full profile: display name, avatar, current game stats, and game history stubs.</summary>
@@ -76,6 +80,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				.FirstOrDefault(i => i.HasPlayer(playerId));
 			var currentGameId = currentInstance?.Record.GameId.Id;
 
+			var userAchievements = currentUserContext.UserId != null
+				? globalState.GetAchievements().Where(a => a.UserId == currentUserContext.UserId).ToList()
+				: new System.Collections.Generic.List<PlayerAchievementImmutable>();
+			var gamesPlayed = userAchievements.Count;
+			var wins = userAchievements.Count(a => a.FinalRank == 1);
+			var bestRank = gamesPlayed > 0 ? userAchievements.Min(a => a.FinalRank) : 0;
+
 			return new ProfileViewModel {
 				PlayerName = player.Name,
 				DisplayName = user?.DisplayName,
@@ -87,8 +98,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				ArmySize = armySize,
 				Rank = rank,
 				TotalPlayers = allPlayers.Count,
-				GamesPlayed = 0,
-				Wins = 0,
+				GamesPlayed = gamesPlayed,
+				Wins = wins,
+				BestRank = bestRank,
 				CurrentGameId = currentGameId
 			};
 		}

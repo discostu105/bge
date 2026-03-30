@@ -44,7 +44,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime StartTime,
 		DateTime? ActualEndTime,
 		DateTime EndTime,
-		List<GameResultEntryViewModel> Standings
+		List<GameResultEntryViewModel> Standings,
+		string? CurrentPlayerId = null
 	);
 
 	/// <summary>A game the current user is actively playing in, with their player info.</summary>

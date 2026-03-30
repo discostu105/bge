@@ -63,7 +63,9 @@
 							@if (game.CanJoin) {
 								<button class="btn btn-sm btn-success" @onclick="() => JoinGame(game)">Join</button>
 							}
-							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play Now</a>
+							@if (game.IsPlayerEnrolled) {
+								<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play Now</a>
+							}
 							<a class="btn btn-sm btn-outline-secondary" href="games/@game.GameId/ranking">Spectate</a>
 						</div>
 					</div>
@@ -108,32 +110,43 @@
 	}
 
 	@if (finished.Count > 0) {
-		<h2>Finished</h2>
-		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
-			@foreach (var game in finished) {
-				<div class="col">
-					<div class="card h-100">
-						<div class="card-body">
-							<div class="d-flex justify-content-between align-items-start mb-2">
-								<h5 class="card-title mb-0">@game.Name</h5>
-								<span class="badge bg-secondary">FINISHED</span>
-							</div>
-							@if (!string.IsNullOrEmpty(game.WinnerName)) {
-								<p class="card-text mb-0">
-									<small class="text-muted">Winner: <strong>@game.WinnerName</strong></small>
-								</p>
-							}
-							<p class="card-text">
-								<small class="text-muted">Ended: @(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</small>
-							</p>
-						</div>
-						<div class="card-footer">
-							<a class="btn btn-sm btn-outline-secondary" href="games/@game.GameId/results">View Results</a>
-						</div>
-					</div>
-				</div>
+		<div class="d-flex align-items-center gap-2 mb-2">
+			<h2 class="mb-0">Finished</h2>
+			@if (finished.Count > 5) {
+				<button class="btn btn-sm btn-link p-0" @onclick="ToggleFinished">
+					@(showFinished ? "▲ Collapse" : $"▼ Show all ({finished.Count})")
+				</button>
 			}
 		</div>
+		@if (showFinished || finished.Count <= 5) {
+			<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+				@foreach (var game in finished) {
+					<div class="col">
+						<div class="card h-100">
+							<div class="card-body">
+								<div class="d-flex justify-content-between align-items-start mb-2">
+									<h5 class="card-title mb-0">@game.Name</h5>
+									<span class="badge bg-secondary">FINISHED</span>
+								</div>
+								@if (!string.IsNullOrEmpty(game.WinnerName)) {
+									<p class="card-text mb-0">
+										<small class="text-muted">Winner: <strong>@game.WinnerName</strong></small>
+									</p>
+								}
+								<p class="card-text">
+									<small class="text-muted">Ended: @(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</small>
+								</p>
+							</div>
+							<div class="card-footer">
+								<a class="btn btn-sm btn-outline-secondary" href="games/@game.GameId/results">View Results</a>
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+		} else {
+			<p class="text-muted mb-4">@finished.Count finished games — click "Show all" to expand.</p>
+		}
 	}
 }
 
@@ -142,6 +155,7 @@
 	private string? lastError;
 	private string? successMessage;
 	private bool isNewPlayer;
+	private bool showFinished = false;
 
 	protected override async Task OnInitializedAsync() {
 		isNewPlayer = Nav.Uri.Contains("welcome=1", StringComparison.Ordinal);
@@ -157,6 +171,8 @@
 			games = new List<GameSummaryViewModel>();
 		}
 	}
+
+	private void ToggleFinished() => showFinished = !showFinished;
 
 	private async Task JoinGame(GameSummaryViewModel game) {
 		lastError = null;
