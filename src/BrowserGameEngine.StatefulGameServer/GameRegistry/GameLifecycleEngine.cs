@@ -15,6 +15,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly GlobalPersistenceService globalPersistenceService;
 		private readonly IGameNotificationService notificationService;
 		private readonly IPlayerNotificationService playerNotificationService;
+		private readonly UserRepositoryWrite userRepositoryWrite;
+		private readonly TimeProvider timeProvider;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -24,6 +26,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			GlobalPersistenceService globalPersistenceService,
 			IGameNotificationService notificationService,
 			IPlayerNotificationService playerNotificationService,
+			UserRepositoryWrite userRepositoryWrite,
+			TimeProvider timeProvider,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -32,6 +36,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.globalPersistenceService = globalPersistenceService;
 			this.notificationService = notificationService;
 			this.playerNotificationService = playerNotificationService;
+			this.userRepositoryWrite = userRepositoryWrite;
+			this.timeProvider = timeProvider;
 			this.logger = logger;
 		}
 
@@ -57,7 +63,22 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				var playerCount = instance?.PlayerCount ?? 0;
 				await notificationService.NotifyGameStartedAsync(updated, playerCount);
 
+				// Auto-join users who opted in
 				if (instance != null) {
+					var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+					var usersToAutoJoin = globalState.Users.Values
+						.Where(u => u.AutoJoinNextGame)
+						.ToList();
+					foreach (var user in usersToAutoJoin) {
+						var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString("N")[..12]);
+						if (!instance.HasPlayer(playerId)) {
+							playerRepoWrite.CreatePlayer(playerId, user.UserId);
+							logger.LogInformation("Auto-joined user {UserId} as player {PlayerId} in game {GameId}",
+								user.UserId, playerId.Id, record.GameId.Id);
+						}
+						userRepositoryWrite.SetGamePreferences(user.GithubId, user.WantsGameNotification, false);
+					}
+
 					foreach (var player in instance.WorldState.Players.Values) {
 						if (player.UserId != null) {
 							playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has started!", NotificationKind.GameEvent);

@@ -8,6 +8,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public required string GithubLogin { get; set; }
 		public required string DisplayName { get; set; }
 		public DateTime Created { get; init; }
+		public bool WantsGameNotification { get; set; }
+		public bool AutoJoinNextGame { get; set; }
 	}
 
 	internal static class UserExtensions {
@@ -17,7 +19,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				GithubId: user.GithubId,
 				GithubLogin: user.GithubLogin,
 				DisplayName: user.DisplayName,
-				Created: user.Created
+				Created: user.Created,
+				WantsGameNotification: user.WantsGameNotification,
+				AutoJoinNextGame: user.AutoJoinNextGame
 			);
 		}
 
@@ -27,7 +31,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				GithubId = userImmutable.GithubId,
 				GithubLogin = userImmutable.GithubLogin,
 				DisplayName = userImmutable.DisplayName,
-				Created = userImmutable.Created
+				Created = userImmutable.Created,
+				WantsGameNotification = userImmutable.WantsGameNotification,
+				AutoJoinNextGame = userImmutable.AutoJoinNextGame
 			};
 		}
 	}
