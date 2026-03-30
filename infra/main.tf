@@ -182,11 +182,18 @@ resource "aws_iam_policy" "ecs_task_s3" {
   name = "${var.app_name}-ecs-s3"
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["s3:GetObject", "s3:PutObject", "s3:HeadObject"]
-      Resource = "${aws_s3_bucket.game_state.arn}/*"
-    }]
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetObject", "s3:PutObject", "s3:HeadObject"]
+        Resource = "${aws_s3_bucket.game_state.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket"]
+        Resource = aws_s3_bucket.game_state.arn
+      }
+    ]
   })
 }
 
