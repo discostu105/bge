@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
@@ -105,22 +106,27 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpPost("{gameId}/join")]
-		public ActionResult Join(string gameId) {
-			if (!currentUserContext.IsValid) return Unauthorized();
+		public ActionResult Join(string gameId, [FromBody] JoinGameRequest request) {
+			if (currentUserContext.UserId == null) return Unauthorized();
+			if (string.IsNullOrWhiteSpace(request.PlayerName)) return BadRequest("Player name is required");
+
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
-			if (record.Status != GameStatus.Upcoming) return BadRequest("This game is not open for joining.");
+			if (record.Status == GameStatus.Finished) return BadRequest("This game has ended.");
 
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
-			if (instance.HasPlayer(currentUserContext.PlayerId!)) {
-				return Conflict("You have already joined this game.");
-			}
+			// Check if user already has a player in this game (by UserId)
+			if (instance.HasUserPlayer(currentUserContext.UserId)) return Conflict("You have already joined this game.");
+
+			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
-			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
-			return Ok();
+			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId);
+			playerRepoWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, request.PlayerName));
+
+			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName}", playerId.Id, gameId, request.PlayerName);
+			return Ok(new { PlayerId = playerId.Id });
 		}
 
 		[Authorize]
