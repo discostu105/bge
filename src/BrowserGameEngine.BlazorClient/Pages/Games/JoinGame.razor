@@ -34,21 +34,6 @@
 					<input class="form-control" type="text" @bind="playerName" placeholder="Enter your name" maxlength="32" />
 				</div>
 
-				<div class="mb-4">
-					<label class="form-label">Race</label>
-					<div class="d-flex gap-3 flex-wrap">
-						@foreach (var race in races) {
-							<div class="form-check">
-								<input class="form-check-input" type="radio" name="race"
-									   id="race_@race.Id" value="@race.Id"
-									   checked="@(selectedRace == race.Id)"
-									   @onchange="() => selectedRace = race.Id" />
-								<label class="form-check-label" for="race_@race.Id">@race.Name</label>
-							</div>
-						}
-					</div>
-				</div>
-
 				<button class="btn btn-primary w-100" @onclick="Join" disabled="@joining">
 					@if (joining) {
 						<span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -70,15 +55,8 @@
 	private string? error;
 	private string? joinError;
 	private string playerName = "";
-	private string selectedRace = "terran";
 	private bool joining = false;
 	private bool alreadyJoined = false;
-
-	private static readonly (string Id, string Name)[] races = new[] {
-		("terran", "Terraner"),
-		("protoss", "Protoss"),
-		("zerg", "Zerg"),
-	};
 
 	protected override async Task OnParametersSetAsync() {
 		game = null;
@@ -98,7 +76,7 @@
 		}
 		joining = true;
 		joinError = null;
-		var request = new JoinGameRequest(PlayerName: playerName.Trim(), Race: selectedRace);
+		var request = new JoinGameRequest(PlayerName: playerName.Trim());
 		var response = await Http.PostAsJsonAsync($"api/games/{GameId}/join", request);
 		if (response.IsSuccessStatusCode) {
 			Nav.NavigateTo($"games/{GameId}/base");
