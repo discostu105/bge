@@ -2,8 +2,19 @@
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
-
 <h1>Season Schedule</h1>
+
+@if (isNewPlayer) {
+	<div class="alert alert-success d-flex align-items-start gap-3" role="alert">
+		<div>
+			<strong>Welcome to BGE!</strong> Your commander is ready.
+			<br />
+			<span class="text-muted" style="font-size:0.9rem;">
+				Join an active game below, or register for an upcoming season. New seasons start regularly — check back soon if nothing is scheduled yet.
+			</span>
+		</div>
+	</div>
+}
 
 @if (!string.IsNullOrEmpty(successMessage)) {
 	<div class="alert alert-success">@successMessage</div>
@@ -21,7 +32,12 @@
 
 	<h2>Active</h2>
 	@if (active.Count == 0) {
-		<p class="text-muted">No games are currently running.</p>
+		<div class="text-muted mb-3">
+			<p>No games are currently running.</p>
+			@if (upcoming.Count == 0) {
+				<p>New seasons are started by the game administrator. Check back soon, or register for an upcoming game when it appears below.</p>
+			}
+		</div>
 	} else {
 		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
 			@foreach (var game in active) {
@@ -54,7 +70,7 @@
 
 	<h2>Upcoming</h2>
 	@if (upcoming.Count == 0) {
-		<p class="text-muted">No upcoming games are scheduled yet.</p>
+		<p class="text-muted">No upcoming games are scheduled yet. New seasons are announced here — check back soon.</p>
 	} else {
 		<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
 			@foreach (var game in upcoming) {
@@ -121,8 +137,10 @@
 	private List<GameSummaryViewModel>? games;
 	private string? lastError;
 	private string? successMessage;
+	private bool isNewPlayer;
 
 	protected override async Task OnInitializedAsync() {
+		isNewPlayer = Nav.Uri.Contains("welcome=1", StringComparison.Ordinal);
 		await LoadGames();
 	}
 
