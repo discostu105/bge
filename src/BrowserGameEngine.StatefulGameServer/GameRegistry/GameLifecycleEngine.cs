@@ -4,11 +4,13 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 	public class GameLifecycleEngine {
+		private readonly ConcurrentDictionary<string, bool> _finalizingGames = new();
 		private readonly GameRegistry gameRegistry;
 		private readonly GlobalState globalState;
 		private readonly PersistenceService persistenceService;
@@ -101,7 +103,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			return toFinalize.Count > 0;
 		}
 
+		public Task FinalizeGameEarlyAsync(GameRecordImmutable record, DateTime utcNow) {
+			return FinalizeGameAsync(record, utcNow);
+		}
+
 		private async Task FinalizeGameAsync(GameRecordImmutable record, DateTime utcNow) {
+			if (!_finalizingGames.TryAdd(record.GameId.Id, true)) {
+				logger.LogWarning("Game {GameId} is already being finalized — skipping duplicate finalization", record.GameId.Id);
+				return;
+			}
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) {
 				// Instance already gone; update the record only

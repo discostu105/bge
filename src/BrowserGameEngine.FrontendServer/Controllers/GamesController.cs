@@ -24,6 +24,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly TimeProvider timeProvider;
+		private readonly GameLifecycleEngine gameLifecycleEngine;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -32,7 +33,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			IWorldStateFactory worldStateFactory,
 			GameDef gameDef,
 			CurrentUserContext currentUserContext,
-			TimeProvider timeProvider
+			TimeProvider timeProvider,
+			GameLifecycleEngine gameLifecycleEngine
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -41,6 +43,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 			this.currentUserContext = currentUserContext;
 			this.timeProvider = timeProvider;
+			this.gameLifecycleEngine = gameLifecycleEngine;
 		}
 
 		/// <summary>Lists all games (upcoming, active, and finished).</summary>
@@ -213,6 +216,31 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName}", playerId.Id, gameId, request.PlayerName);
 			return Ok(new { PlayerId = playerId.Id });
+		}
+
+		/// <summary>Manually finalizes an active game early. Only the game creator may do this.</summary>
+		/// <param name="gameId">The game identifier.</param>
+		[HttpPost("{gameId}/finalize")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult> FinalizeGame(string gameId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+
+			if (record.CreatedByUserId != null && record.CreatedByUserId != currentUserContext.UserId)
+				return StatusCode(403, "Only the game creator can finalize this game.");
+
+			if (record.Status != GameStatus.Active)
+				return BadRequest($"Game is not active (current status: {record.Status}).");
+
+			await gameLifecycleEngine.FinalizeGameEarlyAsync(record, timeProvider.GetUtcNow().UtcDateTime);
+			logger.LogInformation("Game {GameId} manually finalized by {UserId}", gameId, currentUserContext.UserId);
+			return Ok();
 		}
 
 		/// <summary>Returns the final standings and scores for a completed game.</summary>
