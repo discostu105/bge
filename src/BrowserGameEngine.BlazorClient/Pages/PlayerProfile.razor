@@ -1,6 +1,8 @@
 ﻿@page "/profile"
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject AlertService AlertService
 
 <h1>Profile</h1>
 
@@ -18,9 +20,12 @@
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <InputText id="PlayerName" @bind-Value="model.PlayerName" />
+            <div class="mb-2">
+                <label for="PlayerName" class="form-label">Commander name</label>
+                <InputText id="PlayerName" class="form-control" @bind-Value="model.PlayerName" />
+            </div>
 
-            <button type="submit">Submit</button>
+            <button type="submit" class="btn btn-primary">Save name</button>
         </EditForm>
     </div>
     <div class="mt-3">
@@ -37,7 +42,12 @@
 
     private async Task HandleValidSubmit() {
         if (model == null) return;
-        await Http.PostAsJsonAsync("api/playerprofile/changename", model);
+        var response = await Http.PostAsJsonAsync("api/playerprofile/changename", model);
+        if (response.IsSuccessStatusCode) {
+            AlertService.AddAlert("Name updated!");
+        } else {
+            AlertService.AddAlert("Failed to update name. Please try again.", AlertType.Danger);
+        }
     }
 
 }
