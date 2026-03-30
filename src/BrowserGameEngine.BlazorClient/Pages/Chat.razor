@@ -1,7 +1,5 @@
 @page "/chat"
-@page "/games/{GameId}/chat"
 @using BrowserGameEngine.Shared
-@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
 @implements IDisposable
 
@@ -65,7 +63,7 @@
 	</div>
 </div>
 
-<div class="chat-window" @ref="chatWindowRef">
+<div class="chat-window">
 	@if (messages == null) {
 		<p><em>Loading...</em></p>
 	} else if (messages.Count == 0) {
@@ -84,15 +82,11 @@
 </div>
 
 @code {
-	[Parameter]
-	public string? GameId { get; set; }
-
 	private List<ChatMessageViewModel>? messages;
 	private string newMessageBody = "";
 	private string? lastMessageId;
 	private string? lastError;
 	private CancellationTokenSource? _cts;
-	private ElementReference chatWindowRef;
 
 	protected override async Task OnInitializedAsync() {
 		await LoadMessages(initialLoad: true);

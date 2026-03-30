@@ -2,6 +2,8 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
@@ -15,6 +17,45 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 		public ChatRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider) {
 			this.worldStateAccessor = worldStateAccessor;
 			this.timeProvider = timeProvider;
+		}
+
+		public IList<ChatMessageImmutable> GetMessages(int count = 50) {
+			lock (_lock) {
+				return world.ChatMessages
+					.Select(m => m.ToImmutable())
+					.TakeLast(count)
+					.ToList();
+			}
+		}
+
+		public IList<ChatMessageImmutable> GetMessagesAfter(string messageId) {
+			ChatMessageId afterId;
+			try {
+				afterId = ChatMessageIdFactory.Create(messageId);
+			} catch {
+				return new List<ChatMessageImmutable>();
+			}
+
+			lock (_lock) {
+				var messages = world.ChatMessages;
+				int idx = -1;
+				for (int i = 0; i < messages.Count; i++) {
+					if (messages[i].MessageId == afterId) { idx = i; break; }
+				}
+				// ID not found means it was evicted from the ring buffer — do a full reload
+				if (idx < 0) {
+					return messages
+						.Select(m => m.ToImmutable())
+						.TakeLast(50)
+						.ToList();
+				}
+
+				return messages
+					.Skip(idx + 1)
+					.Take(50)
+					.Select(m => m.ToImmutable())
+					.ToList();
+			}
 		}
 
 		public ChatMessageId PostMessage(PostChatMessageCommand command) {

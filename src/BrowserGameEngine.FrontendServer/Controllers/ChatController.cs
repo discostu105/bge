@@ -15,20 +15,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 	public class ChatController : ControllerBase {
 		private readonly ILogger<ChatController> logger;
 		private readonly CurrentUserContext currentUserContext;
-		private readonly ChatRepository chatRepository;
 		private readonly ChatRepositoryWrite chatRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
 
 		public ChatController(
 			ILogger<ChatController> logger,
 			CurrentUserContext currentUserContext,
-			ChatRepository chatRepository,
 			ChatRepositoryWrite chatRepositoryWrite,
 			PlayerRepository playerRepository
 		) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
-			this.chatRepository = chatRepository;
 			this.chatRepositoryWrite = chatRepositoryWrite;
 			this.playerRepository = playerRepository;
 		}
@@ -41,8 +38,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
 			var messages = after != null
-				? chatRepository.GetMessagesAfter(after)
-				: chatRepository.GetMessages(50);
+				? chatRepositoryWrite.GetMessagesAfter(after)
+				: chatRepositoryWrite.GetMessages(50);
 
 			var vms = messages.Select(m => {
 				string authorName;

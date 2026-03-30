@@ -8,10 +8,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void PostMessage_ValidPlayer_MessageStored() {
 			var game = new TestGame();
-			var chatRepo = new ChatRepository(game.Accessor);
-			var chatWrite = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
 
-			chatWrite.PostMessage(new PostChatMessageCommand(game.Player1, "Hello world"));
+			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Hello world"));
 
 			var messages = chatRepo.GetMessages();
 			Assert.Single(messages);
@@ -22,11 +21,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void PostMessage_RingBuffer_KeepsLast200() {
 			var game = new TestGame();
-			var chatWrite = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
-			var chatRepo = new ChatRepository(game.Accessor);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
 
 			for (int i = 0; i < 205; i++) {
-				chatWrite.PostMessage(new PostChatMessageCommand(game.Player1, $"Message {i}"));
+				chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, $"Message {i}"));
 			}
 
 			var messages = chatRepo.GetMessages(300);
@@ -38,12 +36,11 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetMessagesAfter_ReturnsOnlyNewMessages() {
 			var game = new TestGame();
-			var chatWrite = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
-			var chatRepo = new ChatRepository(game.Accessor);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
 
-			chatWrite.PostMessage(new PostChatMessageCommand(game.Player1, "First"));
-			chatWrite.PostMessage(new PostChatMessageCommand(game.Player1, "Second"));
-			chatWrite.PostMessage(new PostChatMessageCommand(game.Player1, "Third"));
+			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "First"));
+			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Second"));
+			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Third"));
 
 			var all = chatRepo.GetMessages();
 			Assert.Equal(3, all.Count);
@@ -55,15 +52,16 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void GetMessagesAfter_UnknownId_ReturnsEmpty() {
+		public void GetMessagesAfter_EvictedId_FallsBackToFullReload() {
 			var game = new TestGame();
-			var chatWrite = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
-			var chatRepo = new ChatRepository(game.Accessor);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
 
-			chatWrite.PostMessage(new PostChatMessageCommand(game.Player1, "Hello"));
+			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Hello"));
 
-			var result = chatRepo.GetMessagesAfter(System.Guid.NewGuid().ToString());
-			Assert.Empty(result);
+			// A valid-format GUID that is not in the ring buffer (simulates eviction)
+			var result = chatRepo.GetMessagesAfter(Guid.NewGuid().ToString());
+			Assert.Single(result);
+			Assert.Equal("Hello", result[0].Body);
 		}
 	}
 }
