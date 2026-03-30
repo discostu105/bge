@@ -10,15 +10,16 @@ using System.Threading;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepositoryWrite {
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ResourceRepository resourceRepository;
 		private readonly GameDef gameDef;
 
-		public ResourceRepositoryWrite(WorldState world
+		public ResourceRepositoryWrite(IWorldStateAccessor worldStateAccessor
 			, ResourceRepository resourceRepository
 			, GameDef gameDef
 			) {
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.resourceRepository = resourceRepository;
 			this.gameDef = gameDef;
 		}

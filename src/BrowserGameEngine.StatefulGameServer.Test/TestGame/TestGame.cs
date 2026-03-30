@@ -15,6 +15,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public NullLoggerFactory LoggerFactory { get; }
 		public WorldState World { get; }
 		public GameDef GameDef { get; }
+		public GlobalState GlobalState { get; }
+		public IWorldStateAccessor Accessor { get; }
 		public ScoreRepository ScoreRepository { get; }
 		public AllianceRepository AllianceRepository { get; }
 		public AllianceRepositoryWrite AllianceRepositoryWrite { get; }
@@ -46,30 +48,32 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			WorldStateFactory = new TestWorldStateFactory();
 			World = initialState.ToMutable();
 			GameDef = new TestGameDefFactory().CreateGameDef();
-			ScoreRepository = new ScoreRepository(GameDef, World);
-			AllianceRepository = new AllianceRepository(World);
-			AllianceRepositoryWrite = new AllianceRepositoryWrite(World, AllianceRepository);
-			PlayerRepository = new PlayerRepository(World, ScoreRepository, AllianceRepository);
-			PlayerRepositoryWrite = new PlayerRepositoryWrite(World, TimeProvider.System);
-			ResourceRepository = new ResourceRepository(World, GameDef);
-			ResourceRepositoryWrite = new ResourceRepositoryWrite(World, ResourceRepository, GameDef);
-			ActionQueueRepository = new ActionQueueRepository(World);
-			AssetRepository = new AssetRepository(World, PlayerRepository, ActionQueueRepository);
-			AssetRepositoryWrite = new AssetRepositoryWrite(LoggerFactory.CreateLogger<AssetRepositoryWrite>(), World, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
-			UnitRepository = new UnitRepository(World, GameDef, PlayerRepository, AssetRepository);
+			GlobalState = new GlobalState();
+			Accessor = new SingletonWorldStateAccessor(World);
+			ScoreRepository = new ScoreRepository(GameDef, Accessor);
+			AllianceRepository = new AllianceRepository(Accessor);
+			AllianceRepositoryWrite = new AllianceRepositoryWrite(Accessor, AllianceRepository);
+			PlayerRepository = new PlayerRepository(Accessor, ScoreRepository, AllianceRepository);
+			PlayerRepositoryWrite = new PlayerRepositoryWrite(Accessor, TimeProvider.System);
+			ResourceRepository = new ResourceRepository(Accessor, GameDef);
+			ResourceRepositoryWrite = new ResourceRepositoryWrite(Accessor, ResourceRepository, GameDef);
+			ActionQueueRepository = new ActionQueueRepository(Accessor);
+			AssetRepository = new AssetRepository(Accessor, PlayerRepository, ActionQueueRepository);
+			AssetRepositoryWrite = new AssetRepositoryWrite(LoggerFactory.CreateLogger<AssetRepositoryWrite>(), Accessor, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
+			UnitRepository = new UnitRepository(Accessor, GameDef, PlayerRepository, AssetRepository);
 			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
-			UpgradeRepository = new UpgradeRepository(World);
-			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), World, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
-			MessageRepository = new MessageRepository(World);
-			MessageRepositoryWrite = new MessageRepositoryWrite(World, TimeProvider.System);
-			BuildQueueRepository = new BuildQueueRepository(World);
-			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), World, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
+			UpgradeRepository = new UpgradeRepository(Accessor);
+			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
+			MessageRepository = new MessageRepository(Accessor);
+			MessageRepositoryWrite = new MessageRepositoryWrite(Accessor, TimeProvider.System);
+			BuildQueueRepository = new BuildQueueRepository(Accessor);
+			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), Accessor, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
 			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger()));
 			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
-			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), World, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System);
+			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), Accessor, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System);
 		}
 	}
 }

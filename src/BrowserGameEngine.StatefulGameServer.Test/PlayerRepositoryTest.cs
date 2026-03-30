@@ -10,7 +10,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void DeletePlayer_RemovesPlayerFromWorld() {
 			var game = new TestGame(playerCount: 1);
 			var playerId = PlayerIdFactory.Create("player0");
-			var userRepository = new UserRepository(game.World);
+			var userRepository = new UserRepository(game.GlobalState, game.World);
 
 			game.PlayerRepositoryWrite.DeletePlayer(playerId);
 
@@ -24,7 +24,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var userId = "testuser";
 			// Assign a userId to the player via creating a fresh player
 			game.PlayerRepositoryWrite.CreatePlayer(PlayerIdFactory.Create("newplayer"), userId);
-			var userRepository = new UserRepository(game.World);
+			var userRepository = new UserRepository(game.GlobalState, game.World);
 
 			game.PlayerRepositoryWrite.DeletePlayer(PlayerIdFactory.Create("newplayer"));
 

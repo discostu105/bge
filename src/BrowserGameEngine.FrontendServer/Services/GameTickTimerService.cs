@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.StatefulGameServer.GameTicks;
+﻿using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,12 +13,12 @@ namespace BrowserGameEngine.FrontendServer {
 		private int executionCount = 0;
 		private int isactive = 0;
 		private readonly ILogger<GameTickTimerService> logger;
-		private readonly GameTickEngine gameTickEngine;
+		private readonly GameRegistry gameRegistry;
 		private Timer? timer;
 
-		public GameTickTimerService(ILogger<GameTickTimerService> logger, GameTickEngine gameTickEngine) {
+		public GameTickTimerService(ILogger<GameTickTimerService> logger, GameRegistry gameRegistry) {
 			this.logger = logger;
-			this.gameTickEngine = gameTickEngine;
+			this.gameRegistry = gameRegistry;
 		}
 
 		public Task StartAsync(CancellationToken stoppingToken) {
@@ -32,7 +32,9 @@ namespace BrowserGameEngine.FrontendServer {
 			try {
 				var count = Interlocked.Increment(ref executionCount);
 				logger.LogInformation("GameTickTimer #{Count}", count);
-				gameTickEngine.CheckAllTicks();
+				foreach (var instance in gameRegistry.GetAllInstances()) {
+					instance.TickEngine?.CheckAllTicks();
+				}
 			} finally {
 				Interlocked.Exchange(ref isactive, 0);
 			}

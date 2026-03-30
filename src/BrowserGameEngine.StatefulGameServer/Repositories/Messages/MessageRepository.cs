@@ -6,10 +6,11 @@ using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class MessageRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public MessageRepository(WorldState world) {
-			this.world = world;
+		public MessageRepository(IWorldStateAccessor worldStateAccessor) {
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public IList<MessageImmutable> GetMessages(PlayerId playerId) {

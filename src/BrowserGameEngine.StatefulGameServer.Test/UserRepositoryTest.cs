@@ -9,8 +9,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void CreateUser_NewGithubId_StoresUser() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.World);
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("gh123", "octocat", "The Octocat");
 
@@ -24,8 +24,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetByGithubId_ExistingUser_ReturnsUser() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.World);
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			userRepoWrite.CreateUser("gh456", "monalisa", "Mona Lisa");
 
@@ -37,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetByGithubId_MissingUser_ReturnsNull() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.World);
 
 			var result = userRepo.GetByGithubId("nonexistent");
 			Assert.Null(result);
@@ -46,7 +46,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void CreateUser_DuplicateGithubId_Throws() {
 			var game = new TestGame();
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 			userRepoWrite.CreateUser("dup123", "dup", "Dup");
 
 			Assert.Throws<InvalidOperationException>(() =>
@@ -56,8 +56,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetPlayersForUser_AfterCreatePlayer_ReturnsPlayer() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.World);
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("gh789", "devuser", "Dev User");
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
@@ -72,8 +72,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void SetApiKeyHash_AndLookup_FindsPlayer() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.World);
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("ghapikey", "apiuser", "API User");
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
@@ -90,7 +90,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetOrCreateUser_NewUser_CreatesAndReturnsUser() {
 			var game = new TestGame();
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.GetOrCreateUser("gh-new", "newuser", "New User");
 
@@ -103,7 +103,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetOrCreateUser_ExistingUser_ReturnsSameUser() {
 			var game = new TestGame();
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var first = userRepoWrite.GetOrCreateUser("gh-dup", "dupuser", "Dup User");
 			var second = userRepoWrite.GetOrCreateUser("gh-dup", "dupuser-2", "Dup User 2");
@@ -115,7 +115,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetOrCreateUser_ConcurrentCalls_ReturnSameUser() {
 			var game = new TestGame();
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 			UserImmutable? result1 = null;
 			UserImmutable? result2 = null;
 
@@ -134,8 +134,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void RevokeApiKey_ClearsHash() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.World);
-			var userRepoWrite = new UserRepositoryWrite(game.World, TimeProvider.System);
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("ghrevoke", "revokeuser", "Revoke User");
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
