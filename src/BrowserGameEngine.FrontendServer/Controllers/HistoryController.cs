@@ -22,15 +22,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public IActionResult GetMyHistory() {
 			if (!currentUser.IsValid) return Unauthorized();
 
-			var achievements = globalState.Achievements
+			var achievements = globalState.GetAchievements()
 				.Where(a => a.UserId == currentUser.UserId)
 				.OrderByDescending(a => a.FinishedAt)
 				.ToList();
 
-			var gameMap = globalState.Games
+			var gameMap = globalState.GetGames()
 				.ToDictionary(g => g.GameId.Id);
 
-			var playersPerGame = globalState.Achievements
+			var playersPerGame = globalState.GetAchievements()
 				.GroupBy(a => a.GameId.Id)
 				.ToDictionary(g => g.Key, g => g.Select(a => a.UserId).Distinct().Count());
 
