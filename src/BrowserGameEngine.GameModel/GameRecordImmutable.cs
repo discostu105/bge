@@ -14,6 +14,7 @@ namespace BrowserGameEngine.GameModel {
 		DateTime EndTime,
 		TimeSpan TickDuration,
 		PlayerId? WinnerId = null,
-		DateTime? ActualEndTime = null
+		DateTime? ActualEndTime = null,
+		string? CreatedByUserId = null
 	);
 }
