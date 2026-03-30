@@ -135,6 +135,29 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public async Task FinalizeGame_AchievementsPreservePlayerNameAndRankOrder() {
+			var ws = MakeTwoPlayerState("test-game").ToMutable();
+			var (registry, _) = MakeActiveEndedGame(ws);
+			var engine = MakeEngine(registry);
+
+			await engine.ProcessLifecycleAsync();
+
+			var achievements = registry.GlobalState.Achievements
+				.OrderBy(a => a.FinalRank)
+				.ToList();
+
+			// Rank 1 = highest score (p1 with res1=2000), Rank 2 = lower score (p2)
+			Assert.Equal(2, achievements.Count);
+			Assert.Equal("Player 1", achievements[0].PlayerName);
+			Assert.Equal(1, achievements[0].FinalRank);
+			Assert.Equal("Player 2", achievements[1].PlayerName);
+			Assert.Equal(2, achievements[1].FinalRank);
+			// Rank-1 player is the winner recorded on the game record
+			var finalRecord = registry.GlobalState.Games[0];
+			Assert.Equal(achievements[0].PlayerId.Id, finalRecord.WinnerId?.Id);
+		}
+
+		[Fact]
 		public async Task FinalizeGame_RemovesInstanceFromRegistry() {
 			var ws = MakeTwoPlayerState("test-game").ToMutable();
 			var (registry, _) = MakeActiveEndedGame(ws);

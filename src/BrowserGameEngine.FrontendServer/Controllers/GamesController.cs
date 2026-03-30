@@ -100,6 +100,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
 		}
 
+		[Authorize]
 		[HttpGet("{gameId}/results")]
 		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
 			var record = globalState.Games.FirstOrDefault(g => g.GameId.Id == gameId);
