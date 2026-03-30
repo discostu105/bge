@@ -147,10 +147,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		/// <summary>Returns the final standings and scores for a completed game.</summary>
 		/// <param name="gameId">The game identifier.</param>
-		[Authorize]
+		[AllowAnonymous]
 		[HttpGet("{gameId}/results")]
 		[ProducesResponseType(typeof(GameResultsViewModel), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public ActionResult<GameResultsViewModel> GetResults(string gameId) {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
