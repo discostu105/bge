@@ -53,6 +53,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				registry.GlobalState,
 				new PersistenceService(storage, serializer),
 				new GlobalPersistenceService(storage, globalSerializer),
+				new GameRegistryNs.NullGameNotificationService(),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
