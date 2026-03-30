@@ -1,0 +1,114 @@
+@page "/achievements"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<h1>Achievements</h1>
+<p class="text-muted">Your earned badges across all games.</p>
+
+<style>
+	.achievement-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 1rem;
+	}
+
+	.achievement-card {
+		background: #1e2a3a;
+		border: 1px solid #2c3e50;
+		border-radius: 0.5rem;
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		transition: border-color 0.2s;
+	}
+
+	.achievement-card:hover {
+		border-color: #4a6fa5;
+	}
+
+	.achievement-card.winner {
+		border-color: #ffd700;
+		background: linear-gradient(135deg, #1e2a3a 0%, #2a2208 100%);
+	}
+
+	.achievement-card.runner-up {
+		border-color: #c0c0c0;
+	}
+
+	.achievement-card.top3 {
+		border-color: #cd7f32;
+	}
+
+	.achievement-icon {
+		font-size: 2rem;
+		line-height: 1;
+	}
+
+	.achievement-label {
+		font-weight: bold;
+		font-size: 1rem;
+		color: #e0e0e0;
+	}
+
+	.achievement-game {
+		font-size: 0.85rem;
+		color: #90a8c8;
+	}
+
+	.achievement-meta {
+		font-size: 0.78rem;
+		color: #607080;
+		margin-top: auto;
+		display: flex;
+		justify-content: space-between;
+	}
+
+	.empty-state {
+		text-align: center;
+		padding: 3rem 1rem;
+		color: #607080;
+	}
+
+	.empty-state .empty-icon {
+		font-size: 4rem;
+		margin-bottom: 1rem;
+	}
+</style>
+
+@if (model == null) {
+	<div class="d-flex align-items-center gap-2">
+		<div class="spinner-border spinner-border-sm" role="status"></div>
+		<span>Loading achievements...</span>
+	</div>
+} else if (model.Achievements.Count == 0) {
+	<div class="empty-state">
+		<div class="empty-icon">🎯</div>
+		<h4>No achievements yet</h4>
+		<p>Complete your first game to earn your first badge!</p>
+		<a class="btn btn-primary" href="games">Browse Games</a>
+	</div>
+} else {
+	<p class="mb-3"><strong>@model.Achievements.Count</strong> achievement@(model.Achievements.Count == 1 ? "" : "s") earned</p>
+	<div class="achievement-grid">
+		@foreach (var a in model.Achievements) {
+			<div class="achievement-card @a.AchievementType">
+				<div class="achievement-icon">@a.AchievementIcon</div>
+				<div class="achievement-label">@a.AchievementLabel</div>
+				<div class="achievement-game">@a.GameName</div>
+				<div class="achievement-meta">
+					<span>Rank #@a.FinalRank &nbsp;·&nbsp; Score: @a.Score.ToString("N0")</span>
+					<span>@a.EarnedAt.ToString("yyyy-MM-dd")</span>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+@code {
+	private PlayerAchievementsViewModel? model;
+
+	protected override async Task OnInitializedAsync() {
+		model = await Http.GetFromJsonAsync<PlayerAchievementsViewModel>("api/players/me/achievements");
+	}
+}

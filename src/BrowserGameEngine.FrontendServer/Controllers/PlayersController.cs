@@ -16,6 +16,25 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		/// <summary>
+		/// Public achievements for any user, identified by their OAuth user ID.
+		/// Returns empty list when the user has no achievements.
+		/// </summary>
+		[AllowAnonymous]
+		[HttpGet("{userId}/achievements")]
+		public ActionResult<PlayerAchievementsViewModel> GetAchievements(string userId) {
+			var gameMap = globalState.GetGames().ToDictionary(g => g.GameId.Id);
+			var achievements = globalState.GetAchievements()
+				.Where(a => a.UserId == userId)
+				.OrderByDescending(a => a.FinishedAt)
+				.Select(a => {
+					gameMap.TryGetValue(a.GameId.Id, out var rec);
+					return ToAchievementViewModel(a, rec?.Name ?? a.GameId.Id);
+				})
+				.ToList();
+			return Ok(new PlayerAchievementsViewModel(achievements));
+		}
+
+		/// <summary>
 		/// Public cross-game stats for any user, identified by their OAuth user ID (e.g. GitHub login).
 		/// Returns NotFound when the user has no game history.
 		/// </summary>
@@ -53,6 +72,26 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TotalScore: entries.Sum(e => e.FinalScore),
 				Games: entries
 			));
+		}
+
+		private static AchievementViewModel ToAchievementViewModel(BrowserGameEngine.GameModel.PlayerAchievementImmutable a, string gameName) {
+			var (type, label, icon) = a.FinalRank switch {
+				1 => ("winner", "Commander Victory", "🏆"),
+				2 => ("runner-up", "Runner-Up", "🥈"),
+				3 => ("top3", "Top 3 Finish", "🥉"),
+				_ => ("competitor", "Game Completed", "⚔️")
+			};
+			return new AchievementViewModel(
+				AchievementType: type,
+				AchievementLabel: label,
+				AchievementIcon: icon,
+				GameId: a.GameId.Id,
+				GameName: gameName,
+				GameDefType: a.GameDefType,
+				FinalRank: a.FinalRank,
+				Score: a.FinalScore,
+				EarnedAt: a.FinishedAt
+			);
 		}
 	}
 }
