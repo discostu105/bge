@@ -13,6 +13,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		private readonly object _achievementsLock = new();
 		private List<PlayerAchievementImmutable> _achievements = new();
 
+		public string? GetUserDisplayName(string userId) {
+			var user = Users.Values.FirstOrDefault(u => u.UserId == userId);
+			return user?.DisplayName;
+		}
+
 		public IReadOnlyList<GameRecordImmutable> GetGames() {
 			lock (_gamesLock) return _games.ToList();
 		}
