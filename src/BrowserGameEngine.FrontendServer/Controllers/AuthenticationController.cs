@@ -35,7 +35,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public async Task<IActionResult> SignIn() => View("SignIn", await HttpContext.GetExternalProvidersAsync());
 
 		[HttpPost("~/signin")]
-		public async Task<IActionResult> SignIn([FromForm] string provider, [FromForm] bool rememberMe = true) {
+		public async Task<IActionResult> SignIn([FromForm] string provider, [FromForm] bool rememberMe = false) {
 			// Note: the "provider" parameter corresponds to the external
 			// authentication provider choosen by the user agent.
 			if (string.IsNullOrWhiteSpace(provider)) return BadRequest();
