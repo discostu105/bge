@@ -1,4 +1,7 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+@inject HttpClient Http
+@using BrowserGameEngine.Shared
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">BrowserGameEngine</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -73,15 +76,26 @@
             </NavLink>
         </li>
     </ul>
+    @if (version != null) {
+        <div class="px-3 py-2" style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+            v@version.CommitHash
+        </div>
+    }
 </div>
 
 @code {
     private bool collapseNavMenu = true;
+    private VersionInfoViewModel? version;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        version = await Http.GetFromJsonAsync<VersionInfoViewModel>("api/version");
     }
 }
