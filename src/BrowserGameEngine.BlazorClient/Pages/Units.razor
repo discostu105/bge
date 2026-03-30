@@ -3,6 +3,7 @@
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
+@implements IDisposable
 
 <h1>Einheiten</h1>
 
@@ -70,9 +71,19 @@
     private UnitsViewModel? model;
     private string? lastError;
     private Dictionary<Guid, bool> showSplit = new();
+    private System.Threading.Timer? _refreshTimer;
 
     protected override async Task OnInitializedAsync() {
         await Update();
+        _refreshTimer = new System.Threading.Timer(
+            async _ => {
+                await Update();
+                await InvokeAsync(StateHasChanged);
+            },
+            null,
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(10)
+        );
     }
 
     private async Task Update() {
@@ -109,5 +120,9 @@
 
     private void ToggleShowSplit(Guid unitId) {
         showSplit[unitId] = !IsShowSplit(unitId);
+    }
+
+    public void Dispose() {
+        _refreshTimer?.Dispose();
     }
 }

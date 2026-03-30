@@ -2,6 +2,7 @@
 @page "/games/{GameId}/messages"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Messages</h1>
 
@@ -77,9 +78,19 @@
 	private SendMessageViewModel composeModel = new();
 	private string? sendResult;
 	private string? expandedMessageId;
+	private System.Threading.Timer? _refreshTimer;
 
 	protected override async Task OnInitializedAsync() {
 		await LoadInbox();
+		_refreshTimer = new System.Threading.Timer(
+			async _ => {
+				await LoadInbox();
+				await InvokeAsync(StateHasChanged);
+			},
+			null,
+			TimeSpan.FromSeconds(10),
+			TimeSpan.FromSeconds(10)
+		);
 	}
 
 	private async Task LoadInbox() {
@@ -108,5 +119,9 @@
 
 	private void ToggleMessage(MessageViewModel msg) {
 		expandedMessageId = expandedMessageId == msg.MessageId ? null : msg.MessageId;
+	}
+
+	public void Dispose() {
+		_refreshTimer?.Dispose();
 	}
 }
