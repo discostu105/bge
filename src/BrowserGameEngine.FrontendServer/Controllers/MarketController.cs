@@ -41,7 +41,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var orders = marketRepository.GetOpenOrders();
 			var viewModel = new MarketViewModel {
 				OpenOrders = orders.Select(o => ToViewModel(o)).ToList(),
-				CurrentPlayerId = currentUserContext.PlayerId!.Id
+				CurrentPlayerId = currentUserContext.PlayerId!.Id,
+				ResourceOptions = gameDef.Resources
+					.Select(r => new ResourceOptionViewModel { Id = r.Id.Id, Name = r.Name })
+					.ToList()
 			};
 			return viewModel;
 		}
@@ -117,7 +120,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WantedResourceId = order.WantedResourceId.Id,
 				WantedResourceName = wantedRes?.Name ?? order.WantedResourceId.Id,
 				WantedAmount = order.WantedAmount,
-				CreatedAt = order.CreatedAt
+				CreatedAt = order.CreatedAt,
+				IsOwnOrder = order.SellerPlayerId == currentUserContext.PlayerId
 			};
 		}
 
