@@ -38,20 +38,20 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		}
 
 		private bool ActivateUpcomingGames(DateTime utcNow) {
-			var toActivate = globalState.Games
+			var toActivate = globalState.GetGames()
 				.Where(g => g.Status == GameStatus.Upcoming && g.StartTime <= utcNow)
 				.ToList();
 
 			foreach (var record in toActivate) {
 				var updated = record with { Status = GameStatus.Active };
-				UpdateGameRecord(record, updated);
+				globalState.UpdateGame(record, updated);
 				logger.LogInformation("Game {GameId} activated", record.GameId.Id);
 			}
 			return toActivate.Count > 0;
 		}
 
 		private async Task<bool> FinalizeEndedGamesAsync(DateTime utcNow) {
-			var toFinalize = globalState.Games
+			var toFinalize = globalState.GetGames()
 				.Where(g => g.Status == GameStatus.Active && g.EndTime <= utcNow)
 				.ToList();
 
@@ -65,7 +65,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) {
 				// Instance already gone; update the record only
-				UpdateGameRecord(record, record with { Status = GameStatus.Finished, ActualEndTime = utcNow });
+				globalState.UpdateGame(record, record with { Status = GameStatus.Finished, ActualEndTime = utcNow });
 				logger.LogWarning("Finalizing game {GameId}: no in-memory instance found, updated record only", record.GameId.Id);
 				return;
 			}
@@ -87,7 +87,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				var (playerId, score) = rankings[i];
 				var player = instance.WorldState.Players[playerId];
 				if (player.UserId != null) {
-					globalState.Achievements.Add(new PlayerAchievementImmutable(
+					globalState.AddAchievement(new PlayerAchievementImmutable(
 						UserId: player.UserId,
 						GameId: record.GameId,
 						PlayerId: playerId,
@@ -105,7 +105,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				ActualEndTime = utcNow,
 				WinnerId = winnerId
 			};
-			UpdateGameRecord(record, updated);
+			globalState.UpdateGame(record, updated);
 
 			// Persist final world state before freeing memory
 			await persistenceService.StoreGameState(record.GameId, instance.WorldState.ToImmutable());
@@ -117,9 +117,5 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				record.GameId.Id, winnerId?.Id ?? "(none)", rankings.Count);
 		}
 
-		private void UpdateGameRecord(GameRecordImmutable old, GameRecordImmutable updated) {
-			var idx = globalState.Games.IndexOf(old);
-			if (idx >= 0) globalState.Games[idx] = updated;
-		}
 	}
 }

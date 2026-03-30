@@ -11,6 +11,7 @@ using System.Linq;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
+	[Authorize]
 	[Route("api/games")]
 	public class GamesController : ControllerBase {
 		private readonly ILogger<GamesController> logger;
@@ -18,30 +19,35 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly GlobalState globalState;
 		private readonly IWorldStateFactory worldStateFactory;
 		private readonly GameDef gameDef;
+		private readonly CurrentUserContext currentUserContext;
 
 		public GamesController(
 			ILogger<GamesController> logger,
 			GameRegistry gameRegistry,
 			GlobalState globalState,
 			IWorldStateFactory worldStateFactory,
-			GameDef gameDef
+			GameDef gameDef,
+			CurrentUserContext currentUserContext
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
 			this.globalState = globalState;
 			this.worldStateFactory = worldStateFactory;
 			this.gameDef = gameDef;
+			this.currentUserContext = currentUserContext;
 		}
 
+		[AllowAnonymous]
 		[HttpGet]
 		public IActionResult GetAll() {
-			var summaries = globalState.Games.Select(ToSummary).ToList();
+			var summaries = globalState.GetGames().Select(ToSummary).ToList();
 			return Ok(summaries);
 		}
 
+		[AllowAnonymous]
 		[HttpGet("{gameId}")]
 		public ActionResult<GameDetailViewModel> GetById(string gameId) {
-			var record = globalState.Games.FirstOrDefault(g => g.GameId.Id == gameId);
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
 
 			var playerCount = GetPlayerCount(record);
@@ -58,9 +64,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			));
 		}
 
-		[Authorize]
 		[HttpPost]
 		public ActionResult<GameSummaryViewModel> Create([FromBody] CreateGameRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required");
 			if (string.IsNullOrWhiteSpace(request.GameDefType)) return BadRequest("GameDefType is required");
 			if (request.StartTime >= request.EndTime) return BadRequest("StartTime must be before EndTime");
@@ -86,7 +92,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			// Register the game instance
 			var instance = new GameInstance(record, ws, gameDef);
 			gameRegistry.Register(instance);
-			globalState.Games.Add(record);
+			globalState.AddGame(record);
 
 			logger.LogInformation("Game {GameId} created: {Name}", gameId.Id, request.Name);
 

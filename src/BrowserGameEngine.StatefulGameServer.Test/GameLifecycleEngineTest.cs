@@ -73,7 +73,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new GameId(gameId), "Test Game", "sco", GameStatus.Active,
 				DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddMinutes(-5), TimeSpan.FromSeconds(10));
 			var globalState = new GlobalState();
-			globalState.Games.Add(record);
+			globalState.AddGame(record);
 			var registry = new GameRegistryNs.GameRegistry(globalState);
 			var instance = new GameRegistryNs.GameInstance(record, worldState, TestGameDef);
 			registry.Register(instance);
@@ -103,7 +103,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			await engine.ProcessLifecycleAsync();
 
-			var finalRecord = registry.GlobalState.Games[0];
+			var finalRecord = registry.GlobalState.GetGames()[0];
 			Assert.Equal(GameStatus.Finished, finalRecord.Status);
 			Assert.NotNull(finalRecord.ActualEndTime);
 		}
@@ -116,7 +116,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			await engine.ProcessLifecycleAsync();
 
-			var finalRecord = registry.GlobalState.Games[0];
+			var finalRecord = registry.GlobalState.GetGames()[0];
 			Assert.Equal("p1", finalRecord.WinnerId?.Id);  // p1 has res1=2000 (higher score)
 		}
 
@@ -128,7 +128,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			await engine.ProcessLifecycleAsync();
 
-			var achievements = registry.GlobalState.Achievements;
+			var achievements = registry.GlobalState.GetAchievements();
 			Assert.Equal(2, achievements.Count);
 			Assert.Contains(achievements, a => a.UserId == "user1" && a.FinalRank == 1);
 			Assert.Contains(achievements, a => a.UserId == "user2" && a.FinalRank == 2);
@@ -153,7 +153,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				DateTime.UtcNow.AddMinutes(-1),  // start time already passed
 				DateTime.UtcNow.AddDays(1),
 				TimeSpan.FromSeconds(10));
-			globalState.Games.Add(record);
+			globalState.AddGame(record);
 			var ws = MakeTwoPlayerState("upcoming-game").ToMutable();
 			var registry = new GameRegistryNs.GameRegistry(globalState);
 			registry.Register(new GameRegistryNs.GameInstance(record, ws, TestGameDef));
@@ -161,7 +161,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			await engine.ProcessLifecycleAsync();
 
-			Assert.Equal(GameStatus.Active, registry.GlobalState.Games[0].Status);
+			Assert.Equal(GameStatus.Active, registry.GlobalState.GetGames()[0].Status);
 		}
 
 		[Fact]
@@ -172,7 +172,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				DateTime.UtcNow.AddHours(1),    // future start time
 				DateTime.UtcNow.AddDays(1),
 				TimeSpan.FromSeconds(10));
-			globalState.Games.Add(record);
+			globalState.AddGame(record);
 			var ws = MakeTwoPlayerState("future-game").ToMutable();
 			var registry = new GameRegistryNs.GameRegistry(globalState);
 			registry.Register(new GameRegistryNs.GameInstance(record, ws, TestGameDef));
@@ -180,7 +180,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			await engine.ProcessLifecycleAsync();
 
-			Assert.Equal(GameStatus.Upcoming, registry.GlobalState.Games[0].Status);
+			Assert.Equal(GameStatus.Upcoming, registry.GlobalState.GetGames()[0].Status);
 		}
 	}
 

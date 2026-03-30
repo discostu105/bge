@@ -208,7 +208,7 @@ async Task ConfigureGameServices(IServiceCollection services) {
 
     var gameRegistry = new BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry(globalState);
 
-    foreach (var gameRecord in globalState.Games.Where(g => g.Status != GameStatus.Finished)) {
+    foreach (var gameRecord in globalState.GetGames().Where(g => g.Status != GameStatus.Finished)) {
         WorldStateImmutable wsImm;
         if (persistenceService.GameStateExists(gameRecord.GameId)) {
             wsImm = await persistenceService.LoadGameState(gameRecord.GameId);
