@@ -68,15 +68,37 @@
 	</div>
 }
 
+<h2>Game Preferences</h2>
+@if (preferences == null) {
+	<p><em>Loading preferences...</em></p>
+} else {
+	<div>
+		<label>
+			<input type="checkbox" checked="@preferences.WantsGameNotification"
+				@onchange="e => HandlePreferenceChange(nameof(preferences.WantsGameNotification), (bool)e.Value!)" />
+			Notify me when a new game starts
+		</label>
+	</div>
+	<div>
+		<label>
+			<input type="checkbox" checked="@preferences.AutoJoinNextGame"
+				@onchange="e => HandlePreferenceChange(nameof(preferences.AutoJoinNextGame), (bool)e.Value!)" />
+			Auto-join next game
+		</label>
+	</div>
+}
+
 @code {
 	private List<PlayerSummaryViewModel>? players;
 	private CreatePlayerForUserViewModel createModel = new();
 	private string? createError;
 	private string? newApiKey;
+	private UserPreferencesViewModel? preferences;
 	private CancellationTokenSource? _cts;
 
 	protected override async Task OnInitializedAsync() {
 		await LoadPlayers();
+		await LoadPreferences();
 		_cts = new CancellationTokenSource();
 		_ = RunRefreshLoop(_cts.Token);
 	}
@@ -92,6 +114,21 @@
 	private async Task LoadPlayers() {
 		var result = await Http.GetFromJsonAsync<PlayerListViewModel>("api/players");
 		players = result?.Players ?? new();
+	}
+
+	private async Task LoadPreferences() {
+		preferences = await Http.GetFromJsonAsync<UserPreferencesViewModel>("api/users/me/preferences");
+	}
+
+	private async Task HandlePreferenceChange(string field, bool value) {
+		if (preferences == null) return;
+		var request = field == nameof(UserPreferencesViewModel.WantsGameNotification)
+			? new UpdateUserPreferencesRequest(WantsGameNotification: value, AutoJoinNextGame: null)
+			: new UpdateUserPreferencesRequest(WantsGameNotification: null, AutoJoinNextGame: value);
+		var response = await Http.PatchAsJsonAsync("api/users/me/preferences", request);
+		if (response.IsSuccessStatusCode) {
+			await LoadPreferences();
+		}
 	}
 
 	private async Task HandleCreatePlayer() {

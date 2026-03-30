@@ -68,6 +68,35 @@
             </div>
         </div>
     }
+
+    @if (myStatus.IsMember && !myStatus.IsPending) {
+        <h3>Chat</h3>
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="input-group mb-2">
+                    <input class="form-control" @bind="newChatBody" placeholder="Write a message..." />
+                    <button class="btn btn-primary" @onclick="PostChat">Send</button>
+                </div>
+            </div>
+        </div>
+        @if (chatPosts == null) {
+            <p><em>Loading chat...</em></p>
+        } else if (chatPosts.Count == 0) {
+            <p class="text-muted">No messages yet. Be the first to post!</p>
+        } else {
+            <div class="list-group">
+                @foreach (var post in chatPosts) {
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>@post.AuthorName</strong>
+                            <small class="text-muted">@post.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                        </div>
+                        <p class="mb-0">@post.Body</p>
+                    </div>
+                }
+            </div>
+        }
+    }
 }
 
 @code {
@@ -75,8 +104,10 @@
 
     private AllianceDetailViewModel? detail;
     private MyAllianceStatusViewModel? myStatus;
+    private List<AllianceChatPostViewModel>? chatPosts;
     private string newMessage = "";
     private string newPassword = "";
+    private string newChatBody = "";
     private string? lastError;
     private CancellationTokenSource? _cts;
 
@@ -97,6 +128,9 @@
     private async Task Update() {
         detail = await Http.GetFromJsonAsync<AllianceDetailViewModel>($"api/alliances/{AllianceId}");
         myStatus = await Http.GetFromJsonAsync<MyAllianceStatusViewModel>("api/alliances/my-status");
+        if (myStatus?.IsMember == true && myStatus.IsPending == false) {
+            chatPosts = await Http.GetFromJsonAsync<List<AllianceChatPostViewModel>>($"api/alliances/{AllianceId}/posts");
+        }
         lastError = null;
     }
 
@@ -133,6 +167,13 @@
     private async Task SetPassword() {
         var r = await Http.PatchAsJsonAsync($"api/alliances/{AllianceId}/password", new SetAlliancePasswordRequest { NewPassword = newPassword });
         if (r.IsSuccessStatusCode) { newPassword = ""; await Update(); }
+        else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task PostChat() {
+        if (string.IsNullOrWhiteSpace(newChatBody)) return;
+        var r = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/posts", new PostAllianceChatRequest { Body = newChatBody });
+        if (r.IsSuccessStatusCode) { newChatBody = ""; await Update(); }
         else lastError = await r.Content.ReadAsStringAsync();
     }
 

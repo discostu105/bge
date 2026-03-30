@@ -7,5 +7,6 @@ namespace BrowserGameEngine.Shared {
 		public int MaxUpgradeLevel { get; set; } = 3;
 		public CostViewModel? NextAttackUpgradeCost { get; set; }
 		public CostViewModel? NextDefenseUpgradeCost { get; set; }
+		public string PlayerType { get; set; } = "terran";
 	}
 }
