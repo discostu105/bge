@@ -36,6 +36,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return player?.ToImmutable();
 		}
 
+		public UserImmutable? GetByUserId(string userId) {
+			var user = globalState.Users.Values.FirstOrDefault(u => u.UserId == userId);
+			return user?.ToImmutable();
+		}
+
 		public string? GetDisplayNameByUserId(string userId) {
 			var user = globalState.Users.Values.FirstOrDefault(u => u.UserId == userId);
 			return user?.DisplayName;

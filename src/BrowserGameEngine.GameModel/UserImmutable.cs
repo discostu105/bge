@@ -6,6 +6,8 @@ namespace BrowserGameEngine.GameModel {
 		string GithubId,
 		string GithubLogin,
 		string DisplayName,
-		DateTime Created
+		DateTime Created,
+		bool WantsGameNotification = false,
+		bool AutoJoinNextGame = false
 	);
 }

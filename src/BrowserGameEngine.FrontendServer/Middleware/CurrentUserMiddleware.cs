@@ -48,6 +48,7 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 
 					// Select active player: first player belonging to this user
 					var players = userRepository.GetPlayersForUser(user.UserId).ToList();
+					currentUserContext.GithubId = githubId;
 					if (players.Count > 0) {
 						var selectedPlayerId = players[0].PlayerId;
 						// Support BGE.SelectedPlayer cookie for multi-player accounts

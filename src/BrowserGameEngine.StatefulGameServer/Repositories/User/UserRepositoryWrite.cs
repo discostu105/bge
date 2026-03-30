@@ -1,6 +1,7 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
@@ -49,6 +50,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 				};
 				globalState.Users[githubId] = user;
 				return user.ToImmutable();
+			}
+		}
+
+		public void SetGamePreferences(string githubId, bool wantsNotification, bool autoJoin) {
+			lock (_lock) {
+				if (!globalState.Users.TryGetValue(githubId, out var user))
+					throw new KeyNotFoundException($"User with githubId {githubId} not found");
+				user.WantsGameNotification = wantsNotification;
+				user.AutoJoinNextGame = autoJoin;
 			}
 		}
 
