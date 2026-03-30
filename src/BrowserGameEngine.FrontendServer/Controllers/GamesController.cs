@@ -120,6 +120,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			// Check if user already has a player in this game (by UserId)
 			if (instance.HasUserPlayer(currentUserContext.UserId)) return Conflict("You have already joined this game.");
 
+			if (!gameDef.PlayerTypes.Any(pt => pt.Id.Id == request.Race)) return BadRequest("Unknown race");
+
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
 			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId, request.Race);
