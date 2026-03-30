@@ -1,40 +1,81 @@
 @page "/ranking"
+@page "/games/{GameId}/ranking"
 @using BrowserGameEngine.Shared
 @using System.Linq
 @inject HttpClient Http
 
 <h1>Ranking</h1>
 
-<div class="mb-3">
-    <button class="btn @(filter == "all" ? "btn-primary" : "btn-outline-secondary") me-1" @onclick='() => filter = "all"'>All</button>
-    <button class="btn @(filter == "human" ? "btn-primary" : "btn-outline-secondary") me-1" @onclick='() => filter = "human"'>Human</button>
-    <button class="btn @(filter == "agent" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => filter = "agent"'>Agent</button>
-</div>
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <button class="nav-link @(activeTab == "current" ? "active" : "")" @onclick='() => SwitchTab("current")'>Current Game</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link @(activeTab == "alltime" ? "active" : "")" @onclick='() => SwitchTab("alltime")'>All-Time</button>
+    </li>
+</ul>
 
-@if (model == null) {
-    <p><em>Loading...</em></p>
+@if (activeTab == "current") {
+    <div class="mb-3">
+        <button class="btn @(filter == "all" ? "btn-primary" : "btn-outline-secondary") me-1" @onclick='() => filter = "all"'>All</button>
+        <button class="btn @(filter == "human" ? "btn-primary" : "btn-outline-secondary") me-1" @onclick='() => filter = "human"'>Human</button>
+        <button class="btn @(filter == "agent" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => filter = "agent"'>Agent</button>
+    </div>
+
+    @if (model == null) {
+        <p><em>Loading...</em></p>
+    } else {
+        @foreach (var group in FilteredAndGrouped()) {
+            <h5 class="mt-3">@(group.displayName ?? group.userId ?? "(unknown)")</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Schutz</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in group.players) {
+                    <tr>
+                        <td>@item.PlayerName</td>
+                        <td>@item.Score</td>
+                        <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
+                        <td>@(item.IsOnline ? "Online" : "Offline")</td>
+                        <td>@(item.ProtectionTicksRemaining > 0 ? $"{item.ProtectionTicksRemaining}" : "")</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
 } else {
-    @foreach (var group in FilteredAndGrouped()) {
-        <h5 class="mt-3">@(group.displayName ?? group.userId ?? "(unknown)")</h5>
-        <table class="table table-sm">
+    @if (allTimeModel == null) {
+        <p><em>Loading...</em></p>
+    } else if (allTimeModel.Length == 0) {
+        <p class="text-muted">No completed games yet. Rankings will appear here after games finish.</p>
+    } else {
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Score</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Schutz</th>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Wins</th>
+                    <th>Games Played</th>
+                    <th>Best Finish</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in group.players) {
-                <tr>
-                    <td>@item.PlayerName</td>
-                    <td>@item.Score</td>
-                    <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
-                    <td>@(item.IsOnline ? "🟢 Online" : "⚫ Offline")</td>
-                    <td>@(item.ProtectionTicksRemaining > 0 ? $"🛡 {item.ProtectionTicksRemaining}" : "")</td>
-                </tr>
+                @foreach (var s in allTimeModel) {
+                    <tr>
+                        <td><strong>#@s.Rank</strong></td>
+                        <td>@s.DisplayName</td>
+                        <td>@s.TotalWins</td>
+                        <td>@s.GamesPlayed</td>
+                        <td>#@s.BestRank</td>
+                    </tr>
                 }
             </tbody>
         </table>
@@ -42,11 +83,32 @@
 }
 
 @code {
+    [Parameter]
+    public string? GameId { get; set; }
+
     private PublicPlayerViewModel[]? model;
+    private AllTimeStandingViewModel[]? allTimeModel;
     private string filter = "all";
+    private string activeTab = "current";
 
     protected override async Task OnInitializedAsync() {
+        await LoadCurrentGame();
+    }
+
+    private async Task SwitchTab(string tab) {
+        activeTab = tab;
+        if (tab == "alltime" && allTimeModel == null) {
+            await LoadAllTime();
+        }
+    }
+
+    private async Task LoadCurrentGame() {
         model = await Http.GetFromJsonAsync<PublicPlayerViewModel[]>("api/playerranking");
+    }
+
+    private async Task LoadAllTime() {
+        allTimeModel = await Http.GetFromJsonAsync<AllTimeStandingViewModel[]>("api/leaderboard/alltime")
+            ?? Array.Empty<AllTimeStandingViewModel>();
     }
 
     private IEnumerable<(string? userId, string? displayName, IEnumerable<PublicPlayerViewModel> players)> FilteredAndGrouped() {
@@ -61,5 +123,4 @@
             .GroupBy(p => p.UserId)
             .Select(g => (g.Key, g.First().UserDisplayName, (IEnumerable<PublicPlayerViewModel>)g));
     }
-
 }

@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject ICurrentGameService CurrentGameService
+@inject NavigationManager Nav
+@implements IDisposable
 
 <div class="sidebar">
     <NavMenu />
@@ -10,7 +13,82 @@
         <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
     </div>
 
+    @if (CurrentGameService.CurrentGame != null) {
+        var game = CurrentGameService.CurrentGame;
+        var remaining = game.EndTime - DateTime.UtcNow;
+        <div class="game-context-banner px-4 py-1 d-flex align-items-center gap-3" style="background: #1a3a5c; color: white; font-size: 0.9rem;">
+            <strong>@game.Name</strong>
+            <span class="badge @GetStatusBadge(game.Status)">@game.Status</span>
+            @if (remaining > TimeSpan.Zero) {
+                <span>Ends in: @FormatRemaining(remaining)</span>
+            } else if (game.Status != "Finished") {
+                <span>Ending soon</span>
+            }
+            <a href="games" class="ms-auto text-white-50" style="font-size:0.8rem;">&#8592; All Games</a>
+        </div>
+    }
+
     <div class="content px-4">
         @Body
     </div>
 </div>
+
+@code {
+    private System.Threading.CancellationTokenSource? pollCts;
+
+    protected override void OnInitialized() {
+        CurrentGameService.OnChanged += OnGameChanged;
+        StartPolling();
+    }
+
+    private void OnGameChanged() {
+        StateHasChanged();
+        RedirectIfFinished();
+    }
+
+    private void StartPolling() {
+        pollCts?.Cancel();
+        pollCts = new System.Threading.CancellationTokenSource();
+        _ = PollGameStatusAsync(pollCts.Token);
+    }
+
+    private async Task PollGameStatusAsync(System.Threading.CancellationToken ct) {
+        while (!ct.IsCancellationRequested) {
+            await Task.Delay(TimeSpan.FromSeconds(30), ct).ContinueWith(_ => { });
+            if (ct.IsCancellationRequested) break;
+            if (CurrentGameService.CurrentGameId != null) {
+                await CurrentGameService.RefreshAsync();
+            }
+        }
+    }
+
+    private void RedirectIfFinished() {
+        var game = CurrentGameService.CurrentGame;
+        if (game == null || game.Status != "Finished") return;
+        var relative = Nav.ToBaseRelativePath(Nav.Uri);
+        // Only redirect if we're on an in-game page, not already on the results page
+        if (relative.StartsWith($"games/{game.GameId}/", StringComparison.OrdinalIgnoreCase)
+            && !relative.Equals($"games/{game.GameId}/results", StringComparison.OrdinalIgnoreCase)) {
+            Nav.NavigateTo($"games/{game.GameId}/results");
+        }
+    }
+
+    public void Dispose() {
+        CurrentGameService.OnChanged -= OnGameChanged;
+        pollCts?.Cancel();
+        pollCts?.Dispose();
+    }
+
+    private static string GetStatusBadge(string status) => status switch {
+        "Active" => "bg-success",
+        "Upcoming" => "bg-warning text-dark",
+        "Finished" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+
+    private static string FormatRemaining(TimeSpan ts) {
+        if (ts.TotalDays >= 1) return $"{(int)ts.TotalDays}d {ts.Hours}h";
+        if (ts.TotalHours >= 1) return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+        return $"{ts.Minutes}m {ts.Seconds}s";
+    }
+}

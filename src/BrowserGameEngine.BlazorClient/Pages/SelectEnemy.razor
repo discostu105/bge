@@ -1,4 +1,5 @@
 ﻿@page "/selectenemy/{UnitId}"
+@page "/games/{GameId}/selectenemy/{UnitId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -28,6 +29,9 @@
 }
 
 @code {
+    [Parameter]
+    public string? GameId { get; set; }
+
     [Parameter]
     public required string UnitId { get; set; }
 
