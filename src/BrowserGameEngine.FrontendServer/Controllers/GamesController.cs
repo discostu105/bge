@@ -68,6 +68,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok(result);
 		}
 
+
 		/// <summary>Lists all games (upcoming, active, and finished).</summary>
 		/// <returns>Summary list of all games.</returns>
 		[AllowAnonymous]
@@ -266,6 +267,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			logger.LogInformation("Game {GameId} manually finalized by {UserId}", gameId, currentUserContext.UserId);
 			return Ok();
 		}
+
 
 		/// <summary>Returns the final standings and scores for a completed game.</summary>
 		/// <param name="gameId">The game identifier.</param>
