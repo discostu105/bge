@@ -156,7 +156,7 @@
 		editModel = new EditGameFormModel {
 			Name = game.Name,
 			EndTime = game.EndTime?.ToLocalTime() ?? DateTime.Now.AddDays(7),
-			DiscordWebhookUrl = string.Empty
+			DiscordWebhookUrl = game.DiscordWebhookUrl
 		};
 		editError = null;
 		editSuccess = null;

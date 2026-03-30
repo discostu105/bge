@@ -239,7 +239,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: record.EndTime,
 				CanJoin: record.Status == GameStatus.Upcoming,
 				WinnerId: record.WinnerId?.Id,
-				WinnerName: winnerName
+				WinnerName: winnerName,
+				DiscordWebhookUrl: record.DiscordWebhookUrl
 			);
 		}
 
