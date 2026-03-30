@@ -24,6 +24,8 @@ FROM build AS publish
 RUN dotnet publish "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/publish
 
 FROM base AS final
+ARG COMMIT_SHA=dev
+ENV APP_VERSION=$COMMIT_SHA
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "BrowserGameEngine.FrontendServer.dll"]

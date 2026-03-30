@@ -1,0 +1,87 @@
+@page "/games/{GameId}/results"
+@namespace BrowserGameEngine.BlazorClient.Pages.GameResults
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+@if (error != null) {
+	<div class="alert alert-danger">@error</div>
+}
+
+@if (model == null && error == null) {
+	<p><em>Loading...</em></p>
+} else if (model != null) {
+	<h1>@model.Name — Results</h1>
+
+	<p class="text-muted">
+		@{
+			var end = model.ActualEndTime ?? model.EndTime;
+			var duration = end - model.StartTime;
+		}
+		@model.StartTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm") — @end.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+		&nbsp;·&nbsp; Duration: @FormatDuration(duration)
+	</p>
+
+	@if (model.Standings.Count == 0) {
+		<p class="text-muted">No standings recorded for this game.</p>
+	} else {
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>Rank</th>
+					<th>Player</th>
+					<th>Score</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var entry in model.Standings) {
+					<tr class="@(entry.IsWinner ? "table-warning" : "")">
+						<td>
+							@if (entry.IsWinner) {
+								<span>🏆 #@entry.Rank</span>
+							} else {
+								<span>#@entry.Rank</span>
+							}
+						</td>
+						<td>
+							@entry.PlayerName
+							@if (entry.IsWinner) {
+								<span class="badge bg-warning text-dark ms-2">Winner</span>
+							}
+						</td>
+						<td>@entry.Score.ToString("N0")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+	<div class="mt-4 d-flex gap-2">
+		<a class="btn btn-secondary" href="games">Browse Games</a>
+		<a class="btn btn-outline-secondary" href="leaderboard/alltime">View All-Time Leaderboard</a>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? GameId { get; set; }
+
+	private GameResultsViewModel? model;
+	private string? error;
+
+	protected override async Task OnParametersSetAsync() {
+		model = null;
+		error = null;
+		try {
+			model = await Http.GetFromJsonAsync<GameResultsViewModel>($"api/games/{GameId}/results");
+		} catch (Exception ex) {
+			error = $"Could not load results: {ex.Message}";
+		}
+	}
+
+	private static string FormatDuration(TimeSpan ts) {
+		if (ts.TotalDays >= 1) return $"{(int)ts.TotalDays}d {ts.Hours}h";
+		if (ts.TotalHours >= 1) return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+		return $"{ts.Minutes}m";
+	}
+}

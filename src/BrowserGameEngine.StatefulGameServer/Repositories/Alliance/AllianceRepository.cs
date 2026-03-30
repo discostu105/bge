@@ -5,10 +5,11 @@ using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AllianceRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public AllianceRepository(WorldState world) {
-			this.world = world;
+		public AllianceRepository(IWorldStateAccessor worldStateAccessor) {
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public AllianceImmutable? Get(AllianceId allianceId) {

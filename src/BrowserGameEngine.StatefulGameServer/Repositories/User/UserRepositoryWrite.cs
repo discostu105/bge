@@ -6,17 +6,19 @@ using System.Threading;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UserRepositoryWrite {
 		private readonly Lock _lock = new();
+		private readonly GlobalState globalState;
 		private readonly WorldState world;
 		private readonly TimeProvider timeProvider;
 
-		public UserRepositoryWrite(WorldState world, TimeProvider timeProvider) {
+		public UserRepositoryWrite(GlobalState globalState, WorldState world, TimeProvider timeProvider) {
+			this.globalState = globalState;
 			this.world = world;
 			this.timeProvider = timeProvider;
 		}
 
 		public UserImmutable CreateUser(string githubId, string githubLogin, string displayName) {
 			lock (_lock) {
-				if (world.Users.ContainsKey(githubId)) throw new InvalidOperationException($"User with githubId {githubId} already exists");
+				if (globalState.Users.ContainsKey(githubId)) throw new InvalidOperationException($"User with githubId {githubId} already exists");
 				var user = new User {
 					UserId = Guid.NewGuid().ToString(),
 					GithubId = githubId,
@@ -24,7 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					DisplayName = displayName,
 					Created = timeProvider.GetLocalNow().DateTime
 				};
-				world.Users[githubId] = user;
+				globalState.Users[githubId] = user;
 				return user.ToImmutable();
 			}
 		}
@@ -35,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// </summary>
 		public UserImmutable GetOrCreateUser(string githubId, string githubLogin, string displayName) {
 			lock (_lock) {
-				if (world.Users.TryGetValue(githubId, out var existing)) {
+				if (globalState.Users.TryGetValue(githubId, out var existing)) {
 					return existing.ToImmutable();
 				}
 				var user = new User {
@@ -45,7 +47,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					DisplayName = displayName,
 					Created = timeProvider.GetLocalNow().DateTime
 				};
-				world.Users[githubId] = user;
+				globalState.Users[githubId] = user;
 				return user.ToImmutable();
 			}
 		}

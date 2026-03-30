@@ -7,11 +7,12 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly GameDef gameDef;
 
-		public ResourceRepository(WorldState world, GameDef gameDef) {
-			this.world = world;
+		public ResourceRepository(IWorldStateAccessor worldStateAccessor, GameDef gameDef) {
+			this.worldStateAccessor = worldStateAccessor;
 			this.gameDef = gameDef;
 		}
 

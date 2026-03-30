@@ -5,24 +5,27 @@ using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UserRepository {
+		private readonly GlobalState globalState;
 		private readonly WorldState world;
 
-		public UserRepository(WorldState world) {
+		public UserRepository(GlobalState globalState, WorldState world) {
+			this.globalState = globalState;
 			this.world = world;
 		}
 
 		public UserImmutable? GetByGithubId(string githubId) {
-			if (world.Users.TryGetValue(githubId, out var user)) {
+			if (globalState.Users.TryGetValue(githubId, out var user)) {
 				return user.ToImmutable();
 			}
 			return null;
 		}
 
 		public bool ExistsByGithubId(string githubId) {
-			return world.Users.ContainsKey(githubId);
+			return globalState.Users.ContainsKey(githubId);
 		}
 
 		public IEnumerable<PlayerImmutable> GetPlayersForUser(string userId) {
+			// TODO Phase 3: replace with game-scoped player lookup via ICurrentGameContext
 			return world.Players.Values
 				.Where(p => p.UserId == userId)
 				.Select(p => p.ToImmutable());
@@ -34,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public string? GetDisplayNameByUserId(string userId) {
-			var user = world.Users.Values.FirstOrDefault(u => u.UserId == userId);
+			var user = globalState.Users.Values.FirstOrDefault(u => u.UserId == userId);
 			return user?.DisplayName;
 		}
 	}

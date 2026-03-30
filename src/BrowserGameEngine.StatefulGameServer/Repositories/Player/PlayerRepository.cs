@@ -7,16 +7,17 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class PlayerRepository {
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ScoreRepository scoreRepository;
 		private readonly AllianceRepository allianceRepository;
 
 		private IDictionary<PlayerId, Player> Players => world.Players;
 
-		public PlayerRepository(WorldState world
+		public PlayerRepository(IWorldStateAccessor worldStateAccessor
 			, ScoreRepository scoreRepository
 			, AllianceRepository allianceRepository) {
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.scoreRepository = scoreRepository;
 			this.allianceRepository = allianceRepository;
 		}

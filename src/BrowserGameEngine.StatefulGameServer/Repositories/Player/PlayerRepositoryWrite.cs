@@ -9,12 +9,13 @@ using System.Threading;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class PlayerRepositoryWrite {
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly TimeProvider timeProvider;
 		private IDictionary<PlayerId, Player> Players => world.Players;
 
-		public PlayerRepositoryWrite(WorldState world, TimeProvider timeProvider) {
-			this.world = world;
+		public PlayerRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider) {
+			this.worldStateAccessor = worldStateAccessor;
 			this.timeProvider = timeProvider;
 		}
 
@@ -109,7 +110,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 								Level = 1
 							},
 						},
-						ProtectionTicksRemaining = 32
+						ProtectionTicksRemaining = 480  // 4 hours at 30s/tick
 					}
 				};
 			}

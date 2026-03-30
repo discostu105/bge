@@ -11,7 +11,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepositoryWrite {
 		private readonly Lock _lock = new();
 		private readonly ILogger<AssetRepositoryWrite> logger;
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly AssetRepository assetRepository;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
@@ -19,7 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly GameDef gameDef;
 
 		public AssetRepositoryWrite(ILogger<AssetRepositoryWrite> logger
-				, WorldState world
+				, IWorldStateAccessor worldStateAccessor
 				, AssetRepository assetRepository
 				, ResourceRepository resourceRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
@@ -27,7 +28,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, GameDef gameDef
 			) {
 			this.logger = logger;
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.assetRepository = assetRepository;
 			this.resourceRepository = resourceRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;

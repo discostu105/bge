@@ -32,4 +32,5 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record AddToQueueCommand(PlayerId PlayerId, string Type, string DefId, int Count) : ICommand;
 	public record RemoveFromQueueCommand(PlayerId PlayerId, Guid EntryId) : ICommand;
 	public record ReorderQueueCommand(PlayerId PlayerId, Guid EntryId, int NewPriority) : ICommand;
+	public record TradeResourceCommand(PlayerId PlayerId, ResourceDefId FromResource, int Amount) : ICommand;
 }

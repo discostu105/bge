@@ -5,7 +5,7 @@ namespace BrowserGameEngine.GameModel {
 		IDictionary<PlayerId, PlayerImmutable> Players,
 		GameTickStateImmutable GameTickState,
 		IList<GameActionImmutable> GameActionQueue,
-		IDictionary<string, UserImmutable>? Users = null,
-		IDictionary<AllianceId, AllianceImmutable>? Alliances = null
+		IDictionary<AllianceId, AllianceImmutable>? Alliances = null,
+		GameId? GameId = null  // null = legacy JSON; treated as "default" in ToMutable()
 	);
 }

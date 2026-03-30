@@ -19,7 +19,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 	/// </summary>
 	public class GameTickEngine {
 		private readonly ILogger<GameTickEngine> logger;
-		private readonly WorldState worldState;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState worldState => worldStateAccessor.WorldState;
 		private readonly GameDef gameDef;
 		private readonly GameTickModuleRegistry gameTickModuleRegistry;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
@@ -29,14 +30,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		private long tickDurationOverrideTicks = 0; // 0 = no override; use Interlocked for thread safety
 
 		public GameTickEngine(ILogger<GameTickEngine> logger
-				, WorldState worldState
+				, IWorldStateAccessor worldStateAccessor
 				, GameDef gameDef
 				, GameTickModuleRegistry gameTickModuleRegistry
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, TimeProvider timeProvider
 			) {
 			this.logger = logger;
-			this.worldState = worldState;
+			this.worldStateAccessor = worldStateAccessor;
 			this.gameDef = gameDef;
 			this.gameTickModuleRegistry = gameTickModuleRegistry;
 			this.playerRepositoryWrite = playerRepositoryWrite;

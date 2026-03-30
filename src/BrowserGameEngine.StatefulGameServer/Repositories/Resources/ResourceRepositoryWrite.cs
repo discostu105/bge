@@ -4,19 +4,24 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepositoryWrite {
 		private readonly Lock _lock = new();
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ResourceRepository resourceRepository;
+		private readonly GameDef gameDef;
 
-		public ResourceRepositoryWrite(WorldState world
+		public ResourceRepositoryWrite(IWorldStateAccessor worldStateAccessor
 			, ResourceRepository resourceRepository
+			, GameDef gameDef
 			) {
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 			this.resourceRepository = resourceRepository;
+			this.gameDef = gameDef;
 		}
 
 		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
@@ -49,6 +54,32 @@ namespace BrowserGameEngine.StatefulGameServer {
 					playerRes[resourceDefId] += value;
 				}
 				return playerRes[resourceDefId];
+			}
+		}
+
+		public void TradeResource(TradeResourceCommand cmd) {
+			lock (_lock) {
+				var tradeableResources = gameDef.Resources
+					.Where(r => r.Id != gameDef.ScoreResource)
+					.Select(r => r.Id)
+					.ToList();
+
+				if (!tradeableResources.Contains(cmd.FromResource))
+					throw new InvalidOperationException($"Resource '{cmd.FromResource.Id}' is not tradeable.");
+
+				// NOTE: assumes exactly 2 tradeable resources; correct for SCO but would break if the game def ever adds a third
+				var toResource = tradeableResources.First(r => r != cmd.FromResource);
+				var cost = Cost.FromSingle(cmd.FromResource, 2m * cmd.Amount);
+
+				if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost);
+
+				DeductResourceUnchecked(cmd.PlayerId, cmd.FromResource, 2m * cmd.Amount);
+				var playerRes = Res(cmd.PlayerId);
+				if (!playerRes.ContainsKey(toResource)) {
+					playerRes.Add(toResource, cmd.Amount);
+				} else {
+					playerRes[toResource] += cmd.Amount;
+				}
 			}
 		}
 	}

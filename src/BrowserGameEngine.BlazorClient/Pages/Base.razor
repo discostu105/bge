@@ -1,4 +1,5 @@
 @page "/base"
+@page "/games/{GameId}/base"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
@@ -9,6 +10,22 @@
     <_PlayerResources />
 
     <_WorkerAssignment />
+
+    <div class="bge-trade mt-3">
+        <h3>Handel</h3>
+        <div>
+            <select @bind="tradeFromResource" class="form-select d-inline-block" style="width:150px">
+                <option value="minerals">Mineralien → Gas</option>
+                <option value="gas">Gas → Mineralien</option>
+            </select>
+            <input type="number" min="1" @bind="tradeAmount" class="form-control d-inline-block ms-2" style="width:100px" />
+            <span class="ms-2">Kosten: @(tradeAmount * 2) → erhalten: @tradeAmount</span>
+            <button class="btn btn-warning ms-2" @onclick="Trade">Handeln</button>
+        </div>
+        @if (!string.IsNullOrEmpty(tradeError)) {
+            <span class="text-danger">@tradeError</span>
+        }
+    </div>
 
     <div class="bge-colonize mt-3">
         <h3>Kolonisieren</h3>
@@ -74,12 +91,17 @@
 </div>
 
 @code {
+    [Parameter]
+    public string? GameId { get; set; }
 
     private AssetsViewModel? model;
     private PlayerResourcesViewModel? resources;
     private string? lastError;
     private string? colonizeError;
     private int colonizeAmount = 1;
+    private string tradeFromResource = "minerals";
+    private int tradeAmount = 1;
+    private string? tradeError;
     private _BuildQueue? buildQueue;
 
     protected override async Task OnInitializedAsync() {
@@ -93,6 +115,17 @@
         } else {
             var error = await response.Content.ReadAsStringAsync();
             lastError = error;
+        }
+    }
+
+    private async Task Trade() {
+        tradeError = null;
+        var request = new TradeResourceRequest { FromResource = tradeFromResource, Amount = tradeAmount };
+        var response = await Http.PostAsJsonAsync("api/resources/trade", request);
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            tradeError = await response.Content.ReadAsStringAsync();
         }
     }
 

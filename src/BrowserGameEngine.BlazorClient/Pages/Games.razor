@@ -1,0 +1,73 @@
+@page "/games"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h1>Game Lobby</h1>
+
+@if (!string.IsNullOrEmpty(lastError)) {
+	<div class="alert alert-danger">@lastError</div>
+}
+
+@if (games == null) {
+	<p><em>Loading...</em></p>
+} else if (games.Count == 0) {
+	<p>No games available yet.</p>
+} else {
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th>Game</th>
+				<th>Status</th>
+				<th>Players</th>
+				<th>Start</th>
+				<th>End</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var game in games) {
+				<tr>
+					<td><strong>@game.Name</strong></td>
+					<td>
+						<span class="badge @GetStatusBadge(game.Status)">@game.Status</span>
+					</td>
+					<td>@game.PlayerCount</td>
+					<td>@(game.StartTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
+					<td>@(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
+					<td>
+						@if (game.Status == "Active") {
+							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play</a>
+						} else if (game.Status == "Upcoming") {
+							<span class="text-muted">Upcoming</span>
+						} else {
+							<a class="btn btn-sm btn-secondary" href="games/@game.GameId/results">Results</a>
+						}
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	private List<GameSummaryViewModel>? games;
+	private string? lastError;
+
+	protected override async Task OnInitializedAsync() {
+		try {
+			var result = await Http.GetFromJsonAsync<GameListViewModel>("api/games");
+			games = result?.Games ?? new List<GameSummaryViewModel>();
+		} catch (Exception ex) {
+			lastError = ex.Message;
+			games = new List<GameSummaryViewModel>();
+		}
+	}
+
+	private static string GetStatusBadge(string status) => status switch {
+		"Active" => "bg-success",
+		"Upcoming" => "bg-warning text-dark",
+		"Finished" => "bg-secondary",
+		_ => "bg-light text-dark"
+	};
+}
