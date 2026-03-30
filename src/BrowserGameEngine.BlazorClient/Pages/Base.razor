@@ -2,6 +2,7 @@
 @page "/games/{GameId}/base"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Basis</h1>
 
@@ -103,9 +104,20 @@
     private int tradeAmount = 1;
     private string? tradeError;
     private _BuildQueue? buildQueue;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
         await Update();
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(Update);
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task BuildAsset(AssetViewModel asset) {
@@ -156,6 +168,11 @@
     private async Task Update() {
         model = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
         resources = await Http.GetFromJsonAsync<PlayerResourcesViewModel>("api/resources");
+    }
+
+    public void Dispose() {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 
 }

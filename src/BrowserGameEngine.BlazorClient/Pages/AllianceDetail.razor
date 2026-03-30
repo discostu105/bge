@@ -1,6 +1,7 @@
 @page "/alliances/{AllianceId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Alliance: @(detail?.Name ?? "...")</h1>
 
@@ -77,9 +78,20 @@
     private string newMessage = "";
     private string newPassword = "";
     private string? lastError;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
         await Update();
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(Update);
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task Update() {
@@ -122,5 +134,10 @@
         var r = await Http.PatchAsJsonAsync($"api/alliances/{AllianceId}/password", new SetAlliancePasswordRequest { NewPassword = newPassword });
         if (r.IsSuccessStatusCode) { newPassword = ""; await Update(); }
         else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    public void Dispose() {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }
