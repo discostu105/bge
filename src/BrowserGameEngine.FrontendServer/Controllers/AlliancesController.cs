@@ -16,17 +16,23 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly AllianceRepository allianceRepository;
 		private readonly AllianceRepositoryWrite allianceRepositoryWrite;
+		private readonly AllianceChatRepository allianceChatRepository;
+		private readonly AllianceChatRepositoryWrite allianceChatRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
 
 		public AlliancesController(
 			CurrentUserContext currentUserContext,
 			AllianceRepository allianceRepository,
 			AllianceRepositoryWrite allianceRepositoryWrite,
+			AllianceChatRepository allianceChatRepository,
+			AllianceChatRepositoryWrite allianceChatRepositoryWrite,
 			PlayerRepository playerRepository
 		) {
 			this.currentUserContext = currentUserContext;
 			this.allianceRepository = allianceRepository;
 			this.allianceRepositoryWrite = allianceRepositoryWrite;
+			this.allianceChatRepository = allianceChatRepository;
+			this.allianceChatRepositoryWrite = allianceChatRepositoryWrite;
 			this.playerRepository = playerRepository;
 		}
 
@@ -205,6 +211,42 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return StatusCode(403, e.Message);
 			} catch (NotAllianceMemberException e) {
 				return BadRequest(e.Message);
+			}
+		}
+
+		[HttpGet("{id}/posts")]
+		public ActionResult<IEnumerable<AllianceChatPostViewModel>> GetPosts(string id) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var allianceId = AllianceIdFactory.Create(id);
+			if (!allianceRepository.IsMember(currentUserContext.PlayerId, allianceId)) {
+				return StatusCode(403, "You are not a member of this alliance.");
+			}
+			var posts = allianceChatRepository.GetPosts(allianceId);
+			return Ok(posts.Select(p => {
+				string authorName;
+				try { authorName = playerRepository.Get(p.AuthorPlayerId).Name; }
+				catch { authorName = p.AuthorPlayerId.Id; }
+				return new AllianceChatPostViewModel {
+					PostId = p.PostId.ToString(),
+					AuthorPlayerId = p.AuthorPlayerId.Id,
+					AuthorName = authorName,
+					Body = p.Body,
+					CreatedAt = p.CreatedAt
+				};
+			}));
+		}
+
+		[HttpPost("{id}/posts")]
+		public ActionResult<string> PostChat(string id, [FromBody] PostAllianceChatRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				var postId = allianceChatRepositoryWrite.Post(
+					new PostAllianceChatCommand(currentUserContext.PlayerId, AllianceIdFactory.Create(id), request.Body));
+				return Ok(postId.ToString());
+			} catch (AllianceNotFoundException) {
+				return NotFound();
+			} catch (NotAllianceMemberException e) {
+				return StatusCode(403, e.Message);
 			}
 		}
 	}
