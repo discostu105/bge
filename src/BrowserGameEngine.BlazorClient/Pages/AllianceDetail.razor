@@ -78,19 +78,20 @@
     private string newMessage = "";
     private string newPassword = "";
     private string? lastError;
-    private System.Threading.Timer? _refreshTimer;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
         await Update();
-        _refreshTimer = new System.Threading.Timer(
-            async _ => {
-                await Update();
-                await InvokeAsync(StateHasChanged);
-            },
-            null,
-            TimeSpan.FromSeconds(10),
-            TimeSpan.FromSeconds(10)
-        );
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(Update);
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task Update() {
@@ -136,6 +137,7 @@
     }
 
     public void Dispose() {
-        _refreshTimer?.Dispose();
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

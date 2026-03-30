@@ -1,0 +1,32 @@
+@using BrowserGameEngine.BlazorClient.Code
+@inject AlertService AlertService
+@implements IDisposable
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+	@foreach (var alert in AlertService.Alerts.TakeLast(5).Reverse().ToList()) {
+		<div class="toast show align-items-center @GetToastClass(alert.Type) mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="d-flex">
+				<div class="toast-body">@alert.Message</div>
+				<button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="() => AlertService.Dismiss(alert.Id)" aria-label="Close"></button>
+			</div>
+		</div>
+	}
+</div>
+
+@code {
+	protected override void OnInitialized() {
+		AlertService.AlertsChanged += OnAlertsChanged;
+	}
+
+	private void OnAlertsChanged() => InvokeAsync(StateHasChanged);
+
+	private static string GetToastClass(AlertType type) => type switch {
+		AlertType.Warning => "bg-warning text-dark",
+		AlertType.Danger => "bg-danger text-white",
+		_ => "bg-primary text-white"
+	};
+
+	public void Dispose() {
+		AlertService.AlertsChanged -= OnAlertsChanged;
+	}
+}

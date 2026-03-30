@@ -38,7 +38,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 
 					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
-					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary())
+					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
+					new GameTickModuleDef("gamefinalization:1", new Dictionary<string, string> { }.ToFrozenDictionary())
 				},
 
 				Assets = new List<AssetDef> {
