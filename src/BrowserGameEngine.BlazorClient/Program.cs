@@ -18,6 +18,7 @@ builder.Services.AddHttpClient("ServerAPI", client => {
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
 builder.Services.AddSingleton<BrowserGameEngine.BlazorClient.Code.RefreshService>();
+builder.Services.AddSingleton<BrowserGameEngine.BlazorClient.Code.AlertService>();
 builder.Services.AddScoped<ICurrentGameService, CurrentGameService>();
 
 await builder.Build().RunAsync();
