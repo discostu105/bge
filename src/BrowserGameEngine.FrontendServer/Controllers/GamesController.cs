@@ -107,7 +107,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 		[HttpPost("{gameId}/join")]
 		public ActionResult Join(string gameId, [FromBody] JoinGameRequest request) {
-			if (currentUserContext.UserId == null) return Unauthorized();
+			if (!currentUserContext.IsValid) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(request.PlayerName)) return BadRequest("Player name is required");
 
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
@@ -120,11 +120,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			// Check if user already has a player in this game (by UserId)
 			if (instance.HasUserPlayer(currentUserContext.UserId)) return Conflict("You have already joined this game.");
 
-			if (!gameDef.PlayerTypes.Any(pt => pt.Id.Id == request.Race)) return BadRequest("Unknown race");
-
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId, request.Race);
+			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId);
 			playerRepoWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, request.PlayerName));
 
 			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName}", playerId.Id, gameId, request.PlayerName);
