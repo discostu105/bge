@@ -27,14 +27,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return playersByGame.TryGetValue(gameId, out var players) && players.Contains(playerId);
 		}
 
-		public void AddPlayer(string gameId, string playerId) {
+		public bool AddPlayer(string gameId, string playerId) {
 			var players = playersByGame.GetOrAdd(gameId, _ => new HashSet<string>());
 			lock (players) {
-				players.Add(playerId);
+				if (!players.Add(playerId)) {
+					return false;
+				}
+				if (games.TryGetValue(gameId, out var game)) {
+					game.PlayerCount = players.Count;
+				}
 			}
-			if (games.TryGetValue(gameId, out var game)) {
-				game.PlayerCount = playersByGame.TryGetValue(gameId, out var p) ? p.Count : 0;
-			}
+			return true;
 		}
 
 		private void SeedDefaultGames() {
@@ -45,7 +48,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				Status = GameStatus.Upcoming,
 				PlayerCount = 0,
 				MaxPlayers = 50,
-				StartTime = now.AddDays(2)
+				StartTime = now.AddDays(2),
+				EndTime = now.AddDays(16)
 			};
 			var active1 = new GameInfo {
 				GameId = "game-beta",
@@ -53,7 +57,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				Status = GameStatus.Active,
 				PlayerCount = 12,
 				MaxPlayers = 50,
-				StartTime = now.AddDays(-5)
+				StartTime = now.AddDays(-5),
+				EndTime = now.AddDays(9)
 			};
 			var finished1 = new GameInfo {
 				GameId = "game-s1",
@@ -61,7 +66,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				Status = GameStatus.Finished,
 				PlayerCount = 38,
 				MaxPlayers = 50,
-				StartTime = now.AddDays(-30)
+				StartTime = now.AddDays(-30),
+				EndTime = now.AddDays(-16)
 			};
 			games[upcoming1.GameId] = upcoming1;
 			games[active1.GameId] = active1;

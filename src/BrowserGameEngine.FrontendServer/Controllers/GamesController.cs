@@ -3,7 +3,6 @@ using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Linq;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
@@ -23,17 +22,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public ActionResult<GameListViewModel> GetAll() {
-			var games = gameRepository.GetAll().Select(g => new GameSummaryViewModel {
-				GameId = g.GameId,
-				Name = g.Name,
-				Status = g.Status.ToString().ToLowerInvariant(),
-				PlayerCount = g.PlayerCount,
-				MaxPlayers = g.MaxPlayers,
-				StartTime = g.StartTime,
-				CanJoin = g.Status == GameStatus.Upcoming
-			}).ToList();
-			return Ok(new GameListViewModel { Games = games });
+			var games = gameRepository.GetAll().Select(g => new GameSummaryViewModel(
+				g.GameId,
+				g.Name,
+				g.GameDefType,
+				g.Status.ToString().ToLowerInvariant(),
+				g.PlayerCount,
+				g.MaxPlayers,
+				g.StartTime,
+				g.EndTime,
+				g.Status == GameStatus.Upcoming
+			)).ToList();
+			return Ok(new GameListViewModel(games));
 		}
 
 		[HttpPost("{gameId}/join")]
@@ -42,7 +44,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var game = gameRepository.Get(gameId);
 			if (game == null) return NotFound();
 			if (game.Status != GameStatus.Upcoming) return BadRequest("This game is not open for joining.");
-			gameRepository.AddPlayer(gameId, currentUserContext.PlayerId!.Id);
+			if (!gameRepository.AddPlayer(gameId, currentUserContext.PlayerId!.Id)) {
+				return Conflict("You have already joined this game.");
+			}
 			return Ok();
 		}
 	}
