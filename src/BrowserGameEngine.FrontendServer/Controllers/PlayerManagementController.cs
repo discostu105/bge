@@ -140,16 +140,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<PlayerAchievementsViewModel> GetMyAchievements() {
 			if (currentUserContext.UserId == null) return Unauthorized();
 
-			var gameMap = globalState.GetGames().ToDictionary(g => g.GameId.Id);
-			var achievements = globalState.GetAchievements()
-				.Where(a => a.UserId == currentUserContext.UserId)
-				.OrderByDescending(a => a.FinishedAt)
-				.Select(a => {
-					gameMap.TryGetValue(a.GameId.Id, out var rec);
-					return AchievementMapper.ToViewModel(a, rec?.Name ?? a.GameId.Id);
-				})
-				.ToList();
-
+			var achievements = AchievementMapper.GetForUser(globalState, currentUserContext.UserId);
 			return Ok(new PlayerAchievementsViewModel(achievements));
 		}
 	}

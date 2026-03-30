@@ -22,15 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[AllowAnonymous]
 		[HttpGet("{userId}/achievements")]
 		public ActionResult<PlayerAchievementsViewModel> GetAchievements(string userId) {
-			var gameMap = globalState.GetGames().ToDictionary(g => g.GameId.Id);
-			var achievements = globalState.GetAchievements()
-				.Where(a => a.UserId == userId)
-				.OrderByDescending(a => a.FinishedAt)
-				.Select(a => {
-					gameMap.TryGetValue(a.GameId.Id, out var rec);
-					return AchievementMapper.ToViewModel(a, rec?.Name ?? a.GameId.Id);
-				})
-				.ToList();
+			var achievements = AchievementMapper.GetForUser(globalState, userId);
 			return Ok(new PlayerAchievementsViewModel(achievements));
 		}
 
