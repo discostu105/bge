@@ -6,7 +6,6 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
@@ -15,7 +14,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 	[Authorize]
 	[Route("api/[controller]/{action?}")]
 	public class SpyController : ControllerBase {
-		private readonly ILogger<SpyController> logger;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly SpyRepositoryWrite spyRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
@@ -23,14 +21,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly GameDef gameDef;
 
 		public SpyController(
-			ILogger<SpyController> logger,
 			CurrentUserContext currentUserContext,
 			SpyRepositoryWrite spyRepositoryWrite,
 			PlayerRepository playerRepository,
 			UserRepository userRepository,
 			GameDef gameDef
 		) {
-			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.spyRepositoryWrite = spyRepositoryWrite;
 			this.playerRepository = playerRepository;
@@ -85,6 +81,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Response.Headers.Append("Retry-After", ((int)(e.CooldownExpiresAt - DateTime.UtcNow).TotalSeconds).ToString());
 				return StatusCode(StatusCodes.Status429TooManyRequests, e.Message);
 			} catch (CannotAffordException e) {
+				return BadRequest(e.Message);
+			} catch (ArgumentException e) {
 				return BadRequest(e.Message);
 			}
 		}

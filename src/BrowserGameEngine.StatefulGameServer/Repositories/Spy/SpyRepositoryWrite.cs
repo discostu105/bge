@@ -18,7 +18,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly Cost spyCost;
 
 		private const decimal SpyCostAmount = 50m;
-		private static readonly TimeSpan CooldownDuration = TimeSpan.FromMinutes(30);
 
 		public SpyRepositoryWrite(
 			IWorldStateAccessor worldStateAccessor,
@@ -44,6 +43,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public SpyResult ExecuteSpy(SpyCommand command) {
+			if (command.SpyingPlayerId == command.TargetPlayerId)
+				throw new ArgumentException("Cannot spy on yourself.");
 			lock (_lock) {
 				world.ValidatePlayer(command.SpyingPlayerId);
 				world.ValidatePlayer(command.TargetPlayerId);
@@ -82,7 +83,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					ApproximateResources: approxResources,
 					UnitEstimates: unitGroups,
 					ReportTime: now,
-					CooldownExpiresAt: now + CooldownDuration
+					CooldownExpiresAt: now + SpyRepository.CooldownDuration
 				);
 			}
 		}

@@ -8,7 +8,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly TimeProvider timeProvider;
 
-		private static readonly TimeSpan CooldownDuration = TimeSpan.FromMinutes(30);
+		internal static readonly TimeSpan CooldownDuration = TimeSpan.FromMinutes(30);
 
 		public SpyRepository(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider) {
 			this.worldStateAccessor = worldStateAccessor;
