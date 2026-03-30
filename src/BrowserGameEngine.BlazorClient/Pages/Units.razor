@@ -1,4 +1,5 @@
 ﻿@page "/units"
+@page "/games/{GameId}/units"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -63,6 +64,9 @@
 }
 
 @code {
+    [Parameter]
+    public string? GameId { get; set; }
+
     private UnitsViewModel? model;
     private string? lastError;
     private Dictionary<Guid, bool> showSplit = new();

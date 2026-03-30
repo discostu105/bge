@@ -1,4 +1,5 @@
 ﻿@page "/enemybase/{EnemeyPlayerId}"
+@page "/games/{GameId}/enemybase/{EnemeyPlayerId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
@@ -76,6 +77,9 @@
     private BattleResultViewModel? battleResult;
 
     private string? lastError;
+
+    [Parameter]
+    public string? GameId { get; set; }
 
     [Parameter]
     public required string EnemeyPlayerId { get; set; }
