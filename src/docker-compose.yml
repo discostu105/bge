@@ -3,11 +3,14 @@ services:
     build:
       context: .
       dockerfile: BrowserGameEngine.FrontendServer/Dockerfile
+      args:
+        COMMIT_SHA: ${APP_VERSION:-dev}
     ports:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Bge__DevAuth=true
+      - APP_VERSION=${APP_VERSION:-dev}
       - GitHub__ClientId=${GITHUB_CLIENT_ID}
       - GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
       # To use S3 storage instead of local file storage:

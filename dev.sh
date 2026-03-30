@@ -42,6 +42,15 @@ fi
 
 cd "$SRC_DIR"
 
+GIT_COMMIT_SHA="$(git rev-parse --short=12 HEAD)"
+if [ -n "$(git status --porcelain --untracked-files=normal)" ]; then
+    APP_VERSION="${GIT_COMMIT_SHA}-dirty"
+else
+    APP_VERSION="$GIT_COMMIT_SHA"
+fi
+
+export APP_VERSION
+
 # Determine which mode to use
 if [ "$MODE" = "auto" ]; then
     if [ -n "$GITHUB_CLIENT_ID" ] && [ -n "$GITHUB_CLIENT_SECRET" ]; then
@@ -69,7 +78,12 @@ if [ "$MODE" = "devauth" ]; then
     # DevAuth requires placeholder GitHub creds to pass startup validation
     export GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-dev-placeholder}"
     export GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-dev-placeholder}"
-    $DOCKER_COMPOSE_CMD up
+
+    echo "🔨 Building BGE image for version $APP_VERSION..."
+    $DOCKER_COMPOSE_CMD build bge
+
+    echo "🚀 Starting recreated BGE container for version $APP_VERSION..."
+    $DOCKER_COMPOSE_CMD up --force-recreate bge
 else
     # GitHub OAuth mode
     if [ -z "$GITHUB_CLIENT_ID" ]; then
@@ -81,5 +95,10 @@ else
         exit 1
     fi
     echo "🚀 Starting BGE dev server with GitHub OAuth..."
-    $DOCKER_COMPOSE_CMD up
+
+    echo "🔨 Building BGE image for version $APP_VERSION..."
+    $DOCKER_COMPOSE_CMD build bge
+
+    echo "🚀 Starting recreated BGE container for version $APP_VERSION..."
+    $DOCKER_COMPOSE_CMD up --force-recreate bge
 fi
