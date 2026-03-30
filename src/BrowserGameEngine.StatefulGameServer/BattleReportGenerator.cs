@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,20 +10,27 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly PlayerRepository playerRepository;
 		private readonly MessageRepositoryWrite messageRepositoryWrite;
 		private readonly GameDef gameDef;
+		private readonly IPlayerNotificationService playerNotificationService;
 
 		public BattleReportGenerator(
 			PlayerRepository playerRepository,
 			MessageRepositoryWrite messageRepositoryWrite,
-			GameDef gameDef
+			GameDef gameDef,
+			IPlayerNotificationService playerNotificationService
 		) {
 			this.playerRepository = playerRepository;
 			this.messageRepositoryWrite = messageRepositoryWrite;
 			this.gameDef = gameDef;
+			this.playerNotificationService = playerNotificationService;
 		}
 
 		public void GenerateReports(BattleResult battleResult) {
 			var attacker = playerRepository.Get(battleResult.Attacker);
 			var defender = playerRepository.Get(battleResult.Defender);
+
+			if (defender.UserId != null) {
+				playerNotificationService.Push(defender.UserId, $"Your base was attacked by {attacker.Name}!", NotificationKind.Warning);
+			}
 			var attackerRace = GetRaceName(attacker.PlayerType);
 			var defenderRace = GetRaceName(defender.PlayerType);
 

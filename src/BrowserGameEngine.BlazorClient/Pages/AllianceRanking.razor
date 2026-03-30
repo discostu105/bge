@@ -2,6 +2,7 @@
 @page "/games/{GameId}/allianceranking"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
+@implements IDisposable
 
 <h1>Alliance Ranking</h1>
 
@@ -42,8 +43,28 @@
     public string? GameId { get; set; }
 
     private AllianceRankingViewModel[]? model;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
+        await LoadData();
+        _cts = new CancellationTokenSource();
+        _ = RunRefreshLoop(_cts.Token);
+    }
+
+    private async Task RunRefreshLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+            await InvokeAsync(LoadData);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadData() {
         model = await Http.GetFromJsonAsync<AllianceRankingViewModel[]>("api/allianceranking");
+    }
+
+    public void Dispose() {
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

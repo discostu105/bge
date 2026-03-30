@@ -34,7 +34,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 		}
 
+		/// <summary>Returns the current player's resources: minerals, gas, land, and colonization cost.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(PlayerResourcesViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult<PlayerResourcesViewModel>> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var playerId = currentUserContext.PlayerId!;
@@ -46,7 +49,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Trades one resource type for another at the current exchange rate.</summary>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult Trade([FromBody] TradeResourceRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			if (request.FromResource == null || request.Amount <= 0)

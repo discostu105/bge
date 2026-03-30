@@ -1,10 +1,10 @@
-﻿@page "/selectenemy/{UnitId}"
+@page "/selectenemy/{UnitId}"
 @page "/games/{GameId}/selectenemy/{UnitId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
 
-<h1>Gegner auswählen</h1>
+<h1>Select Enemy</h1>
 
 @if (!string.IsNullOrEmpty(lastError)) {
     <span class="error">@lastError</span>
@@ -22,10 +22,10 @@
                 <option value="@x.PlayerId">@x.PlayerName (@x.Score)</option>
                 }
         </InputSelect>
-        <button type="submit">Truppen senden</button>
+        <button type="submit">Send Troops</button>
     </EditForm>
 
-    <NavLink class="nav-link" href="units">Angriff abbrechen</NavLink>
+    <NavLink class="nav-link" href="units">Cancel Attack</NavLink>
 }
 
 @code {

@@ -15,7 +15,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.allianceScoreRepository = allianceScoreRepository;
 		}
 
+		/// <summary>Returns the current game's alliance ranking ordered by score.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<AllianceRankingViewModel>), StatusCodes.Status200OK)]
 		public IEnumerable<AllianceRankingViewModel> Get() {
 			return allianceScoreRepository.GetRanked().Select(s => new AllianceRankingViewModel(
 				s.AllianceId, s.Name, s.MemberCount, s.TotalLand, s.AvgLand, s.Score));

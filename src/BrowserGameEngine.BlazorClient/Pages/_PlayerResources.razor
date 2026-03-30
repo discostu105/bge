@@ -4,14 +4,14 @@
 @implements IDisposable
 
 @if (resources != null) {
-    <div class="d-flex flex-wrap gap-3 align-items-center small text-muted">
-        <span><strong>@resources.PrimaryResource.Cost.Single().Key</strong>: @resources.PrimaryResource.Cost.Single().Value</span>
+    <div class="d-flex flex-wrap gap-3 align-items-center small">
+        <span><strong>@resources.PrimaryResource.Cost.Single().Key</strong>: <span class="text-resource">@resources.PrimaryResource.Cost.Single().Value</span></span>
         @foreach (var res in resources.SecondaryResources.Cost) {
-            <span><strong>@res.Key</strong>: @res.Value</span>
+            <span><strong>@res.Key</strong>: <span class="text-resource">@res.Value</span></span>
         }
         @if (tickInfo != null) {
             <span><strong>Server:</strong> @tickInfo.ServerTime.ToString("HH:mm:ss") UTC</span>
-            <span><strong>Next tick:</strong> @FormatCountdown(tickInfo.NextTickAt)</span>
+            <span><strong>Next tick:</strong> <span class="@CountdownClass(tickInfo.NextTickAt)">@FormatCountdown(tickInfo.NextTickAt)</span></span>
             @if (tickInfo.UnreadMessageCount > 0) {
                 <span class="badge bg-danger">@tickInfo.UnreadMessageCount unread</span>
             }
@@ -22,14 +22,20 @@
 @code {
     private PlayerResourcesViewModel? resources;
     private TickInfoViewModel? tickInfo;
-    private System.Threading.Timer? countdownTimer;
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync() {
         RefreshService.RefreshRequested += OnRefresh;
         await Update();
-        countdownTimer = new System.Threading.Timer(async _ => {
+        _cts = new CancellationTokenSource();
+        _ = RunCountdownLoop(_cts.Token);
+    }
+
+    private async Task RunCountdownLoop(CancellationToken ct) {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
             await InvokeAsync(StateHasChanged);
-        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        }
     }
 
     private async void OnRefresh() {
@@ -48,8 +54,14 @@
         return $"{(int)remaining.TotalSeconds}s";
     }
 
+    private string CountdownClass(DateTime nextTickAt) {
+        var remaining = nextTickAt - DateTime.UtcNow;
+        return remaining.TotalSeconds < 60 ? "countdown-urgent" : "";
+    }
+
     public void Dispose() {
         RefreshService.RefreshRequested -= OnRefresh;
-        countdownTimer?.Dispose();
+        _cts?.Cancel();
+        _cts?.Dispose();
     }
 }

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -27,6 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj" />
+    <ProjectReference Include="..\BrowserGameEngine.FrontendServer\BrowserGameEngine.FrontendServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,16 +6,16 @@
 }
 @if (model != null) {
 	<div>
-		<h3>Arbeiter</h3>
-		<div>Gesamt: @model.TotalWorkers</div>
-		<div>Untätig: @(model.TotalWorkers - mineralWorkers - gasWorkers)</div>
+		<h3>Workers</h3>
+		<div>Total: @model.TotalWorkers</div>
+		<div>Idle: @(model.TotalWorkers - mineralWorkers - gasWorkers)</div>
 		<div>
-			<label>Mineralien: <InputNumber @bind-Value="mineralWorkers" /></label>
+			<label>Minerals: <InputNumber @bind-Value="mineralWorkers" /></label>
 		</div>
 		<div>
 			<label>Gas: <InputNumber @bind-Value="gasWorkers" /></label>
 		</div>
-		<button @onclick="Assign">Zuweisen</button>
+		<button @onclick="Assign">Assign</button>
 	</div>
 }
 

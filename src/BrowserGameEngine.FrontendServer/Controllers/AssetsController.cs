@@ -46,7 +46,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
+		/// <summary>Returns all buildings (assets) available to the current player, including build status and prerequisites.</summary>
 		[HttpGet]
+		[ProducesResponseType(typeof(AssetsViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult<AssetsViewModel>> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			return new AssetsViewModel {
@@ -54,7 +57,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
+		/// <summary>Initiates construction of a building. The build is added to the queue and completes after the required ticks.</summary>
+		/// <param name="assetDefId">Building definition ID (e.g. "barracks").</param>
 		[HttpPost]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Build([FromQuery] string assetDefId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {

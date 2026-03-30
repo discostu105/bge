@@ -29,7 +29,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.timeProvider = timeProvider;
 		}
 
+		/// <summary>Returns server time, the next scheduled tick timestamp, and the current player's unread message count.</summary>
 		[HttpGet("tick-info")]
+		[ProducesResponseType(typeof(TickInfoViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<TickInfoViewModel> GetTickInfo() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			int unreadCount = messageRepository.GetUnreadCount(currentUserContext.PlayerId);
