@@ -65,7 +65,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: record.EndTime,
 				PlayerCount: playerCount,
 				WinnerId: record.WinnerId?.Id,
-				ActualEndTime: record.ActualEndTime
+				ActualEndTime: record.ActualEndTime,
+				DiscordWebhookUrl: record.DiscordWebhookUrl
 			));
 		}
 
@@ -87,7 +88,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Status: GameStatus.Upcoming,
 				StartTime: request.StartTime.ToUniversalTime(),
 				EndTime: request.EndTime.ToUniversalTime(),
-				TickDuration: tickDuration
+				TickDuration: tickDuration,
+				DiscordWebhookUrl: request.DiscordWebhookUrl
 			);
 
 			// Create a fresh world state for the new game
