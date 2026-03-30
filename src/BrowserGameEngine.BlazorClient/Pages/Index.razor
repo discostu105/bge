@@ -1,14 +1,92 @@
 @page "/"
+@using BrowserGameEngine.Shared
 @inject HttpClient Http
 @inject NavigationManager Nav
 
-<h3>Hello</h3>
+<h2>Games</h2>
+
+@if (games == null) {
+	<p>Loading...</p>
+} else {
+	var upcoming = games.Games.Where(g => g.Status == "Upcoming").ToList();
+	var active = games.Games.Where(g => g.Status == "Active").ToList();
+	var finished = games.Games.Where(g => g.Status == "Finished").ToList();
+
+	@if (upcoming.Any()) {
+		<h3>Upcoming</h3>
+		<table class="table">
+			<thead><tr><th>Name</th><th>Players</th><th>Starts</th><th></th></tr></thead>
+			<tbody>
+				@foreach (var g in upcoming) {
+					<tr>
+						<td>@g.Name</td>
+						<td>@g.PlayerCount</td>
+						<td>@(g.StartTime.HasValue ? g.StartTime.Value.ToLocalTime().ToString("g") : "-")</td>
+						<td>
+							@if (g.CanJoin) {
+								<a href="/signin" class="btn btn-sm btn-primary">Join</a>
+							}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+	@if (active.Any()) {
+		<h3>Active</h3>
+		<table class="table">
+			<thead><tr><th>Name</th><th>Players</th><th>Ends</th><th></th></tr></thead>
+			<tbody>
+				@foreach (var g in active) {
+					<tr>
+						<td>@g.Name</td>
+						<td>@g.PlayerCount</td>
+						<td>@(g.EndTime.HasValue ? g.EndTime.Value.ToLocalTime().ToString("g") : "-")</td>
+						<td>
+							@if (myRegistrations != null && myRegistrations.GameIds.Contains(g.GameId)) {
+								<a href="/base" class="btn btn-sm btn-success">Play Now</a>
+							} else {
+								<span class="text-muted">Game in progress</span>
+							}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+	@if (finished.Any()) {
+		<h3>Finished</h3>
+		<table class="table">
+			<thead><tr><th>Name</th><th>Players</th><th></th></tr></thead>
+			<tbody>
+				@foreach (var g in finished) {
+					<tr>
+						<td>@g.Name</td>
+						<td>@g.PlayerCount</td>
+						<td><a href="/games/@g.GameId/results">View Results</a></td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+	@if (!upcoming.Any() && !active.Any() && !finished.Any()) {
+		<p>No games available yet.</p>
+	}
+}
 
 @code {
-    protected override async Task OnInitializedAsync() {
-        var exists = await Http.GetFromJsonAsync<bool>("api/playerprofile/exists");
-        if (!exists) {
-            Nav.NavigateTo("/createplayer");
-        }
-    }
+	private GameListViewModel? games;
+	private MyRegistrationsViewModel? myRegistrations;
+
+	protected override async Task OnInitializedAsync() {
+		games = await Http.GetFromJsonAsync<GameListViewModel>("api/games");
+		try {
+			myRegistrations = await Http.GetFromJsonAsync<MyRegistrationsViewModel>("api/games/my-registrations");
+		} catch {
+			// Anonymous visitors get 401 — swallow and continue
+		}
+	}
 }

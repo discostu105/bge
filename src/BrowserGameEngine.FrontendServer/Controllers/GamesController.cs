@@ -49,6 +49,29 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok(new GameListViewModel(summaries));
 		}
 
+		[HttpGet("my-registrations")]
+		public ActionResult<MyRegistrationsViewModel> GetMyRegistrations() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+
+			var gameIds = new HashSet<string>();
+
+			// Active/upcoming games: check live world state
+			foreach (var instance in gameRegistry.GetAllInstances()) {
+				if (instance.HasUserPlayer(currentUserContext.UserId)) {
+					gameIds.Add(instance.Record.GameId.Id);
+				}
+			}
+
+			// Finished games: check achievements
+			foreach (var achievement in globalState.GetAchievements()) {
+				if (achievement.UserId == currentUserContext.UserId) {
+					gameIds.Add(achievement.GameId.Id);
+				}
+			}
+
+			return Ok(new MyRegistrationsViewModel(gameIds.ToList()));
+		}
+
 		[AllowAnonymous]
 		[HttpGet("{gameId}")]
 		public ActionResult<GameDetailViewModel> GetById(string gameId) {
