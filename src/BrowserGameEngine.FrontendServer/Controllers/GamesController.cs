@@ -22,8 +22,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		[AllowAnonymous]
 		public ActionResult<GameListViewModel> GetAll() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			var games = gameRepository.GetAll().Select(g => new GameSummaryViewModel(
 				g.GameId,
 				g.Name,
