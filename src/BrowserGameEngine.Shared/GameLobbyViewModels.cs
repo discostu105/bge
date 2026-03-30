@@ -19,7 +19,7 @@ namespace BrowserGameEngine.Shared {
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);
 
-	public record JoinGameRequest(string GameId);
+	public record JoinGameRequest(string PlayerName);
 
 	public record JoinGameViewModel(string PlayerId);
 }

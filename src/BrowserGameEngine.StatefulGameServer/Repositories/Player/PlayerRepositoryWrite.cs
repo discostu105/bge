@@ -87,14 +87,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			world.Players[playerId].LastOnline = time;
 		}
 
-		public void CreatePlayer(PlayerId playerId, string? userId = null) {
+		public void CreatePlayer(PlayerId playerId, string? userId = null, string playerType = "terran") {
 			lock (_lock) {
 				if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
 				world.Players[playerId] = new Player() {
 					Created = timeProvider.GetLocalNow().DateTime,
 					PlayerId = playerId,
 					Name = playerId.Id,
-					PlayerType = Id.PlayerType("terran"),
+					PlayerType = Id.PlayerType(playerType),
 					UserId = userId,
 					State = new PlayerState {
 						LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
