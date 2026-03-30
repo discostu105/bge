@@ -91,6 +91,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				gameRegistry.GlobalState,
 				persistenceService,
 				globalPersistenceService,
+				new GameRegistryNs.NullGameNotificationService(),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
