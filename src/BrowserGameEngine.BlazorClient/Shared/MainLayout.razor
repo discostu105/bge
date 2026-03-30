@@ -26,6 +26,21 @@
             }
             <a href="games" class="ms-auto text-white-50" style="font-size:0.8rem;">&#8592; All Games</a>
         </div>
+
+        @if (game.Status == "Finished") {
+            <div class="alert alert-secondary mx-4 mt-2 mb-0 d-flex align-items-center justify-content-between" role="alert">
+                <span><strong>This game has ended.</strong></span>
+                <a href="games/@game.GameId/results" class="btn btn-sm btn-outline-secondary">View Results</a>
+            </div>
+        } else if (remaining > TimeSpan.Zero && remaining <= TimeSpan.FromHours(1)) {
+            <div class="alert alert-danger mx-4 mt-2 mb-0" role="alert">
+                &#9888; <strong>Game ending soon!</strong> This game ends in <strong>@FormatRemaining(remaining)</strong>. Make your final moves.
+            </div>
+        } else if (remaining > TimeSpan.Zero && remaining <= TimeSpan.FromHours(24)) {
+            <div class="alert alert-warning mx-4 mt-2 mb-0" role="alert">
+                <strong>Game ending in @FormatRemaining(remaining).</strong> Plan your final moves.
+            </div>
+        }
     }
 
     <div class="content px-4">
@@ -35,15 +50,31 @@
 
 @code {
     private System.Threading.CancellationTokenSource? pollCts;
+    private System.Threading.Timer? displayTimer;
 
     protected override void OnInitialized() {
         CurrentGameService.OnChanged += OnGameChanged;
         StartPolling();
+        UpdateDisplayTimer();
     }
 
     private void OnGameChanged() {
         StateHasChanged();
         RedirectIfFinished();
+        UpdateDisplayTimer();
+    }
+
+    private void UpdateDisplayTimer() {
+        displayTimer?.Dispose();
+        displayTimer = null;
+        var game = CurrentGameService.CurrentGame;
+        if (game == null || game.Status == "Finished") return;
+        var remaining = game.EndTime - DateTime.UtcNow;
+        if (remaining <= TimeSpan.Zero || remaining > TimeSpan.FromHours(24)) return;
+        var interval = remaining <= TimeSpan.FromHours(1)
+            ? TimeSpan.FromSeconds(1)
+            : TimeSpan.FromMinutes(1);
+        displayTimer = new System.Threading.Timer(_ => InvokeAsync(StateHasChanged), null, interval, interval);
     }
 
     private void StartPolling() {
@@ -77,6 +108,7 @@
         CurrentGameService.OnChanged -= OnGameChanged;
         pollCts?.Cancel();
         pollCts?.Dispose();
+        displayTimer?.Dispose();
     }
 
     private static string GetStatusBadge(string status) => status switch {
