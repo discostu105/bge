@@ -21,14 +21,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ILogger<ResourcesController> logger;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly ResourceRepository resourceRepository;
+		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 
 		public ResourcesController(ILogger<ResourcesController> logger
 				, CurrentUserContext currentUserContext
 				, ResourceRepository resourceRepository
+				, ResourceRepositoryWrite resourceRepositoryWrite
 			) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.resourceRepository = resourceRepository;
+			this.resourceRepositoryWrite = resourceRepositoryWrite;
 		}
 
 		[HttpGet]
@@ -41,6 +44,25 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				SecondaryResources = CostViewModel.Create(resourceRepository.GetSecondaryResources(playerId)),
 				ColonizationCostPerLand = ColonizeRepositoryWrite.GetCostPerLand(currentLand)
 			};
+		}
+
+		[HttpPost]
+		public ActionResult Trade([FromBody] TradeResourceRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			if (request.FromResource == null || request.Amount <= 0)
+				return BadRequest("Invalid trade request.");
+			try {
+				resourceRepositoryWrite.TradeResource(new TradeResourceCommand(
+					currentUserContext.PlayerId!,
+					Id.ResDef(request.FromResource),
+					request.Amount
+				));
+				return Ok();
+			} catch (CannotAffordException e) {
+				return BadRequest(e.Message);
+			} catch (InvalidOperationException e) {
+				return BadRequest(e.Message);
+			}
 		}
 	}
 }

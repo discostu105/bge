@@ -56,7 +56,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			PlayerRepository = new PlayerRepository(Accessor, ScoreRepository, AllianceRepository);
 			PlayerRepositoryWrite = new PlayerRepositoryWrite(Accessor, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(Accessor, GameDef);
-			ResourceRepositoryWrite = new ResourceRepositoryWrite(Accessor, ResourceRepository);
+			ResourceRepositoryWrite = new ResourceRepositoryWrite(Accessor, ResourceRepository, GameDef);
 			ActionQueueRepository = new ActionQueueRepository(Accessor);
 			AssetRepository = new AssetRepository(Accessor, PlayerRepository, ActionQueueRepository);
 			AssetRepositoryWrite = new AssetRepositoryWrite(LoggerFactory.CreateLogger<AssetRepositoryWrite>(), Accessor, AssetRepository, ResourceRepository, ResourceRepositoryWrite, ActionQueueRepository, GameDef);
