@@ -47,7 +47,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<UnitsViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			return new UnitsViewModel {
-				Units = unitRepository.GetAll(currentUserContext.PlayerId!).Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
+				Units = unitRepository.GetAll(currentUserContext.PlayerId!).Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef, playerRepository)).ToList()
 			};
 		}
 

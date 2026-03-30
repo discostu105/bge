@@ -38,7 +38,9 @@
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
                         <td>
                             @if (item.PositionPlayerId != null) {
-                                <NavLink class="nav-link" href="@($"enemybase/{Uri.EscapeDataString(item.PositionPlayerId)}")">@item.PositionPlayerId</NavLink>
+                                <NavLink class="nav-link" href="@($"enemybase/{Uri.EscapeDataString(item.PositionPlayerId)}")">
+                                    @(item.PositionPlayerName ?? item.PositionPlayerId)
+                                </NavLink>
                             }
                         </td>
                         <td>
