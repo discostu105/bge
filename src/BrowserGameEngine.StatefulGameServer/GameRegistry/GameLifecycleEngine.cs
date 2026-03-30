@@ -70,8 +70,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 						.Where(u => u.AutoJoinNextGame)
 						.ToList();
 					foreach (var user in usersToAutoJoin) {
-						var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString("N")[..12]);
-						if (!instance.HasPlayer(playerId)) {
+						bool alreadyJoined = instance.WorldState.Players.Values.Any(p => p.UserId == user.UserId);
+						if (!alreadyJoined) {
+							var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString("N")[..12]);
 							playerRepoWrite.CreatePlayer(playerId, user.UserId);
 							logger.LogInformation("Auto-joined user {UserId} as player {PlayerId} in game {GameId}",
 								user.UserId, playerId.Id, record.GameId.Id);
