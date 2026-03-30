@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class AllianceMember {
-		public PlayerId PlayerId { get; set; }
+		public required PlayerId PlayerId { get; set; }
 		public bool IsPending { get; set; }
 		public DateTime JoinedAt { get; set; }
 		public int VoteCount { get; set; }
@@ -20,10 +20,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	}
 
 	internal class Alliance {
-		public AllianceId AllianceId { get; init; }
-		public string Name { get; set; }
-		public string PasswordHash { get; set; }
-		public PlayerId LeaderId { get; set; }
+		public required AllianceId AllianceId { get; init; }
+		public required string Name { get; set; }
+		public required string PasswordHash { get; set; }
+		public required PlayerId LeaderId { get; set; }
 		public DateTime Created { get; init; }
 		public List<AllianceMember> Members { get; set; } = new List<AllianceMember>();
 		public string? Message { get; set; }

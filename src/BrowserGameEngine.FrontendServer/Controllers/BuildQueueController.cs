@@ -39,7 +39,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(typeof(BuildQueueViewModel), StatusCodes.Status200OK)]
 		public BuildQueueViewModel Get() {
 			if (!currentUserContext.IsValid) return new BuildQueueViewModel();
-			var entries = buildQueueRepository.GetQueue(currentUserContext.PlayerId);
+			var entries = buildQueueRepository.GetQueue(currentUserContext.PlayerId!);
 			return new BuildQueueViewModel {
 				Entries = entries.Select(x => ToViewModel(x)).ToList()
 			};
@@ -57,7 +57,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 			if (request.Count <= 0) return BadRequest("Count must be greater than 0.");
 			buildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(
-				currentUserContext.PlayerId,
+				currentUserContext.PlayerId!,
 				request.Type,
 				request.DefId,
 				request.Count
@@ -72,7 +72,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult> Remove([FromQuery] Guid entryId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			buildQueueRepositoryWrite.RemoveFromQueue(new RemoveFromQueueCommand(currentUserContext.PlayerId, entryId));
+			buildQueueRepositoryWrite.RemoveFromQueue(new RemoveFromQueueCommand(currentUserContext.PlayerId!, entryId));
 			return Ok();
 		}
 
@@ -83,7 +83,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public async Task<ActionResult> Reorder([FromBody] ReorderQueueRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			buildQueueRepositoryWrite.ReorderQueue(new ReorderQueueCommand(
-				currentUserContext.PlayerId,
+				currentUserContext.PlayerId!,
 				request.EntryId,
 				request.NewPriority
 			));

@@ -8,16 +8,16 @@ namespace BrowserGameEngine.Shared {
 
 	public record BuildQueueEntryViewModel {
 		public Guid Id { get; set; }
-		public string Type { get; set; } // "unit" or "asset"
-		public string DefId { get; set; }
-		public string Name { get; set; }
+		public required string Type { get; set; } // "unit" or "asset"
+		public required string DefId { get; set; }
+		public required string Name { get; set; }
 		public int Count { get; set; }
 		public int Priority { get; set; }
 	}
 
 	public record AddToQueueRequest {
-		public string Type { get; set; } // "unit" or "asset"
-		public string DefId { get; set; }
+		public required string Type { get; set; } // "unit" or "asset"
+		public required string DefId { get; set; }
 		public int Count { get; set; }
 	}
 

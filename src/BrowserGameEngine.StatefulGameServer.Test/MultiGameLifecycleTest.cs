@@ -123,7 +123,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.NotNull(registry.TryGetInstance(new GameId("game2")));
 
 			// No achievements for game 2 (it hasn't ended)
-			Assert.Empty(globalState.GetAchievements().Where(a => a.GameId.Id == "game2"));
+			Assert.DoesNotContain(globalState.GetAchievements(), a => a.GameId.Id == "game2");
 		}
 	}
 }

@@ -55,7 +55,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<MyAllianceStatusViewModel> MyStatus() {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var alliance = allianceRepository.GetByPlayerId(currentUserContext.PlayerId);
+			var alliance = allianceRepository.GetByPlayerId(currentUserContext.PlayerId!);
 			if (alliance == null) {
 				return Ok(new MyAllianceStatusViewModel { IsMember = false });
 			}
@@ -110,7 +110,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				var allianceId = allianceRepositoryWrite.CreateAlliance(
-					new CreateAllianceCommand(currentUserContext.PlayerId, request.AllianceName, request.Password));
+					new CreateAllianceCommand(currentUserContext.PlayerId!, request.AllianceName, request.Password));
 				return Ok(allianceId.ToString());
 			} catch (AllianceNameTakenException e) {
 				return Conflict(e.Message);
@@ -131,7 +131,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.JoinAlliance(
-					new JoinAllianceCommand(currentUserContext.PlayerId, AllianceIdFactory.Create(id), request.Password));
+					new JoinAllianceCommand(currentUserContext.PlayerId!, AllianceIdFactory.Create(id), request.Password));
 				return Ok();
 			} catch (AllianceNotFoundException) {
 				return NotFound();
@@ -147,7 +147,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.AcceptMember(
-					new AcceptMemberCommand(currentUserContext.PlayerId, PlayerIdFactory.Create(pid)));
+					new AcceptMemberCommand(currentUserContext.PlayerId!, PlayerIdFactory.Create(pid)));
 				return Ok();
 			} catch (NotAllianceLeaderException e) {
 				return StatusCode(403, e.Message);
@@ -161,7 +161,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.RejectMember(
-					new RejectMemberCommand(currentUserContext.PlayerId, PlayerIdFactory.Create(pid)));
+					new RejectMemberCommand(currentUserContext.PlayerId!, PlayerIdFactory.Create(pid)));
 				return Ok();
 			} catch (NotAllianceLeaderException e) {
 				return StatusCode(403, e.Message);
@@ -174,7 +174,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult Leave() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
-				allianceRepositoryWrite.LeaveAlliance(new LeaveAllianceCommand(currentUserContext.PlayerId));
+				allianceRepositoryWrite.LeaveAlliance(new LeaveAllianceCommand(currentUserContext.PlayerId!));
 				return Ok();
 			} catch (NotAllianceMemberException e) {
 				return BadRequest(e.Message);
@@ -186,7 +186,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.KickMember(
-					new KickMemberCommand(currentUserContext.PlayerId, PlayerIdFactory.Create(pid)));
+					new KickMemberCommand(currentUserContext.PlayerId!, PlayerIdFactory.Create(pid)));
 				return Ok();
 			} catch (NotAllianceLeaderException e) {
 				return StatusCode(403, e.Message);
@@ -200,7 +200,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.VoteLeader(
-					new VoteLeaderCommand(currentUserContext.PlayerId, PlayerIdFactory.Create(request.VoteePlayerId)));
+					new VoteLeaderCommand(currentUserContext.PlayerId!, PlayerIdFactory.Create(request.VoteePlayerId)));
 				return Ok();
 			} catch (NotAllianceMemberException e) {
 				return BadRequest(e.Message);
@@ -212,7 +212,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.SetAlliancePassword(
-					new SetAlliancePasswordCommand(currentUserContext.PlayerId, request.NewPassword));
+					new SetAlliancePasswordCommand(currentUserContext.PlayerId!, request.NewPassword));
 				return Ok();
 			} catch (NotAllianceLeaderException e) {
 				return StatusCode(403, e.Message);
@@ -226,7 +226,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				allianceRepositoryWrite.SetAllianceMessage(
-					new SetAllianceMessageCommand(currentUserContext.PlayerId, request.Message));
+					new SetAllianceMessageCommand(currentUserContext.PlayerId!, request.Message));
 				return Ok();
 			} catch (NotAllianceLeaderException e) {
 				return StatusCode(403, e.Message);
@@ -239,7 +239,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<IEnumerable<AllianceChatPostViewModel>> GetPosts(string id) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var allianceId = AllianceIdFactory.Create(id);
-			if (!allianceRepository.IsMember(currentUserContext.PlayerId, allianceId)) {
+			if (!allianceRepository.IsMember(currentUserContext.PlayerId!, allianceId)) {
 				return StatusCode(403, "You are not a member of this alliance.");
 			}
 			var posts = allianceChatRepository.GetPosts(allianceId);
@@ -262,7 +262,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				var postId = allianceChatRepositoryWrite.Post(
-					new PostAllianceChatCommand(currentUserContext.PlayerId, AllianceIdFactory.Create(id), request.Body));
+					new PostAllianceChatCommand(currentUserContext.PlayerId!, AllianceIdFactory.Create(id), request.Body));
 				return Ok(postId.ToString());
 			} catch (AllianceNotFoundException) {
 				return NotFound();

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace BrowserGameEngine.Shared {
 	public class AllianceMemberViewModel {
-		public string PlayerId { get; set; }
-		public string PlayerName { get; set; }
+		public required string PlayerId { get; set; }
+		public required string PlayerName { get; set; }
 		public bool IsPending { get; set; }
 		public DateTime JoinedAt { get; set; }
 		public int VoteCount { get; set; }
@@ -12,19 +12,19 @@ namespace BrowserGameEngine.Shared {
 	}
 
 	public class AllianceViewModel {
-		public string AllianceId { get; set; }
-		public string Name { get; set; }
+		public required string AllianceId { get; set; }
+		public required string Name { get; set; }
 		public string? Message { get; set; }
 		public int MemberCount { get; set; }
 		public DateTime Created { get; set; }
 	}
 
 	public class AllianceDetailViewModel {
-		public string AllianceId { get; set; }
-		public string Name { get; set; }
+		public required string AllianceId { get; set; }
+		public required string Name { get; set; }
 		public string? Message { get; set; }
 		public DateTime Created { get; set; }
-		public string LeaderId { get; set; }
+		public required string LeaderId { get; set; }
 		public List<AllianceMemberViewModel> Members { get; set; } = new();
 	}
 
@@ -37,35 +37,35 @@ namespace BrowserGameEngine.Shared {
 	}
 
 	public class CreateAllianceRequest {
-		public string AllianceName { get; set; }
-		public string Password { get; set; }
+		public required string AllianceName { get; set; }
+		public required string Password { get; set; }
 	}
 
 	public class JoinAllianceRequest {
-		public string Password { get; set; }
+		public required string Password { get; set; }
 	}
 
 	public class VoteLeaderRequest {
-		public string VoteePlayerId { get; set; }
+		public required string VoteePlayerId { get; set; }
 	}
 
 	public class SetAlliancePasswordRequest {
-		public string NewPassword { get; set; }
+		public required string NewPassword { get; set; }
 	}
 
 	public class SetAllianceMessageRequest {
-		public string Message { get; set; }
+		public required string Message { get; set; }
 	}
 
 	public class AllianceChatPostViewModel {
-		public string PostId { get; set; }
-		public string AuthorPlayerId { get; set; }
-		public string AuthorName { get; set; }
-		public string Body { get; set; }
+		public required string PostId { get; set; }
+		public required string AuthorPlayerId { get; set; }
+		public required string AuthorName { get; set; }
+		public required string Body { get; set; }
 		public DateTime CreatedAt { get; set; }
 	}
 
 	public class PostAllianceChatRequest {
-		public string Body { get; set; }
+		public required string Body { get; set; }
 	}
 }

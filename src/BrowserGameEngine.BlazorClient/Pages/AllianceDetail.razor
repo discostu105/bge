@@ -100,7 +100,7 @@
 }
 
 @code {
-    [Parameter] public string AllianceId { get; set; }
+    [Parameter] public required string AllianceId { get; set; }
 
     private AllianceDetailViewModel? detail;
     private MyAllianceStatusViewModel? myStatus;
