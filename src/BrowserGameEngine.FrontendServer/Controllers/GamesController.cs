@@ -104,6 +104,26 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
 		}
 
+		[HttpPost("{gameId}/players")]
+		public ActionResult<JoinGameViewModel> JoinGame(string gameId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+			if (record.Status != GameStatus.Upcoming && record.Status != GameStatus.Active)
+				return BadRequest("This game is not open for joining.");
+
+			var instance = gameRegistry.TryGetInstance(record.GameId);
+			if (instance == null) return NotFound();
+
+			if (instance.HasPlayer(currentUserContext.PlayerId!))
+				return Conflict("You have already joined this game.");
+
+			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
+			playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
+			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
+			return Ok(new JoinGameViewModel(currentUserContext.PlayerId!.Id));
+		}
+
 		[HttpPost("{gameId}/join")]
 		public ActionResult Join(string gameId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
@@ -167,7 +187,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				MaxPlayers: 0,
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
-				CanJoin: record.Status == GameStatus.Upcoming,
+				CanJoin: record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active,
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName
 			);

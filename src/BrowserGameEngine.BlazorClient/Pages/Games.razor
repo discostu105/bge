@@ -5,6 +5,9 @@
 
 <h1>Season Schedule</h1>
 
+@if (!string.IsNullOrEmpty(successMessage)) {
+	<div class="alert alert-success">@successMessage</div>
+}
 @if (!string.IsNullOrEmpty(lastError)) {
 	<div class="alert alert-danger">@lastError</div>
 }
@@ -37,6 +40,9 @@
 							</p>
 						</div>
 						<div class="card-footer d-flex gap-2">
+							@if (game.CanJoin) {
+								<button class="btn btn-sm btn-success" @onclick="() => JoinGame(game)">Join</button>
+							}
 							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play Now</a>
 							<a class="btn btn-sm btn-outline-secondary" href="games/@game.GameId/ranking">Spectate</a>
 						</div>
@@ -68,7 +74,7 @@
 						</div>
 						<div class="card-footer">
 							@if (game.CanJoin) {
-								<button class="btn btn-sm btn-success" @onclick="() => JoinGame(game.GameId)">Register Now</button>
+								<button class="btn btn-sm btn-success" @onclick="() => JoinGame(game)">Register Now</button>
 							} else if (game.MaxPlayers > 0 && game.PlayerCount >= game.MaxPlayers) {
 								<span class="badge bg-danger">Full</span>
 							} else {
@@ -114,8 +120,13 @@
 @code {
 	private List<GameSummaryViewModel>? games;
 	private string? lastError;
+	private string? successMessage;
 
 	protected override async Task OnInitializedAsync() {
+		await LoadGames();
+	}
+
+	private async Task LoadGames() {
 		try {
 			var result = await Http.GetFromJsonAsync<GameListViewModel>("api/games");
 			games = result?.Games ?? new List<GameSummaryViewModel>();
@@ -125,11 +136,13 @@
 		}
 	}
 
-	private async Task JoinGame(string gameId) {
+	private async Task JoinGame(GameSummaryViewModel game) {
 		lastError = null;
-		var response = await Http.PostAsync($"api/games/{gameId}/join", null);
+		successMessage = null;
+		var response = await Http.PostAsJsonAsync($"api/games/{game.GameId}/players", new { });
 		if (response.IsSuccessStatusCode) {
-			Nav.NavigateTo($"games/{gameId}/base");
+			successMessage = $"You have joined \"{game.Name}\"!";
+			await LoadGames();
 		} else {
 			lastError = await response.Content.ReadAsStringAsync();
 		}
