@@ -5,6 +5,8 @@
 @inject HttpClient Http
 @implements IDisposable
 
+<PageTitle>Ranking — Age of Agents</PageTitle>
+
 <h1>Ranking</h1>
 
 <ul class="nav nav-tabs mb-3">
@@ -26,30 +28,34 @@
     @if (model == null) {
         <p><em>Loading...</em></p>
     } else {
-        @foreach (var group in FilteredAndGrouped()) {
+        @foreach (var group in FilteredAndGroupedRanked()) {
             <h5 class="mt-3">@(group.displayName ?? group.userId ?? "(unknown)")</h5>
+            <div class="table-responsive">
             <table class="table table-sm">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Name</th>
                         <th>Score</th>
                         <th>Type</th>
                         <th>Status</th>
-                        <th>Schutz</th>
+                        <th>Protection</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in group.players) {
+                    @foreach (var (rank, item) in group.players) {
                     <tr>
+                        <td><strong>#@rank</strong></td>
                         <td>@item.PlayerName</td>
                         <td>@item.Score</td>
                         <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
                         <td>@(item.IsOnline ? "Online" : "Offline")</td>
-                        <td>@(item.ProtectionTicksRemaining > 0 ? $"{item.ProtectionTicksRemaining}" : "")</td>
+                        <td>@(item.ProtectionTicksRemaining > 0 ? $"{item.ProtectionTicksRemaining} ticks" : "")</td>
                     </tr>
                     }
                 </tbody>
             </table>
+            </div>
         }
     }
 } else {
@@ -58,6 +64,7 @@
     } else if (allTimeModel.Length == 0) {
         <p class="text-muted">No completed games yet. Rankings will appear here after games finish.</p>
     } else {
+        <div class="table-responsive">
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -80,6 +87,7 @@
                 }
             </tbody>
         </table>
+        </div>
     }
 }
 
@@ -134,6 +142,15 @@
             .OrderByDescending(x => x.Score)
             .GroupBy(p => p.UserId)
             .Select(g => (g.Key, g.First().UserDisplayName, (IEnumerable<PublicPlayerViewModel>)g));
+    }
+
+    private IEnumerable<(string? userId, string? displayName, IEnumerable<(int rank, PublicPlayerViewModel player)> players)> FilteredAndGroupedRanked() {
+        int rank = 1;
+        return FilteredAndGrouped().Select(g => (
+            g.userId,
+            g.displayName,
+            (IEnumerable<(int rank, PublicPlayerViewModel player)>)g.players.Select(p => (rank++, p)).ToList()
+        ));
     }
 
     public void Dispose() {

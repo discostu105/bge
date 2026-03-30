@@ -22,6 +22,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		internal IList<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
 
+
 		// throws if player not found
 		internal Player GetPlayer(PlayerId playerId) {
 			if (Players.TryGetValue(playerId, out Player? player)) return player;

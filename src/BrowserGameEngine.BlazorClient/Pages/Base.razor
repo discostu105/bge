@@ -6,6 +6,8 @@
 @inject TutorialService Tutorial
 @implements IDisposable
 
+<PageTitle>Base — Age of Agents</PageTitle>
+
 <h1>Base</h1>
 
 @if (gameDetail?.Status == "Finished") {
@@ -18,8 +20,6 @@
 }
 
 <div class="container">
-
-    <_PlayerResources />
 
     <_WorkerAssignment />
 

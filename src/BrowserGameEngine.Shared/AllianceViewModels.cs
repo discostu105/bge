@@ -68,4 +68,16 @@ namespace BrowserGameEngine.Shared {
 	public class PostAllianceChatRequest {
 		public required string Body { get; set; }
 	}
+
+	public class AllianceChatPostViewModel {
+		public string PostId { get; set; }
+		public string AuthorPlayerId { get; set; }
+		public string AuthorName { get; set; }
+		public string Body { get; set; }
+		public DateTime CreatedAt { get; set; }
+	}
+
+	public class PostAllianceChatRequest {
+		public string Body { get; set; }
+	}
 }

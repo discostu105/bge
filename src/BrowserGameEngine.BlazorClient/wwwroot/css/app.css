@@ -337,6 +337,22 @@ tbody tr:hover {
     text-shadow: var(--glow-resource);
 }
 
+/* Countdown urgent (< 60s to next tick) */
+.countdown-urgent {
+    color: var(--color-text-error);
+    font-weight: 600;
+}
+
+/* Asset card states */
+.bge-asset.available {
+    border-color: var(--color-text-resource);
+}
+
+.bge-asset.unavailable {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+}
+
 /* --- Form validation ------------------------------------------------ */
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid var(--color-text-resource);
@@ -348,6 +364,12 @@ tbody tr:hover {
 
 .validation-message {
     color: var(--color-text-error);
+}
+
+.error {
+    color: var(--color-text-error);
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 /* --- Blazor error UI ----------------------------------------------- */
@@ -406,11 +428,13 @@ tbody tr:hover {
 
 /* --- Responsive ----------------------------------------------------- */
 @media (max-width: 767.98px) {
-    .main .top-row:not(.auth) {
-        display: none;
-    }
-
-    .main .top-row.auth {
+    .main .top-row {
+        height: auto;
+        min-height: 3rem;
+        flex-wrap: wrap;
+        padding: 0.4rem 1rem;
+        gap: 0.35rem;
+        font-size: 0.78rem;
         justify-content: space-between;
     }
 
@@ -450,11 +474,6 @@ tbody tr:hover {
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
-}
-
-.bge-asset {
-    border: 1px solid black;
-    overflow: auto;
 }
 
 /* ── Workspace / game selector ────────────────────────────────────────── */
