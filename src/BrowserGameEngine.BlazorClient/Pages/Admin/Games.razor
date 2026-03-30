@@ -1,0 +1,122 @@
+@page "/admin/games"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h1>Game Admin</h1>
+
+<h2>Create Game</h2>
+
+<EditForm Model="@createModel" OnValidSubmit="HandleCreate">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	<div>
+		<label>Name</label>
+		<InputText @bind-Value="createModel.Name" placeholder="Game name" />
+	</div>
+	<div>
+		<label>Tick Duration (HH:MM:SS)</label>
+		<InputText @bind-Value="createModel.TickDuration" placeholder="00:01:00" />
+	</div>
+	<div>
+		<label>Start Time</label>
+		<input type="datetime-local" value="@createModel.StartTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => createModel.StartTime = ParseDateTime(e.Value?.ToString())" />
+	</div>
+	<div>
+		<label>End Time</label>
+		<input type="datetime-local" value="@createModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => createModel.EndTime = ParseDateTime(e.Value?.ToString())" />
+	</div>
+	<button type="submit">Create Game</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(createError)) {
+	<p style="color:red">@createError</p>
+}
+@if (!string.IsNullOrEmpty(createSuccess)) {
+	<p style="color:green">@createSuccess</p>
+}
+
+<h2>Games</h2>
+
+@if (games == null) {
+	<p><em>Loading...</em></p>
+} else if (games.Count == 0) {
+	<p>No games found.</p>
+} else {
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Status</th>
+				<th>Players</th>
+				<th>Start Time</th>
+				<th>End Time</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var game in games) {
+				<tr>
+					<td>@game.Name</td>
+					<td>@game.Status</td>
+					<td>@game.PlayerCount</td>
+					<td>@game.StartTime.ToLocalTime().ToString("g")</td>
+					<td>@game.EndTime.ToLocalTime().ToString("g")</td>
+					<td><a href="/games/@game.GameId">View</a></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	private List<GameSummaryViewModel>? games;
+	private CreateGameFormModel createModel = new();
+	private string? createError;
+	private string? createSuccess;
+
+	protected override async Task OnInitializedAsync() {
+		await LoadGames();
+	}
+
+	private async Task LoadGames() {
+		games = await Http.GetFromJsonAsync<List<GameSummaryViewModel>>("api/games") ?? new();
+	}
+
+	private async Task HandleCreate() {
+		createError = null;
+		createSuccess = null;
+
+		var request = new CreateGameRequest(
+			Name: createModel.Name,
+			GameDefType: "sco",
+			StartTime: createModel.StartTime.ToUniversalTime(),
+			EndTime: createModel.EndTime.ToUniversalTime(),
+			TickDuration: createModel.TickDuration
+		);
+
+		var response = await Http.PostAsJsonAsync("api/games", request);
+		if (response.IsSuccessStatusCode) {
+			createSuccess = $"Game '{createModel.Name}' created.";
+			createModel = new();
+			await LoadGames();
+		} else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) {
+			createError = "You must be logged in to create a game.";
+		} else {
+			var body = await response.Content.ReadAsStringAsync();
+			createError = $"Failed to create game: {body}";
+		}
+	}
+
+	private static DateTime ParseDateTime(string? value) {
+		if (DateTime.TryParse(value, out var dt)) return dt;
+		return DateTime.Now;
+	}
+
+	private class CreateGameFormModel {
+		public string Name { get; set; } = string.Empty;
+		public string TickDuration { get; set; } = "00:01:00";
+		public DateTime StartTime { get; set; } = DateTime.Now.AddHours(1);
+		public DateTime EndTime { get; set; } = DateTime.Now.AddDays(7);
+	}
+}
