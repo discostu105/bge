@@ -1,7 +1,9 @@
 @page "/alliances"
 @page "/games/{GameId}/alliances"
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 @implements IDisposable
 
 <h1>Alliances</h1>
@@ -112,6 +114,7 @@
     private async Task CreateAlliance() {
         var response = await Http.PostAsJsonAsync("api/alliances", new CreateAllianceRequest { AllianceName = createName, Password = createPassword });
         if (response.IsSuccessStatusCode) {
+            await Tutorial.MarkStepAsync(4);
             createName = "";
             createPassword = "";
             await Update();
@@ -130,6 +133,7 @@
         if (joiningAlliance == null) return;
         var response = await Http.PostAsJsonAsync($"api/alliances/{joiningAlliance.AllianceId}/join", new JoinAllianceRequest { Password = joinPassword });
         if (response.IsSuccessStatusCode) {
+            await Tutorial.MarkStepAsync(4);
             joiningAlliance = null;
             joinPassword = "";
             await Update();

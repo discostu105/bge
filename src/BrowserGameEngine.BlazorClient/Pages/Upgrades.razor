@@ -1,7 +1,9 @@
 @page "/upgrades"
 @page "/games/{GameId}/upgrades"
 @using BrowserGameEngine.Shared
+@using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 @implements IDisposable
 
 <h1>Research</h1>
@@ -94,6 +96,7 @@
         lastError = null;
         var response = await Http.PostAsJsonAsync($"api/upgrades/research?upgradeType={upgradeType}", "");
         if (response.IsSuccessStatusCode) {
+            await Tutorial.MarkStepAsync(2);
             await Update();
         } else {
             lastError = await response.Content.ReadAsStringAsync();
