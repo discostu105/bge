@@ -6,6 +6,7 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly PlayerRepository playerRepository;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly UserRepositoryWrite userRepositoryWrite;
+		private readonly GlobalState globalState;
 
 		public PlayerManagementController(
 			ILogger<PlayerManagementController> logger,
@@ -28,13 +30,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			UserRepository userRepository,
 			PlayerRepository playerRepository,
 			PlayerRepositoryWrite playerRepositoryWrite,
-			UserRepositoryWrite userRepositoryWrite) {
+			UserRepositoryWrite userRepositoryWrite,
+			GlobalState globalState) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.userRepository = userRepository;
 			this.playerRepository = playerRepository;
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.userRepositoryWrite = userRepositoryWrite;
+			this.globalState = globalState;
 		}
 
 		/// <summary>Returns all players belonging to the authenticated user.</summary>
@@ -127,6 +131,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			userRepositoryWrite.SetApiKeyHash(pid, null);
 			return NoContent();
+		}
+
+		/// <summary>Returns all earned achievements for the authenticated user across all games.</summary>
+		[HttpGet("me/achievements")]
+		[ProducesResponseType(typeof(PlayerAchievementsViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<PlayerAchievementsViewModel> GetMyAchievements() {
+			if (currentUserContext.UserId == null) return Unauthorized();
+
+			var achievements = AchievementMapper.GetForUser(globalState, currentUserContext.UserId);
+			return Ok(new PlayerAchievementsViewModel(achievements));
 		}
 	}
 }
