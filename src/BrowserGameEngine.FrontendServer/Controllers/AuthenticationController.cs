@@ -32,19 +32,24 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet("~/signin")]
-		public async Task<IActionResult> SignIn() => View("SignIn", await HttpContext.GetExternalProvidersAsync());
+		public async Task<IActionResult> SignIn(string? returnUrl = null) {
+			ViewBag.ReturnUrl = returnUrl;
+			return View("SignIn", await HttpContext.GetExternalProvidersAsync());
+		}
 
 		[HttpPost("~/signin")]
-		public async Task<IActionResult> SignIn([FromForm] string provider) {
+		public async Task<IActionResult> SignIn([FromForm] string provider, [FromForm] string? returnUrl = null, [FromForm] bool rememberMe = false) {
 			// Note: the "provider" parameter corresponds to the external
 			// authentication provider choosen by the user agent.
 			if (string.IsNullOrWhiteSpace(provider)) return BadRequest();
 			if (!await HttpContext.IsProviderSupportedAsync(provider)) return BadRequest();
 
+			var redirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
+
 			// Instruct the middleware corresponding to the requested external identity
 			// provider to redirect the user agent to its own authorization endpoint.
 			// Note: the authenticationScheme parameter must match the value configured in Startup.cs
-			return Challenge(new AuthenticationProperties { RedirectUri = "/" }, provider);
+			return Challenge(new AuthenticationProperties { RedirectUri = redirectUri, IsPersistent = rememberMe }, provider);
 		}
 
 		[HttpGet("~/signout")]
