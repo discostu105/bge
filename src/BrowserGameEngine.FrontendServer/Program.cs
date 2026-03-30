@@ -1,5 +1,6 @@
 using Amazon.S3;
 using BrowserGameEngine.FrontendServer;
+using Microsoft.AspNetCore.DataProtection;
 using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.FrontendServer.Services;
 using BrowserGameEngine.GameDefinition;
@@ -105,6 +106,17 @@ if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(git
     Log.Warning("GitHub OAuth is disabled because GitHub:ClientId or GitHub:ClientSecret is not configured.");
 }
 
+var s3BucketForDp = builder.Configuration["Bge:S3BucketName"];
+if (!string.IsNullOrEmpty(s3BucketForDp)) {
+    var s3KeyPrefixForDp = (builder.Configuration["Bge:S3KeyPrefix"] ?? "") + "data-protection-keys/";
+    var s3ClientForDp = new AmazonS3Client();
+    builder.Services.AddDataProtection()
+        .AddKeyManagementOptions(opts =>
+            opts.XmlRepository = new S3DataProtectionKeyRepository(s3ClientForDp, s3BucketForDp, s3KeyPrefixForDp));
+    Log.Information("Data Protection keys will be persisted to S3 at {Bucket}/{Prefix}", s3BucketForDp, s3KeyPrefixForDp);
+} else {
+    Log.Warning("Data Protection keys are ephemeral (no S3 bucket configured). This is fine for local dev.");
+}
 
 await ConfigureGameServices(builder.Services);
 
