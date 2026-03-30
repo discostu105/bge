@@ -35,11 +35,18 @@
 					<td>@game.PlayerCount</td>
 					<td>@(game.StartTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
 					<td>@(game.EndTime?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "TBD")</td>
-					<td>
+					<td class="d-flex gap-1 flex-wrap">
 						@if (game.Status == "Active") {
 							<a class="btn btn-sm btn-primary" href="games/@game.GameId/base">Play</a>
+							@if (game.CanJoin) {
+								<a class="btn btn-sm btn-outline-primary" href="games/@game.GameId/join">Join</a>
+							}
 						} else if (game.Status == "Upcoming") {
-							<span class="text-muted">Upcoming</span>
+							@if (game.CanJoin) {
+								<a class="btn btn-sm btn-success" href="games/@game.GameId/join">Join</a>
+							} else {
+								<span class="text-muted">Upcoming</span>
+							}
 						} else {
 							<a class="btn btn-sm btn-secondary" href="games/@game.GameId/results">Results</a>
 						}

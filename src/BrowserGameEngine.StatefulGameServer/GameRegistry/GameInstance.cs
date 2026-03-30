@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
+using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 	public class GameInstance {
@@ -21,6 +22,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		public int PlayerCount => WorldState.Players.Count;
 
 		public bool HasPlayer(PlayerId playerId) => WorldState.PlayerExists(playerId);
+
+		public bool HasUserPlayer(string userId) =>
+			WorldState.Players.Values.Any(p => p.UserId == userId);
 
 		public void SetTickEngine(GameTickEngine tickEngine) { TickEngine = tickEngine; }
 	}
