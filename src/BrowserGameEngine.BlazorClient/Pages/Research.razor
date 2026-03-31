@@ -224,7 +224,11 @@
 	}
 
 	private async Task Update() {
-		model = await Http.GetFromJsonAsync<TechTreeViewModel>("api/research");
+		try {
+			model = await Http.GetFromJsonAsync<TechTreeViewModel>("api/research");
+		} catch {
+			// Leave model as-is if refresh fails; initial null shows loading state
+		}
 	}
 
 	public void Dispose() {
