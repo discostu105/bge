@@ -86,61 +86,291 @@ app {
     text-overflow: ellipsis;
 }
 
-/* --- Sidebar -------------------------------------------------------- */
+/* --- Mobile nav bar ------------------------------------------------- */
+.nav-mobile-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border-default);
+    padding: 0 1rem;
+    height: 3.5rem;
+}
+
+.nav-brand-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    letter-spacing: 0.02em;
+}
+
+.navbar-toggler {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-border-default);
+    color: var(--color-text-primary);
+}
+
+/* --- Sidebar shell -------------------------------------------------- */
 .sidebar {
     background-color: var(--color-bg-surface);
     border-right: 1px solid var(--color-border-default);
 }
 
-.sidebar .top-row {
-    background-color: var(--color-bg-elevated);
-    border-bottom: 1px solid var(--color-border-default);
+/* --- Two-column nav layout ------------------------------------------ */
+.nav-two-col {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    overflow: hidden;
 }
 
-.sidebar .navbar-brand {
-    font-size: 1.1rem;
-    color: var(--color-text-primary);
+/* Left strip — narrow game-switcher column */
+.nav-strip {
+    width: 54px;
+    flex-shrink: 0;
+    background-color: #0d1117;
+    border-right: 1px solid var(--color-border-subtle);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0;
+    gap: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
 }
 
-.sidebar .oi {
-    width: 2rem;
-    font-size: 1.1rem;
-    vertical-align: text-top;
-    top: -2px;
+.nav-strip::-webkit-scrollbar {
+    display: none;
 }
 
-.sidebar .nav-item {
-    font-size: 0.9rem;
+.nav-strip-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 1;
+    width: 100%;
     padding-bottom: 0.5rem;
 }
 
-.sidebar .nav-item:first-of-type {
-    padding-top: 1rem;
+.nav-strip-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    width: 100%;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-border-subtle);
 }
 
-.sidebar .nav-item:last-of-type {
-    padding-bottom: 1rem;
-}
-
-.sidebar .nav-item a {
-    color: var(--color-text-secondary);
-    border-radius: var(--radius-sm);
-    height: 3rem;
+/* Logo button */
+.nav-strip-logo {
     display: flex;
     align-items: center;
-    line-height: 3rem;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+    text-decoration: none;
+    margin-bottom: 0.4rem;
+    flex-shrink: 0;
+    transition: border-radius 0.15s ease;
+}
+
+.nav-strip-logo:hover {
+    border-radius: 14px;
     text-decoration: none;
 }
 
-.sidebar .nav-item a.active {
-    background-color: var(--color-bg-elevated);
-    color: var(--color-text-primary);
-    border-left: 3px solid var(--color-text-link);
+.nav-strip-logo-text {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.03em;
 }
 
-.sidebar .nav-item a:hover {
-    background-color: var(--color-bg-elevated);
+/* Game icon buttons */
+.nav-game-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--color-bg-elevated);
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-radius 0.15s ease, background 0.15s ease;
+    color: var(--color-text-secondary);
+}
+
+.nav-game-icon:hover {
+    border-radius: 14px;
+    background: #374151;
+    color: white;
+}
+
+.nav-game-icon--active {
+    border-radius: 14px;
+    background: #1d4ed8;
+    color: white;
+}
+
+.nav-game-icon-letter {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Status dot on game icon */
+.nav-game-status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid #0d1117;
+}
+
+/* Strip buttons (lobby +, sign out) */
+.nav-strip-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.2);
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+}
+
+.nav-strip-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-color: rgba(255,255,255,0.5);
+    text-decoration: none;
+}
+
+.nav-strip-btn .oi {
+    font-size: 0.9rem;
+    width: auto;
+}
+
+.nav-strip-btn--signout {
+    border-style: solid;
+    border-color: transparent;
+}
+
+.nav-strip-version {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.2);
+    user-select: none;
+    padding: 0.2rem 0;
+}
+
+/* Right panel — contextual navigation */
+.nav-panel {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+}
+
+.nav-panel-header {
+    padding: 0.75rem 0.75rem 0.25rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    margin-bottom: 0.25rem;
+}
+
+.nav-panel-game-name {
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-panel-all-games {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    display: block;
+    margin-top: 0.1rem;
+}
+
+.nav-panel-all-games:hover {
+    color: var(--color-text-link);
+    text-decoration: none;
+}
+
+/* Nav items within panel */
+.nav-panel .nav-item {
+    font-size: 0.88rem;
+    padding-bottom: 0.2rem;
+}
+
+.nav-panel .nav-item:first-of-type {
+    padding-top: 0.25rem;
+}
+
+.nav-panel .nav-item a {
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-sm);
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    line-height: 2.5rem;
+    text-decoration: none;
+    padding: 0 0.5rem;
+}
+
+.nav-panel .nav-item a.active {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: var(--color-text-primary);
+    border-left: 2px solid var(--color-text-link);
+    padding-left: calc(0.5rem - 2px);
+}
+
+.nav-panel .nav-item a:hover {
+    background-color: rgba(255,255,255,0.06);
+    color: var(--color-text-primary);
+}
+
+.nav-panel .oi {
+    width: 1.5rem;
+    font-size: 0.9rem;
+    vertical-align: text-top;
+    top: -1px;
+    opacity: 0.7;
+}
+
+.nav-panel .nav-item a.active .oi,
+.nav-panel .nav-item a:hover .oi {
+    opacity: 1;
+}
+
+/* Spinner for loading state */
+.nav-strip-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-top-color: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0.3rem auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* --- Main content --------------------------------------------------- */
@@ -396,38 +626,57 @@ tbody tr:hover {
 }
 
 /* --- Race-variant sidebar stubs ------------------------------------ */
-/* Terran: industrial steel-gray left-border accent */
-.race-terran .sidebar {
-    border-left: 4px solid var(--color-race-terran);
-    background-color: #0e1520;
+/* Terran: industrial steel-gray */
+.race-terran .nav-strip {
+    background-color: #0c1018;
+    border-right-color: rgba(203, 213, 225, 0.15);
 }
 
-.race-terran .sidebar .top-row {
-    background-color: rgba(203, 213, 225, 0.08);
+.race-terran .nav-strip-logo {
+    background: linear-gradient(135deg, #475569 0%, #94a3b8 100%);
 }
 
-/* Zerg: organic amber left-border accent */
-.race-zerg .sidebar {
-    border-left: 4px solid var(--color-race-zerg);
-    background-color: #130e08;
+/* Zerg: organic amber */
+.race-zerg .nav-strip {
+    background-color: #100c07;
+    border-right-color: rgba(180, 83, 9, 0.3);
 }
 
-.race-zerg .sidebar .top-row {
-    background-color: rgba(180, 83, 9, 0.15);
+.race-zerg .nav-strip-logo {
+    background: linear-gradient(135deg, #92400e 0%, #f59e0b 100%);
 }
 
-/* Protoss: crystalline gold left-border accent */
-.race-protoss .sidebar {
-    border-left: 4px solid var(--color-race-protoss);
-    background-color: #111007;
+/* Protoss: crystalline gold */
+.race-protoss .nav-strip {
+    background-color: #0f0d07;
+    border-right-color: rgba(251, 191, 36, 0.2);
 }
 
-.race-protoss .sidebar .top-row {
-    background-color: rgba(251, 191, 36, 0.1);
+.race-protoss .nav-strip-logo {
+    background: linear-gradient(135deg, #854d0e 0%, #fbbf24 100%);
 }
 
 /* --- Responsive ----------------------------------------------------- */
 @media (max-width: 767.98px) {
+    .nav-mobile-bar {
+        display: flex;
+    }
+
+    .nav-two-col {
+        display: none;
+    }
+
+    .nav-two-col:not(.nav-two-col--collapsed) {
+        display: flex;
+        position: fixed;
+        top: 3.5rem;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 200;
+        overflow-y: auto;
+    }
+
     .main .top-row {
         height: auto;
         min-height: 3rem;
@@ -448,11 +697,27 @@ tbody tr:hover {
         flex-direction: row;
     }
 
+    .nav-mobile-bar {
+        display: none;
+    }
+
     .sidebar {
         width: 250px;
         height: 100vh;
         position: sticky;
         top: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .nav-two-col {
+        flex: 1;
+        height: 100%;
+    }
+
+    .nav-two-col--collapsed {
+        /* Never collapse on desktop */
+        display: flex !important;
     }
 
     .main .top-row {
@@ -469,139 +734,34 @@ tbody tr:hover {
     .navbar-toggler {
         display: none;
     }
-
-    .sidebar .collapse {
-        /* Never collapse the sidebar for wide screens */
-        display: block;
-    }
 }
 
-/* (duplicate .bge-asset removed — dark theme rules above apply) */
-
-
-/* ── Workspace / game selector ────────────────────────────────────────── */
-
-/* Section label (MY GAMES, GAME, GENERAL) */
+/* ── Nav section labels ───────────────────────────────────────────────── */
 .nav-section-label {
-    padding: 1rem 0.75rem 0.25rem 0.75rem;
-    font-size: 0.7rem;
+    padding: 0.75rem 0.75rem 0.2rem 0.75rem;
+    font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.35);
     text-transform: uppercase;
 }
 
-/* Workspace card button (one per game) */
-.workspace-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    text-align: left;
-    background: transparent;
-    border: none;
-    border-radius: 0.375rem;
-    margin: 0.15rem 0.5rem;
-    padding: 0.4rem 0.5rem;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.75);
-    transition: background 0.12s ease;
-    width: calc(100% - 1rem);
-}
-
-.workspace-item:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: white;
-}
-
-.workspace-item--active {
-    background: rgba(255, 255, 255, 0.18);
-    color: white;
-    border-left: 3px solid #4da6ff;
-    padding-left: calc(0.5rem - 3px);
-}
-
-/* Status dot */
-.workspace-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 1px;
-}
-
-.workspace-dot--active {
+/* ── Workspace status dots (reused on nav-game-status-dot) ───────────── */
+.workspace-dot--active,
+.nav-game-status-dot.workspace-dot--active {
     background: #4ade80;
     box-shadow: 0 0 5px rgba(74, 222, 128, 0.6);
 }
 
-.workspace-dot--upcoming {
+.workspace-dot--upcoming,
+.nav-game-status-dot.workspace-dot--upcoming {
     background: #fbbf24;
     box-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
 }
 
-.workspace-dot--finished {
+.workspace-dot--finished,
+.nav-game-status-dot.workspace-dot--finished {
     background: #6b7280;
-}
-
-/* Game name + player name lines */
-.workspace-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.workspace-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.2;
-}
-
-.workspace-player {
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.5);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.2;
-}
-
-.workspace-item--active .workspace-player {
-    color: rgba(255, 255, 255, 0.65);
-}
-
-/* Checkmark for active workspace */
-.workspace-check {
-    font-size: 0.8rem;
-    color: #4da6ff;
-    flex-shrink: 0;
-}
-
-/* Browse / Join Games link */
-.workspace-browse {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin: 0.25rem 0.5rem 0.5rem;
-    padding: 0.3rem 0.5rem;
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.45);
-    border-radius: 0.25rem;
-    text-decoration: none;
-    transition: color 0.12s ease, background 0.12s ease;
-}
-
-.workspace-browse:hover {
-    color: rgba(255, 255, 255, 0.85);
-    background: rgba(255, 255, 255, 0.08);
-    text-decoration: none;
-}
-
-.workspace-browse .oi {
-    font-size: 0.7rem;
-    width: auto;
 }
 
 /* Tutorial checklist */
