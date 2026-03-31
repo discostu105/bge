@@ -5,6 +5,7 @@ using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ using System.Threading.Tasks;
 namespace BrowserGameEngine.FrontendServer.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/admin")]
 public class AdminController : ControllerBase
 {
