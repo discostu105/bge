@@ -76,7 +76,7 @@
 				@if (expandedMessageId == msg.MessageId) {
 					<tr>
 						<td colspan="4" class="px-3 py-3" style="background:var(--color-bg-elevated)">
-							@msg.Body
+							@((MarkupString)msg.Body)
 						</td>
 					</tr>
 				}

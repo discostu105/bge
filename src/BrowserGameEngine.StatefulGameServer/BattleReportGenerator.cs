@@ -88,28 +88,50 @@ namespace BrowserGameEngine.StatefulGameServer {
 			List<UnitCount> attackerLosses,
 			List<UnitCount> defenderLosses
 		) {
+			bool attackerWon = outcome == "Attacker won";
+			bool draw = outcome == "Draw";
+			string outcomeClass = attackerWon ? "outcome-victory" : draw ? "outcome-draw" : "outcome-defeat";
+			string outcomeLabel = attackerWon ? "Victory!" : draw ? "Draw" : "Defeat";
+
 			var sb = new StringBuilder();
-			sb.AppendLine($"Attacker: {attackerName} ({attackerRace})");
-			sb.AppendLine($"Defender: {defenderName} ({defenderRace})");
-			sb.AppendLine($"Outcome: {outcome}");
-			sb.AppendLine($"Land transferred: {landTransferred}");
-			if (workersCaptured > 0) sb.AppendLine($"Workers captured: {workersCaptured}");
-			if (resourcesStolen.Count > 0) {
-				var stolen = string.Join(", ", resourcesStolen.Select(kv => $"{kv.Value} {kv.Key}"));
-				sb.AppendLine($"Resources pillaged: {stolen}");
+			sb.AppendLine("<div class=\"battle-report\">");
+			sb.AppendLine($"  <div class=\"outcome {outcomeClass}\">{outcomeLabel}</div>");
+			sb.AppendLine($"  <p><strong>Attacker:</strong> {HtmlEncode(attackerName)} ({HtmlEncode(attackerRace)}) vs <strong>Defender:</strong> {HtmlEncode(defenderName)} ({HtmlEncode(defenderRace)})</p>");
+			sb.AppendLine("  <table>");
+			sb.AppendLine("    <thead><tr><th>Side</th><th>Unit</th><th>Lost</th></tr></thead>");
+			sb.AppendLine("    <tbody>");
+			foreach (var uc in attackerLosses) {
+				var name = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id;
+				sb.AppendLine($"      <tr><td>Attacker</td><td>{HtmlEncode(name)}</td><td>{uc.Count}</td></tr>");
 			}
-			sb.AppendLine($"Attacker losses: {FormatUnitBreakdown(attackerLosses)}");
-			sb.AppendLine($"Defender losses: {FormatUnitBreakdown(defenderLosses)}");
+			foreach (var uc in defenderLosses) {
+				var name = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id;
+				sb.AppendLine($"      <tr><td>Defender</td><td>{HtmlEncode(name)}</td><td>{uc.Count}</td></tr>");
+			}
+			if (!attackerLosses.Any() && !defenderLosses.Any()) {
+				sb.AppendLine("      <tr><td colspan=\"3\">No units lost</td></tr>");
+			}
+			sb.AppendLine("    </tbody>");
+			sb.AppendLine("  </table>");
+			if (landTransferred > 0 || workersCaptured > 0 || resourcesStolen.Count > 0) {
+				sb.AppendLine("  <div class=\"spoils\">");
+				if (landTransferred > 0) sb.AppendLine($"    <span class=\"badge\">+{landTransferred} land captured</span>");
+				if (workersCaptured > 0) sb.AppendLine($"    <span class=\"badge\">+{workersCaptured} workers captured</span>");
+				foreach (var kv in resourcesStolen) {
+					sb.AppendLine($"    <span class=\"badge\">+{kv.Value} {HtmlEncode(kv.Key)} pillaged</span>");
+				}
+				sb.AppendLine("  </div>");
+			}
+			sb.AppendLine("</div>");
 			return sb.ToString();
 		}
 
-		private string FormatUnitBreakdown(List<UnitCount> unitCounts) {
-			if (!unitCounts.Any()) return "none";
-			return string.Join(", ", unitCounts.Select(uc => {
-				var unitDef = gameDef.GetUnitDef(uc.UnitDefId);
-				var name = unitDef?.Name ?? uc.UnitDefId.Id;
-				return $"{uc.Count}x {name}";
-			}));
+		private static string HtmlEncode(string text) {
+			return text
+				.Replace("&", "&amp;")
+				.Replace("<", "&lt;")
+				.Replace(">", "&gt;")
+				.Replace("\"", "&quot;");
 		}
 	}
 }
