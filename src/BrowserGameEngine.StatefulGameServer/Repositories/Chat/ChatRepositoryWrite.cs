@@ -8,9 +8,9 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 	public class ChatRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
+		private System.Threading.Lock ChatMessagesLock => world.ChatMessagesLock;
 		private readonly TimeProvider timeProvider;
 		private const int MaxMessages = 200;
 
@@ -20,7 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 		}
 
 		public IList<ChatMessageImmutable> GetMessages(int count = 50) {
-			lock (_lock) {
+			lock (ChatMessagesLock) {
 				return world.ChatMessages
 					.Select(m => m.ToImmutable())
 					.TakeLast(count)
@@ -36,7 +36,7 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 				return new List<ChatMessageImmutable>();
 			}
 
-			lock (_lock) {
+			lock (ChatMessagesLock) {
 				var messages = world.ChatMessages;
 				int idx = -1;
 				for (int i = 0; i < messages.Count; i++) {
@@ -60,7 +60,7 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 
 		public ChatMessageId PostMessage(PostChatMessageCommand command) {
 			var messageId = ChatMessageIdFactory.NewChatMessageId();
-			lock (_lock) {
+			lock (ChatMessagesLock) {
 				world.ValidatePlayer(command.AuthorPlayerId);
 				world.ChatMessages.Add(new ChatMessage {
 					MessageId = messageId,

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
@@ -17,10 +18,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		internal GameTickState GameTickState { get; set; } = new GameTickState();
 
 		internal IList<GameAction> GameActionQueue { get; set; } = new List<GameAction>();
+		internal readonly Lock ActionQueueLock = new();
 
 		internal IList<MarketOrder> MarketOrders { get; set; } = new List<MarketOrder>();
+		internal readonly Lock MarketOrdersLock = new();
 
 		internal IList<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
+		internal readonly Lock ChatMessagesLock = new();
 
 
 		// throws if player not found
@@ -74,14 +78,26 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 
 		public static WorldStateImmutable ToImmutable(this WorldState worldState) {
+			IList<GameActionImmutable> actionQueueSnapshot;
+			lock (worldState.ActionQueueLock) {
+				actionQueueSnapshot = worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList();
+			}
+			IList<MarketOrderImmutable>? marketOrdersSnapshot;
+			lock (worldState.MarketOrdersLock) {
+				marketOrdersSnapshot = worldState.MarketOrders.ToImmutable();
+			}
+			IList<ChatMessageImmutable>? chatMessagesSnapshot;
+			lock (worldState.ChatMessagesLock) {
+				chatMessagesSnapshot = worldState.ChatMessages.ToImmutable();
+			}
 			return new WorldStateImmutable(
 				Players: worldState.Players.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				GameTickState: worldState.GameTickState.ToImmutable(),
-				GameActionQueue: worldState.GameActionQueue.Select(x => x.ToImmutable()).ToList(),
+				GameActionQueue: actionQueueSnapshot,
 				Alliances: worldState.Alliances.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				GameId: worldState.GameId,
-				MarketOrders: worldState.MarketOrders.ToImmutable(),
-				ChatMessages: worldState.ChatMessages.ToImmutable()
+				MarketOrders: marketOrdersSnapshot,
+				ChatMessages: chatMessagesSnapshot
 			);
 		}
 

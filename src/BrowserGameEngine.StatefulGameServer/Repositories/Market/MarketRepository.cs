@@ -8,9 +8,9 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class MarketRepository {
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
+		private System.Threading.Lock MarketOrdersLock => world.MarketOrdersLock;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 
@@ -25,7 +25,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public IList<MarketOrderImmutable> GetOpenOrders() {
-			lock (_lock) {
+			lock (MarketOrdersLock) {
 				return world.MarketOrders
 					.Where(o => o.Status == MarketOrderStatus.Open)
 					.Select(o => o.ToImmutable())
@@ -38,7 +38,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public MarketOrderId CreateOrder(CreateMarketOrderCommand cmd) {
-			lock (_lock) {
+			lock (MarketOrdersLock) {
 				world.ValidatePlayer(cmd.PlayerId);
 
 				if (cmd.OfferedAmount <= 0) throw new InvalidOperationException("Offered amount must be positive.");
@@ -65,7 +65,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void AcceptOrder(AcceptMarketOrderCommand cmd) {
-			lock (_lock) {
+			lock (MarketOrdersLock) {
 				world.ValidatePlayer(cmd.BuyerPlayerId);
 
 				var order = GetOrderMutable(cmd.OrderId)
@@ -89,7 +89,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void CancelOrder(CancelMarketOrderCommand cmd) {
-			lock (_lock) {
+			lock (MarketOrdersLock) {
 				world.ValidatePlayer(cmd.PlayerId);
 
 				var order = GetOrderMutable(cmd.OrderId)
