@@ -10,26 +10,32 @@
 @if (players == null) {
 	<p><em>Loading...</em></p>
 } else {
-	<h2>Create Player</h2>
-	<EditForm Model="@createModel" OnValidSubmit="HandleCreatePlayer">
-		<DataAnnotationsValidator />
-		<ValidationSummary />
-		<InputText id="PlayerName" @bind-Value="createModel.PlayerName" placeholder="Player name" />
-		<button type="submit">Create</button>
-	</EditForm>
-	@if (!string.IsNullOrEmpty(createError)) {
-		<p style="color:red">@createError</p>
-	}
+	<div class="card mb-4" style="max-width:480px">
+		<div class="card-header"><strong>Create Player</strong></div>
+		<div class="card-body">
+			<EditForm Model="@createModel" OnValidSubmit="HandleCreatePlayer">
+				<DataAnnotationsValidator />
+				<ValidationSummary />
+				<div class="mb-3">
+					<label class="form-label" for="PlayerName">Player name</label>
+					<InputText id="PlayerName" class="form-control" @bind-Value="createModel.PlayerName" placeholder="Enter a name" />
+				</div>
+				<button type="submit" class="btn btn-primary">Create Player</button>
+			</EditForm>
+			@if (!string.IsNullOrEmpty(createError)) {
+				<div class="alert alert-danger mt-2">@createError</div>
+			}
+		</div>
+	</div>
 
-	<h2>Player List</h2>
+	<h2>Your Players</h2>
 	@if (players.Count == 0) {
-		<p>No players yet.</p>
+		<div class="text-muted">No players yet. Create one above to get started.</div>
 	} else {
 		<table class="table">
 			<thead>
 				<tr>
 					<th>Name</th>
-					<th>ID</th>
 					<th>API Key</th>
 					<th>Actions</th>
 				</tr>
@@ -38,18 +44,17 @@
 				@foreach (var player in players) {
 					<tr>
 						<td>@player.PlayerName</td>
-						<td>@player.PlayerId</td>
-						<td>@(player.HasApiKey ? "Key active" : "No key")</td>
-						<td>
+						<td>@(player.HasApiKey ? "Active" : "—")</td>
+						<td class="d-flex flex-wrap gap-1">
 							@if (players.Count > 1) {
-								<button @onclick="() => HandleSwitchPlayer(player.PlayerId)">Play as this player</button>
-															}
-							@if (player.HasApiKey) {
-								<button @onclick="() => HandleRevokeKey(player.PlayerId)">Revoke API Key</button>
-							} else {
-								<button @onclick="() => HandleGenerateKey(player.PlayerId)">Generate API Key</button>
+								<button class="btn btn-sm btn-primary" @onclick="() => HandleSwitchPlayer(player.PlayerId)">Switch to</button>
 							}
-														<button disabled title="Not yet available">Delete</button>
+							@if (player.HasApiKey) {
+								<button class="btn btn-sm btn-outline-danger" @onclick="() => HandleRevokeKey(player.PlayerId)">Revoke Key</button>
+							} else {
+								<button class="btn btn-sm btn-outline-secondary" @onclick="() => HandleGenerateKey(player.PlayerId)">Generate Key</button>
+							}
+							<button class="btn btn-sm btn-outline-secondary" disabled title="Not yet available">Delete</button>
 						</td>
 					</tr>
 				}

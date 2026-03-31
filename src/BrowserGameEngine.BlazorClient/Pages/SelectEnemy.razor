@@ -18,13 +18,15 @@
     <EditForm Model="model" OnValidSubmit="@SendUnits">
         <DataAnnotationsValidator />
         <ValidationSummary />
-
-        <InputSelect @bind-Value="SelectedPlayerId">
-            @foreach (var x in model.AttackablePlayers) {
-                <option value="@x.PlayerId">@x.PlayerName (@x.Score)</option>
+        <div class="mb-3" style="max-width:360px">
+            <label class="form-label">Target player</label>
+            <InputSelect class="form-select" @bind-Value="SelectedPlayerId">
+                @foreach (var x in model.AttackablePlayers) {
+                    <option value="@x.PlayerId">@x.PlayerName (@x.Score)</option>
                 }
-        </InputSelect>
-        <button type="submit">Send Troops</button>
+            </InputSelect>
+        </div>
+        <button type="submit" class="btn btn-danger">Send Troops</button>
         <button type="button" class="btn btn-secondary ms-2" @onclick="SendSpy" disabled="@(string.IsNullOrEmpty(SelectedPlayerId) || spyLoading)">
             @(spyLoading ? "Spying..." : "Send Spy (50 minerals)")
         </button>
