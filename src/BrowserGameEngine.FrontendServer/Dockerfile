@@ -21,11 +21,10 @@ WORKDIR "/src/BrowserGameEngine.FrontendServer"
 RUN dotnet build "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/publish
+ARG COMMIT_SHA=dev
+RUN dotnet publish "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/publish /p:InformationalVersion=$COMMIT_SHA
 
 FROM base AS final
-ARG COMMIT_SHA=dev
-ENV APP_VERSION=$COMMIT_SHA
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "BrowserGameEngine.FrontendServer.dll"]
