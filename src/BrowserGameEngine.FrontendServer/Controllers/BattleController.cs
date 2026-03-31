@@ -134,7 +134,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			string outcome = attackerWon ? "AttackerWon" : draw ? "Draw" : "DefenderWon";
 
 			return new BattleResultViewModel {
+				AttackerId = result.Attacker.Id,
 				AttackerName = attacker.Name,
+				DefenderId = result.Defender.Id,
 				DefenderName = defender.Name,
 				Outcome = outcome,
 				TotalAttackerStrengthBefore = result.BtlResult.TotalAttackerStrengthBefore,

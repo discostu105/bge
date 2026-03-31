@@ -49,7 +49,13 @@
                     @foreach (var (rank, item) in group.players) {
                     <tr>
                         <td><strong>#@rank</strong></td>
-                        <td>@item.PlayerName</td>
+                        <td>
+                            @if (GameId != null && item.PlayerId != null) {
+                                <a href="games/@GameId/player/@item.PlayerId">@item.PlayerName</a>
+                            } else {
+                                @item.PlayerName
+                            }
+                        </td>
                         <td>@item.Score</td>
                         <td>@if (item.ApproxMinerals.HasValue) { @item.ApproxMinerals.Value.ToString("N0") } else { <span class="text-muted fst-italic" title="Scout this player to reveal their resources">?</span> }</td>
                         <td>@if (item.ApproxGas.HasValue) { @item.ApproxGas.Value.ToString("N0") } else { <span class="text-muted fst-italic" title="Scout this player to reveal their resources">?</span> }</td>

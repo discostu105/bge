@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameModel;
+using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly OnlineStatusRepository onlineStatusRepository;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly FogOfWarRepository fogOfWarRepository;
+		private readonly AllianceRepository allianceRepository;
+		private readonly TechRepository techRepository;
 
 		public PlayerRankingController(ILogger<PlayerRankingController> logger
 				, ScoreRepository scoreRepository
@@ -29,6 +31,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, OnlineStatusRepository onlineStatusRepository
 				, CurrentUserContext currentUserContext
 				, FogOfWarRepository fogOfWarRepository
+				, AllianceRepository allianceRepository
+				, TechRepository techRepository
 			) {
 			this.logger = logger;
 			this.scoreRepository = scoreRepository;
@@ -37,6 +41,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.onlineStatusRepository = onlineStatusRepository;
 			this.currentUserContext = currentUserContext;
 			this.fogOfWarRepository = fogOfWarRepository;
+			this.allianceRepository = allianceRepository;
+			this.techRepository = techRepository;
 		}
 
 		/// <summary>Returns the current game's player ranking list with scores and online status. Resource and unit counts are fog-of-war gated.</summary>
@@ -48,6 +54,48 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				SpyResult? intel = isOwnPlayer ? null : fogOfWarRepository.GetValidIntel(currentUserContext.PlayerId!, p.PlayerId);
 				return p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, intel, isOwnPlayer);
 			});
+		}
+
+		/// <summary>Returns the in-game profile for a specific player by player ID.</summary>
+		/// <param name="playerId">The player ID to look up.</param>
+		[HttpGet("{playerId}")]
+		[ProducesResponseType(typeof(InGamePlayerProfileViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult<InGamePlayerProfileViewModel> GetPlayerProfile(string playerId) {
+			var pid = PlayerIdFactory.Create(playerId);
+			if (!playerRepository.Exists(pid)) return NotFound();
+
+			var player = playerRepository.Get(pid);
+
+			var allPlayers = playerRepository.GetAll()
+				.Select(p => (player: p, score: scoreRepository.GetScore(p.PlayerId)))
+				.OrderByDescending(x => x.score)
+				.ToList();
+
+			int rank = allPlayers.FindIndex(x => x.player.PlayerId == pid) + 1;
+
+			var alliance = allianceRepository.GetByPlayerId(pid);
+			string? allianceRole = null;
+			if (alliance != null) {
+				allianceRole = alliance.LeaderId == pid ? "Leader" : "Member";
+			}
+
+			return new InGamePlayerProfileViewModel {
+				PlayerId = player.PlayerId.Id,
+				PlayerName = player.Name,
+				Score = scoreRepository.GetScore(pid),
+				Rank = rank,
+				TotalPlayers = allPlayers.Count,
+				AllianceId = alliance?.AllianceId.Id.ToString(),
+				AllianceName = alliance?.Name,
+				AllianceRole = allianceRole,
+				TechsResearched = techRepository.GetUnlockedTechs(pid).Count,
+				IsOnline = onlineStatusRepository.IsOnline(pid),
+				LastOnline = player.LastOnline,
+				IsAgent = player.ApiKeyHash != null,
+				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining
+			};
 		}
 
 	}
