@@ -3,6 +3,7 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly AllianceChatRepository allianceChatRepository;
 		private readonly AllianceChatRepositoryWrite allianceChatRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
+		private readonly INotificationService notificationService;
 
 		public AlliancesController(
 			CurrentUserContext currentUserContext,
@@ -26,7 +28,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			AllianceRepositoryWrite allianceRepositoryWrite,
 			AllianceChatRepository allianceChatRepository,
 			AllianceChatRepositoryWrite allianceChatRepositoryWrite,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			INotificationService notificationService
 		) {
 			this.currentUserContext = currentUserContext;
 			this.allianceRepository = allianceRepository;
@@ -34,6 +37,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.allianceChatRepository = allianceChatRepository;
 			this.allianceChatRepositoryWrite = allianceChatRepositoryWrite;
 			this.playerRepository = playerRepository;
+			this.notificationService = notificationService;
 		}
 
 		/// <summary>Returns all alliances in the current game.</summary>
@@ -130,8 +134,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult Join(string id, [FromBody] JoinAllianceRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
+				var allianceId = AllianceIdFactory.Create(id);
 				allianceRepositoryWrite.JoinAlliance(
-					new JoinAllianceCommand(currentUserContext.PlayerId!, AllianceIdFactory.Create(id), request.Password));
+					new JoinAllianceCommand(currentUserContext.PlayerId!, allianceId, request.Password));
+
+				// Notify alliance leader if join request is pending approval
+				var alliance = allianceRepository.Get(allianceId);
+				if (alliance != null) {
+					var joiningMember = alliance.Members.FirstOrDefault(m => m.PlayerId == currentUserContext.PlayerId && m.IsPending);
+					if (joiningMember != null) {
+						var joiningPlayer = playerRepository.Get(currentUserContext.PlayerId!);
+						notificationService.Notify(alliance.LeaderId, GameNotificationType.AllianceRequest,
+							$"Alliance join request from {joiningPlayer.Name}");
+					}
+				}
 				return Ok();
 			} catch (AllianceNotFoundException) {
 				return NotFound();

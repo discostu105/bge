@@ -24,6 +24,7 @@ namespace BrowserGameEngine.GameModel {
 		string? TechBeingResearched = null,
 		int TechResearchTimer = 0,
 		IDictionary<string, SpyResult>? LastSpyResults = null,
-		IList<SpyAttemptLog>? SpyAttemptLogs = null
+		IList<SpyAttemptLog>? SpyAttemptLogs = null,
+		IList<GameNotification>? Notifications = null
 	);
 }

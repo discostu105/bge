@@ -11,17 +11,20 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly MessageRepositoryWrite messageRepositoryWrite;
 		private readonly GameDef gameDef;
 		private readonly IPlayerNotificationService playerNotificationService;
+		private readonly INotificationService notificationService;
 
 		public BattleReportGenerator(
 			PlayerRepository playerRepository,
 			MessageRepositoryWrite messageRepositoryWrite,
 			GameDef gameDef,
-			IPlayerNotificationService playerNotificationService
+			IPlayerNotificationService playerNotificationService,
+			INotificationService notificationService
 		) {
 			this.playerRepository = playerRepository;
 			this.messageRepositoryWrite = messageRepositoryWrite;
 			this.gameDef = gameDef;
 			this.playerNotificationService = playerNotificationService;
+			this.notificationService = notificationService;
 		}
 
 		public void GenerateReports(BattleResult battleResult) {
@@ -62,6 +65,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 				$"Battle Report vs {attacker.Name}",
 				body
 			);
+
+			notificationService.Notify(battleResult.Defender, GameNotificationType.AttackReceived,
+				$"Attack from {attacker.Name}",
+				$"Outcome: {outcome}");
 
 			if (defender.UserId != null) {
 				playerNotificationService.Push(defender.UserId, $"Your base was attacked by {attacker.Name}! ({outcome})", NotificationKind.Warning);

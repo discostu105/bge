@@ -1,6 +1,7 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using System;
 using System.Threading;
 
@@ -10,10 +11,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly TimeProvider timeProvider;
+		private readonly INotificationService notificationService;
 
-		public MessageRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider) {
+		public MessageRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider, INotificationService notificationService) {
 			this.worldStateAccessor = worldStateAccessor;
 			this.timeProvider = timeProvider;
+			this.notificationService = notificationService;
 		}
 
 		// Used by BattleReportGenerator for system messages (no sender)
@@ -45,6 +48,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 					IsRead = false
 				});
 			}
+			notificationService.Notify(command.RecipientId, GameNotificationType.MessageReceived,
+				$"New message: {command.Subject}");
 			return id;
 		}
 
