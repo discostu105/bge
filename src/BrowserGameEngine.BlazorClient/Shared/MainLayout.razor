@@ -14,34 +14,49 @@
 <div class="main">
     <div class="top-row px-4 d-flex align-items-center justify-content-between">
         <_PlayerResources />
-        <div class="d-flex align-items-center gap-3">
-            <div class="position-relative" style="cursor:pointer;" @onclick="ToggleNotifications">
-                <span style="font-size:1.4rem;" title="Notifications">&#128276;</span>
-                @if (_notifications.Count > 0) {
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem;">
-                        @(_notifications.Count > 9 ? "9+" : _notifications.Count.ToString())
+        <div class="notif-bell-wrapper">
+            <button class="notif-bell-btn" @onclick="ToggleNotifications" title="Notifications" aria-label="Notifications">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                @if (_unreadCount > 0) {
+                    <span class="notif-badge" aria-label="@_unreadCount unread notifications">
+                        @(_unreadCount > 9 ? "9+" : _unreadCount.ToString())
                     </span>
                 }
-            </div>
+            </button>
+
             @if (_showNotifications) {
-                <div class="position-absolute bg-white border rounded shadow" style="top:3.5rem;right:1rem;width:340px;max-height:400px;overflow-y:auto;z-index:1050;">
-                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
-                        <strong>Notifications</strong>
+                <div class="notif-backdrop" @onclick="CloseNotifications"></div>
+                <div class="notif-panel">
+                    <div class="notif-panel-header">
+                        <span class="notif-panel-title">Notifications</span>
                         @if (_notifications.Count > 0) {
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="DismissAll">Clear all</button>
+                            <button class="notif-mark-all-btn" @onclick="DismissAll">Mark all read</button>
                         }
                     </div>
                     @if (_notifications.Count == 0) {
-                        <div class="px-3 py-3 text-muted text-center">No notifications</div>
+                        <div class="notif-empty">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;margin-bottom:0.5rem;">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <div>No new notifications</div>
+                        </div>
                     } else {
-                        @foreach (var n in _notifications) {
-                            <div class="d-flex align-items-start px-3 py-2 border-bottom @GetNotificationClass(n.Kind)">
-                                <div class="flex-grow-1">
-                                    <div style="font-size:0.85rem;">@n.Message</div>
-                                    <div class="text-muted" style="font-size:0.75rem;">@FormatNotificationTime(n.CreatedAt)</div>
-                                </div>
-                            </div>
-                        }
+                        <div class="notif-list">
+                            @foreach (var n in _notifications) {
+                                <button class="notif-item notif-item--@GetNotificationVariant(n.Kind)" @onclick="() => NavigateToNotification(n)">
+                                    <div class="notif-item-icon">@GetNotificationIcon(n.Kind)</div>
+                                    <div class="notif-item-body">
+                                        <div class="notif-item-msg">@n.Message</div>
+                                        <div class="notif-item-time">@FormatNotificationTime(n.CreatedAt)</div>
+                                    </div>
+                                    <div class="notif-item-arrow">›</div>
+                                </button>
+                            }
+                        </div>
                     }
                 </div>
             }
@@ -94,6 +109,7 @@
 
     private List<PlayerNotificationViewModel> _notifications = new();
     private bool _showNotifications = false;
+    private int _unreadCount => _notifications.Count(n => !n.IsRead);
 
     protected override void OnInitialized() {
         CurrentGameService.OnChanged += OnGameChanged;
@@ -174,10 +190,45 @@
         _showNotifications = !_showNotifications;
     }
 
-    private static string GetNotificationClass(NotificationKind kind) => kind switch {
-        NotificationKind.Warning => "bg-warning bg-opacity-10",
-        NotificationKind.GameEvent => "bg-info bg-opacity-10",
-        _ => ""
+    private void CloseNotifications() {
+        _showNotifications = false;
+    }
+
+    private void NavigateToNotification(PlayerNotificationViewModel n) {
+        _showNotifications = false;
+        var gameId = CurrentGameService.CurrentGameId;
+        if (gameId == null) return;
+
+        var destination = n.Kind switch {
+            NotificationKind.AttackReceived => $"games/{gameId}/base",
+            NotificationKind.AllianceRequest => $"games/{gameId}/diplomacy",
+            NotificationKind.MessageReceived => $"games/{gameId}/messages",
+            NotificationKind.SpyAttempted => $"games/{gameId}/spy",
+            NotificationKind.GameEvent => $"games/{gameId}/base",
+            NotificationKind.Warning => $"games/{gameId}/base",
+            _ => $"games/{gameId}/base"
+        };
+        Nav.NavigateTo(destination);
+    }
+
+    private static string GetNotificationIcon(NotificationKind kind) => kind switch {
+        NotificationKind.Warning => "⚠",
+        NotificationKind.GameEvent => "⚔",
+        NotificationKind.AttackReceived => "🛡",
+        NotificationKind.AllianceRequest => "🤝",
+        NotificationKind.MessageReceived => "✉",
+        NotificationKind.SpyAttempted => "🕵",
+        _ => "ℹ"
+    };
+
+    private static string GetNotificationVariant(NotificationKind kind) => kind switch {
+        NotificationKind.Warning => "warning",
+        NotificationKind.AttackReceived => "danger",
+        NotificationKind.GameEvent => "event",
+        NotificationKind.AllianceRequest => "info",
+        NotificationKind.MessageReceived => "info",
+        NotificationKind.SpyAttempted => "warning",
+        _ => "default"
     };
 
     private static string FormatNotificationTime(DateTime createdAt) {
