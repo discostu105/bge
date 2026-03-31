@@ -45,29 +45,25 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
-		/// <summary>Returns all spyable players (excluding self) with per-target cooldown status.</summary>
+		/// <summary>Returns all players except the current player, with per-target spy cooldown status, sorted by score descending.</summary>
 		[HttpGet]
 		[ProducesResponseType(typeof(IEnumerable<SpyPlayerEntryViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<IEnumerable<SpyPlayerEntryViewModel>> Players() {
 			if (!currentUserContext.IsValid) return Unauthorized();
-			var myPlayerId = currentUserContext.PlayerId!;
-			var result = playerRepository.GetAll()
-				.Where(p => p.PlayerId != myPlayerId)
-				.Select(p => {
-					var name = p.UserId != null
+			var currentPlayerId = currentUserContext.PlayerId!;
+			return playerRepository.GetAll()
+				.Where(p => p.PlayerId != currentPlayerId)
+				.Select(p => new SpyPlayerEntryViewModel {
+					PlayerId = p.PlayerId.Id,
+					PlayerName = p.UserId != null
 						? userRepository.GetDisplayNameByUserId(p.UserId) ?? p.Name
-						: p.Name;
-					return new SpyPlayerEntryViewModel {
-						PlayerId = p.PlayerId.ToString(),
-						PlayerName = name,
-						Score = scoreRepository.GetScore(p.PlayerId),
-						CooldownExpiresAt = spyRepository.GetCooldownExpiry(myPlayerId, p.PlayerId)
-					};
+						: p.Name,
+					Score = scoreRepository.GetScore(p.PlayerId),
+					CooldownExpiresAt = spyRepository.GetCooldownExpiry(currentPlayerId, p.PlayerId)
 				})
 				.OrderByDescending(p => p.Score)
 				.ToList();
-			return Ok(result);
 		}
 
 		/// <summary>Executes a spy mission against a target player, returning fuzzy intel at a mineral cost. Subject to a 30-minute per-target cooldown.</summary>

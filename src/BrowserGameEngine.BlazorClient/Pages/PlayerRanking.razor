@@ -37,6 +37,9 @@
                         <th>#</th>
                         <th>Name</th>
                         <th>Score</th>
+                        <th>Minerals</th>
+                        <th>Gas</th>
+                        <th>Home Units</th>
                         <th>Type</th>
                         <th>Status</th>
                         <th>Protection</th>
@@ -48,6 +51,9 @@
                         <td><strong>#@rank</strong></td>
                         <td>@item.PlayerName</td>
                         <td>@item.Score</td>
+                        <td>@if (item.ApproxMinerals.HasValue) { @item.ApproxMinerals.Value.ToString("N0") } else { <span class="text-muted fst-italic" title="Scout this player to reveal their resources">?</span> }</td>
+                        <td>@if (item.ApproxGas.HasValue) { @item.ApproxGas.Value.ToString("N0") } else { <span class="text-muted fst-italic" title="Scout this player to reveal their resources">?</span> }</td>
+                        <td>@if (item.ApproxHomeUnitCount.HasValue) { @item.ApproxHomeUnitCount.Value.ToString("N0") } else { <span class="text-muted fst-italic" title="Scout this player to reveal their units">?</span> }</td>
                         <td>@(item.IsAgent ? "[Bot]" : "Human")</td>
                         <td>@(item.IsOnline ? "Online" : "Offline")</td>
                         <td>@(item.ProtectionTicksRemaining > 0 ? $"{item.ProtectionTicksRemaining} ticks" : "")</td>
