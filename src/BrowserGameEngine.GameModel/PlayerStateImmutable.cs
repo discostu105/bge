@@ -23,6 +23,7 @@ namespace BrowserGameEngine.GameModel {
 		IList<string>? UnlockedTechs = null,
 		string? TechBeingResearched = null,
 		int TechResearchTimer = 0,
-		IDictionary<string, SpyResult>? LastSpyResults = null
+		IDictionary<string, SpyResult>? LastSpyResults = null,
+		IList<SpyAttemptLog>? SpyAttemptLogs = null
 	);
 }

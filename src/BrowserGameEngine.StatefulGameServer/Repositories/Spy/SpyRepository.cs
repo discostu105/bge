@@ -1,6 +1,8 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class SpyRepository {
@@ -24,6 +26,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var expiry = lastSpyTime + SpyConstants.CooldownDuration;
 			var now = timeProvider.GetUtcNow().UtcDateTime;
 			return expiry > now ? expiry : null;
+		}
+
+		public IReadOnlyList<SpyAttemptLog> GetDetectedSpyAttempts(PlayerId targetPlayerId) {
+			return world.GetPlayer(targetPlayerId).State.SpyAttemptLogs
+				.Where(a => a.Detected)
+				.OrderByDescending(a => a.Timestamp)
+				.ToList();
 		}
 	}
 }

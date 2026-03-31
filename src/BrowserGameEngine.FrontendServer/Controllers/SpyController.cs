@@ -45,6 +45,34 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
+		/// <summary>Returns all detected spy attempts against the current player, most recent first.</summary>
+		[HttpGet]
+		[ProducesResponseType(typeof(IEnumerable<SpyAttemptViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<IEnumerable<SpyAttemptViewModel>> Attempts() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var currentPlayerId = currentUserContext.PlayerId!;
+			var attempts = spyRepository.GetDetectedSpyAttempts(currentPlayerId);
+			return attempts.Select(a => {
+				string attackerName;
+				try {
+					var attacker = playerRepository.Get(a.AttackerPlayerId);
+					attackerName = attacker.UserId != null
+						? userRepository.GetDisplayNameByUserId(attacker.UserId) ?? attacker.Name
+						: attacker.Name;
+				} catch {
+					attackerName = a.AttackerPlayerId.ToString();
+				}
+				return new SpyAttemptViewModel {
+					Id = a.Id,
+					AttackerName = attackerName,
+					ActionType = a.ActionType,
+					Detected = a.Detected,
+					Timestamp = a.Timestamp
+				};
+			}).ToList();
+		}
+
 		/// <summary>Returns all players except the current player, with per-target spy cooldown status, sorted by score descending.</summary>
 		[HttpGet]
 		[ProducesResponseType(typeof(IEnumerable<SpyPlayerEntryViewModel>), StatusCodes.Status200OK)]

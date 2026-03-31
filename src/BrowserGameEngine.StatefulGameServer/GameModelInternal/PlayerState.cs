@@ -25,6 +25,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public string? TechBeingResearched { get; set; }
 		public int TechResearchTimer { get; set; }
 		public Dictionary<string, SpyResult> LastSpyResults { get; set; } = new Dictionary<string, SpyResult>();
+		public List<SpyAttemptLog> SpyAttemptLogs { get; set; } = new List<SpyAttemptLog>();
 	}
 
 	internal static class PlayerStateExtensions {
@@ -48,7 +49,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UnlockedTechs: new List<string>(playerState.UnlockedTechs),
 				TechBeingResearched: playerState.TechBeingResearched,
 				TechResearchTimer: playerState.TechResearchTimer,
-				LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults)
+				LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults),
+				SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs)
 			);
 		}
 
@@ -79,7 +81,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				TechResearchTimer = playerStateImmutable.TechResearchTimer,
 				LastSpyResults = playerStateImmutable.LastSpyResults != null
 					? new Dictionary<string, SpyResult>(playerStateImmutable.LastSpyResults)
-					: new Dictionary<string, SpyResult>()
+					: new Dictionary<string, SpyResult>(),
+				SpyAttemptLogs = playerStateImmutable.SpyAttemptLogs != null
+					? new List<SpyAttemptLog>(playerStateImmutable.SpyAttemptLogs)
+					: new List<SpyAttemptLog>()
 			};
 		}
 	}
