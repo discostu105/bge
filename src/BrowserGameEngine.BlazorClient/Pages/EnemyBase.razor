@@ -52,7 +52,19 @@
         <p class="fs-4 fw-bold @(battleResult.Outcome == "AttackerWon" ? "text-success" : battleResult.Outcome == "DefenderWon" ? "text-danger" : "text-warning")">
             @(battleResult.Outcome == "AttackerWon" ? "Victory!" : battleResult.Outcome == "DefenderWon" ? "Defeat" : "Draw")
         </p>
-        <p><strong>@battleResult.AttackerName</strong> vs <strong>@battleResult.DefenderName</strong></p>
+        <p>
+            @if (GameId != null && battleResult.AttackerId != null) {
+                <a href="games/@GameId/player/@battleResult.AttackerId"><strong>@battleResult.AttackerName</strong></a>
+            } else {
+                <strong>@battleResult.AttackerName</strong>
+            }
+            <span> vs </span>
+            @if (GameId != null && battleResult.DefenderId != null) {
+                <a href="games/@GameId/player/@battleResult.DefenderId"><strong>@battleResult.DefenderName</strong></a>
+            } else {
+                <strong>@battleResult.DefenderName</strong>
+            }
+        </p>
 
         <div class="row mb-3">
             <div class="col-md-6">
