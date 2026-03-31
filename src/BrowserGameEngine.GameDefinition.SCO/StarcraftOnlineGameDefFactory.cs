@@ -799,6 +799,39 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Prerequisites = new List<TechNodeId> { Id.TechNode("combat-stims"), Id.TechNode("defensive-fortifications") },
 						EffectType = TechEffectType.DefenseBonus,
 						EffectValue = 8
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-basic"),
+						Name = "Counter-Intelligence",
+						Description = "Basic spy detection. 15% chance to detect incoming spy operations.",
+						Tier = 1,
+						Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
+						ResearchTimeTicks = 5,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-advanced"),
+						Name = "Advanced Counter-Intelligence",
+						Description = "Advanced surveillance systems. 30% cumulative chance to detect spy operations.",
+						Tier = 2,
+						Cost = CostHelper.Create(("minerals", 200), ("gas", 100)),
+						ResearchTimeTicks = 10,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-basic") },
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-mastery"),
+						Name = "Counter-Intelligence Mastery",
+						Description = "Elite spy detection network. 50% cumulative chance to detect spy operations.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-advanced") },
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.20m
 					}
 				}
 			};

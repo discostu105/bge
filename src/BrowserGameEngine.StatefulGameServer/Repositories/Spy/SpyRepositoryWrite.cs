@@ -14,19 +14,24 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly SpyRepository spyRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
+		private readonly TechRepository techRepository;
 		private readonly TimeProvider timeProvider;
 		private readonly Cost spyCost;
+
+		private const decimal BaseDetectChance = 0.15m;
 
 		public SpyRepositoryWrite(
 			IWorldStateAccessor worldStateAccessor,
 			SpyRepository spyRepository,
 			ResourceRepositoryWrite resourceRepositoryWrite,
+			TechRepository techRepository,
 			GameDef gameDef,
 			TimeProvider timeProvider
 		) {
 			this.worldStateAccessor = worldStateAccessor;
 			this.spyRepository = spyRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
+			this.techRepository = techRepository;
 			this.timeProvider = timeProvider;
 			spyCost = Cost.FromSingle(GetGrowthResource(gameDef), SpyConstants.SpyCostAmount);
 		}
@@ -76,6 +81,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 						return new SpyUnitEstimate(g.Key, Math.Max(0, (int)(exactCount * noise)));
 					})
 					.ToList();
+
+				// Detection roll: probability is the sum of CounterIntelDetection tech effect values for the target
+				var detectionProbability = techRepository.GetTotalEffectValue(command.TargetPlayerId, TechEffectType.CounterIntelDetection);
+				var detected = detectionProbability > 0 && (decimal)rng.NextDouble() < detectionProbability;
+
+				targetState.SpyAttemptLogs.Add(new SpyAttemptLog(
+					Id: Guid.NewGuid(),
+					AttackerPlayerId: command.SpyingPlayerId,
+					ActionType: "Spy",
+					Detected: detected,
+					Timestamp: now
+				));
 
 				var result = new SpyResult(
 					TargetPlayerId: command.TargetPlayerId,

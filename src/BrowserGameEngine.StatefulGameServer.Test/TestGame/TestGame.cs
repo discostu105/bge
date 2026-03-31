@@ -77,7 +77,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), Accessor, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 			MarketRepository = new MarketRepository(Accessor, ResourceRepository, ResourceRepositoryWrite);
 			SpyRepository = new SpyRepository(Accessor, TimeProvider.System);
-			SpyRepositoryWrite = new SpyRepositoryWrite(Accessor, SpyRepository, ResourceRepositoryWrite, GameDef, TimeProvider.System);
+			SpyRepositoryWrite = new SpyRepositoryWrite(Accessor, SpyRepository, ResourceRepositoryWrite, TechRepository, GameDef, TimeProvider.System);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));

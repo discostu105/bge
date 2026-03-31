@@ -34,7 +34,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var spyRepo = new SpyRepository(accessor, time);
 			var resourceRepo = new ResourceRepository(accessor, gameDef);
 			var resourceRepoWrite = new ResourceRepositoryWrite(accessor, resourceRepo, gameDef);
-			var spyRepoWrite = new SpyRepositoryWrite(accessor, spyRepo, resourceRepoWrite, gameDef, time);
+			var techRepo = new TechRepository(accessor, gameDef);
+			var spyRepoWrite = new SpyRepositoryWrite(accessor, spyRepo, resourceRepoWrite, techRepo, gameDef, time);
 			var fog = new FogOfWarRepository(accessor, time);
 			return (fog, time, spyRepoWrite, spyRepo);
 		}

@@ -12,7 +12,8 @@ namespace BrowserGameEngine.GameDefinition {
 		ProductionBoostGas,
 		AttackBonus,
 		DefenseBonus,
-		SpyEfficiency
+		SpyEfficiency,
+		CounterIntelDetection
 	}
 
 	public record TechNodeDef {
