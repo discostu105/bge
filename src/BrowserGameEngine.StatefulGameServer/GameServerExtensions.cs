@@ -55,6 +55,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<MarketRepository>();
 			services.AddSingleton<SpyRepository>();
 			services.AddSingleton<SpyRepositoryWrite>();
+			services.AddSingleton<FogOfWarRepository>();
 			services.AddSingleton<TechRepository>();
 			services.AddSingleton<TechRepositoryWrite>();
 
