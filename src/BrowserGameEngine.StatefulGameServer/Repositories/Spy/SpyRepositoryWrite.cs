@@ -17,9 +17,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly TimeProvider timeProvider;
 		private readonly Cost spyCost;
 
-		private const decimal SpyCostAmount = 50m;
-		private static readonly TimeSpan CooldownDuration = TimeSpan.FromMinutes(30);
-
 		public SpyRepositoryWrite(
 			IWorldStateAccessor worldStateAccessor,
 			SpyRepository spyRepository,
@@ -31,7 +28,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.spyRepository = spyRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 			this.timeProvider = timeProvider;
-			spyCost = Cost.FromSingle(GetGrowthResource(gameDef), SpyCostAmount);
+			spyCost = Cost.FromSingle(GetGrowthResource(gameDef), SpyConstants.SpyCostAmount);
 		}
 
 		private static ResourceDefId GetGrowthResource(GameDef gameDef) {
@@ -42,6 +39,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 			return gameDef.ScoreResource;
 		}
+
+		public Cost GetSpyCost() => spyCost;
 
 		public SpyResult ExecuteSpy(SpyCommand command) {
 			lock (_lock) {
@@ -82,7 +81,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					ApproximateResources: approxResources,
 					UnitEstimates: unitGroups,
 					ReportTime: now,
-					CooldownExpiresAt: now + CooldownDuration
+					CooldownExpiresAt: now + SpyConstants.CooldownDuration
 				);
 			}
 		}

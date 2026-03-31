@@ -8,5 +8,6 @@ namespace BrowserGameEngine.Shared {
 	public class EnemyBaseViewModel {
 		public required UnitsViewModel PlayerAttackingUnits { get; set; }
 		public required UnitsViewModel EnemyDefendingUnits { get; set; }
+		public string SpyCostLabel { get; set; } = "";
 	}
 }

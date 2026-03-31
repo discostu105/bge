@@ -17,7 +17,7 @@
         Attack
     </button>
     <button class="btn btn-secondary ms-2" @onclick="SendSpy" disabled="@spyLoading">
-        @(spyLoading ? "Spying..." : "Send Spy (50 minerals)")
+        @(spyLoading ? "Spying..." : $"Send Spy ({model.SpyCostLabel})")
     </button>
 
     @if (!string.IsNullOrEmpty(lastError)) {
