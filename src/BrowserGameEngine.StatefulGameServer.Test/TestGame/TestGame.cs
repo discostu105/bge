@@ -30,6 +30,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public UnitRepository UnitRepository { get; }
 		public IBattleBehavior BattleBehavior { get; }
 		public UpgradeRepository UpgradeRepository { get; }
+		public TechRepository TechRepository { get; }
+		public TechRepositoryWrite TechRepositoryWrite { get; }
 		public UnitRepositoryWrite UnitRepositoryWrite { get; }
 		public MessageRepository MessageRepository { get; }
 		public MessageRepositoryWrite MessageRepositoryWrite { get; }
@@ -66,7 +68,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			UnitRepository = new UnitRepository(Accessor, GameDef, PlayerRepository, AssetRepository);
 			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
 			UpgradeRepository = new UpgradeRepository(Accessor);
-			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
+			TechRepository = new TechRepository(Accessor, GameDef);
+			TechRepositoryWrite = new TechRepositoryWrite(Accessor, GameDef, TechRepository, ResourceRepository, ResourceRepositoryWrite);
+			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository, TechRepository);
 			MessageRepository = new MessageRepository(Accessor);
 			MessageRepositoryWrite = new MessageRepositoryWrite(Accessor, TimeProvider.System);
 			BuildQueueRepository = new BuildQueueRepository(Accessor);
@@ -77,7 +81,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
-			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger()));
+			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger(), TechRepository));
 			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
 			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), Accessor, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System);
 		}

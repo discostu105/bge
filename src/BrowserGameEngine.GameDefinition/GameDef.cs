@@ -11,6 +11,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<ResourceDef> Resources { get; init; } = new List<ResourceDef>();
 		public ResourceDefId ScoreResource { get; init; } = null!; // player ranking is based on this resource
 		public IEnumerable<GameTickModuleDef> GameTickModules { get; init; } = new List<GameTickModuleDef>();
+		public IEnumerable<TechNodeDef> TechNodes { get; init; } = new List<TechNodeDef>();
 		public TimeSpan TickDuration { get; init; } = TimeSpan.FromMinutes(20);
 
 	}
@@ -59,6 +60,10 @@ namespace BrowserGameEngine.GameDefinition {
 		}
 		public static void ValidateCost(this GameDef gameDef, Cost cost, string hint) {
 			foreach (var resource in cost.Resources.Keys) ValidateResourceDefId(gameDef, resource, hint);
+		}
+
+		public static TechNodeDef? GetTechNodeDef(this GameDef gameDef, TechNodeId techNodeId) {
+			return gameDef.TechNodes.SingleOrDefault(x => x.Id.Equals(techNodeId));
 		}
 	}
 }
