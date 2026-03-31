@@ -33,7 +33,9 @@ namespace BrowserGameEngine.Persistence {
 		public async Task Store(string name, byte[] blob) {
 			var file = GetFile(name);
 			file.Directory?.Create();
-			await File.WriteAllBytesAsync(file.FullName, blob);
+			var tmpPath = file.FullName + ".tmp";
+			await File.WriteAllBytesAsync(tmpPath, blob);
+			File.Move(tmpPath, file.FullName, overwrite: true);
 		}
 
 		public IEnumerable<string> List(string folderPrefix) {

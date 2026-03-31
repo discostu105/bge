@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
 using BrowserGameEngine.GameDefinition;
@@ -12,7 +13,9 @@ namespace BrowserGameEngine.Persistence {
 		}
 
 		public WorldStateImmutable Deserialize(byte[] blob) {
-			return JsonSerializer.Deserialize<WorldStateImmutable>(blob, GetOptions())!;
+			var result = JsonSerializer.Deserialize<WorldStateImmutable>(blob, GetOptions());
+			if (result is null) throw new InvalidDataException("Deserialized world state is null — blob may be empty or corrupted.");
+			return result;
 		}
 
 		private static JsonSerializerOptions GetOptions() {
