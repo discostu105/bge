@@ -552,6 +552,11 @@ tbody tr:hover {
     border-color: var(--color-border-default);
 }
 
+.card-footer {
+    background-color: var(--color-bg-elevated);
+    border-color: var(--color-border-default);
+}
+
 /* --- BGE-specific --------------------------------------------------- */
 .bge-asset {
     background-color: var(--color-bg-surface);
