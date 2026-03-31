@@ -100,6 +100,34 @@
 
     <_BuildQueue @ref="buildQueue" />
 
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Recent Activity</strong>
+            @if (notifications?.Count > 0) {
+                <button class="btn btn-sm btn-outline-secondary" @onclick="ClearNotifications">Clear</button>
+            }
+        </div>
+        <div class="card-body p-0">
+            @if (notifications == null) {
+                <div class="p-3 text-muted">Loading...</div>
+            } else if (notifications.Count == 0) {
+                <div class="p-3 text-muted">No recent activity.</div>
+            } else {
+                <ul class="list-group list-group-flush">
+                    @foreach (var n in notifications.Take(10)) {
+                        <li class="list-group-item d-flex align-items-start gap-2 py-2">
+                            <span>@NotificationIcon(n.Kind)</span>
+                            <div class="flex-grow-1">
+                                <span>@n.Message</span>
+                                <div class="text-muted" style="font-size:0.8rem">@RelativeTime(n.CreatedAt)</div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
 </div>
 
 <_TutorialChecklist GameId="@GameId" />
@@ -111,6 +139,7 @@
     private AssetsViewModel? model;
     private PlayerResourcesViewModel? resources;
     private GameDetailViewModel? gameDetail;
+    private List<PlayerNotificationViewModel>? notifications;
     private string? lastError;
     private string? colonizeError;
     private int colonizeAmount = 1;
@@ -127,7 +156,7 @@
     }
 
     private async Task RunRefreshLoop(CancellationToken ct) {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
             await InvokeAsync(Update);
             await InvokeAsync(StateHasChanged);
@@ -179,9 +208,19 @@
         if (buildQueue != null) await buildQueue.Update();
     }
 
+    private async Task ClearNotifications() {
+        await Http.DeleteAsync("api/notifications");
+        notifications = new List<PlayerNotificationViewModel>();
+    }
+
     private async Task Update() {
         model = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
         resources = await Http.GetFromJsonAsync<PlayerResourcesViewModel>("api/resources");
+        try {
+            notifications = await Http.GetFromJsonAsync<List<PlayerNotificationViewModel>>("api/notifications");
+        } catch {
+            // Non-critical
+        }
         if (!string.IsNullOrEmpty(GameId)) {
             try {
                 gameDetail = await Http.GetFromJsonAsync<GameDetailViewModel>($"api/games/{GameId}");
@@ -189,6 +228,20 @@
                 // Non-critical — banner simply won't show if fetch fails
             }
         }
+    }
+
+    private static string NotificationIcon(NotificationKind kind) => kind switch {
+        NotificationKind.Warning => "⚠️",
+        NotificationKind.GameEvent => "⚡",
+        _ => "ℹ️"
+    };
+
+    private static string RelativeTime(DateTime createdAt) {
+        var elapsed = DateTime.UtcNow - createdAt;
+        if (elapsed.TotalMinutes < 1) return "just now";
+        if (elapsed.TotalMinutes < 60) return $"{(int)elapsed.TotalMinutes}m ago";
+        if (elapsed.TotalHours < 24) return $"{(int)elapsed.TotalHours}h ago";
+        return $"{(int)elapsed.TotalDays}d ago";
     }
 
     public void Dispose() {
