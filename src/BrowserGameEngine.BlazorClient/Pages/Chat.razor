@@ -1,4 +1,5 @@
 @page "/chat"
+@page "/games/{GameId}/chat"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @implements IDisposable
@@ -82,6 +83,9 @@
 </div>
 
 @code {
+	[Parameter]
+	public string? GameId { get; set; }
+
 	private List<ChatMessageViewModel>? messages;
 	private string newMessageBody = "";
 	private string? lastMessageId;
