@@ -39,7 +39,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		/// <summary>Returns the current player's tech tree state.</summary>
 		[HttpGet]
 		[ProducesResponseType(typeof(TechTreeViewModel), StatusCodes.Status200OK)]
-		public TechTreeViewModel Get() {
+		public ActionResult<TechTreeViewModel> Get() {
+			if (!currentUserContext.IsValid) return Unauthorized();
 			var playerId = currentUserContext.PlayerId!;
 			var currentResearch = techRepository.GetTechBeingResearched(playerId);
 			var nodes = gameDef.TechNodes.Select(node => {
