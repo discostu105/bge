@@ -85,6 +85,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IWorldStateFactory>(worldStateFactory);
 			services.AddSingleton<IGameNotificationService, NullGameNotificationService>();
 			services.AddSingleton<IPlayerNotificationService, InMemoryPlayerNotificationService>();
+			services.AddSingleton<INotificationService, NotificationService>();
 			services.AddSingleton<GameLifecycleEngine>();
 		}
 	}

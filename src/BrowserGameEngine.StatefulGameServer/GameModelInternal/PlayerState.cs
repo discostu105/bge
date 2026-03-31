@@ -26,6 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int TechResearchTimer { get; set; }
 		public Dictionary<string, SpyResult> LastSpyResults { get; set; } = new Dictionary<string, SpyResult>();
 		public List<SpyAttemptLog> SpyAttemptLogs { get; set; } = new List<SpyAttemptLog>();
+		public List<GameNotification> Notifications { get; set; } = new List<GameNotification>();
 	}
 
 	internal static class PlayerStateExtensions {
@@ -50,7 +51,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				TechBeingResearched: playerState.TechBeingResearched,
 				TechResearchTimer: playerState.TechResearchTimer,
 				LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults),
-				SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs)
+				SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs),
+				Notifications: new List<GameNotification>(playerState.Notifications)
 			);
 		}
 
@@ -84,7 +86,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 					: new Dictionary<string, SpyResult>(),
 				SpyAttemptLogs = playerStateImmutable.SpyAttemptLogs != null
 					? new List<SpyAttemptLog>(playerStateImmutable.SpyAttemptLogs)
-					: new List<SpyAttemptLog>()
+					: new List<SpyAttemptLog>(),
+				Notifications = playerStateImmutable.Notifications != null
+					? new List<GameNotification>(playerStateImmutable.Notifications)
+					: new List<GameNotification>()
 			};
 		}
 	}

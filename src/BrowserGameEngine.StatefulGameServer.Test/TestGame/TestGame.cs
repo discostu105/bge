@@ -5,6 +5,7 @@ using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
+using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -72,7 +73,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			TechRepositoryWrite = new TechRepositoryWrite(Accessor, GameDef, TechRepository, ResourceRepository, ResourceRepositoryWrite);
 			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository, TechRepository);
 			MessageRepository = new MessageRepository(Accessor);
-			MessageRepositoryWrite = new MessageRepositoryWrite(Accessor, TimeProvider.System);
+			MessageRepositoryWrite = new MessageRepositoryWrite(Accessor, TimeProvider.System, NullNotificationService.Instance);
 			BuildQueueRepository = new BuildQueueRepository(Accessor);
 			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), Accessor, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 			MarketRepository = new MarketRepository(Accessor, ResourceRepository, ResourceRepositoryWrite);
