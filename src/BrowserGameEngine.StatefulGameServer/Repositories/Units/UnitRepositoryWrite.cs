@@ -22,6 +22,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly IBattleBehavior battleBehavior;
 		private readonly UpgradeRepository upgradeRepository;
+		private readonly TechRepository techRepository;
 
 		public UnitRepositoryWrite(ILogger<UnitRepositoryWrite> logger
 				, IWorldStateAccessor worldStateAccessor
@@ -33,6 +34,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, IBattleBehavior battleBehavior
 				, UpgradeRepository upgradeRepository
+				, TechRepository techRepository
 			) {
 			this.logger = logger;
 			this.worldStateAccessor = worldStateAccessor;
@@ -44,6 +46,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.battleBehavior = battleBehavior;
 			this.upgradeRepository = upgradeRepository;
+			this.techRepository = techRepository;
 		}
 
 		private List<Unit> Units(PlayerId playerId) => world.GetPlayer(playerId).State.Units;
@@ -228,8 +231,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public BattleResult Attack(PlayerId playerId, PlayerId enemyPlayerId) {
 			int attackerAttackLevel = upgradeRepository.GetAttackUpgradeLevel(playerId);
 			int defenderDefenseLevel = upgradeRepository.GetDefenseUpgradeLevel(enemyPlayerId);
-			var attackingUnits = ToBattleUnits(unitRepository.GetAttackingUnits(playerId, enemyPlayerId), attackerAttackLevel, 0).ToList();
-			var defendingUnits = ToBattleUnits(unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId), 0, defenderDefenseLevel).ToList();
+			int techAttackBonus = (int)techRepository.GetTotalEffectValue(playerId, TechEffectType.AttackBonus);
+			int techDefenseBonus = (int)techRepository.GetTotalEffectValue(enemyPlayerId, TechEffectType.DefenseBonus);
+			var attackingUnits = ToBattleUnits(unitRepository.GetAttackingUnits(playerId, enemyPlayerId), attackerAttackLevel, 0, techAttackBonus, 0).ToList();
+			var defendingUnits = ToBattleUnits(unitRepository.GetDefendingEnemyUnits(playerId, enemyPlayerId), 0, defenderDefenseLevel, 0, techDefenseBonus).ToList();
 
 			BattleResult battleResult = new BattleResult {
 				Attacker = playerId,
@@ -276,7 +281,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return string.Join(", ", attackingUnits.Select(x => $"({x.Count} × {x.UnitDefId})"));
 		}
 
-		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> units, int attackLevel, int defenseLevel) {
+		private IEnumerable<BtlUnit> ToBattleUnits(IEnumerable<UnitImmutable> units, int attackLevel, int defenseLevel, int techAttackBonus = 0, int techDefenseBonus = 0) {
 			return units.Select(x => {
 				var unitDef = gameDef.GetUnitDef(x.UnitDefId)!;
 				int attackBonus = attackLevel > 0 ? unitDef.AttackBonuses[attackLevel - 1] : 0;
@@ -284,8 +289,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				return new BtlUnit {
 					UnitDefId = x.UnitDefId,
 					Count = x.Count,
-					Attack = unitDef.Attack + attackBonus,
-					Defense = unitDef.Defense + defenseBonus,
+					Attack = unitDef.Attack + attackBonus + techAttackBonus,
+					Defense = unitDef.Defense + defenseBonus + techDefenseBonus,
 					Hitpoints = unitDef.Hitpoints,
 				};
 			});

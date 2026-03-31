@@ -20,6 +20,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int UpgradeResearchTimer { get; set; }
 		public UpgradeType UpgradeBeingResearched { get; set; }
 		public List<BuildQueueEntry> BuildQueue { get; set; } = new List<BuildQueueEntry>();
+		public Dictionary<string, DateTime> SpyCooldowns { get; set; } = new Dictionary<string, DateTime>();
+		public List<string> UnlockedTechs { get; set; } = new List<string>();
+		public string? TechBeingResearched { get; set; }
+		public int TechResearchTimer { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -38,7 +42,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
 				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
 				UpgradeBeingResearched: playerState.UpgradeBeingResearched,
-				BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList()
+				BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList(),
+				SpyCooldowns: new Dictionary<string, DateTime>(playerState.SpyCooldowns),
+				UnlockedTechs: new List<string>(playerState.UnlockedTechs),
+				TechBeingResearched: playerState.TechBeingResearched,
+				TechResearchTimer: playerState.TechResearchTimer
 			);
 		}
 
@@ -58,7 +66,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UpgradeResearchTimer = playerStateImmutable.UpgradeResearchTimer,
 				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched,
 				BuildQueue = (playerStateImmutable.BuildQueue ?? new List<BuildQueueEntryImmutable>())
-					.Select(x => x.ToMutable()).ToList()
+					.Select(x => x.ToMutable()).ToList(),
+				SpyCooldowns = playerStateImmutable.SpyCooldowns != null
+					? new Dictionary<string, DateTime>(playerStateImmutable.SpyCooldowns)
+					: new Dictionary<string, DateTime>(),
+				UnlockedTechs = playerStateImmutable.UnlockedTechs != null
+					? new List<string>(playerStateImmutable.UnlockedTechs)
+					: new List<string>(),
+				TechBeingResearched = playerStateImmutable.TechBeingResearched,
+				TechResearchTimer = playerStateImmutable.TechResearchTimer
 			};
 		}
 	}

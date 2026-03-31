@@ -33,6 +33,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			return (player.PlayerId, player.Name);
 		}
 
+
 		public void SetTickEngine(GameTickEngine tickEngine) { TickEngine = tickEngine; }
 	}
 }

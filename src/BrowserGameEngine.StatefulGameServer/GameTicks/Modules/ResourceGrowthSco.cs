@@ -21,6 +21,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private readonly UnitRepository unitRepository;
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 		private readonly IActionLogger actionLogger;
+		private readonly TechRepository techRepository;
 
 		private UnitDefId workerUnit = null!;
 		private ResourceDefId mineralResource = null!;
@@ -55,6 +56,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				, UnitRepository unitRepository
 				, UnitRepositoryWrite unitRepositoryWrite
 				, IActionLogger actionLogger
+				, TechRepository techRepository
 			) {
 			this.logger = logger;
 			this.gameDef = gameDef;
@@ -65,6 +67,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			this.unitRepository = unitRepository;
 			this.unitRepositoryWrite = unitRepositoryWrite;
 			this.actionLogger = actionLogger;
+			this.techRepository = techRepository;
 		}
 
 		public void SetProperty(string name, string value) {
@@ -123,7 +126,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 
 			// Mineral income (spec 2.3)
 			decimal mineralIncome = CalculateWorkerIncome(mineralWorkers, land, MineralsPerWorker, MineralEfficiencyFactor);
-			decimal totalMineralIncome = mineralIncome + BaseIncomeMinerals;
+			decimal mineralBoost = techRepository.GetTotalEffectValue(playerId, TechEffectType.ProductionBoostMinerals);
+			decimal totalMineralIncome = (mineralIncome + BaseIncomeMinerals) * (1 + mineralBoost);
 			decimal newMinerals = resourceRepositoryWrite.AddResources(playerId, mineralResource, totalMineralIncome);
 			logger.LogDebug("Added {Value} minerals to player {PlayerId} ({Workers} workers, land={Land}). New value: {NewValue}",
 				totalMineralIncome, playerId, mineralWorkers, land, newMinerals);
@@ -131,7 +135,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			// Gas income (spec 2.3) — only if gas-resource is configured
 			if (gasResource != null) {
 				decimal gasIncome = CalculateWorkerIncome(gasWorkers, land, GasPerWorker, GasEfficiencyFactor);
-				decimal totalGasIncome = gasIncome + BaseIncomeGas;
+				decimal gasBoost = techRepository.GetTotalEffectValue(playerId, TechEffectType.ProductionBoostGas);
+				decimal totalGasIncome = (gasIncome + BaseIncomeGas) * (1 + gasBoost);
 				decimal newGas = resourceRepositoryWrite.AddResources(playerId, gasResource, totalGasIncome);
 				logger.LogDebug("Added {Value} gas to player {PlayerId} ({Workers} workers, land={Land}). New value: {NewValue}",
 					totalGasIncome, playerId, gasWorkers, land, newGas);

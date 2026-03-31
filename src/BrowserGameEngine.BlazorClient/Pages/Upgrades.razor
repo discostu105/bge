@@ -6,7 +6,9 @@
 @inject TutorialService Tutorial
 @implements IDisposable
 
-<h1>Research</h1>
+<PageTitle>Upgrades — Age of Agents</PageTitle>
+
+<h1>Upgrades</h1>
 
 <style>
 	.tech-tree {
@@ -37,7 +39,7 @@
 
 	.tech-arrow {
 		font-size: 1.4rem;
-		color: #bbb;
+		color: #4B5563;
 		flex-shrink: 0;
 		user-select: none;
 	}
@@ -48,6 +50,7 @@
 		padding: 0.75rem 1rem;
 		width: 160px;
 		background: #111827;
+		color: #F9FAFB;
 		transition: border-color 0.2s, background 0.2s;
 	}
 
@@ -58,7 +61,7 @@
 
 	.tech-node.in-progress {
 		border-color: var(--race-color);
-		background: var(--race-color-light);
+		background: rgba(0,0,0,0.3);
 		animation: tech-pulse 1.5s ease-in-out infinite;
 	}
 
@@ -76,6 +79,7 @@
 		font-weight: bold;
 		font-size: 0.85rem;
 		margin-bottom: 0.4rem;
+		color: #F9FAFB;
 	}
 
 	.tech-node-status {
