@@ -19,6 +19,9 @@ namespace BrowserGameEngine.GameModel {
 		int UpgradeResearchTimer = 0,
 		UpgradeType UpgradeBeingResearched = UpgradeType.None,
 		IList<BuildQueueEntryImmutable>? BuildQueue = null,
-		IDictionary<string, DateTime>? SpyCooldowns = null
+		IDictionary<string, DateTime>? SpyCooldowns = null,
+		IList<string>? UnlockedTechs = null,
+		string? TechBeingResearched = null,
+		int TechResearchTimer = 0
 	);
 }
