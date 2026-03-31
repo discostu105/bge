@@ -76,6 +76,16 @@
                     <span class="oi oi-bar-chart" aria-hidden="true"></span> Ranking
                 </NavLink>
             </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/messages")">
+                    <span class="oi oi-envelope-closed" aria-hidden="true"></span> Messages
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/diplomacy")">
+                    <span class="oi oi-document" aria-hidden="true"></span> Diplomacy
+                </NavLink>
+            </li>
         </ul>
     }
 
@@ -90,6 +100,11 @@
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="alliances">
                 <span class="oi oi-people" aria-hidden="true"></span> Alliances
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="diplomacy">
+                <span class="oi oi-document" aria-hidden="true"></span> Diplomacy
             </NavLink>
         </li>
         <li class="nav-item px-3">

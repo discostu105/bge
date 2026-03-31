@@ -452,10 +452,7 @@ tbody tr:hover {
     }
 }
 
-.bge-asset {
-    border: 1px solid black;
-    overflow: auto;
-}
+/* (duplicate .bge-asset removed — dark theme rules above apply) */
 
 /* ── Workspace / game selector ────────────────────────────────────────── */
 

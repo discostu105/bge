@@ -27,6 +27,7 @@
                 <th>Count</th>
                 <th>Properties</th>
                 <th>Position</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -57,7 +58,7 @@
                                     <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
                                 }
                             }
-                            <NavLink class="nav-link" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
+                            <NavLink class="btn btn-sm btn-danger" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
                         </td>
                     </tr>
                 }

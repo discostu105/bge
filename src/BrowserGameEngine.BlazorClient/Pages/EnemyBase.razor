@@ -14,7 +14,7 @@
     <p><em>Loading...</em></p>
 } else {
 
-    <NavLink class="nav-link" href="units">Request Reinforcements</NavLink>
+    <NavLink class="btn btn-outline-secondary btn-sm mb-3" href="units">&#8592; Request Reinforcements</NavLink>
 
     <button class="btn btn-primary" @onclick="Attack">
         Attack
@@ -112,7 +112,7 @@
                         <td>@item.Count</td>
                         <td><_UnitProperties UnitDef="item.Definition" /></td>
                         <td>@item.PositionPlayerId</td>
-                        <td>Retreat</td>
+                        <td><button class="btn btn-sm btn-outline-secondary" disabled title="Not yet available">Retreat</button></td>
                     </tr>
                 }
             </tbody>
