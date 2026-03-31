@@ -20,6 +20,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int UpgradeResearchTimer { get; set; }
 		public UpgradeType UpgradeBeingResearched { get; set; }
 		public List<BuildQueueEntry> BuildQueue { get; set; } = new List<BuildQueueEntry>();
+		public Dictionary<string, DateTime> SpyCooldowns { get; set; } = new Dictionary<string, DateTime>();
+		public List<string> UnlockedTechs { get; set; } = new List<string>();
+		public string? TechBeingResearched { get; set; }
+		public int TechResearchTimer { get; set; }
+		public Dictionary<string, SpyResult> LastSpyResults { get; set; } = new Dictionary<string, SpyResult>();
+		public List<SpyAttemptLog> SpyAttemptLogs { get; set; } = new List<SpyAttemptLog>();
 	}
 
 	internal static class PlayerStateExtensions {
@@ -38,7 +44,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
 				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
 				UpgradeBeingResearched: playerState.UpgradeBeingResearched,
-				BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList()
+				BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList(),
+				SpyCooldowns: new Dictionary<string, DateTime>(playerState.SpyCooldowns),
+				UnlockedTechs: new List<string>(playerState.UnlockedTechs),
+				TechBeingResearched: playerState.TechBeingResearched,
+				TechResearchTimer: playerState.TechResearchTimer,
+				LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults),
+				SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs)
 			);
 		}
 
@@ -58,7 +70,21 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UpgradeResearchTimer = playerStateImmutable.UpgradeResearchTimer,
 				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched,
 				BuildQueue = (playerStateImmutable.BuildQueue ?? new List<BuildQueueEntryImmutable>())
-					.Select(x => x.ToMutable()).ToList()
+					.Select(x => x.ToMutable()).ToList(),
+				SpyCooldowns = playerStateImmutable.SpyCooldowns != null
+					? new Dictionary<string, DateTime>(playerStateImmutable.SpyCooldowns)
+					: new Dictionary<string, DateTime>(),
+				UnlockedTechs = playerStateImmutable.UnlockedTechs != null
+					? new List<string>(playerStateImmutable.UnlockedTechs)
+					: new List<string>(),
+				TechBeingResearched = playerStateImmutable.TechBeingResearched,
+				TechResearchTimer = playerStateImmutable.TechResearchTimer,
+				LastSpyResults = playerStateImmutable.LastSpyResults != null
+					? new Dictionary<string, SpyResult>(playerStateImmutable.LastSpyResults)
+					: new Dictionary<string, SpyResult>(),
+				SpyAttemptLogs = playerStateImmutable.SpyAttemptLogs != null
+					? new List<SpyAttemptLog>(playerStateImmutable.SpyAttemptLogs)
+					: new List<SpyAttemptLog>()
 			};
 		}
 	}

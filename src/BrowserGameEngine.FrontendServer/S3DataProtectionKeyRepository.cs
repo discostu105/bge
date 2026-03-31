@@ -33,7 +33,7 @@ internal sealed class S3DataProtectionKeyRepository : IXmlRepository
 		}).GetAwaiter().GetResult();
 
 		var elements = new List<XElement>();
-		foreach (var obj in list.S3Objects) {
+		foreach (var obj in list.S3Objects ?? []) {
 			var response = _s3.GetObjectAsync(_bucketName, obj.Key).GetAwaiter().GetResult();
 			using var stream = response.ResponseStream;
 			elements.Add(XElement.Load(stream));

@@ -18,6 +18,12 @@ namespace BrowserGameEngine.GameModel {
 		int DefenseUpgradeLevel = 0,
 		int UpgradeResearchTimer = 0,
 		UpgradeType UpgradeBeingResearched = UpgradeType.None,
-		IList<BuildQueueEntryImmutable>? BuildQueue = null
+		IList<BuildQueueEntryImmutable>? BuildQueue = null,
+		IDictionary<string, DateTime>? SpyCooldowns = null,
+		IList<string>? UnlockedTechs = null,
+		string? TechBeingResearched = null,
+		int TechResearchTimer = 0,
+		IDictionary<string, SpyResult>? LastSpyResults = null,
+		IList<SpyAttemptLog>? SpyAttemptLogs = null
 	);
 }

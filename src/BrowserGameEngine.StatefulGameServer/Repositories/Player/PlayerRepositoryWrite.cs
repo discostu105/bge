@@ -20,7 +20,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ChangePlayerName(ChangePlayerNameCommand command) {
-			Players[command.PlayerId].Name = command.NewName;
+			lock (_lock) {
+				Players[command.PlayerId].Name = command.NewName;
+			}
 		}
 
 		public void AssignWorkers(AssignWorkersCommand command, int totalWorkers) {

@@ -6,157 +6,199 @@
 @using BrowserGameEngine.BlazorClient.Code
 @implements IDisposable
 
-<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">Age of Agents</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+@* ── Mobile toggle ────────────────────────────────────────── *@
+<div class="nav-mobile-bar">
+    <span class="nav-brand-text">Age of Agents</span>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
 </div>
 
-<div class="@NavMenuCssClass">
+@* ── Two-column sidebar ───────────────────────────────────── *@
+<div class="nav-two-col @(collapseNavMenu ? "nav-two-col--collapsed" : "")">
 
-    @* ── Workspace / game selector ─────────────────── *@
-    <div class="nav-section-label">MY GAMES</div>
-    @if (_myGames == null) {
-        <div class="px-3 py-2" style="color:var(--color-text-muted);font-size:0.8rem;">Loading...</div>
-    } else if (_myGames.Count == 0) {
-        <div class="px-3 py-1" style="color:var(--color-text-muted);font-size:0.8rem;">No active games</div>
-    } else {
-        @foreach (var game in _myGames) {
-            var isActive = CurrentGameService.CurrentGameId == game.GameId;
-            <button class="workspace-item @(isActive ? "workspace-item--active" : "")"
-                    @onclick="() => SwitchToGame(game)"
-                    title="Play as @game.PlayerName in @game.GameName">
-                <div class="workspace-dot @GetStatusDotClass(game.GameStatus)"></div>
-                <div class="workspace-info">
-                    <div class="workspace-name">@game.GameName</div>
-                    <div class="workspace-player">@game.PlayerName</div>
-                </div>
-                @if (isActive) {
-                    <span class="workspace-check">&#10003;</span>
+    @* ── Left strip: game switcher ────────────────────────── *@
+    <div class="nav-strip">
+        <div class="nav-strip-top">
+            <a href="" class="nav-strip-logo" title="Age of Agents">
+                <span class="nav-strip-logo-text">AoA</span>
+            </a>
+
+            @if (_myGames == null) {
+                <div class="nav-strip-spinner"></div>
+            } else {
+                @foreach (var game in _myGames) {
+                    var isActive = CurrentGameService.CurrentGameId == game.GameId;
+                    <button class="nav-game-icon @(isActive ? "nav-game-icon--active" : "")"
+                            @onclick="() => SwitchToGame(game)"
+                            title="@game.GameName — @game.PlayerName">
+                        <span class="nav-game-icon-letter">@(game.GameName?.Length > 0 ? game.GameName[0].ToString().ToUpper() : "G")</span>
+                        <span class="nav-game-status-dot @GetStatusDotClass(game.GameStatus)"></span>
+                    </button>
                 }
-            </button>
-        }
-    }
-    <a class="workspace-browse" href="lobby">
-        <span class="oi oi-plus" aria-hidden="true"></span> Browse / Join Games
-    </a>
+            }
 
-    @* ── In-game navigation (only when a game is active) ── *@
-    @if (CurrentGameService.CurrentGameId != null) {
-        <div class="nav-section-label">GAME</div>
-        <ul class="nav flex-column">
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/base")">
-                    <span class="oi oi-layers" aria-hidden="true"></span> Base
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/units")">
-                    <span class="oi oi-shield" aria-hidden="true"></span> Units
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/unitdefinitions")">
-                    <span class="oi oi-spreadsheet" aria-hidden="true"></span> Unit Types
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/upgrades")">
-                    <span class="oi oi-beaker" aria-hidden="true"></span> Research
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/market")">
-                    <span class="oi oi-cart" aria-hidden="true"></span> Market
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@($"games/{CurrentGameService.CurrentGameId}/ranking")">
-                    <span class="oi oi-bar-chart" aria-hidden="true"></span> Ranking
-                </NavLink>
-            </li>
-        </ul>
-    }
-
-    @* ── General navigation ────────────────────────── *@
-    <div class="nav-section-label">GENERAL</div>
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="alliances">
-                <span class="oi oi-people" aria-hidden="true"></span> Alliances
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="allianceranking">
-                <span class="oi oi-graph" aria-hidden="true"></span> Alliance Ranking
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="players">
-                <span class="oi oi-person" aria-hidden="true"></span> Players
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="chat">
-                <span class="oi oi-chat" aria-hidden="true"></span> Chat
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="messages">
-                <span class="oi oi-envelope-closed" aria-hidden="true"></span> Messages
-                @if (AlertService.UnseenCount > 0) {
-                    <span class="badge bg-danger ms-1">@AlertService.UnseenCount</span>
-                }
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="profile">
-                <span class="oi oi-account-login" aria-hidden="true"></span> Profile
-            </NavLink>
-        </li>
-        <AuthorizeView>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="achievements">
-                <span class="oi oi-star" aria-hidden="true"></span> Achievements
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="history">
-                <span class="oi oi-clock" aria-hidden="true"></span> History
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="admin/games">
-                <span class="oi oi-cog" aria-hidden="true"></span> Admin: Games
-            </NavLink>
-        </li>
-        </AuthorizeView>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="signout">
-                <span class="oi oi-account-logout" aria-hidden="true"></span> Sign Out
-            </NavLink>
-        </li>
-    </ul>
-
-    @if (version != null) {
-        <div class="px-3 py-2" style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
-            v@version.CommitHash
+            <a href="lobby" class="nav-strip-btn" title="Browse / Join Games">
+                <span class="oi oi-plus" aria-hidden="true"></span>
+            </a>
         </div>
-    }
+
+        <div class="nav-strip-bottom">
+            @if (version != null) {
+                <span class="nav-strip-version" title="v@version.CommitHash">v</span>
+            }
+            <a href="signout" class="nav-strip-btn nav-strip-btn--signout" title="Sign Out">
+                <span class="oi oi-account-logout" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+
+    @* ── Right panel: contextual nav ──────────────────────── *@
+    <div class="nav-panel">
+        @if (CurrentGameService.CurrentGameId != null) {
+            @* ── In-game navigation ──────────────────────── *@
+            var gameId = CurrentGameService.CurrentGameId;
+            var gameName = CurrentGameService.CurrentGame?.Name ?? "Game";
+
+            <div class="nav-panel-header">
+                <div class="nav-panel-game-name">@gameName</div>
+                <a href="games" class="nav-panel-all-games" title="All Games">&#8592; Games</a>
+            </div>
+
+            <div class="nav-section-label">PLAY</div>
+            <ul class="nav flex-column">
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/base")">
+                        <span class="oi oi-layers" aria-hidden="true"></span> Base
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/units")">
+                        <span class="oi oi-shield" aria-hidden="true"></span> Units
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/unitdefinitions")">
+                        <span class="oi oi-spreadsheet" aria-hidden="true"></span> Unit Types
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/upgrades")">
+                        <span class="oi oi-beaker" aria-hidden="true"></span> Upgrades
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/research")">
+                        <span class="oi oi-fork" aria-hidden="true"></span> Tech Tree
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/market")">
+                        <span class="oi oi-cart" aria-hidden="true"></span> Market
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/spy")">
+                        <span class="oi oi-eye" aria-hidden="true"></span> Spy
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/ranking")">
+                        <span class="oi oi-bar-chart" aria-hidden="true"></span> Ranking
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/diplomacy")">
+                        <span class="oi oi-flag" aria-hidden="true"></span> Diplomacy
+                    </NavLink>
+                </li>
+            </ul>
+
+            <div class="nav-section-label">SOCIAL</div>
+            <ul class="nav flex-column">
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/alliances")">
+                        <span class="oi oi-people" aria-hidden="true"></span> Alliances
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/allianceranking")">
+                        <span class="oi oi-graph" aria-hidden="true"></span> Alliance Ranking
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/chat")">
+                        <span class="oi oi-chat" aria-hidden="true"></span> Chat
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="@($"games/{gameId}/messages")">
+                        <span class="oi oi-envelope-closed" aria-hidden="true"></span> Messages
+                        @if (AlertService.UnseenCount > 0) {
+                            <span class="badge bg-danger ms-1">@AlertService.UnseenCount</span>
+                        }
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="players">
+                        <span class="oi oi-person" aria-hidden="true"></span> Players
+                    </NavLink>
+                </li>
+            </ul>
+        } else {
+            @* ── Lobby / general navigation ──────────────── *@
+            <div class="nav-panel-header">
+                <div class="nav-panel-game-name">Browse</div>
+            </div>
+
+            <div class="nav-section-label">GENERAL</div>
+            <ul class="nav flex-column">
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="oi oi-home" aria-hidden="true"></span> Home
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="lobby">
+                        <span class="oi oi-list" aria-hidden="true"></span> Game Lobby
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="players">
+                        <span class="oi oi-person" aria-hidden="true"></span> Players
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="profile">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Profile
+                    </NavLink>
+                </li>
+                <AuthorizeView>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="achievements">
+                        <span class="oi oi-star" aria-hidden="true"></span> Achievements
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="history">
+                        <span class="oi oi-clock" aria-hidden="true"></span> History
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin/games">
+                        <span class="oi oi-cog" aria-hidden="true"></span> Admin: Games
+                    </NavLink>
+                </li>
+                </AuthorizeView>
+            </ul>
+        }
+    </div>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
     private VersionInfoViewModel? version;
     private List<MyGameViewModel>? _myGames;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu() {
         collapseNavMenu = !collapseNavMenu;

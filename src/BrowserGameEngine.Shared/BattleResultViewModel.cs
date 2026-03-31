@@ -7,7 +7,9 @@ namespace BrowserGameEngine.Shared {
 	}
 
 	public class BattleResultViewModel {
+		public string? AttackerId { get; set; }
 		public string? AttackerName { get; set; }
+		public string? DefenderId { get; set; }
 		public string? DefenderName { get; set; }
 		public string? Outcome { get; set; }
 		public int TotalAttackerStrengthBefore { get; set; }

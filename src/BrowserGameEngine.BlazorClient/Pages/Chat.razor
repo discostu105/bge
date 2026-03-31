@@ -1,4 +1,5 @@
 @page "/chat"
+@page "/games/{GameId}/chat"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @implements IDisposable
@@ -82,6 +83,12 @@
 </div>
 
 @code {
+	// Route parameter — present so /games/{GameId}/chat links work from the game-scoped nav.
+	// Not used in API calls: ChatController uses CurrentUserContext (set via the game switcher)
+	// to scope messages to the correct game, consistent with other game-scoped pages (e.g. Units.razor).
+	[Parameter]
+	public string? GameId { get; set; }
+
 	private List<ChatMessageViewModel>? messages;
 	private string newMessageBody = "";
 	private string? lastMessageId;

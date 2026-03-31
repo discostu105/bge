@@ -1,13 +1,15 @@
 using BrowserGameEngine.Shared;
 using Microsoft.AspNetCore.Mvc;
-using System;
+using System.Reflection;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Route("api/version")]
 	public class VersionController : ControllerBase {
 		private static readonly string CommitHash =
-			Environment.GetEnvironmentVariable("APP_VERSION") ?? "dev";
+			typeof(VersionController).Assembly
+				.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+				?.InformationalVersion ?? "dev";
 
 		/// <summary>Returns the deployed version (git commit hash) of the server.</summary>
 		[HttpGet]

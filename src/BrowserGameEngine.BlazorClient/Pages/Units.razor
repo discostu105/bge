@@ -5,6 +5,9 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
+<PageTitle>Units — Age of Agents</PageTitle>
+
+
 <h1>Units</h1>
 
 @if (!string.IsNullOrEmpty(lastError)) {
@@ -20,6 +23,7 @@
         Merge All Troops
     </button>
 
+    <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
@@ -27,6 +31,7 @@
                 <th>Count</th>
                 <th>Properties</th>
                 <th>Position</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -57,13 +62,14 @@
                                     <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
                                 }
                             }
-                            <NavLink class="nav-link" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
+                            <NavLink class="btn btn-sm btn-danger" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
                         </td>
                     </tr>
                 }
             }
         </tbody>
     </table>
+    </div>
 }
 
 @code {

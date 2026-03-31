@@ -15,5 +15,8 @@ namespace BrowserGameEngine.Shared {
 		public bool IsAgent { get; set; }
 		public DateTime? LastOnline { get; set; }
 		public bool IsOnline { get; set; }
+		public decimal? ApproxMinerals { get; set; }
+		public decimal? ApproxGas { get; set; }
+		public int? ApproxHomeUnitCount { get; set; }
 	}
 }

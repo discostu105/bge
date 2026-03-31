@@ -53,6 +53,11 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<BuildQueueRepository>();
 			services.AddSingleton<BuildQueueRepositoryWrite>();
 			services.AddSingleton<MarketRepository>();
+			services.AddSingleton<SpyRepository>();
+			services.AddSingleton<SpyRepositoryWrite>();
+			services.AddSingleton<FogOfWarRepository>();
+			services.AddSingleton<TechRepository>();
+			services.AddSingleton<TechRepositoryWrite>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
@@ -60,6 +65,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, ResourceGrowthSco>();
 			services.AddSingleton<IGameTickModule, NewPlayerProtectionModule>();
 			services.AddSingleton<IGameTickModule, UpgradeTimer>();
+			services.AddSingleton<IGameTickModule, TechResearchTimerModule>();
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this

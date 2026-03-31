@@ -1,8 +1,10 @@
 @page "/profile"
 @using BrowserGameEngine.Shared
 @using Microsoft.AspNetCore.Authorization
+@using BrowserGameEngine.BlazorClient.Code
 @attribute [Authorize]
 @inject HttpClient Http
+@inject AlertService AlertService
 
 <h1>Profile</h1>
 
@@ -139,17 +141,24 @@
 				<div class="stat-label">Wins</div>
 				<div class="stat-value">@model.Wins</div>
 			</div>
+			<div class="stat-item">
+				<div class="stat-label">Best Rank</div>
+				<div class="stat-value rank">@(model.BestRank > 0 ? $"#{model.BestRank}" : "—")</div>
+			</div>
 		</div>
-		<p style="font-size:0.8rem; color:#607080; margin-top:0.4rem;">Full history available once achievements are implemented.</p>
+		<div style="margin-top:0.5rem;">
+			<a href="history" style="font-size:0.85rem; color:#4a8fd4;">View full history →</a>
+		</div>
 
 		<div class="section-title">Settings</div>
 		<div class="mt-1">
 			<EditForm Model="@renameModel" OnValidSubmit="HandleRename">
 				<DataAnnotationsValidator />
-				<div class="d-flex gap-2 align-items-center">
+				<div class="mb-2">
+					<label for="PlayerName" class="form-label">Commander name</label>
 					<InputText id="PlayerName" class="form-control form-control-sm" style="max-width:220px;" @bind-Value="renameModel.PlayerName" />
-					<button type="submit" class="btn btn-sm btn-outline-secondary">Rename</button>
 				</div>
+				<button type="submit" class="btn btn-sm btn-primary">Save name</button>
 				<ValidationSummary />
 			</EditForm>
 			@if (renameSuccess) {
@@ -192,11 +201,13 @@
 			var resp = await Http.PostAsJsonAsync("api/playerprofile/changename", renameModel);
 			if (resp.IsSuccessStatusCode) {
 				renameSuccess = true;
+				AlertService.AddAlert("Name updated!");
 				if (model != null) {
 					model = model with { PlayerName = renameModel.PlayerName };
 				}
 			} else {
 				renameError = true;
+				AlertService.AddAlert("Failed to update name. Please try again.", AlertType.Danger);
 			}
 		} catch {
 			renameError = true;

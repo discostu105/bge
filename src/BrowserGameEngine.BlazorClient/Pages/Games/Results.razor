@@ -25,34 +25,39 @@
 
 	@if (model.Standings.Count == 0) {
 		<p class="text-muted">No standings recorded for this game.</p>
-	} else {
-		@if (model.Standings.Count >= 3) {
-			<div role="region" aria-label="Top 3 finishers" class="d-flex gap-3 mb-4 align-items-end justify-content-center">
-				@{ var top3 = model.Standings.Take(3).ToList(); }
+	}
+	@if (model.Standings.Count >= 1) {
+		var first = model.Standings[0];
+		var second = model.Standings.Count >= 2 ? model.Standings[1] : null;
+		var third = model.Standings.Count >= 3 ? model.Standings[2] : null;
+		<div role="region" aria-label="Top finishers" class="d-flex gap-3 mb-4 align-items-end justify-content-center">
+			@if (second != null) {
 				<div class="card border-secondary text-center" style="width:160px">
 					<div class="card-body py-2">
 						<div class="fs-4">🥈</div>
-						<div class="fw-bold">@top3[1].PlayerName</div>
-						<div class="text-muted small">@top3[1].Score.ToString("N0")</div>
+						<div class="fw-bold">@second.PlayerName</div>
+						<div class="text-muted small">@second.Score.ToString("N0")</div>
 					</div>
 				</div>
-				<div class="card border-warning text-center" style="width:180px">
-					<div class="card-body py-3">
-						<div class="fs-2">🏆</div>
-						<div class="fw-bold fs-5">@top3[0].PlayerName</div>
-						<div class="text-muted">@top3[0].Score.ToString("N0")</div>
-						<span class="badge bg-warning text-dark mt-1">Winner</span>
-					</div>
+			}
+			<div class="card border-warning text-center" style="width:180px">
+				<div class="card-body py-3">
+					<div class="fs-2">🏆</div>
+					<div class="fw-bold fs-5">@first.PlayerName</div>
+					<div class="text-muted">@first.Score.ToString("N0")</div>
+					<span class="badge bg-warning text-dark mt-1">Winner</span>
 				</div>
+			</div>
+			@if (third != null) {
 				<div class="card border-secondary text-center" style="width:160px">
 					<div class="card-body py-2">
 						<div class="fs-4">🥉</div>
-						<div class="fw-bold">@top3[2].PlayerName</div>
-						<div class="text-muted small">@top3[2].Score.ToString("N0")</div>
+						<div class="fw-bold">@third.PlayerName</div>
+						<div class="text-muted small">@third.Score.ToString("N0")</div>
 					</div>
 				</div>
-			</div>
-		}
+			}
+		</div>
 
 		<table class="table table-hover">
 			<thead>
@@ -64,7 +69,9 @@
 			</thead>
 			<tbody>
 				@foreach (var entry in model.Standings) {
-					<tr class="@(entry.IsWinner ? "table-warning" : "")">
+					var isMe = entry.PlayerId == model.CurrentPlayerId;
+					var rowClass = isMe ? "table-primary fw-semibold" : (entry.IsWinner ? "table-warning" : "");
+					<tr class="@rowClass">
 						<td>
 							@if (entry.IsWinner) {
 								<span>🏆 #@entry.Rank</span>
@@ -74,7 +81,9 @@
 						</td>
 						<td>
 							@entry.PlayerName
-							@if (entry.IsWinner) {
+							@if (isMe) {
+								<span class="badge bg-primary ms-2">You</span>
+							} else if (entry.IsWinner) {
 								<span class="badge bg-warning text-dark ms-2">Winner</span>
 							}
 						</td>

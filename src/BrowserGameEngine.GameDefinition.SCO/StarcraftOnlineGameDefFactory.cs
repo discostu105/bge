@@ -38,6 +38,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 
 					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
+					new GameTickModuleDef("techresearch:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("gamefinalization:1", new Dictionary<string, string> { }.ToFrozenDictionary())
 				},
@@ -660,6 +661,177 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") },
 						AttackBonuses = [0, 0, 0],
 						DefenseBonuses = [2, 4, 6]
+					}
+				},
+
+				TechNodes = new List<TechNodeDef> {
+					// Tier 1
+					new TechNodeDef {
+						Id = Id.TechNode("improved-mining"),
+						Name = "Improved Mining",
+						Description = "Increases mineral income by 15%.",
+						Tier = 1,
+						Cost = CostHelper.Create(("minerals", 50)),
+						ResearchTimeTicks = 3,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.ProductionBoostMinerals,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("gas-extraction"),
+						Name = "Efficient Gas Extraction",
+						Description = "Increases gas income by 15%.",
+						Tier = 1,
+						Cost = CostHelper.Create(("minerals", 50)),
+						ResearchTimeTicks = 3,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.ProductionBoostGas,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("troop-conditioning"),
+						Name = "Troop Conditioning",
+						Description = "+2 flat attack for all units.",
+						Tier = 1,
+						Cost = CostHelper.Create(("minerals", 50)),
+						ResearchTimeTicks = 3,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.AttackBonus,
+						EffectValue = 2
+					},
+					// Tier 2
+					new TechNodeDef {
+						Id = Id.TechNode("advanced-mining"),
+						Name = "Advanced Mining",
+						Description = "+30% mineral income.",
+						Tier = 2,
+						Cost = CostHelper.Create(("minerals", 150), ("gas", 50)),
+						ResearchTimeTicks = 8,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("improved-mining") },
+						EffectType = TechEffectType.ProductionBoostMinerals,
+						EffectValue = 0.30m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("combat-stims"),
+						Name = "Combat Stimulants",
+						Description = "+5 attack for all units.",
+						Tier = 2,
+						Cost = CostHelper.Create(("minerals", 150), ("gas", 50)),
+						ResearchTimeTicks = 8,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("troop-conditioning") },
+						EffectType = TechEffectType.AttackBonus,
+						EffectValue = 5
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("defensive-fortifications"),
+						Name = "Defensive Fortifications",
+						Description = "+5 defense for all units.",
+						Tier = 2,
+						Cost = CostHelper.Create(("minerals", 150), ("gas", 50)),
+						ResearchTimeTicks = 8,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("troop-conditioning") },
+						EffectType = TechEffectType.DefenseBonus,
+						EffectValue = 5
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("gas-refinement"),
+						Name = "Gas Refinement",
+						Description = "+30% gas income.",
+						Tier = 2,
+						Cost = CostHelper.Create(("minerals", 150), ("gas", 50)),
+						ResearchTimeTicks = 8,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("gas-extraction") },
+						EffectType = TechEffectType.ProductionBoostGas,
+						EffectValue = 0.30m
+					},
+					// Tier 3
+					new TechNodeDef {
+						Id = Id.TechNode("orbital-extraction"),
+						Name = "Orbital Extraction",
+						Description = "+60% mineral income.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("advanced-mining") },
+						EffectType = TechEffectType.ProductionBoostMinerals,
+						EffectValue = 0.60m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("advanced-weapons"),
+						Name = "Advanced Weapons Systems",
+						Description = "+10 attack for all units.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("combat-stims") },
+						EffectType = TechEffectType.AttackBonus,
+						EffectValue = 10
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("bunker-protocol"),
+						Name = "Bunker Protocol",
+						Description = "+10 defense for all units.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("defensive-fortifications") },
+						EffectType = TechEffectType.DefenseBonus,
+						EffectValue = 10
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("vespene-mastery"),
+						Name = "Vespene Mastery",
+						Description = "+60% gas income.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("gas-refinement") },
+						EffectType = TechEffectType.ProductionBoostGas,
+						EffectValue = 0.60m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("bio-engineering"),
+						Name = "Bio-Engineering",
+						Description = "+8 defense for all units.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("combat-stims"), Id.TechNode("defensive-fortifications") },
+						EffectType = TechEffectType.DefenseBonus,
+						EffectValue = 8
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-basic"),
+						Name = "Counter-Intelligence",
+						Description = "Basic spy detection. 15% chance to detect incoming spy operations.",
+						Tier = 1,
+						Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
+						ResearchTimeTicks = 5,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-advanced"),
+						Name = "Advanced Counter-Intelligence",
+						Description = "Advanced surveillance systems. 30% cumulative chance to detect spy operations.",
+						Tier = 2,
+						Cost = CostHelper.Create(("minerals", 200), ("gas", 100)),
+						ResearchTimeTicks = 10,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-basic") },
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-mastery"),
+						Name = "Counter-Intelligence Mastery",
+						Description = "Elite spy detection network. 50% cumulative chance to detect spy operations.",
+						Tier = 3,
+						Cost = CostHelper.Create(("minerals", 300), ("gas", 150)),
+						ResearchTimeTicks = 15,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-advanced") },
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.20m
 					}
 				}
 			};

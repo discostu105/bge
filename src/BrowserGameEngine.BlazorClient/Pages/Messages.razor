@@ -4,38 +4,44 @@
 @inject HttpClient Http
 @implements IDisposable
 
+<PageTitle>Messages — Age of Agents</PageTitle>
+
 <h1>Messages</h1>
 
-<h2>Compose</h2>
-<EditForm Model="@composeModel" OnValidSubmit="HandleSend">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
-	<div>
-		<label>To:</label>
-		@if (players == null) {
-			<InputText @bind-Value="composeModel.RecipientId" placeholder="Player ID" />
-		} else {
-			<select class="form-select" @bind="composeModel.RecipientId">
-				<option value="">— Select a player —</option>
-				@foreach (var p in players) {
-					<option value="@p.PlayerId">@p.PlayerName</option>
+<div class="card mb-4" style="max-width:580px">
+	<div class="card-header"><strong>Compose</strong></div>
+	<div class="card-body">
+		<EditForm Model="@composeModel" OnValidSubmit="HandleSend">
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+			<div class="mb-3">
+				<label class="form-label">To</label>
+				@if (players == null) {
+					<InputText class="form-control" @bind-Value="composeModel.RecipientId" placeholder="Player ID" />
+				} else {
+					<select class="form-select" @bind="composeModel.RecipientId">
+						<option value="">— Select a player —</option>
+						@foreach (var p in players) {
+							<option value="@p.PlayerId">@p.PlayerName</option>
+						}
+					</select>
 				}
-			</select>
-		}
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Subject</label>
+				<InputText class="form-control" @bind-Value="composeModel.Subject" placeholder="Subject" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Message</label>
+				<InputTextArea class="form-control" @bind-Value="composeModel.Body" placeholder="Write your message..." rows="4" />
+			</div>
+			<button type="submit" class="btn btn-primary">Send</button>
+			@if (!string.IsNullOrEmpty(sendResult)) {
+				<span class="ms-3 @(sendResult.StartsWith("Error") ? "text-danger" : "text-success")">@sendResult</span>
+			}
+		</EditForm>
 	</div>
-	<div>
-		<label>Subject:</label>
-		<InputText @bind-Value="composeModel.Subject" placeholder="Subject" />
-	</div>
-	<div>
-		<label>Message:</label>
-		<InputTextArea @bind-Value="composeModel.Body" placeholder="Write your message..." rows="4" />
-	</div>
-	<button type="submit">Send</button>
-	@if (!string.IsNullOrEmpty(sendResult)) {
-		<span style="margin-left:1em">@sendResult</span>
-	}
-</EditForm>
+</div>
 
 <h2>Inbox</h2>
 
@@ -55,7 +61,7 @@
 		</thead>
 		<tbody>
 			@foreach (var msg in inbox) {
-				<tr style="@(msg.IsRead ? "" : "font-weight:bold")">
+				<tr class="@(msg.IsRead ? "" : "fw-semibold")">
 					<td>@msg.SenderName</td>
 					<td>
 						<span @onclick="() => ToggleMessage(msg)" style="cursor:pointer">@msg.Subject</span>
@@ -63,14 +69,14 @@
 					<td>@msg.SentAt.ToLocalTime().ToString("g")</td>
 					<td>
 						@if (!msg.IsRead) {
-							<button @onclick="() => HandleMarkRead(msg)">Mark read</button>
+							<button class="btn btn-sm btn-outline-secondary" @onclick="() => HandleMarkRead(msg)">Mark read</button>
 						}
 					</td>
 				</tr>
 				@if (expandedMessageId == msg.MessageId) {
 					<tr>
-						<td colspan="4" style="background:#f5f5f5; padding:1em">
-							@msg.Body
+						<td colspan="4" class="px-3 py-3" style="background:var(--color-bg-elevated)">
+							@((MarkupString)msg.Body)
 						</td>
 					</tr>
 				}

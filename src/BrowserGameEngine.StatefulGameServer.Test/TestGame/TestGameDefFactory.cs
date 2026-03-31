@@ -74,6 +74,64 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					}
 				},
 
+				TechNodes = new List<TechNodeDef> {
+					new TechNodeDef {
+						Id = Id.TechNode("tech-tier1"),
+						Name = "Test Tech Tier 1",
+						Description = "Test tier 1",
+						Tier = 1,
+						Cost = CostHelper.Create(("res1", 50)),
+						ResearchTimeTicks = 2,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.ProductionBoostMinerals,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("tech-tier2"),
+						Name = "Test Tech Tier 2",
+						Description = "Test tier 2",
+						Tier = 2,
+						Cost = CostHelper.Create(("res1", 150)),
+						ResearchTimeTicks = 5,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("tech-tier1") },
+						EffectType = TechEffectType.AttackBonus,
+						EffectValue = 3
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-basic"),
+						Name = "Counter-Intelligence",
+						Description = "15% spy detection chance.",
+						Tier = 1,
+						Cost = CostHelper.Create(("res1", 100)),
+						ResearchTimeTicks = 3,
+						Prerequisites = new List<TechNodeId>(),
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-advanced"),
+						Name = "Advanced Counter-Intelligence",
+						Description = "+15% spy detection chance.",
+						Tier = 2,
+						Cost = CostHelper.Create(("res1", 200)),
+						ResearchTimeTicks = 5,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-basic") },
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.15m
+					},
+					new TechNodeDef {
+						Id = Id.TechNode("counter-intel-mastery"),
+						Name = "Counter-Intelligence Mastery",
+						Description = "+20% spy detection chance.",
+						Tier = 3,
+						Cost = CostHelper.Create(("res1", 300)),
+						ResearchTimeTicks = 8,
+						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-advanced") },
+						EffectType = TechEffectType.CounterIntelDetection,
+						EffectValue = 0.20m
+					}
+				},
+
 				Units = new List<UnitDef> {
 					new UnitDef {
 						Id = Id.UnitDef("unit1"),

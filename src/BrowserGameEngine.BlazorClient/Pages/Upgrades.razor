@@ -6,7 +6,9 @@
 @inject TutorialService Tutorial
 @implements IDisposable
 
-<h1>Research</h1>
+<PageTitle>Upgrades — Age of Agents</PageTitle>
+
+<h1>Upgrades</h1>
 
 <style>
 	.tech-tree {
@@ -31,34 +33,35 @@
 		width: 120px;
 		font-weight: bold;
 		font-size: 0.9rem;
-		color: #555;
+		color: var(--color-text-secondary, #9CA3AF);
 		flex-shrink: 0;
 	}
 
 	.tech-arrow {
 		font-size: 1.4rem;
-		color: #bbb;
+		color: #4B5563;
 		flex-shrink: 0;
 		user-select: none;
 	}
 
 	.tech-node {
-		border: 2px solid #ddd;
+		border: 2px solid #374151;
 		border-radius: 8px;
 		padding: 0.75rem 1rem;
 		width: 160px;
-		background: #fff;
+		background: #111827;
+		color: #F9FAFB;
 		transition: border-color 0.2s, background 0.2s;
 	}
 
 	.tech-node.completed {
-		border-color: #28a745;
-		background: #f0fff4;
+		border-color: #15803d;
+		background: rgba(21, 128, 61, 0.12);
 	}
 
 	.tech-node.in-progress {
 		border-color: var(--race-color);
-		background: var(--race-color-light);
+		background: rgba(0,0,0,0.3);
 		animation: tech-pulse 1.5s ease-in-out infinite;
 	}
 
@@ -76,20 +79,21 @@
 		font-weight: bold;
 		font-size: 0.85rem;
 		margin-bottom: 0.4rem;
+		color: #F9FAFB;
 	}
 
 	.tech-node-status {
 		font-size: 0.8rem;
-		color: #666;
+		color: #9CA3AF;
 	}
 
-	.tech-node-status.done { color: #28a745; font-weight: bold; }
+	.tech-node-status.done { color: #4ADE80; font-weight: bold; }
 	.tech-node-status.researching { color: var(--race-color); }
 
 	.tech-node-cost {
 		font-size: 0.75rem;
 		margin: 0.4rem 0 0.2rem;
-		color: #555;
+		color: #9CA3AF;
 	}
 
 	.tech-node-btn {

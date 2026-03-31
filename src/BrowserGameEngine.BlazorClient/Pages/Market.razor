@@ -13,18 +13,22 @@
     @if (model == null) {
         <p><em>Loading...</em></p>
     } else {
-        @if (!string.IsNullOrEmpty(lastError)) {
-            <span class="error">@lastError</span>
-        }
-
         <div class="row mt-3">
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Post Trade Offer</h5>
+                        @if (!string.IsNullOrEmpty(postError)) {
+                            <div class="alert alert-danger py-1 px-2 mb-2">@postError</div>
+                        }
                         <div class="mb-2">
                             <label class="form-label">Offer resource</label>
-                            <input class="form-control" @bind="offerResourceId" placeholder="e.g. minerals" />
+                            <select class="form-select" @bind="offerResourceId">
+                                <option value="">-- select resource --</option>
+                                @foreach (var res in model.ResourceOptions) {
+                                    <option value="@res.Id">@res.Name</option>
+                                }
+                            </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Amount to offer</label>
@@ -32,7 +36,12 @@
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Want resource</label>
-                            <input class="form-control" @bind="wantResourceId" placeholder="e.g. gas" />
+                            <select class="form-select" @bind="wantResourceId">
+                                <option value="">-- select resource --</option>
+                                @foreach (var res in model.ResourceOptions) {
+                                    <option value="@res.Id">@res.Name</option>
+                                }
+                            </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Amount wanted</label>
@@ -44,11 +53,46 @@
             </div>
         </div>
 
+        @if (model.OpenOrders.Any(o => o.SellerPlayerId == model.CurrentPlayerId)) {
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5>My Orders</h5>
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Offering</th>
+                                <th>Wants</th>
+                                <th>Rate</th>
+                                <th>Posted</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in model.OpenOrders.Where(o => o.SellerPlayerId == model.CurrentPlayerId)) {
+                                <tr class="table-info">
+                                    <td>@order.OfferedAmount @order.OfferedResourceName</td>
+                                    <td>@order.WantedAmount @order.WantedResourceName</td>
+                                    <td><span class="text-muted small">@ExchangeRate(order)</span></td>
+                                    <td>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => Cancel(order.OrderId)">Cancel</button>
+                                        @if (orderErrors.TryGetValue(order.OrderId, out var myErr)) {
+                                            <span class="text-danger ms-2 small">@myErr</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
         <div class="row mt-3">
             <div class="col-12">
                 <h5>Open Orders</h5>
-                @if (!model.OpenOrders.Any()) {
-                    <p>No open orders. Be the first to post one!</p>
+                @if (!model.OpenOrders.Any(o => o.SellerPlayerId != model.CurrentPlayerId)) {
+                    <p class="text-muted">No open orders from other players.</p>
                 } else {
                     <table class="table table-striped">
                         <thead>
@@ -56,20 +100,24 @@
                                 <th>Seller</th>
                                 <th>Offering</th>
                                 <th>Wants</th>
+                                <th>Rate</th>
                                 <th>Posted</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var order in model.OpenOrders) {
+                            @foreach (var order in model.OpenOrders.Where(o => o.SellerPlayerId != model.CurrentPlayerId)) {
                                 <tr>
                                     <td>@order.SellerPlayerName</td>
                                     <td>@order.OfferedAmount @order.OfferedResourceName</td>
                                     <td>@order.WantedAmount @order.WantedResourceName</td>
+                                    <td><span class="text-muted small">@ExchangeRate(order)</span></td>
                                     <td>@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>
                                         <button class="btn btn-sm btn-success" @onclick="() => Accept(order.OrderId)">Accept</button>
-                                        <button class="btn btn-sm btn-danger ms-1" @onclick="() => Cancel(order.OrderId)">Cancel</button>
+                                        @if (orderErrors.TryGetValue(order.OrderId, out var otherErr)) {
+                                            <span class="text-danger ms-2 small">@otherErr</span>
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -86,7 +134,8 @@
     public string? GameId { get; set; }
 
     private MarketViewModel? model;
-    private string? lastError;
+    private string? postError;
+    private Dictionary<Guid, string> orderErrors = new();
     private string offerResourceId = "";
     private decimal offerAmount = 100;
     private string wantResourceId = "";
@@ -112,7 +161,7 @@
     }
 
     private async Task PostOffer() {
-        lastError = null;
+        postError = null;
         var request = new CreateMarketOrderRequest {
             OfferedResourceId = offerResourceId,
             OfferedAmount = offerAmount,
@@ -127,28 +176,34 @@
             wantAmount = 100;
             await Update();
         } else {
-            lastError = await response.Content.ReadAsStringAsync();
+            postError = await response.Content.ReadAsStringAsync();
         }
     }
 
     private async Task Accept(Guid orderId) {
-        lastError = null;
+        orderErrors.Remove(orderId);
         var response = await Http.PostAsJsonAsync($"api/market/accept?orderId={orderId}", "");
         if (response.IsSuccessStatusCode) {
             await Update();
         } else {
-            lastError = await response.Content.ReadAsStringAsync();
+            orderErrors[orderId] = await response.Content.ReadAsStringAsync();
         }
     }
 
     private async Task Cancel(Guid orderId) {
-        lastError = null;
+        orderErrors.Remove(orderId);
         var response = await Http.DeleteAsync($"api/market/cancel?orderId={orderId}");
         if (response.IsSuccessStatusCode) {
             await Update();
         } else {
-            lastError = await response.Content.ReadAsStringAsync();
+            orderErrors[orderId] = await response.Content.ReadAsStringAsync();
         }
+    }
+
+    private static string ExchangeRate(MarketOrderViewModel order) {
+        if (order.WantedAmount == 0) return "—";
+        var ratio = order.OfferedAmount / order.WantedAmount;
+        return $"{ratio:G4} {order.OfferedResourceName}/{order.WantedResourceName}";
     }
 
     public void Dispose() {
