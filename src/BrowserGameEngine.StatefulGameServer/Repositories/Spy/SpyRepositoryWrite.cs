@@ -58,6 +58,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				var now = timeProvider.GetUtcNow().UtcDateTime;
 				world.GetPlayer(command.SpyingPlayerId).State.SpyCooldowns[command.TargetPlayerId.ToString()] = now;
 
+
 				var targetState = world.GetPlayer(command.TargetPlayerId).State;
 				var rng = new Random();
 
@@ -77,13 +78,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 					})
 					.ToList();
 
-				return new SpyResult(
+				var result = new SpyResult(
 					TargetPlayerId: command.TargetPlayerId,
 					ApproximateResources: approxResources,
 					UnitEstimates: unitGroups,
 					ReportTime: now,
 					CooldownExpiresAt: now + CooldownDuration
 				);
+
+				world.GetPlayer(command.SpyingPlayerId).State.LastSpyResults[command.TargetPlayerId.ToString()] = result;
+
+				return result;
 			}
 		}
 	}
