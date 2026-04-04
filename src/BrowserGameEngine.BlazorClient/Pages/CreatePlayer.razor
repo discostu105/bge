@@ -51,9 +51,9 @@
 	}
 
 	.create-player-card {
-		background: #161b22;
-		border: 1px solid #30363d;
-		border-radius: 10px;
+		background: var(--color-bg-surface);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-lg);
 		padding: 2rem;
 		width: 100%;
 		max-width: 380px;
@@ -67,20 +67,20 @@
 	.create-player-icon {
 		width: 44px;
 		height: 44px;
-		fill: #58a6ff;
+		fill: var(--color-accent-primary);
 		margin-bottom: 0.75rem;
 	}
 
 	.create-player-title {
 		font-size: 1.2rem;
-		font-weight: 600;
-		color: #e6edf3;
+		font-weight: 700;
+		color: var(--color-text-primary);
 		margin: 0;
 	}
 
 	.create-player-subtitle {
 		font-size: 0.85rem;
-		color: #8b949e;
+		color: var(--color-text-muted);
 		margin: 0.3rem 0 0;
 	}
 
@@ -88,39 +88,31 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		color: #8b949e;
+		color: var(--color-text-muted);
 		font-size: 0.875rem;
 		justify-content: center;
 		padding: 1rem 0;
 	}
 
-	.form-label {
-		display: block;
-		font-size: 0.85rem;
-		font-weight: 500;
-		color: #e6edf3;
-		margin-bottom: 0.4rem;
-	}
-
 	.form-control-dark {
-		background: #0d1117;
-		color: #e6edf3;
-		border: 1px solid #30363d;
-		border-radius: 6px;
+		background: var(--color-bg-primary);
+		color: var(--color-text-primary);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-md);
 		padding: 0.55rem 0.75rem;
 		font-size: 0.9rem;
 		width: 100%;
 		transition: border-color 0.15s, box-shadow 0.15s;
 	}
 
-	.form-control-dark::placeholder { color: #8b949e; }
+	.form-control-dark::placeholder { color: var(--color-text-muted); }
 
 	.form-control-dark:focus {
 		outline: none;
-		border-color: #58a6ff;
-		box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-		background: #0d1117;
-		color: #e6edf3;
+		border-color: var(--color-border-focus);
+		box-shadow: 0 0 0 3px rgba(91, 156, 246, 0.15);
+		background: var(--color-bg-primary);
+		color: var(--color-text-primary);
 	}
 
 	.btn-enter {
@@ -131,17 +123,17 @@
 		width: 100%;
 		margin-top: 1.25rem;
 		padding: 0.65rem 1rem;
-		background: #1f6feb;
+		background: var(--color-accent-primary);
 		color: #fff;
-		border: 1px solid #388bfd;
-		border-radius: 6px;
+		border: 1px solid rgba(91, 156, 246, 0.3);
+		border-radius: var(--radius-md);
 		font-size: 0.9rem;
-		font-weight: 500;
+		font-weight: 600;
 		cursor: pointer;
 		transition: background-color 0.15s;
 	}
 
-	.btn-enter:hover:not(:disabled) { background: #388bfd; }
+	.btn-enter:hover:not(:disabled) { background: #4A7FEB; }
 
 	.btn-enter:disabled {
 		opacity: 0.6;
