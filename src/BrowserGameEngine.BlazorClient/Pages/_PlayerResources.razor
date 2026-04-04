@@ -5,15 +5,27 @@
 
 @if (resources != null) {
     <div class="d-flex flex-wrap gap-3 align-items-center small">
-        <span><strong>@resources.PrimaryResource.Cost.First().Key</strong>: <span class="text-resource">@resources.PrimaryResource.Cost.First().Value</span></span>
+        @foreach (var res in resources.PrimaryResource.Cost) {
+            <span class="resource-item" title="@res.Key">
+                <strong style="text-transform:capitalize">@res.Key</strong>
+                <span class="text-resource">@FormatNumber(res.Value)</span>
+            </span>
+        }
         @foreach (var res in resources.SecondaryResources.Cost) {
-            <span><strong>@res.Key</strong>: <span class="text-resource">@res.Value</span></span>
+            <span class="resource-item" title="@res.Key">
+                <strong style="text-transform:capitalize">@res.Key</strong>
+                <span class="text-resource">@FormatNumber(res.Value)</span>
+            </span>
         }
         @if (tickInfo != null) {
-            <span><strong>Server:</strong> @tickInfo.ServerTime.ToString("HH:mm:ss") UTC</span>
-            <span><strong>Next tick:</strong> <span class="@CountdownClass(tickInfo.NextTickAt)">@FormatCountdown(tickInfo.NextTickAt)</span></span>
+            <span class="resource-item" style="opacity:0.6">
+                <span>Tick</span>
+                <span class="@CountdownClass(tickInfo.NextTickAt)">@FormatCountdown(tickInfo.NextTickAt)</span>
+            </span>
             @if (tickInfo.UnreadMessageCount > 0) {
-                <span class="badge bg-danger">@tickInfo.UnreadMessageCount unread</span>
+                <a href="messages" class="badge bg-danger text-decoration-none" title="@tickInfo.UnreadMessageCount unread messages">
+                    @tickInfo.UnreadMessageCount unread
+                </a>
             }
         }
     </div>
@@ -58,6 +70,12 @@
         } catch {
             // API may be unavailable or user not yet in a game — stay silent
         }
+    }
+
+    private static string FormatNumber(decimal value) {
+        if (value >= 1_000_000) return $"{value / 1_000_000:0.#}M";
+        if (value >= 10_000) return $"{value / 1_000:0.#}K";
+        return value.ToString("#,0");
     }
 
     private string FormatCountdown(DateTime nextTickAt) {

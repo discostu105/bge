@@ -5,91 +5,98 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
+<PageTitle>My Players — Age of Agents</PageTitle>
+
 <h1>My Players</h1>
 
 @if (players == null) {
-	<p><em>Loading...</em></p>
+	<div class="bge-loading"><div class="bge-spinner"></div> Loading...</div>
 } else {
-	<div class="card mb-4" style="max-width:480px">
-		<div class="card-header"><strong>Create Player</strong></div>
-		<div class="card-body">
-			<EditForm Model="@createModel" OnValidSubmit="HandleCreatePlayer">
-				<DataAnnotationsValidator />
-				<ValidationSummary />
-				<div class="mb-3">
-					<label class="form-label" for="PlayerName">Player name</label>
-					<InputText id="PlayerName" class="form-control" @bind-Value="createModel.PlayerName" placeholder="Enter a name" />
+	<div class="row g-3 mb-4">
+		@foreach (var player in players) {
+			<div class="col-12 col-md-6 col-lg-4">
+				<div class="card h-100">
+					<div class="card-body d-flex flex-column">
+						<div class="d-flex align-items-center gap-2 mb-2">
+							<div class="profile-avatar-placeholder" style="width:40px;height:40px;font-size:1.1rem;border-width:1px">
+								@(player.PlayerName?.Length > 0 ? player.PlayerName[0].ToString().ToUpper() : "?")
+							</div>
+							<div>
+								<div style="font-weight:700; font-size:0.95rem">@player.PlayerName</div>
+								<div style="font-size:0.72rem" class="text-muted">
+									@(player.HasApiKey ? "API key active" : "No API key")
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-footer d-flex gap-2 flex-wrap">
+						@if (players.Count > 1) {
+							<button class="btn btn-sm btn-primary" @onclick="() => HandleSwitchPlayer(player.PlayerId)">
+								Switch to
+							</button>
+						}
+						@if (player.HasApiKey) {
+							<button class="btn btn-sm btn-outline-danger" @onclick="() => HandleRevokeKey(player.PlayerId)">Revoke Key</button>
+						} else {
+							<button class="btn btn-sm btn-outline-secondary" @onclick="() => HandleGenerateKey(player.PlayerId)">Generate Key</button>
+						}
+						<button class="btn btn-sm btn-outline-secondary" disabled title="Not yet available">Delete</button>
+					</div>
 				</div>
-				<button type="submit" class="btn btn-primary">Create Player</button>
-			</EditForm>
-			@if (!string.IsNullOrEmpty(createError)) {
-				<div class="alert alert-danger mt-2">@createError</div>
-			}
+			</div>
+		}
+
+		@* Create new player card *@
+		<div class="col-12 col-md-6 col-lg-4">
+			<div class="card h-100" style="border-style:dashed; border-color:var(--color-border-input)">
+				<div class="card-body">
+					<div style="font-weight:600; font-size:0.85rem; margin-bottom:0.75rem">Create New Player</div>
+					<EditForm Model="@createModel" OnValidSubmit="HandleCreatePlayer">
+						<DataAnnotationsValidator />
+						<ValidationSummary />
+						<div class="mb-2">
+							<InputText class="form-control form-control-sm" @bind-Value="createModel.PlayerName" placeholder="Player name" />
+							<ValidationMessage For="@(() => createModel.PlayerName)" />
+						</div>
+						<button type="submit" class="btn btn-sm btn-success w-100">Create</button>
+					</EditForm>
+					@if (!string.IsNullOrEmpty(createError)) {
+						<div class="alert alert-danger mt-2 py-1 px-2" style="font-size:0.78rem">@createError</div>
+					}
+				</div>
+			</div>
 		</div>
 	</div>
-
-	<h2>Your Players</h2>
-	@if (players.Count == 0) {
-		<div class="text-muted">No players yet. Create one above to get started.</div>
-	} else {
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th>API Key</th>
-					<th>Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				@foreach (var player in players) {
-					<tr>
-						<td>@player.PlayerName</td>
-						<td>@(player.HasApiKey ? "Active" : "—")</td>
-						<td class="d-flex flex-wrap gap-1">
-							@if (players.Count > 1) {
-								<button class="btn btn-sm btn-primary" @onclick="() => HandleSwitchPlayer(player.PlayerId)">Switch to</button>
-							}
-							@if (player.HasApiKey) {
-								<button class="btn btn-sm btn-outline-danger" @onclick="() => HandleRevokeKey(player.PlayerId)">Revoke Key</button>
-							} else {
-								<button class="btn btn-sm btn-outline-secondary" @onclick="() => HandleGenerateKey(player.PlayerId)">Generate Key</button>
-							}
-							<button class="btn btn-sm btn-outline-secondary" disabled title="Not yet available">Delete</button>
-						</td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	}
 }
 
 @if (!string.IsNullOrEmpty(newApiKey)) {
-	<div style="border:1px solid #ccc; padding:1em; margin-top:1em;">
-		<strong>New API Key (shown once — copy now):</strong><br />
+	<div class="api-key-box">
+		<div style="font-weight:600; font-size:0.85rem; margin-bottom:0.35rem">New API Key — copy now, shown once only</div>
 		<code>@newApiKey</code>
-		<br />
-		<button @onclick="() => CopyToClipboard(newApiKey)">Copy</button>
-		<button @onclick="() => newApiKey = null">Dismiss</button>
+		<div class="d-flex gap-2 mt-2">
+			<button class="btn btn-sm btn-primary" @onclick="() => CopyToClipboard(newApiKey)">Copy to Clipboard</button>
+			<button class="btn btn-sm btn-secondary" @onclick="() => newApiKey = null">Dismiss</button>
+		</div>
 	</div>
 }
 
-<h2>Game Preferences</h2>
+<h2 class="mt-4">Preferences</h2>
 @if (preferences == null) {
-	<p><em>Loading preferences...</em></p>
+	<div class="bge-loading" style="padding:1rem"><div class="bge-spinner"></div></div>
 } else {
-	<div>
-		<label>
-			<input type="checkbox" checked="@preferences.WantsGameNotification"
-				@onchange="e => HandlePreferenceChange(nameof(preferences.WantsGameNotification), (bool)e.Value!)" />
-			Notify me when a new game starts
-		</label>
-	</div>
-	<div>
-		<label>
-			<input type="checkbox" checked="@preferences.AutoJoinNextGame"
-				@onchange="e => HandlePreferenceChange(nameof(preferences.AutoJoinNextGame), (bool)e.Value!)" />
-			Auto-join next game
-		</label>
+	<div class="bge-section" style="max-width:400px">
+		<div class="bge-section-body">
+			<label class="d-flex align-items-center gap-2 mb-2" style="cursor:pointer">
+				<input type="checkbox" checked="@preferences.WantsGameNotification"
+					@onchange="e => HandlePreferenceChange(nameof(preferences.WantsGameNotification), (bool)e.Value!)" />
+				<span style="font-size:0.85rem">Notify me when a new game starts</span>
+			</label>
+			<label class="d-flex align-items-center gap-2" style="cursor:pointer">
+				<input type="checkbox" checked="@preferences.AutoJoinNextGame"
+					@onchange="e => HandlePreferenceChange(nameof(preferences.AutoJoinNextGame), (bool)e.Value!)" />
+				<span style="font-size:0.85rem">Auto-join next game</span>
+			</label>
+		</div>
 	</div>
 }
 

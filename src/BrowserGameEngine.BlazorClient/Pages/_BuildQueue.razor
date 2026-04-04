@@ -1,41 +1,58 @@
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
-<h3>Build Queue</h3>
-
 @if (!string.IsNullOrEmpty(lastError)) {
-    <span class="error">@lastError</span>
+    <div class="alert alert-danger py-1 px-2" style="font-size:0.82rem;">@lastError</div>
 }
 
 @if (model == null) {
-    <p><em>Loading...</em></p>
+    @* Silent loading — queue is non-critical *@
 } else if (!model.Entries.Any()) {
-    <p>No items in the build queue.</p>
+    <div class="bge-section mb-3">
+        <div class="bge-section-header" style="cursor:default">
+            <span class="bge-section-title">Build Queue</span>
+            <span class="text-muted" style="font-size:0.72rem">empty</span>
+        </div>
+    </div>
 } else {
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>Priority</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Count</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var entry in model.Entries.OrderBy(x => x.Priority)) {
-                <tr>
-                    <td>@entry.Priority</td>
-                    <td>@(entry.Type == "asset" ? "Building" : "Unit")</td>
-                    <td>@entry.Name</td>
-                    <td>@entry.Count</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveEntry(entry.Id)">Remove</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="bge-section mb-3">
+        <div class="bge-section-header" style="cursor:default">
+            <span class="bge-section-title">Build Queue</span>
+            <span class="badge bg-primary">@model.Entries.Count items</span>
+        </div>
+        <div class="bge-section-body p-0">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:40px">#</th>
+                        <th>Item</th>
+                        <th style="text-align:right">Count</th>
+                        <th style="width:70px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in model.Entries.OrderBy(x => x.Priority)) {
+                        <tr>
+                            <td class="text-muted">@entry.Priority</td>
+                            <td>
+                                <span class="badge @(entry.Type == "asset" ? "bg-info" : "bg-secondary") me-1" style="font-size:0.65rem">
+                                    @(entry.Type == "asset" ? "Building" : "Unit")
+                                </span>
+                                @entry.Name
+                            </td>
+                            <td style="text-align:right" class="text-resource">@entry.Count</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger" style="font-size:0.7rem; padding:0.15rem 0.4rem"
+                                    @onclick="() => RemoveEntry(entry.Id)" title="Remove from queue">
+                                    Remove
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @code {

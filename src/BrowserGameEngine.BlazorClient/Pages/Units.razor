@@ -7,68 +7,107 @@
 
 <PageTitle>Units — Age of Agents</PageTitle>
 
-
 <h1>Units</h1>
 
 @if (!string.IsNullOrEmpty(lastError)) {
-    <span class="error">@lastError</span>
+    <div class="alert alert-danger">@lastError</div>
 }
 
 <_BuildQueue />
 
 @if (model == null) {
-    <p><em>Loading...</em></p>
+    <div class="bge-loading"><div class="bge-spinner"></div> Loading units...</div>
+} else if (model.Units == null || !model.Units.Any()) {
+    <div class="bge-empty">
+        <div class="bge-empty-icon">&#9876;</div>
+        <div class="bge-empty-title">No units yet</div>
+        <div class="bge-empty-desc">Build units from your base buildings to start training your army.</div>
+    </div>
 } else {
-    <button class="btn btn-primary" @onclick="MergeAll">
-        Merge All Troops
-    </button>
+    <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+        <button class="btn btn-sm btn-secondary" @onclick="MergeAll" title="Combine all unit stacks of the same type into single stacks">
+            Merge All
+        </button>
+        <span class="text-muted" style="font-size:0.78rem">
+            @model.Units.Sum(u => u.Count) units in @model.Units.Count stacks
+        </span>
+    </div>
 
-    <div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Count</th>
-                <th>Properties</th>
-                <th>Position</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (model.Units != null) {
-                @foreach (var item in model.Units.OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
-                    <tr>
-                        <td>@item.Definition?.Name</td>
-                        <td>@item.Count</td>
-                        <td><_UnitProperties UnitDef="item.Definition" /></td>
-                        <td>
-                            @if (item.PositionPlayerId != null) {
-                                <NavLink class="nav-link" href="@($"enemybase/{Uri.EscapeDataString(item.PositionPlayerId)}")">
-                                    @(item.PositionPlayerName ?? item.PositionPlayerId)
-                                </NavLink>
-                            }
-                        </td>
-                        <td>
-                            <button class="btn btn-primary" @onclick="async () => await Merge(item.Definition!.Id!)">
-                                Merge units of this type
-                            </button>
+    @if (model.Units.Any(u => u.PositionPlayerId != null)) {
+        <div class="bge-section mb-3">
+            <div class="bge-section-header" style="cursor:default">
+                <span class="bge-section-title">Deployed (@model.Units.Where(u => u.PositionPlayerId != null).Sum(u => u.Count) units)</span>
+                <span class="status-tag status-tag-attacking">In Combat</span>
+            </div>
+            <div class="bge-section-body p-0">
+                <div class="table-responsive" style="border:none; border-radius:0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Unit</th><th style="text-align:right">Count</th><th>Stats</th><th>Location</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in model.Units.Where(u => u.PositionPlayerId != null).OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+                            <tr>
+                                <td><strong>@item.Definition?.Name</strong></td>
+                                <td style="text-align:right"><span class="text-resource">@item.Count</span></td>
+                                <td><_UnitProperties UnitDef="item.Definition" /></td>
+                                <td>
+                                    <NavLink class="nav-link p-0" style="font-size:0.82rem" href="@($"enemybase/{Uri.EscapeDataString(item.PositionPlayerId!)}")">
+                                        @(item.PositionPlayerName ?? item.PositionPlayerId)
+                                    </NavLink>
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <button class="btn btn-sm btn-secondary" @onclick="async () => await Merge(item.Definition!.Id!)">Merge</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    }
 
-                            @if (item.Count > 1) {
-                                @if (!IsShowSplit(item.UnitId)) {
-                                    <button class="btn btn-primary" @onclick="() => ToggleShowSplit(item.UnitId)">
-                                        Split troops
-                                    </button>
-                                } else {
-                                    <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
-                                }
-                            }
-                            <NavLink class="btn btn-sm btn-danger" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
-                        </td>
-                    </tr>
-                }
+    <div class="bge-section">
+        <div class="bge-section-header" style="cursor:default">
+            <span class="bge-section-title">Home Base (@model.Units.Where(u => u.PositionPlayerId == null).Sum(u => u.Count) units)</span>
+            <span class="status-tag status-tag-home">Defending</span>
+        </div>
+        <div class="bge-section-body p-0">
+            @if (!model.Units.Any(u => u.PositionPlayerId == null)) {
+                <div class="bge-empty" style="padding:1.5rem">
+                    <div class="bge-empty-desc">All units are deployed.</div>
+                </div>
+            } else {
+                <div class="table-responsive" style="border:none; border-radius:0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Unit</th><th style="text-align:right">Count</th><th>Stats</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        @foreach (var item in model.Units.Where(u => u.PositionPlayerId == null).OrderByDescending(x => x.Count).ThenBy(x => x.Definition.Name)) {
+                            <tr>
+                                <td><strong>@item.Definition?.Name</strong></td>
+                                <td style="text-align:right"><span class="text-resource">@item.Count</span></td>
+                                <td><_UnitProperties UnitDef="item.Definition" /></td>
+                                <td>
+                                    <div class="action-group">
+                                        <NavLink class="btn btn-sm btn-danger" href="@($"selectenemy/{item.UnitId}")">Attack</NavLink>
+                                        <button class="btn btn-sm btn-secondary" @onclick="async () => await Merge(item.Definition!.Id!)">Merge</button>
+                                        @if (item.Count > 1) {
+                                            @if (!IsShowSplit(item.UnitId)) {
+                                                <button class="btn btn-sm btn-secondary" @onclick="() => ToggleShowSplit(item.UnitId)">Split</button>
+                                            } else {
+                                                <_SplitUnitForm UnitId="item.UnitId" SplitDoneEvent="Update" InitCount="item.Count / 2" />
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
     </div>
 }
 
@@ -105,8 +144,7 @@
         if (response.IsSuccessStatusCode) {
             await Update();
         } else {
-            var error = await response.Content.ReadAsStringAsync();
-            lastError = error;
+            lastError = await response.Content.ReadAsStringAsync();
         }
     }
 
@@ -115,8 +153,7 @@
         if (response.IsSuccessStatusCode) {
             await Update();
         } else {
-            var error = await response.Content.ReadAsStringAsync();
-            lastError = error;
+            lastError = await response.Content.ReadAsStringAsync();
         }
     }
 
