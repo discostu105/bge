@@ -18,17 +18,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly PlayerRepository playerRepository;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
+		private readonly UserRepositoryWrite userRepositoryWrite;
 
 		public AuthenticationController(ILogger<AuthenticationController> logger
 				, IOptions<BgeOptions> options
 				, CurrentUserContext currentUserContext
 				, PlayerRepository playerRepository
 				, PlayerRepositoryWrite playerRepositoryWrite
+				, UserRepositoryWrite userRepositoryWrite
 			) {
 			this.options = options;
 			this.currentUserContext = currentUserContext;
 			this.playerRepository = playerRepository;
 			this.playerRepositoryWrite = playerRepositoryWrite;
+			this.userRepositoryWrite = userRepositoryWrite;
 		}
 
 		[HttpGet("~/signin")]
@@ -73,9 +76,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!options.Value.DevAuth) return BadRequest();
 			if (string.IsNullOrWhiteSpace(playerid)) return BadRequest();
 
+			// Create or get the user so the player can be linked
+			var user = userRepositoryWrite.GetOrCreateUser(
+				githubId: playerid, githubLogin: playerid, displayName: playerid);
+
 			var playerId = PlayerIdFactory.Create(playerid);
 			if (!playerRepository.Exists(playerId)) {
-				playerRepositoryWrite.CreatePlayer(playerId);
+				playerRepositoryWrite.CreatePlayer(playerId, userId: user.UserId);
 			}
 
 			// Create a claims identity so the cookie auth and CurrentUserMiddleware work correctly

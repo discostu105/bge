@@ -262,6 +262,7 @@ async Task ConfigureGameServices(IServiceCollection services) {
             new GameId("default"), "Default Game", "sco", GameStatus.Active,
             DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromDays(3650), TimeSpan.FromSeconds(10));
         var gd = new StarcraftOnlineGameDefFactory().CreateGameDef();
+        globalState.AddGame(gameRecord);
         gameRegistry.Register(new BrowserGameEngine.StatefulGameServer.GameRegistry.GameInstance(gameRecord, ws, gd));
     }
 
