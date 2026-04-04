@@ -12,30 +12,30 @@
 <EditForm Model="@createModel" OnValidSubmit="HandleCreate">
 	<DataAnnotationsValidator />
 	<ValidationSummary />
-	<div>
-		<label>Name</label>
-		<InputText @bind-Value="createModel.Name" placeholder="Game name" />
+	<div class="mb-3">
+		<label class="form-label">Name</label>
+		<InputText @bind-Value="createModel.Name" placeholder="Game name" class="form-control" />
 	</div>
-	<div>
-		<label>Tick Duration (HH:MM:SS)</label>
-		<InputText @bind-Value="createModel.TickDuration" placeholder="00:01:00" />
+	<div class="mb-3">
+		<label class="form-label">Tick Duration (HH:MM:SS)</label>
+		<InputText @bind-Value="createModel.TickDuration" placeholder="00:01:00" class="form-control" />
 	</div>
-	<div>
-		<label>Start Time</label>
-		<input type="datetime-local" value="@createModel.StartTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => createModel.StartTime = ParseDateTime(e.Value?.ToString())" />
+	<div class="mb-3">
+		<label class="form-label">Start Time</label>
+		<input type="datetime-local" class="form-control" value="@createModel.StartTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => createModel.StartTime = ParseDateTime(e.Value?.ToString())" />
 	</div>
-	<div>
-		<label>End Time</label>
-		<input type="datetime-local" value="@createModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => createModel.EndTime = ParseDateTime(e.Value?.ToString())" />
+	<div class="mb-3">
+		<label class="form-label">End Time</label>
+		<input type="datetime-local" class="form-control" value="@createModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => createModel.EndTime = ParseDateTime(e.Value?.ToString())" />
 	</div>
-	<button type="submit">Create Game</button>
+	<button type="submit" class="btn btn-primary">Create Game</button>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(createError)) {
-	<p style="color:red">@createError</p>
+	<p class="text-danger mt-2">@createError</p>
 }
 @if (!string.IsNullOrEmpty(createSuccess)) {
-	<p style="color:green">@createSuccess</p>
+	<p class="text-success mt-2">@createSuccess</p>
 }
 
 <h2>Games</h2>
@@ -65,39 +65,39 @@
 					<td>@game.StartTime?.ToLocalTime().ToString("g")</td>
 					<td>@game.EndTime?.ToLocalTime().ToString("g")</td>
 					<td>
-						<a href="/games/@game.GameId">View</a>
+						<a href="/games/@game.GameId" class="btn btn-sm btn-secondary">View</a>
 						@if (editingGameId != game.GameId) {
-							<button @onclick="() => StartEdit(game)" style="margin-left:8px">Edit</button>
+							<button class="btn btn-sm btn-secondary ms-1" @onclick="() => StartEdit(game)">Edit</button>
 						}
 						@if (game.Status == "Active") {
-							<button @onclick="() => FinalizeGame(game.GameId)" style="margin-left:8px; color:red">Finalize</button>
+							<button class="btn btn-sm btn-danger ms-1" @onclick="() => FinalizeGame(game.GameId)">Finalize</button>
 						}
 					</td>
 				</tr>
 				@if (editingGameId == game.GameId) {
 					<tr>
-						<td colspan="6" style="background:var(--color-bg-elevated); padding:12px">
-							<div style="display:grid; gap:8px; max-width:480px">
-								<div>
-									<label><strong>Name</strong></label><br />
-									<input type="text" @bind="editModel.Name" style="width:100%" />
+						<td colspan="6" class="bg-elevated p-3">
+							<div style="display:grid; gap:12px; max-width:480px">
+								<div class="mb-2">
+									<label class="form-label">Name</label>
+									<input type="text" class="form-control" @bind="editModel.Name" />
+								</div>
+								<div class="mb-2">
+									<label class="form-label">Discord Webhook URL</label>
+									<input type="text" class="form-control" @bind="editModel.DiscordWebhookUrl" placeholder="(optional)" />
+								</div>
+								<div class="mb-2">
+									<label class="form-label">End Time</label>
+									<input type="datetime-local" class="form-control" value="@editModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => editModel.EndTime = ParseDateTime(e.Value?.ToString())" />
 								</div>
 								<div>
-									<label><strong>Discord Webhook URL</strong></label><br />
-									<input type="text" @bind="editModel.DiscordWebhookUrl" placeholder="(optional)" style="width:100%" />
-								</div>
-								<div>
-									<label><strong>End Time</strong></label><br />
-									<input type="datetime-local" value="@editModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" @onchange="e => editModel.EndTime = ParseDateTime(e.Value?.ToString())" />
-								</div>
-								<div>
-									<button @onclick="HandleSaveEdit">Save</button>
-									<button @onclick="CancelEdit" style="margin-left:8px">Cancel</button>
+									<button class="btn btn-primary" @onclick="HandleSaveEdit">Save</button>
+									<button class="btn btn-secondary ms-1" @onclick="CancelEdit">Cancel</button>
 									@if (!string.IsNullOrEmpty(editError)) {
-										<span style="color:red; margin-left:8px">@editError</span>
+										<span class="text-danger ms-2">@editError</span>
 									}
 									@if (!string.IsNullOrEmpty(editSuccess)) {
-										<span style="color:green; margin-left:8px">@editSuccess</span>
+										<span class="text-success ms-2">@editSuccess</span>
 									}
 								</div>
 							</div>
