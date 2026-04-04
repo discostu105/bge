@@ -77,7 +77,7 @@
                         } else if (item.AlreadyQueued) {
                             <span>Will be ready in @item.TicksLeftForBuild rounds.</span>
                         } else {
-                            <div>Requires: <_Cost Cost="@item.Cost" /></div>
+                            <div>Requires: <CostBadge Cost="@item.Cost" /></div>
                             <div>Requires: @item.Prerequisites </div>
                             @if (item.PrerequisitesMet) {
                                 <div>

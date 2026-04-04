@@ -1,13 +1,16 @@
 @page "/research"
 @page "/games/{GameId}/research"
+@page "/upgrades"
+@page "/games/{GameId}/upgrades"
 @using BrowserGameEngine.Shared
 @using BrowserGameEngine.BlazorClient.Code
 @inject HttpClient Http
+@inject TutorialService Tutorial
 @implements IDisposable
 
-<PageTitle>Tech Tree — Age of Agents</PageTitle>
+<PageTitle>Research — Age of Agents</PageTitle>
 
-<h1>Tech Tree</h1>
+<h1>Research</h1>
 
 <style>
 	.tech-tree {
@@ -29,7 +32,7 @@
 	}
 
 	.tech-row-label {
-		width: 100px;
+		width: 120px;
 		font-weight: bold;
 		font-size: 0.9rem;
 		color: #D1D5DB;
@@ -140,54 +143,122 @@
 
 <div class="container">
 
-	<_PlayerResources />
+	<PlayerResources />
 
-	@if (model == null) {
+	@if (upgradesModel == null && techTreeModel == null) {
 		<p><em>Loading...</em></p>
 	} else {
 		@if (!string.IsNullOrEmpty(lastError)) {
 			<span class="error">@lastError</span>
 		}
 
-		<div class="tech-tree race-@model.PlayerType.ToLowerInvariant()">
+		@if (upgradesModel != null) {
+			<h3>Upgrades</h3>
 
-			@foreach (var tier in new[] { 1, 2, 3 }) {
-				var tierNodes = model.Nodes.Where(n => n.Tier == tier).ToList();
-				if (tierNodes.Count == 0) continue;
+			<div class="tech-tree race-@upgradesModel.PlayerType.ToLowerInvariant()">
 
 				<div class="tech-row">
-					<div class="tech-row-label">Tier @tier</div>
-					@for (int i = 0; i < tierNodes.Count; i++) {
-						var node = tierNodes[i];
-						var cssClass = node.Status switch {
-							"Unlocked" => "completed",
-							"InProgress" => "in-progress",
-							"Available" => "available",
-							_ => "locked"
-						};
-						<div class="tech-node @cssClass">
-							<div class="tech-node-title">@node.Name</div>
-							<div class="tech-node-desc">@node.Description</div>
-							@if (node.Status == "Unlocked") {
-								<div class="tech-node-status done">&#10003; Unlocked</div>
-							} else if (node.Status == "InProgress") {
-								<div class="tech-node-status researching">Researching&hellip; (@model.ResearchTimerTicks rounds)</div>
-							} else if (node.Status == "Available") {
-								<div class="tech-node-cost"><_Cost Cost="@node.Cost" /></div>
-								var nodeId = node.Id;
-								<button class="tech-node-btn" @onclick="() => StartResearch(nodeId)">Research</button>
+					<div class="tech-row-label">Attack</div>
+					@for (int lvl = 1; lvl <= upgradesModel.MaxUpgradeLevel; lvl++) {
+						var level = lvl;
+						var nodeClass = UpgradeNodeClass("Attack", level, upgradesModel.AttackUpgradeLevel, upgradesModel.UpgradeBeingResearched);
+						<div class="tech-node @nodeClass">
+							<div class="tech-node-title">Level @level</div>
+							@if (level <= upgradesModel.AttackUpgradeLevel) {
+								<div class="tech-node-status done">&#10003; Completed</div>
+							} else if (nodeClass == "in-progress") {
+								<div class="tech-node-status researching">Researching&hellip; (@upgradesModel.UpgradeResearchTimer rounds)</div>
+							} else if (nodeClass == "available") {
+								@if (upgradesModel.NextAttackUpgradeCost != null) {
+									<div class="tech-node-cost"><CostBadge Cost="@upgradesModel.NextAttackUpgradeCost" /></div>
+								}
+								<button class="tech-node-btn" @onclick="ResearchAttack">Research</button>
+							} else if (level == upgradesModel.AttackUpgradeLevel + 1 && upgradesModel.UpgradeBeingResearched != "None") {
+								<div class="tech-node-status">Another research in progress</div>
 							} else {
 								<div class="tech-node-status">Locked</div>
 							}
 						</div>
-						@if (i < tierNodes.Count - 1) {
+						@if (level < upgradesModel.MaxUpgradeLevel) {
 							<div class="tech-arrow">&#8594;</div>
 						}
 					}
 				</div>
-			}
 
-		</div>
+				<div class="tech-row">
+					<div class="tech-row-label">Defense</div>
+					@for (int lvl = 1; lvl <= upgradesModel.MaxUpgradeLevel; lvl++) {
+						var level = lvl;
+						var nodeClass = UpgradeNodeClass("Defense", level, upgradesModel.DefenseUpgradeLevel, upgradesModel.UpgradeBeingResearched);
+						<div class="tech-node @nodeClass">
+							<div class="tech-node-title">Level @level</div>
+							@if (level <= upgradesModel.DefenseUpgradeLevel) {
+								<div class="tech-node-status done">&#10003; Completed</div>
+							} else if (nodeClass == "in-progress") {
+								<div class="tech-node-status researching">Researching&hellip; (@upgradesModel.UpgradeResearchTimer rounds)</div>
+							} else if (nodeClass == "available") {
+								@if (upgradesModel.NextDefenseUpgradeCost != null) {
+									<div class="tech-node-cost"><CostBadge Cost="@upgradesModel.NextDefenseUpgradeCost" /></div>
+								}
+								<button class="tech-node-btn" @onclick="ResearchDefense">Research</button>
+							} else if (level == upgradesModel.DefenseUpgradeLevel + 1 && upgradesModel.UpgradeBeingResearched != "None") {
+								<div class="tech-node-status">Another research in progress</div>
+							} else {
+								<div class="tech-node-status">Locked</div>
+							}
+						</div>
+						@if (level < upgradesModel.MaxUpgradeLevel) {
+							<div class="tech-arrow">&#8594;</div>
+						}
+					}
+				</div>
+
+			</div>
+		}
+
+		@if (techTreeModel != null) {
+			<h3>Tech Tree</h3>
+
+			<div class="tech-tree race-@techTreeModel.PlayerType.ToLowerInvariant()">
+
+				@foreach (var tier in new[] { 1, 2, 3 }) {
+					var tierNodes = techTreeModel.Nodes.Where(n => n.Tier == tier).ToList();
+					if (tierNodes.Count == 0) continue;
+
+					<div class="tech-row">
+						<div class="tech-row-label">Tier @tier</div>
+						@for (int i = 0; i < tierNodes.Count; i++) {
+							var node = tierNodes[i];
+							var cssClass = node.Status switch {
+								"Unlocked" => "completed",
+								"InProgress" => "in-progress",
+								"Available" => "available",
+								_ => "locked"
+							};
+							<div class="tech-node @cssClass">
+								<div class="tech-node-title">@node.Name</div>
+								<div class="tech-node-desc">@node.Description</div>
+								@if (node.Status == "Unlocked") {
+									<div class="tech-node-status done">&#10003; Unlocked</div>
+								} else if (node.Status == "InProgress") {
+									<div class="tech-node-status researching">Researching&hellip; (@techTreeModel.ResearchTimerTicks rounds)</div>
+								} else if (node.Status == "Available") {
+									<div class="tech-node-cost"><CostBadge Cost="@node.Cost" /></div>
+									var nodeId = node.Id;
+									<button class="tech-node-btn" @onclick="() => StartResearch(nodeId)">Research</button>
+								} else {
+									<div class="tech-node-status">Locked</div>
+								}
+							</div>
+							@if (i < tierNodes.Count - 1) {
+								<div class="tech-arrow">&#8594;</div>
+							}
+						}
+					</div>
+				}
+
+			</div>
+		}
 	}
 </div>
 
@@ -195,7 +266,8 @@
 	[Parameter]
 	public string? GameId { get; set; }
 
-	private TechTreeViewModel? model;
+	private UpgradesViewModel? upgradesModel;
+	private TechTreeViewModel? techTreeModel;
 	private string? lastError;
 	private CancellationTokenSource? _cts;
 
@@ -213,6 +285,20 @@
 		}
 	}
 
+	private async Task ResearchAttack() => await ResearchUpgrade("Attack");
+	private async Task ResearchDefense() => await ResearchUpgrade("Defense");
+
+	private async Task ResearchUpgrade(string upgradeType) {
+		lastError = null;
+		var response = await Http.PostAsJsonAsync($"api/upgrades/research?upgradeType={upgradeType}", "");
+		if (response.IsSuccessStatusCode) {
+			await Tutorial.MarkStepAsync(2);
+			await Update();
+		} else {
+			lastError = await response.Content.ReadAsStringAsync();
+		}
+	}
+
 	private async Task StartResearch(string techId) {
 		lastError = null;
 		var response = await Http.PostAsJsonAsync($"api/research/research?techId={techId}", "");
@@ -225,10 +311,24 @@
 
 	private async Task Update() {
 		try {
-			model = await Http.GetFromJsonAsync<TechTreeViewModel>("api/research");
+			upgradesModel = await Http.GetFromJsonAsync<UpgradesViewModel>("api/upgrades");
 		} catch {
-			// Leave model as-is if refresh fails; initial null shows loading state
+			// Leave model as-is if refresh fails
 		}
+		try {
+			techTreeModel = await Http.GetFromJsonAsync<TechTreeViewModel>("api/research");
+		} catch {
+			// Leave model as-is if refresh fails
+		}
+	}
+
+	private static string UpgradeNodeClass(string upgradeType, int level, int currentLevel, string upgradeBeingResearched) {
+		if (level <= currentLevel) return "completed";
+		if (level == currentLevel + 1) {
+			if (upgradeBeingResearched == upgradeType) return "in-progress";
+			return "available";
+		}
+		return "locked";
 	}
 
 	public void Dispose() {
