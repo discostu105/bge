@@ -1,4 +1,5 @@
 @page "/unitdefinitions"
+@page "/games/{GameId}/unitdefinitions"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 
@@ -32,6 +33,9 @@
 }
 
 @code {
+    [Parameter]
+    public string? GameId { get; set; }
+
     private UnitDefinitionViewModel[]? model;
 
     protected override async Task OnInitializedAsync() {
