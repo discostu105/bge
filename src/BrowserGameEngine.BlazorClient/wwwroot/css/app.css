@@ -320,9 +320,12 @@ app {
 
 .nav-strip-version {
     font-size: 0.6rem;
-    color: rgba(255,255,255,0.2);
+    color: var(--color-text-muted);
     user-select: none;
     padding: 0.2rem 0;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    letter-spacing: 0.03em;
+    opacity: 0.7;
 }
 
 /* Right panel — contextual navigation */

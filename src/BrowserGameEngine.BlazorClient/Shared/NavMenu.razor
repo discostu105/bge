@@ -45,7 +45,7 @@
 
         <div class="nav-strip-bottom">
             @if (version != null) {
-                <span class="nav-strip-version" title="v@version.CommitHash">v</span>
+                <span class="nav-strip-version" title="@version.CommitHash">@version.CommitHash[..Math.Min(7, version.CommitHash.Length)]</span>
             }
             <a href="signout" class="nav-strip-btn nav-strip-btn--signout" title="Sign Out">
                 <span class="oi oi-account-logout" aria-hidden="true"></span>
