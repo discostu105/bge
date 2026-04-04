@@ -10,9 +10,9 @@
 
 <style>
 	.profile-card {
-		background: #1e2a3a;
-		border: 1px solid #2c3e50;
-		border-radius: 0.5rem;
+		background: var(--color-bg-surface);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-lg);
 		padding: 1.5rem;
 		max-width: 680px;
 	}
@@ -22,57 +22,59 @@
 		height: 72px;
 		border-radius: 50%;
 		object-fit: cover;
-		border: 2px solid #4a6fa5;
+		border: 2px solid var(--color-accent-primary);
 	}
 
 	.profile-avatar-placeholder {
 		width: 72px;
 		height: 72px;
 		border-radius: 50%;
-		background: #2c3e50;
+		background: var(--color-bg-elevated);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-size: 2rem;
-		color: #90a8c8;
-		border: 2px solid #4a6fa5;
+		color: var(--color-text-secondary);
+		border: 2px solid var(--color-accent-primary);
 	}
 
 	.stat-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-		gap: 0.75rem;
+		gap: 0.6rem;
 		margin-top: 0.5rem;
 	}
 
 	.stat-item {
-		background: #162030;
-		border: 1px solid #2c3e50;
-		border-radius: 0.4rem;
+		background: var(--color-bg-elevated);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-md);
 		padding: 0.75rem 1rem;
 	}
 
 	.stat-label {
-		font-size: 0.75rem;
-		color: #90a8c8;
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
 
 	.stat-value {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: #e0e0e0;
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: var(--color-text-primary);
 		margin-top: 0.1rem;
+		font-variant-numeric: tabular-nums;
 	}
 
 	.stat-value.rank {
-		color: #ffd700;
+		color: var(--color-text-gold);
+		text-shadow: var(--glow-gold);
 	}
 
 	.section-title {
-		font-size: 0.85rem;
-		color: #607080;
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.07em;
 		margin-bottom: 0.5rem;
@@ -98,7 +100,7 @@
 			<div>
 				<div style="font-size:1.3rem; font-weight:600; color:#e0e0e0;">@(model.DisplayName ?? model.PlayerName)</div>
 				@if (model.DisplayName != null && model.DisplayName != model.PlayerName) {
-					<div style="font-size:0.9rem; color:#90a8c8;">Player: @model.PlayerName</div>
+					<div style="font-size:0.9rem; color:var(--color-text-secondary);">Player: @model.PlayerName</div>
 				}
 			</div>
 		</div>
@@ -111,7 +113,7 @@
 		<div class="stat-grid">
 			<div class="stat-item">
 				<div class="stat-label">Rank</div>
-				<div class="stat-value rank">#@model.Rank <span style="font-size:0.85rem; color:#607080;">/ @model.TotalPlayers</span></div>
+				<div class="stat-value rank">#@model.Rank <span style="font-size:0.85rem; color:var(--color-text-muted);">/ @model.TotalPlayers</span></div>
 			</div>
 			<div class="stat-item">
 				<div class="stat-label">Land</div>

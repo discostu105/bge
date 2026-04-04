@@ -1,59 +1,105 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 /* =====================================================================
-   BGE Dark Space Theme — based on SCO modern design tokens
+   BGE Dark Space Theme — Age of Agents
    ===================================================================== */
 
 /* --- Design Tokens -------------------------------------------------- */
 :root {
-    --color-bg-primary:      #0A0E17;
-    --color-bg-surface:      #111827;
-    --color-bg-elevated:     #1F2937;
-    --color-bg-input:        #1F2937;
+    --color-bg-primary:      #080C14;
+    --color-bg-surface:      #0F1520;
+    --color-bg-elevated:     #182234;
+    --color-bg-input:        #182234;
+    --color-bg-hover:        #1E2A40;
 
-    --color-text-primary:    #F9FAFB;
-    --color-text-secondary:  #D1D5DB;
-    --color-text-muted:      #9CA3AF;
+    --color-text-primary:    #E8ECF4;
+    --color-text-secondary:  #A0AECB;
+    --color-text-muted:      #5E6D85;
     --color-text-resource:   #22C55E;
-    --color-text-link:       #3B82F6;
-    --color-text-link-hover: #60A5FA;
+    --color-text-link:       #5B9CF6;
+    --color-text-link-hover: #93BBFD;
     --color-text-success:    #4ADE80;
-    --color-text-error:      #EF4444;
-    --color-text-warning:    #F59E0B;
-    --color-text-gold:       #F59E0B;
+    --color-text-error:      #F87171;
+    --color-text-warning:    #FBBF24;
+    --color-text-gold:       #FBBF24;
 
-    --color-border-subtle:   #1F2937;
-    --color-border-default:  #374151;
-    --color-border-input:    #6B7280;
-    --color-border-focus:    #3B82F6;
+    --color-border-subtle:   #172033;
+    --color-border-default:  #243044;
+    --color-border-input:    #3A4D66;
+    --color-border-focus:    #5B9CF6;
+
+    --color-accent-primary:  #3B6FD9;
+    --color-accent-surface:  rgba(59, 111, 217, 0.08);
 
     --color-race-terran:     #CBD5E1;
     --color-race-zerg:       #B45309;
     --color-race-protoss:    #FBBF24;
 
-    --glow-resource: 0 0 8px rgba(34, 197, 94, 0.3);
-    --glow-link:     0 0 8px rgba(59, 130, 246, 0.3);
-    --glow-gold:     0 0 8px rgba(245, 158, 11, 0.3);
+    --glow-resource: 0 0 10px rgba(34, 197, 94, 0.25);
+    --glow-link:     0 0 10px rgba(91, 156, 246, 0.25);
+    --glow-gold:     0 0 10px rgba(251, 191, 36, 0.25);
+    --glow-danger:   0 0 10px rgba(248, 113, 113, 0.2);
 
-    --radius-sm: 0.25rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
 }
 
 /* --- Base ------------------------------------------------------------ */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 html, body {
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     font-size: 0.875rem;
     background-color: var(--color-bg-primary);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59, 111, 217, 0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(34, 197, 94, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
     color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.55;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
 }
 
 a, .btn-link {
     color: var(--color-text-link);
+    transition: color 0.15s;
 }
 
 a:hover, .btn-link:hover {
     color: var(--color-text-link-hover);
+}
+
+::selection {
+    background: rgba(59, 111, 217, 0.35);
+    color: #fff;
 }
 
 /* --- App shell ------------------------------------------------------ */
@@ -63,9 +109,9 @@ app {
     flex-direction: column;
 }
 
-/* --- Top row -------------------------------------------------------- */
+/* --- Top row (resource bar) ---------------------------------------- */
 .top-row {
-    height: 3.5rem;
+    height: 3rem;
     display: flex;
     align-items: center;
 }
@@ -73,7 +119,9 @@ app {
 .main .top-row {
     background-color: var(--color-bg-surface);
     border-bottom: 1px solid var(--color-border-default);
-    justify-content: flex-end;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    gap: 1rem;
 }
 
 .main .top-row > a, .main .top-row .btn-link {
@@ -114,6 +162,7 @@ app {
 .sidebar {
     background-color: var(--color-bg-surface);
     border-right: 1px solid var(--color-border-default);
+    background-image: linear-gradient(180deg, rgba(59, 111, 217, 0.03) 0%, transparent 40%);
 }
 
 /* --- Two-column nav layout ------------------------------------------ */
@@ -128,7 +177,7 @@ app {
 .nav-strip {
     width: 54px;
     flex-shrink: 0;
-    background-color: #0d1117;
+    background-color: #060A12;
     border-right: 1px solid var(--color-border-subtle);
     display: flex;
     flex-direction: column;
@@ -314,48 +363,55 @@ app {
 
 /* Nav items within panel */
 .nav-panel .nav-item {
-    font-size: 0.88rem;
-    padding-bottom: 0.2rem;
+    font-size: 0.82rem;
+    padding-bottom: 0.1rem;
 }
 
 .nav-panel .nav-item:first-of-type {
-    padding-top: 0.25rem;
+    padding-top: 0.2rem;
 }
 
 .nav-panel .nav-item a {
-    color: var(--color-text-secondary);
+    color: var(--color-text-muted);
     border-radius: var(--radius-sm);
-    height: 2.5rem;
+    height: 2.25rem;
     display: flex;
     align-items: center;
-    line-height: 2.5rem;
+    line-height: 2.25rem;
     text-decoration: none;
     padding: 0 0.5rem;
+    transition: background-color 0.12s, color 0.12s;
+    font-weight: 500;
 }
 
 .nav-panel .nav-item a.active {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: var(--color-accent-surface);
     color: var(--color-text-primary);
-    border-left: 2px solid var(--color-text-link);
+    border-left: 2px solid var(--color-accent-primary);
     padding-left: calc(0.5rem - 2px);
+    font-weight: 600;
 }
 
 .nav-panel .nav-item a:hover {
-    background-color: rgba(255,255,255,0.06);
-    color: var(--color-text-primary);
+    background-color: rgba(255,255,255,0.04);
+    color: var(--color-text-secondary);
 }
 
 .nav-panel .oi {
     width: 1.5rem;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     vertical-align: text-top;
     top: -1px;
-    opacity: 0.7;
+    opacity: 0.45;
 }
 
-.nav-panel .nav-item a.active .oi,
+.nav-panel .nav-item a.active .oi {
+    opacity: 0.9;
+    color: var(--color-accent-primary);
+}
+
 .nav-panel .nav-item a:hover .oi {
-    opacity: 1;
+    opacity: 0.7;
 }
 
 /* Spinner for loading state */
@@ -376,10 +432,12 @@ app {
 /* --- Main content --------------------------------------------------- */
 .main {
     flex: 1;
+    min-width: 0;
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding-top: 1.25rem;
+    padding-bottom: 2rem;
 }
 
 .navbar-toggler {
@@ -392,45 +450,80 @@ app {
 table {
     color: var(--color-text-primary);
     border-color: var(--color-border-default);
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 th {
     background-color: var(--color-bg-elevated);
-    color: var(--color-text-secondary);
+    color: var(--color-text-muted);
     border-color: var(--color-border-default);
     font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.75rem;
 }
 
 td {
-    border-color: var(--color-border-default);
+    border-color: var(--color-border-subtle);
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+tbody tr {
+    transition: background 0.1s;
+}
+
+tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.015);
 }
 
 tbody tr:hover {
-    background-color: var(--color-bg-elevated);
+    background-color: var(--color-bg-hover);
+}
+
+.table {
+    border-radius: var(--radius-md);
+    overflow: hidden;
 }
 
 /* --- Bootstrap overrides ------------------------------------------- */
+.btn {
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--radius-md);
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.01em;
+}
+
+.btn-sm {
+    padding: 0.28rem 0.65rem;
+    font-size: 0.78rem;
+}
+
 .btn-primary {
     color: #fff;
-    background-color: #1d4ed8;
-    border-color: #1e40af;
+    background-color: var(--color-accent-primary);
+    border-color: #2E5CB3;
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background-color: #2563eb;
-    border-color: #1d4ed8;
+    background-color: #4A7FEB;
+    border-color: var(--color-accent-primary);
     box-shadow: var(--glow-link);
 }
 
 .btn-secondary {
-    color: var(--color-text-primary);
+    color: var(--color-text-secondary);
     background-color: var(--color-bg-elevated);
     border-color: var(--color-border-default);
 }
 
 .btn-secondary:hover, .btn-secondary:focus {
-    background-color: #374151;
-    border-color: #4b5563;
+    background-color: var(--color-bg-hover);
+    border-color: var(--color-border-input);
     color: var(--color-text-primary);
 }
 
@@ -460,21 +553,37 @@ tbody tr:hover {
 
 .btn-danger {
     color: #fff;
-    background-color: #b91c1c;
-    border-color: #991b1b;
+    background-color: #B91C1C;
+    border-color: #991B1B;
 }
 
 .btn-danger:hover {
-    background-color: #dc2626;
-    border-color: #b91c1c;
+    background-color: #DC2626;
+    border-color: #B91C1C;
+    box-shadow: var(--glow-danger);
+}
+
+.btn-outline-secondary {
+    color: var(--color-text-secondary);
+    border-color: var(--color-border-default);
+}
+
+.btn-outline-secondary:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-elevated);
+    border-color: var(--color-border-input);
 }
 
 .badge {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 0.3em 0.6em;
+    border-radius: var(--radius-sm);
 }
 
 .badge.bg-primary, .badge.bg-info {
-    background-color: #1d4ed8 !important;
+    background-color: var(--color-accent-primary) !important;
 }
 
 .badge.bg-success {
@@ -487,20 +596,24 @@ tbody tr:hover {
 }
 
 .badge.bg-danger {
-    background-color: #b91c1c !important;
+    background-color: #B91C1C !important;
 }
 
 .form-control, .form-select {
     background-color: var(--color-bg-input);
     color: var(--color-text-primary);
     border-color: var(--color-border-input);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .form-control:focus, .form-select:focus {
     background-color: var(--color-bg-input);
     color: var(--color-text-primary);
     border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    box-shadow: 0 0 0 3px rgba(91, 156, 246, 0.15);
 }
 
 .form-control::placeholder {
@@ -512,80 +625,184 @@ tbody tr:hover {
     color: var(--color-text-primary);
 }
 
+.form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.35rem;
+}
+
 .alert {
     border-radius: var(--radius-md);
+    border-width: 1px;
+    border-left-width: 3px;
+    font-size: 0.85rem;
 }
 
 .alert-success {
-    background-color: rgba(21, 128, 61, 0.2);
-    border-color: #15803d;
+    background-color: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.25);
     color: var(--color-text-success);
 }
 
 .alert-warning {
-    background-color: rgba(245, 158, 11, 0.15);
-    border-color: #d97706;
-    color: #fcd34d;
+    background-color: rgba(251, 191, 36, 0.08);
+    border-color: rgba(251, 191, 36, 0.25);
+    color: #FCD34D;
 }
 
 .alert-danger {
-    background-color: rgba(185, 28, 28, 0.2);
-    border-color: #b91c1c;
-    color: #fca5a5;
+    background-color: rgba(248, 113, 113, 0.08);
+    border-color: rgba(248, 113, 113, 0.25);
+    color: #FCA5A5;
 }
 
 .alert-info {
-    background-color: rgba(29, 78, 216, 0.15);
-    border-color: #1d4ed8;
-    color: #93c5fd;
+    background-color: rgba(91, 156, 246, 0.08);
+    border-color: rgba(91, 156, 246, 0.25);
+    color: #93C5FD;
+}
+
+.alert-secondary {
+    background-color: var(--color-bg-elevated);
+    border-color: var(--color-border-default);
+    color: var(--color-text-secondary);
 }
 
 /* --- Card / panel --------------------------------------------------- */
 .card {
     background-color: var(--color-bg-surface);
-    border-color: var(--color-border-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
     color: var(--color-text-primary);
+    overflow: hidden;
 }
 
 .card-header {
     background-color: var(--color-bg-elevated);
-    border-color: var(--color-border-default);
+    border-color: var(--color-border-subtle);
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1rem;
 }
 
 .card-footer {
     background-color: var(--color-bg-elevated);
-    border-color: var(--color-border-default);
+    border-color: var(--color-border-subtle);
+    padding: 0.65rem 1rem;
+}
+
+.card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.card {
+    transition: border-color 0.2s;
+}
+
+.card:hover {
+    border-color: var(--color-border-input);
 }
 
 /* --- BGE-specific --------------------------------------------------- */
 .bge-asset {
     background-color: var(--color-bg-surface);
     border: 1px solid var(--color-border-default);
-    border-radius: var(--radius-md);
-    overflow: auto;
-    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    padding: 1rem 1.1rem;
+    transition: border-color 0.2s, transform 0.15s;
+}
+
+.bge-asset:hover {
+    border-color: var(--color-border-input);
+}
+
+.bge-asset h2 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 /* Resource values utility class */
 .text-resource {
     color: var(--color-text-resource);
     text-shadow: var(--glow-resource);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Countdown urgent (< 60s to next tick) */
 .countdown-urgent {
     color: var(--color-text-error);
-    font-weight: 600;
+    font-weight: 700;
+    animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 /* Asset card states */
 .bge-asset.available {
-    border-color: var(--color-text-resource);
+    border-color: rgba(34, 197, 94, 0.4);
+    background-image: linear-gradient(180deg, rgba(34, 197, 94, 0.04) 0%, transparent 40%);
 }
 
 .bge-asset.unavailable {
-    opacity: 0.6;
-    filter: grayscale(0.3);
+    opacity: 0.5;
+    filter: grayscale(0.4);
+}
+
+/* Trade & Colonize sections */
+.bge-trade, .bge-colonize {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+}
+
+.bge-trade h3, .bge-colonize h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.6rem;
+}
+
+/* Game context banner (in MainLayout) */
+.game-context-banner {
+    background: linear-gradient(90deg, #0C1A2E 0%, #132640 100%) !important;
+    border-bottom: 1px solid var(--color-border-default);
+    font-size: 0.82rem !important;
+}
+
+/* List groups in dark theme */
+.list-group-item {
+    background-color: transparent;
+    border-color: var(--color-border-subtle);
+    color: var(--color-text-primary);
+}
+
+.list-group-item:hover {
+    background-color: var(--color-bg-hover);
+}
+
+/* Text utilities */
+.text-muted {
+    color: var(--color-text-muted) !important;
+}
+
+.text-white-50 {
+    color: var(--color-text-secondary) !important;
 }
 
 /* --- Form validation ------------------------------------------------ */
@@ -599,12 +816,18 @@ tbody tr:hover {
 
 .validation-message {
     color: var(--color-text-error);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
 }
 
 .error {
     color: var(--color-text-error);
-    font-size: 0.875rem;
+    font-size: 0.82rem;
     font-weight: 500;
+    padding: 0.4rem 0.6rem;
+    background: rgba(248, 113, 113, 0.08);
+    border-radius: var(--radius-sm);
+    display: inline-block;
 }
 
 /* --- Blazor error UI ----------------------------------------------- */
@@ -633,8 +856,9 @@ tbody tr:hover {
 /* --- Race-variant sidebar stubs ------------------------------------ */
 /* Terran: industrial steel-gray */
 .race-terran .nav-strip {
-    background-color: #0c1018;
-    border-right-color: rgba(203, 213, 225, 0.15);
+    background-color: #060910;
+    border-right-color: rgba(203, 213, 225, 0.1);
+    background-image: linear-gradient(180deg, rgba(148, 163, 184, 0.06) 0%, transparent 50%);
 }
 
 .race-terran .nav-strip-logo {
@@ -643,8 +867,9 @@ tbody tr:hover {
 
 /* Zerg: organic amber */
 .race-zerg .nav-strip {
-    background-color: #100c07;
-    border-right-color: rgba(180, 83, 9, 0.3);
+    background-color: #0A0806;
+    border-right-color: rgba(180, 83, 9, 0.2);
+    background-image: linear-gradient(180deg, rgba(180, 83, 9, 0.08) 0%, transparent 50%);
 }
 
 .race-zerg .nav-strip-logo {
@@ -653,8 +878,9 @@ tbody tr:hover {
 
 /* Protoss: crystalline gold */
 .race-protoss .nav-strip {
-    background-color: #0f0d07;
-    border-right-color: rgba(251, 191, 36, 0.2);
+    background-color: #080706;
+    border-right-color: rgba(251, 191, 36, 0.12);
+    background-image: linear-gradient(180deg, rgba(251, 191, 36, 0.06) 0%, transparent 50%);
 }
 
 .race-protoss .nav-strip-logo {
@@ -684,16 +910,24 @@ tbody tr:hover {
 
     .main .top-row {
         height: auto;
-        min-height: 3rem;
+        min-height: 2.75rem;
         flex-wrap: wrap;
-        padding: 0.4rem 1rem;
+        padding: 0.35rem 0.75rem;
         gap: 0.35rem;
-        font-size: 0.78rem;
+        font-size: 0.75rem;
         justify-content: space-between;
     }
 
     .main .top-row a, .main .top-row .btn-link {
         margin-left: 0;
+    }
+
+    .content {
+        padding-top: 1rem;
+    }
+
+    h1 {
+        font-size: 1.25rem;
     }
 }
 
@@ -707,7 +941,7 @@ tbody tr:hover {
     }
 
     .sidebar {
-        width: 250px;
+        width: 240px;
         height: 100vh;
         position: sticky;
         top: 0;
@@ -743,12 +977,13 @@ tbody tr:hover {
 
 /* ── Nav section labels ───────────────────────────────────────────────── */
 .nav-section-label {
-    padding: 0.75rem 0.75rem 0.2rem 0.75rem;
-    font-size: 0.68rem;
+    padding: 1rem 0.75rem 0.25rem 0.75rem;
+    font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
     text-transform: uppercase;
+    opacity: 0.6;
 }
 
 /* ── Workspace status dots (reused on nav-game-status-dot) ───────────── */
@@ -986,10 +1221,10 @@ tbody tr:hover {
     max-height: 420px;
     display: flex;
     flex-direction: column;
-    background: var(--color-bg-elevated);
+    background: var(--color-bg-surface);
     border: 1px solid var(--color-border-default);
     border-radius: var(--radius-lg);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
     z-index: 1050;
     overflow: hidden;
 }
