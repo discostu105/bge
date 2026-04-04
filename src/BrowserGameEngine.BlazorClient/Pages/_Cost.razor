@@ -1,12 +1,9 @@
-﻿<div>
-    @foreach(var c in Cost.Cost) {
-        <div>
-            @c.Key: @c.Value
-        </div>
+@* Inline cost display with resource-styled badges *@
+<span class="cost-inline">
+    @foreach (var c in Cost.Cost) {
+        <span class="cost-badge"><span class="cost-label">@c.Key</span> <span class="cost-value">@c.Value</span></span>
     }
-    
-</div>
-
+</span>
 
 @code {
     [Parameter]

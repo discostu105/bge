@@ -1359,3 +1359,297 @@ tbody tr:hover {
 .notif-item--default {
     border-left: 3px solid transparent;
 }
+
+/* =====================================================================
+   UX Enhancement Components
+   ===================================================================== */
+
+/* --- Cost badges ---------------------------------------------------- */
+.cost-inline {
+    display: inline-flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.cost-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.15rem 0.45rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+.cost-label {
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+}
+
+.cost-value {
+    color: var(--color-text-resource);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Worker assignment bars ----------------------------------------- */
+.bge-workers {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+}
+
+.bge-workers h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+.worker-bar {
+    display: flex;
+    height: 24px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+}
+
+.worker-bar-seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    min-width: 20px;
+    transition: width 0.3s ease;
+}
+
+.worker-bar-minerals { background: #2563EB; }
+.worker-bar-gas { background: #7C3AED; }
+.worker-bar-idle { background: var(--color-bg-hover); color: var(--color-text-muted); }
+
+.worker-legend {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+}
+
+.worker-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.worker-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.worker-dot-minerals { background: #2563EB; }
+.worker-dot-gas { background: #7C3AED; }
+.worker-dot-idle { background: var(--color-bg-hover); border: 1px solid var(--color-border-default); }
+
+/* --- Resource bar (top row) improvements ----------------------------- */
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.resource-icon {
+    font-size: 0.9rem;
+    opacity: 0.6;
+}
+
+/* --- Loading spinner ------------------------------------------------- */
+.bge-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 2rem;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+.bge-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-border-default);
+    border-top-color: var(--color-accent-primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+/* --- Empty state ----------------------------------------------------- */
+.bge-empty {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    color: var(--color-text-muted);
+}
+
+.bge-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.3;
+}
+
+.bge-empty-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.3rem;
+}
+
+.bge-empty-desc {
+    font-size: 0.82rem;
+    max-width: 280px;
+    margin: 0 auto;
+    line-height: 1.4;
+}
+
+/* --- Section cards (Base page organization) -------------------------- */
+.bge-section {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+
+.bge-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border-subtle);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+}
+
+.bge-section-header:hover {
+    background: var(--color-bg-hover);
+}
+
+.bge-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.bge-section-toggle {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    transition: transform 0.2s;
+}
+
+.bge-section-body {
+    padding: 1rem 1.25rem;
+}
+
+/* --- Game switcher tooltip ------------------------------------------- */
+.nav-game-icon[title] {
+    position: relative;
+}
+
+/* --- Status tags ----------------------------------------------------- */
+.status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.status-tag-home {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--color-text-success);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-tag-traveling {
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--color-text-warning);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.status-tag-attacking {
+    background: rgba(248, 113, 113, 0.1);
+    color: var(--color-text-error);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+/* --- Inline action group --------------------------------------------- */
+.action-group {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* --- Tooltip-like help text ------------------------------------------ */
+.help-hint {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-default);
+    border-radius: 50%;
+    color: var(--color-text-muted);
+    cursor: help;
+    vertical-align: middle;
+    margin-left: 0.25rem;
+}
+
+/* --- API key display ------------------------------------------------ */
+.api-key-box {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+}
+
+.api-key-box code {
+    background: var(--color-bg-primary);
+    padding: 0.3rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    word-break: break-all;
+    display: block;
+    margin: 0.5rem 0;
+}
+
+/* --- Table improvements ---------------------------------------------- */
+.table-responsive {
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table-responsive .table {
+    margin-bottom: 0;
+}
