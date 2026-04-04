@@ -51,6 +51,11 @@ variable "alarm_email" {
   default     = ""
 }
 
+variable "monthly_budget_usd" {
+  description = "Monthly AWS budget threshold in USD"
+  default     = "50"
+}
+
 # --- VPC (default) ---
 
 data "aws_vpc" "default" {
@@ -387,12 +392,12 @@ resource "aws_ecs_task_definition" "app" {
 }
 
 resource "aws_ecs_service" "app" {
-  name                               = var.app_name
-  cluster                            = aws_ecs_cluster.app.id
-  task_definition                    = aws_ecs_task_definition.app.arn
-  desired_count                      = 1
-  launch_type                        = "FARGATE"
-  availability_zone_rebalancing      = "ENABLED"
+  name                          = var.app_name
+  cluster                       = aws_ecs_cluster.app.id
+  task_definition               = aws_ecs_task_definition.app.arn
+  desired_count                 = 1
+  launch_type                   = "FARGATE"
+  availability_zone_rebalancing = "ENABLED"
 
   network_configuration {
     subnets          = data.aws_subnets.default.ids
@@ -520,16 +525,64 @@ resource "aws_cloudwatch_metric_alarm" "no_healthy_hosts" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "high_5xx_errors" {
-  alarm_name          = "${var.app_name}-high-5xx-errors"
+# 5xx error rate alarm: alerts when 5xx errors exceed 1% of total requests over a 5-min window.
+# Uses metric math to compute the rate; treats missing data as not breaching (low-traffic periods).
+resource "aws_cloudwatch_metric_alarm" "high_5xx_rate" {
+  alarm_name          = "${var.app_name}-high-5xx-rate"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
-  metric_name         = "HTTPCode_Target_5XX_Count"
+  threshold           = 1
+  alarm_description   = "BGE: 5xx error rate > 1% over 5-min window"
+  treat_missing_data  = "notBreaching"
+
+  metric_query {
+    id          = "error_rate"
+    expression  = "100 * errors / MAX([errors, requests])"
+    label       = "5xx Error Rate (%)"
+    return_data = true
+  }
+
+  metric_query {
+    id = "errors"
+    metric {
+      metric_name = "HTTPCode_Target_5XX_Count"
+      namespace   = "AWS/ApplicationELB"
+      period      = 300
+      stat        = "Sum"
+      dimensions  = { LoadBalancer = aws_lb.app.arn_suffix }
+    }
+  }
+
+  metric_query {
+    id = "requests"
+    metric {
+      metric_name = "RequestCount"
+      namespace   = "AWS/ApplicationELB"
+      period      = 300
+      stat        = "Sum"
+      dimensions  = { LoadBalancer = aws_lb.app.arn_suffix }
+    }
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+# p99 latency alarm: 2 consecutive 5-min periods above 2s triggers.
+resource "aws_cloudwatch_metric_alarm" "high_p99_latency" {
+  alarm_name          = "${var.app_name}-high-p99-latency"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "TargetResponseTime"
   namespace           = "AWS/ApplicationELB"
   period              = 300
-  statistic           = "Sum"
-  threshold           = 10
-  alarm_description   = "BGE: High 5xx error rate from targets"
+  extended_statistic  = "p99"
+  threshold           = 2
+  alarm_description   = "BGE: p99 API latency > 2s over 5-min window"
   treat_missing_data  = "notBreaching"
 
   dimensions = {
@@ -544,6 +597,32 @@ resource "aws_cloudwatch_metric_alarm" "high_5xx_errors" {
   }
 }
 
+# ECS CPU: 2 consecutive 5-min periods (= 10 min sustained) above 80%.
+resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  alarm_name          = "${var.app_name}-high-cpu"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "BGE: ECS CPU utilization above 80% for 10 min"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    ClusterName = aws_ecs_cluster.app.name
+    ServiceName = aws_ecs_service.app.name
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+# ECS Memory: alert at 85%.
 resource "aws_cloudwatch_metric_alarm" "high_memory" {
   alarm_name          = "${var.app_name}-high-memory"
   comparison_operator = "GreaterThanThreshold"
@@ -552,8 +631,8 @@ resource "aws_cloudwatch_metric_alarm" "high_memory" {
   namespace           = "AWS/ECS"
   period              = 300
   statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "BGE: ECS memory utilization above 80%"
+  threshold           = 85
+  alarm_description   = "BGE: ECS memory utilization above 85%"
   treat_missing_data  = "notBreaching"
 
   dimensions = {
@@ -568,34 +647,73 @@ resource "aws_cloudwatch_metric_alarm" "high_memory" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "high_cpu" {
-  alarm_name          = "${var.app_name}-high-cpu"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 3
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "BGE: ECS CPU utilization above 80%"
-  treat_missing_data  = "notBreaching"
+# --- Application Log Metric Filter: Unhandled Exceptions ---
 
-  dimensions = {
-    ClusterName = aws_ecs_cluster.app.name
-    ServiceName = aws_ecs_service.app.name
+resource "aws_cloudwatch_log_metric_filter" "exceptions" {
+  name           = "${var.app_name}-unhandled-exceptions"
+  log_group_name = aws_cloudwatch_log_group.app.name
+  # ASP.NET Core logs unhandled exceptions with these phrases.
+  pattern = "?\"Unhandled exception\" ?\"An unhandled exception has occurred\""
+
+  metric_transformation {
+    name          = "UnhandledExceptions"
+    namespace     = "BGE/Application"
+    value         = "1"
+    default_value = "0"
   }
+}
+
+resource "aws_cloudwatch_metric_alarm" "unhandled_exceptions" {
+  alarm_name          = "${var.app_name}-unhandled-exceptions"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "UnhandledExceptions"
+  namespace           = "BGE/Application"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 0
+  alarm_description   = "BGE: One or more unhandled exceptions detected in application logs"
+  treat_missing_data  = "notBreaching"
 
   alarm_actions = [aws_sns_topic.alarms.arn]
 
   lifecycle {
     ignore_changes = [tags, tags_all]
+  }
+}
+
+# --- AWS Budget Alert ---
+
+resource "aws_budgets_budget" "monthly" {
+  name         = "${var.app_name}-monthly"
+  budget_type  = "COST"
+  limit_amount = var.monthly_budget_usd
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 80
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = var.alarm_email != "" ? [var.alarm_email] : []
+    subscriber_sns_topic_arns  = [aws_sns_topic.alarms.arn]
+  }
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = var.alarm_email != "" ? [var.alarm_email] : []
+    subscriber_sns_topic_arns  = [aws_sns_topic.alarms.arn]
   }
 }
 
 # --- CloudWatch Dashboard ---
 
-resource "aws_cloudwatch_dashboard" "app" {
-  dashboard_name = var.app_name
+resource "aws_cloudwatch_dashboard" "production" {
+  dashboard_name = "BGE-Production"
 
   lifecycle {
     ignore_changes = [dashboard_body]
@@ -613,7 +731,7 @@ resource "aws_cloudwatch_dashboard" "app" {
           title  = "ECS Running Task Count"
           region = var.aws_region
           metrics = [[
-            "ECS/ContainerInsights", "RunningTaskCount",
+            "AWS/ECS", "RunningTaskCount",
             "ClusterName", aws_ecs_cluster.app.name,
             "ServiceName", aws_ecs_service.app.name
           ]]
@@ -715,6 +833,24 @@ resource "aws_cloudwatch_dashboard" "app" {
           view   = "timeSeries"
           yAxis  = { left = { min = 0 } }
         }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 12
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Unhandled Application Exceptions"
+          region = var.aws_region
+          metrics = [[
+            "BGE/Application", "UnhandledExceptions"
+          ]]
+          stat   = "Sum"
+          period = 300
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0 } }
+        }
       }
     ]
   })
@@ -731,7 +867,7 @@ output "ecr_repository_url" {
 }
 
 output "cloudwatch_dashboard_url" {
-  value = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${var.app_name}"
+  value = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=BGE-Production"
 }
 
 output "sns_alarms_topic_arn" {
