@@ -209,7 +209,7 @@
     }
 
     private async Task ClearNotifications() {
-        await Http.DeleteAsync("api/notifications");
+        await Http.DeleteAsync("api/notifications/recent");
         notifications = new List<PlayerNotificationViewModel>();
     }
 
@@ -217,7 +217,7 @@
         model = await Http.GetFromJsonAsync<AssetsViewModel>("api/assets");
         resources = await Http.GetFromJsonAsync<PlayerResourcesViewModel>("api/resources");
         try {
-            notifications = await Http.GetFromJsonAsync<List<PlayerNotificationViewModel>>("api/notifications");
+            notifications = await Http.GetFromJsonAsync<List<PlayerNotificationViewModel>>("api/notifications/recent");
         } catch {
             // Non-critical
         }
