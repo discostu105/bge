@@ -34,7 +34,7 @@
 
     @if (spyReport != null) {
         <details open class="mt-3">
-            <summary><strong>Spy Report — @spyReport.TargetPlayerName</strong> <small class="text-muted">(@spyReport.ReportTime.ToLocalTime():HH:mm:ss)</small></summary>
+            <summary><strong>Spy Report — @spyReport.TargetPlayerName</strong> <small class="text-muted">(@spyReport.ReportTime.ToLocalTime().ToString("HH:mm:ss"))</small></summary>
             <div class="mt-2">
                 <p><strong>Approximate Resources:</strong> ~@((int)spyReport.ApproximateMinerals) minerals, ~@((int)spyReport.ApproximateGas) gas</p>
                 @if (spyReport.UnitEstimates.Any()) {

@@ -5,7 +5,7 @@
 
 @if (resources != null) {
     <div class="d-flex flex-wrap gap-3 align-items-center small">
-        <span><strong>@resources.PrimaryResource.Cost.Single().Key</strong>: <span class="text-resource">@resources.PrimaryResource.Cost.Single().Value</span></span>
+        <span><strong>@resources.PrimaryResource.Cost.First().Key</strong>: <span class="text-resource">@resources.PrimaryResource.Cost.First().Value</span></span>
         @foreach (var res in resources.SecondaryResources.Cost) {
             <span><strong>@res.Key</strong>: <span class="text-resource">@res.Value</span></span>
         }

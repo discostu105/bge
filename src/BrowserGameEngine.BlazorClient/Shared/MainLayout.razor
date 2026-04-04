@@ -166,7 +166,7 @@
 
     private async Task FetchNotificationsAsync() {
         try {
-            var result = await Http.GetFromJsonAsync<List<PlayerNotificationViewModel>>("api/notifications");
+            var result = await Http.GetFromJsonAsync<List<PlayerNotificationViewModel>>("api/notifications/recent");
             if (result != null) {
                 _notifications = result;
                 await InvokeAsync(StateHasChanged);
@@ -178,7 +178,7 @@
 
     private async Task DismissAll() {
         try {
-            await Http.DeleteAsync("api/notifications");
+            await Http.DeleteAsync("api/notifications/recent");
             _notifications = new List<PlayerNotificationViewModel>();
             _showNotifications = false;
         } catch {
