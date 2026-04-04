@@ -79,7 +79,9 @@ builder.Services.AddAuthentication(options => {
 })
     .AddCookie(options => {
         options.Cookie.Name = "BGE.AuthCookie";
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.LoginPath = "/signin";
         options.Events.OnRedirectToLogin = context => {
@@ -100,7 +102,9 @@ if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(git
         options.ClientSecret = githubClientSecret;
         options.SaveTokens = true;
         options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.CorrelationCookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
     });
 } else {
     Log.Warning("GitHub OAuth is disabled because GitHub:ClientId or GitHub:ClientSecret is not configured.");
@@ -116,7 +120,10 @@ if (!string.IsNullOrEmpty(s3BucketForDp)) {
             opts.XmlRepository = new S3DataProtectionKeyRepository(s3ClientForDp, s3BucketForDp, s3KeyPrefixForDp));
     Log.Information("Data Protection keys will be persisted to S3 at {Bucket}/{Prefix}", s3BucketForDp, s3KeyPrefixForDp);
 } else {
-    Log.Warning("Data Protection keys are ephemeral (no S3 bucket configured). This is fine for local dev.");
+    var keysDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "bge", "data-protection-keys");
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(keysDir));
+    Log.Information("Data Protection keys will be persisted locally to {KeysDir}", keysDir);
 }
 
 await ConfigureGameServices(builder.Services);
