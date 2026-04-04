@@ -76,14 +76,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!options.Value.DevAuth) return BadRequest();
 			if (string.IsNullOrWhiteSpace(playerid)) return BadRequest();
 
-			var playerId = PlayerIdFactory.Create(playerid);
+			// Create or get the user so the player can be linked
 			var user = userRepositoryWrite.GetOrCreateUser(
-				githubId: playerid,
-				githubLogin: playerid,
-				displayName: playerid
-			);
+				githubId: playerid, githubLogin: playerid, displayName: playerid);
+
+			var playerId = PlayerIdFactory.Create(playerid);
 			if (!playerRepository.Exists(playerId)) {
-				playerRepositoryWrite.CreatePlayer(playerId, user.UserId);
+				playerRepositoryWrite.CreatePlayer(playerId, userId: user.UserId);
 			}
 
 			// Create a claims identity so the cookie auth and CurrentUserMiddleware work correctly
