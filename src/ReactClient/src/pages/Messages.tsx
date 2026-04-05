@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { PenSquareIcon, InboxIcon, SendIcon, ReplyIcon } from 'lucide-react'
+import { PenSquareIcon, InboxIcon, SendIcon, ReplyIcon, MessageSquareIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { MessageInboxViewModel, MessageViewModel, MessageThreadViewModel, SendMessageViewModel, PublicPlayerViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { ChatPanel } from '@/pages/Chat'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -94,7 +95,7 @@ function ComposeForm({
 
 export function Messages({ gameId }: MessagesProps) {
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState<'inbox' | 'sent'>('inbox')
+  const [tab, setTab] = useState<'inbox' | 'sent' | 'chat'>('inbox')
   const [selected, setSelected] = useState<MessageViewModel | null>(null)
   const [composing, setComposing] = useState(false)
 
@@ -157,46 +158,62 @@ export function Messages({ gameId }: MessagesProps) {
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Messages</h1>
+        {tab !== 'chat' && (
+          <button
+            onClick={() => { setComposing(true); setSelected(null) }}
+            className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <PenSquareIcon className="h-4 w-4" />
+            Compose
+          </button>
+        )}
+      </div>
+
+      {/* Top-level tabs */}
+      <div className="flex border-b mb-4">
         <button
-          onClick={() => { setComposing(true); setSelected(null) }}
-          className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          onClick={() => setTab('inbox')}
+          className={cn(
+            'flex items-center gap-1.5 px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            tab === 'inbox' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
         >
-          <PenSquareIcon className="h-4 w-4" />
-          Compose
+          <InboxIcon className="h-3.5 w-3.5" />
+          Inbox
+          {unread > 0 && (
+            <span className="ml-1 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+              {unread}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('sent')}
+          className={cn(
+            'flex items-center gap-1.5 px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            tab === 'sent' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <SendIcon className="h-3.5 w-3.5" />
+          Sent
+        </button>
+        <button
+          onClick={() => { setTab('chat'); setComposing(false); setSelected(null) }}
+          className={cn(
+            'flex items-center gap-1.5 px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            tab === 'chat' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <MessageSquareIcon className="h-3.5 w-3.5" />
+          Alliance Chat
         </button>
       </div>
 
+      {tab === 'chat' ? (
+        <ChatPanel gameId={gameId} />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4">
         {/* List pane */}
         <div className="rounded-lg border overflow-hidden">
-          <div className="flex border-b">
-            <button
-              onClick={() => setTab('inbox')}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 py-2 text-sm',
-                tab === 'inbox' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <InboxIcon className="h-3.5 w-3.5" />
-              Inbox
-              {unread > 0 && (
-                <span className="ml-1 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
-                  {unread}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setTab('sent')}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 py-2 text-sm',
-                tab === 'sent' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <SendIcon className="h-3.5 w-3.5" />
-              Sent
-            </button>
-          </div>
-
           <ul className="divide-y max-h-[420px] overflow-y-auto">
             {messages.length === 0 ? (
               <li className="px-3 py-4 text-center text-sm text-muted-foreground">Empty</li>
@@ -286,6 +303,7 @@ export function Messages({ gameId }: MessagesProps) {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }
