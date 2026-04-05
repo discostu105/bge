@@ -5,20 +5,10 @@ import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
-
-function vcBadge(type: string | null | undefined): { css: string; text: string } {
-  switch (type) {
-    case 'EconomicThreshold': return { css: 'bg-warning text-warning-foreground', text: 'CONQUERED' }
-    case 'TimeExpired': return { css: 'bg-muted text-muted-foreground', text: 'TIME EXPIRED' }
-    case 'AdminFinalized': return { css: 'bg-danger text-danger-foreground', text: 'ADMIN ENDED' }
-    default: return { css: 'bg-muted text-muted-foreground', text: 'FINISHED' }
-  }
-}
+import { vcBadgeCss, vcText } from '@/lib/victory'
+import { formatDateTime } from '@/lib/formatters'
 
 function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game: GameSummaryViewModel) => void }) {
-  const formatDate = (d: string | null | undefined) =>
-    d ? new Date(d).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'TBD'
-
   if (game.status === 'Active') {
     return (
       <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
@@ -28,7 +18,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         </div>
         <div className="text-sm text-muted-foreground">
           <div>Players: {game.playerCount}{game.maxPlayers > 0 ? ` / ${game.maxPlayers}` : ''}</div>
-          <div>Ends: {formatDate(game.endTime)}</div>
+          <div>Ends: {formatDateTime(game.endTime)}</div>
         </div>
         <div className="flex gap-2 mt-auto flex-wrap">
           {game.canJoin && (
@@ -67,7 +57,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         </div>
         <div className="text-sm text-muted-foreground">
           <div>Players: {game.playerCount}{game.maxPlayers > 0 ? ` / ${game.maxPlayers}` : ''}</div>
-          <div>Starts: {formatDate(game.startTime)}</div>
+          <div>Starts: {formatDateTime(game.startTime)}</div>
         </div>
         <div className="mt-auto">
           {game.canJoin ? (
@@ -88,12 +78,11 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
   }
 
   // Finished
-  const badge = vcBadge(game.victoryConditionType)
   return (
     <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
       <div className="flex justify-between items-start">
         <h3 className="font-semibold">{game.name}</h3>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded ${badge.css}`}>{badge.text}</span>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded ${vcBadgeCss(game.victoryConditionType)}`}>{vcText(game.victoryConditionType)}</span>
       </div>
       <div className="text-sm text-muted-foreground">
         {game.winnerName && game.victoryConditionType === 'EconomicThreshold' && (
@@ -102,7 +91,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         {game.winnerName && game.victoryConditionType !== 'EconomicThreshold' && (
           <div>Winner: <strong>{game.winnerName}</strong></div>
         )}
-        <div>Ended: {formatDate(game.endTime)}</div>
+        <div>Ended: {formatDateTime(game.endTime)}</div>
       </div>
       <div className="mt-auto">
         <Link
