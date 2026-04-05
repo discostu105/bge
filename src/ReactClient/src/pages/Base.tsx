@@ -79,14 +79,14 @@ function AssetCard({
               {asset.canAfford && (
                 <button
                   onClick={() => onBuild(asset.definition.id)}
-                  className="rounded bg-primary px-2 py-1 text-xs text-primary-foreground hover:opacity-90"
+                  className="rounded bg-primary min-h-[36px] px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90"
                 >
                   Build
                 </button>
               )}
               <button
                 onClick={() => onQueue(asset.definition.id)}
-                className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground hover:opacity-90"
+                className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
               >
                 Queue
               </button>
@@ -237,7 +237,7 @@ export function Base({ gameId }: BaseProps) {
           <button
             onClick={() => tradeMutation.mutate()}
             disabled={tradeMutation.isPending}
-            className="rounded bg-yellow-600 px-3 py-1 text-sm text-white hover:opacity-90 disabled:opacity-50"
+            className="rounded bg-yellow-600 min-h-[44px] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
           >
             Trade
           </button>
@@ -267,7 +267,7 @@ export function Base({ gameId }: BaseProps) {
             <button
               onClick={() => colonizeMutation.mutate()}
               disabled={colonizeMutation.isPending}
-              className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:opacity-90 disabled:opacity-50"
+              className="rounded bg-green-600 min-h-[44px] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
             >
               Colonize
             </button>

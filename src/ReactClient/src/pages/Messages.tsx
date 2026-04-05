@@ -192,7 +192,7 @@ export function Messages({ gameId }: MessagesProps) {
         <button
           onClick={() => setTab('sent')}
           className={cn(
-            'flex items-center gap-1.5 px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            'flex items-center gap-1.5 min-h-[44px] px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
             tab === 'sent' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
           )}
         >
@@ -202,7 +202,7 @@ export function Messages({ gameId }: MessagesProps) {
         <button
           onClick={() => { setTab('chat'); setComposing(false); setSelected(null) }}
           className={cn(
-            'flex items-center gap-1.5 px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            'flex items-center gap-1.5 min-h-[44px] px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
             tab === 'chat' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
           )}
         >

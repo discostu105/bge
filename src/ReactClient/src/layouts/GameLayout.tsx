@@ -143,16 +143,16 @@ function GameLayoutInner() {
       {/* ── Main area ────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-12 shrink-0 border-b flex items-center justify-between px-4 bg-card">
+        <header className="h-12 shrink-0 border-b flex items-center justify-between px-3 sm:px-4 bg-card">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-1 rounded hover:bg-secondary md:hidden"
+            className="p-2 -ml-1 rounded hover:bg-secondary md:hidden"
             aria-label="Open menu"
           >
             <MenuIcon className="h-5 w-5" />
           </button>
           <div className="hidden md:block" />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto">
             <PlayerResources gameId={gameId} />
             <NotificationBell />
           </div>
@@ -167,7 +167,7 @@ function GameLayoutInner() {
         )}
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4">
           <Suspense fallback={<PageLoader />}>
             <Outlet />
           </Suspense>

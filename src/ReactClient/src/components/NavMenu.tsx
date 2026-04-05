@@ -34,7 +34,7 @@ function NavItem({
         to={to}
         className={({ isActive }) =>
           cn(
-            'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors',
+            'flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-colors min-h-[44px]',
             isActive
               ? 'bg-primary/20 text-primary font-medium'
               : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
