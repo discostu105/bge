@@ -4,6 +4,7 @@ import {
   ShieldIcon,
   FlaskConicalIcon,
   ShoppingCartIcon,
+  ArrowRightLeftIcon,
   EyeIcon,
   CrosshairIcon,
   BarChart2Icon,
@@ -72,6 +73,7 @@ export function NavMenu() {
         <NavItem to={g('units')} icon={ShieldIcon} label="Units" />
         <NavItem to={g('research')} icon={FlaskConicalIcon} label="Research" />
         <NavItem to={g('market')} icon={ShoppingCartIcon} label="Market" />
+        <NavItem to={g('trade')} icon={ArrowRightLeftIcon} label="Trade" />
         <NavItem to={g('spy')} icon={EyeIcon} label="Spy" />
         <NavItem to={g('operations')} icon={CrosshairIcon} label="Operations" />
 
