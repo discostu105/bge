@@ -230,6 +230,7 @@ export interface GameSummaryViewModel {
   winnerName: string | null
   discordWebhookUrl: string | null
   isPlayerEnrolled: boolean
+  victoryConditionType: string | null
 }
 
 export interface GameListViewModel {
@@ -260,6 +261,8 @@ export interface GameResultsViewModel {
   endTime: string
   standings: GameResultEntryViewModel[]
   currentPlayerId: string | null
+  victoryConditionType: string | null
+  victoryConditionLabel: string | null
 }
 
 export interface JoinGameRequest {

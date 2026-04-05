@@ -8,6 +8,14 @@ import { SpyReports } from '@/pages/SpyReports'
 import { Diplomacy } from '@/pages/Diplomacy'
 import { EnemyBase } from '@/pages/EnemyBase'
 import { SelectEnemy } from '@/pages/SelectEnemy'
+import { Index } from '@/pages/Index'
+import { Games } from '@/pages/Games'
+import { GameLobby } from '@/pages/GameLobby'
+import { JoinGame } from '@/pages/JoinGame'
+import { GameSummary } from '@/pages/GameSummary'
+import { GameResults } from '@/pages/GameResults'
+import { CreatePlayer } from '@/pages/CreatePlayer'
+import { UnitDefinitions } from '@/pages/UnitDefinitions'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -87,11 +95,11 @@ function SelectEnemyPage() {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <TodoPage name="Index" />,
+    element: <Index />,
   },
   {
     path: '/games',
-    element: <TodoPage name="Games" />,
+    element: <Games />,
   },
   {
     path: '/games/:gameId',
@@ -111,21 +119,21 @@ const router = createBrowserRouter([
       { path: 'spies', element: <SpiesPage /> },
       { path: 'spy', element: <SpyReportsPage /> },
       { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
-      { path: 'unitdefinitions', element: <TodoPage name="Unit Definitions" /> },
+      { path: 'unitdefinitions', element: <UnitDefinitions /> },
       { path: 'player/:playerId', element: <TodoPage name="Player Profile" /> },
       { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
-      { path: 'join', element: <TodoPage name="Join Game" /> },
-      { path: 'summary', element: <TodoPage name="Game Summary" /> },
-      { path: 'results', element: <TodoPage name="Game Results" /> },
+      { path: 'join', element: <JoinGame /> },
+      { path: 'summary', element: <GameSummary /> },
+      { path: 'results', element: <GameResults /> },
     ],
   },
   {
     path: '/createplayer',
-    element: <TodoPage name="Create Player" />,
+    element: <CreatePlayer />,
   },
   {
     path: '/lobby',
-    element: <TodoPage name="Game Lobby" />,
+    element: <GameLobby />,
   },
   {
     path: '/profile',
