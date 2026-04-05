@@ -14,10 +14,13 @@
 } else if (model != null) {
 	<h1>@model.Name — Results</h1>
 
-	@if (model.VictoryConditionLabel != null) {
-		<div class="alert alert-success d-inline-flex align-items-center gap-2 py-2 px-3 mb-3">
-			<span class="fs-5">🏆</span>
-			<span>@model.VictoryConditionLabel</span>
+	@if (model.VictoryConditionType != null) {
+		<div class="d-flex align-items-center gap-2 mb-3">
+			<span class="fs-4">@GetVcEmoji(model.VictoryConditionType)</span>
+			<span class="badge @GetVcBadgeCss(model.VictoryConditionType) fs-6 px-3 py-2">@GetVcText(model.VictoryConditionType)</span>
+			@if (model.VictoryConditionLabel != null) {
+				<span class="text-muted small">— @model.VictoryConditionLabel</span>
+			}
 		</div>
 	}
 
@@ -142,6 +145,27 @@
 			// Clipboard unavailable (non-HTTPS / old browser) — silently ignore
 		}
 	}
+
+	private static string GetVcBadgeCss(string type) => type switch {
+		"EconomicThreshold" => "bg-warning text-dark",
+		"TimeExpired" => "bg-secondary",
+		"AdminFinalized" => "bg-danger",
+		_ => "bg-secondary"
+	};
+
+	private static string GetVcText(string type) => type switch {
+		"EconomicThreshold" => "CONQUERED",
+		"TimeExpired" => "TIME EXPIRED",
+		"AdminFinalized" => "ADMIN ENDED",
+		_ => "FINISHED"
+	};
+
+	private static string GetVcEmoji(string type) => type switch {
+		"EconomicThreshold" => "🏅",
+		"TimeExpired" => "⏰",
+		"AdminFinalized" => "🔚",
+		_ => "🎮"
+	};
 
 	private static string FormatDuration(TimeSpan ts) {
 		if (ts.TotalDays >= 1) return $"{(int)ts.TotalDays}d {ts.Hours}h";

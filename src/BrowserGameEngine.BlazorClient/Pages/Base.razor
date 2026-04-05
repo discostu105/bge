@@ -11,12 +11,12 @@
 <h1>Base</h1>
 
 @if (gameDetail?.Status == "Finished") {
-    <div class="alert alert-warning d-flex align-items-center gap-3 mb-3" role="alert">
-        <div>
-            <strong>Game Over!</strong>
-            <span> The game has ended. <a href="games/@GameId/results">View final results</a>.</span>
+    <_VictoryBanner Model="gameResults" Show="showVictoryBanner" OnDismiss="DismissVictoryBanner" />
+    @if (!showVictoryBanner) {
+        <div class="alert alert-secondary d-flex align-items-center gap-2 mb-3" role="alert">
+            <span>Game over. <a href="games/@GameId/results">View final results</a>.</span>
         </div>
-    </div>
+    }
 }
 
 <div class="container">
@@ -139,6 +139,8 @@
     private AssetsViewModel? model;
     private PlayerResourcesViewModel? resources;
     private GameDetailViewModel? gameDetail;
+    private GameResultsViewModel? gameResults;
+    private bool showVictoryBanner = true;
     private List<PlayerNotificationViewModel>? notifications;
     private string? lastError;
     private string? colonizeError;
@@ -224,10 +226,18 @@
         if (!string.IsNullOrEmpty(GameId)) {
             try {
                 gameDetail = await Http.GetFromJsonAsync<GameDetailViewModel>($"api/games/{GameId}");
+                if (gameDetail?.Status == "Finished" && gameResults == null) {
+                    gameResults = await Http.GetFromJsonAsync<GameResultsViewModel>($"api/games/{GameId}/results");
+                    showVictoryBanner = true;
+                }
             } catch {
                 // Non-critical — banner simply won't show if fetch fails
             }
         }
+    }
+
+    private void DismissVictoryBanner() {
+        showVictoryBanner = false;
     }
 
     private static string NotificationIcon(NotificationKind kind) => kind switch {
