@@ -15,6 +15,30 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.globalState = globalState;
 		}
 
+		[AllowAnonymous]
+		[HttpGet("")]
+		public ActionResult<AllTimePlayerListViewModel> GetAll() {
+			var achievements = globalState.GetAchievements();
+			var grouped = achievements.GroupBy(a => a.UserId);
+
+			var players = grouped.Select(g => {
+				var list = g.ToList();
+				var displayName = globalState.GetUserDisplayName(g.Key) ?? list.First().PlayerName;
+				return new AllTimePlayerEntryViewModel(
+					UserId: g.Key,
+					DisplayName: displayName,
+					TotalGames: list.Count,
+					TotalWins: list.Count(a => a.FinalRank == 1),
+					BestRank: list.Min(a => a.FinalRank),
+					TotalScore: list.Sum(a => a.FinalScore)
+				);
+			})
+			.OrderByDescending(p => p.TotalScore)
+			.ToArray();
+
+			return Ok(new AllTimePlayerListViewModel(players));
+		}
+
 		/// <summary>
 		/// Public achievements for any user, identified by their OAuth user ID.
 		/// Returns empty list when the user has no achievements.
