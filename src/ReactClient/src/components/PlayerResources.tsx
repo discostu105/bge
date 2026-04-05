@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { PlayerResourcesViewModel } from '@/api/types'
-
-function formatNumber(value: number): string {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 10_000) return `${(value / 1_000).toFixed(1)}K`
-  return Math.floor(value).toLocaleString()
-}
+import { formatNumber } from '@/lib/formatters'
 
 function ResourceEntry({ name, value }: { name: string; value: number }) {
   return (

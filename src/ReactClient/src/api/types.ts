@@ -86,11 +86,6 @@ export interface AddToQueueRequest {
   count: number
 }
 
-export interface ReorderQueueRequest {
-  entryId: string
-  newPriority: number
-}
-
 // Resources
 
 export interface PlayerResourcesViewModel {
@@ -295,14 +290,6 @@ export interface GameListViewModel {
   games: GameSummaryViewModel[]
 }
 
-export interface MyGameViewModel {
-  gameId: string
-  gameName: string
-  gameStatus: string
-  playerId: string
-  playerName: string
-}
-
 export interface GameResultEntryViewModel {
   rank: number
   playerName: string
@@ -326,10 +313,6 @@ export interface GameResultsViewModel {
 export interface JoinGameRequest {
   playerName: string
   playerType?: string
-}
-
-export interface JoinGameViewModel {
-  playerId: string
 }
 
 export interface CreateGameRequest {
@@ -394,10 +377,6 @@ export interface PlayerRankingEntryViewModel {
   score: number
 }
 
-export interface PlayerRankingViewModel {
-  entries: PlayerRankingEntryViewModel[]
-}
-
 export interface LeaderboardEntryViewModel {
   rank: number
   playerId: string
@@ -450,10 +429,6 @@ export interface AllianceRankingEntryViewModel {
   allianceName: string
   memberCount: number
   totalScore: number
-}
-
-export interface AllianceRankingViewModel {
-  entries: AllianceRankingEntryViewModel[]
 }
 
 export interface AllianceInviteViewModel {
@@ -515,36 +490,8 @@ export interface JoinAllianceRequest {
   password: string
 }
 
-export interface VoteLeaderRequest {
-  voteePlayerId: string
-}
-
-export interface SetAlliancePasswordRequest {
-  newPassword: string
-}
-
-export interface SetAllianceMessageRequest {
-  message: string
-}
-
 export interface PostAllianceChatRequest {
   body: string
-}
-
-export interface InvitePlayerRequest {
-  targetPlayerId: string
-}
-
-export interface DeclareWarRequest {
-  targetAllianceId: string
-}
-
-export interface AcceptInviteRequest {
-  inviteId: string
-}
-
-export interface PeaceRequest {
-  warId: string
 }
 
 // Diplomacy
@@ -850,12 +797,6 @@ export interface CreatePlayerRequest {
   playerType: string
 }
 
-// Unit Definitions
-
-export interface UnitDefinitionsViewModel {
-  unitDefinitions: UnitDefinitionViewModel[]
-}
-
 // Lobby
 
 export interface GameLobbyViewModel {
@@ -883,27 +824,6 @@ export interface RaceViewModel {
 
 export interface RaceListViewModel {
   races: RaceViewModel[]
-}
-
-// Tick info
-
-export interface TickInfoViewModel {
-  currentTick: number
-  tickDuration: string
-  lastTickAt: string
-}
-
-// Version
-
-export interface VersionInfoViewModel {
-  version: string
-  commitHash: string | null
-}
-
-// User Preferences
-
-export interface UserPreferencesViewModel {
-  theme: string
 }
 
 // Profile

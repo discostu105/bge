@@ -12,6 +12,7 @@ import type {
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { cn } from '@/lib/utils'
+import { formatDate, rankBadgeClass } from '@/lib/formatters'
 
 // ── Mock milestone data (backend TBD — defines the API contract) ────────────
 
@@ -60,17 +61,6 @@ const TIER_STYLES: Record<MilestoneTier, { ring: string; bg: string; label: stri
 const TIER_ORDER: MilestoneTier[] = ['bronze', 'silver', 'gold', 'legendary']
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatDate(d: string) {
-	return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-function rankBadge(rank: number): string {
-	if (rank === 1) return 'bg-yellow-500 text-black'
-	if (rank === 2) return 'bg-gray-400 text-black'
-	if (rank === 3) return 'bg-amber-700 text-white'
-	return 'bg-secondary text-secondary-foreground'
-}
 
 function progressPercent(current: number, target: number) {
 	if (target === 0) return 100
@@ -151,7 +141,7 @@ function TrophyCard({ a }: { a: { achievementIcon: string; achievementLabel: str
 			<div className="font-semibold text-sm">{a.achievementLabel}</div>
 			<div className="text-sm text-muted-foreground">{a.gameName}</div>
 			<div className="flex justify-between items-center mt-auto text-xs text-muted-foreground">
-				<span className={`px-2 py-0.5 rounded font-mono font-bold ${rankBadge(a.finalRank)}`}>
+				<span className={`px-2 py-0.5 rounded font-mono font-bold ${rankBadgeClass(a.finalRank)}`}>
 					#{a.finalRank}
 				</span>
 				<span>{Number(a.score).toLocaleString()} pts</span>
