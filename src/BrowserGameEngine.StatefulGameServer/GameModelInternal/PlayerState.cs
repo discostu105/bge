@@ -30,6 +30,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public List<SpyMission> SpyMissions { get; set; } = new List<SpyMission>();
 		public bool TutorialCompleted { get; set; }
 		public List<ResourceSnapshot> ResourceHistory { get; set; } = new List<ResourceSnapshot>();
+		public List<BattleReport> BattleReports { get; set; } = new List<BattleReport>();
 	}
 
 	internal static class PlayerStateExtensions {
@@ -58,7 +59,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Notifications: new List<GameNotification>(playerState.Notifications),
 				SpyMissions: playerState.SpyMissions.Select(x => x.ToImmutable()).ToList(),
 				TutorialCompleted: playerState.TutorialCompleted,
-				ResourceHistory: new List<ResourceSnapshot>(playerState.ResourceHistory)
+				ResourceHistory: new List<ResourceSnapshot>(playerState.ResourceHistory),
+				BattleReports: playerState.BattleReports.Select(x => x.ToImmutable()).ToList()
 			);
 		}
 
@@ -101,7 +103,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				TutorialCompleted = playerStateImmutable.TutorialCompleted,
 				ResourceHistory = playerStateImmutable.ResourceHistory != null
 					? new List<ResourceSnapshot>(playerStateImmutable.ResourceHistory)
-					: new List<ResourceSnapshot>()
+					: new List<ResourceSnapshot>(),
+				BattleReports = (playerStateImmutable.BattleReports ?? new List<BattleReportImmutable>())
+					.Select(x => BattleReport.FromImmutable(x)).ToList()
 			};
 		}
 	}

@@ -28,6 +28,7 @@ namespace BrowserGameEngine.GameModel {
 		IList<GameNotification>? Notifications = null,
 		IList<SpyMissionImmutable>? SpyMissions = null,
 		bool TutorialCompleted = false,
-		IList<ResourceSnapshot>? ResourceHistory = null
+		IList<ResourceSnapshot>? ResourceHistory = null,
+		IList<BattleReportImmutable>? BattleReports = null
 	);
 }

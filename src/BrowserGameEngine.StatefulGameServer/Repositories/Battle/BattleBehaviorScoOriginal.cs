@@ -41,12 +41,20 @@ namespace BrowserGameEngine.StatefulGameServer {
 				AttackingUnits = new List<BtlUnit>(attackingUnits),
 				DefendingUnits = new List<BtlUnit>(defendingUnits)
 			};
+			var rounds = new List<BattleRoundSnapshotImmutable>();
 			for (int i = 0; i < MaxBattleRounds; i++) {
 				logger.LogDebug("Round {RoundNr}", i);
 				battleState.DefendingUnits = Fight(battleState.AttackingUnits, battleState.DefendingUnits, FightMode.Attack, out var defendingUnitsDestroyed);
 				battleState.DefendingUnitsDestroyed.AddRange(defendingUnitsDestroyed);
 				battleState.AttackingUnits = Fight(battleState.DefendingUnits, battleState.AttackingUnits, FightMode.Defend, out var attackingUnitsDestroyed);
 				battleState.AttackingUnitsDestroyed.AddRange(attackingUnitsDestroyed);
+				rounds.Add(new BattleRoundSnapshotImmutable(
+					RoundNumber: i + 1,
+					AttackerUnitsRemaining: battleState.AttackingUnits.ToGroupedUnitCounts().ToList(),
+					DefenderUnitsRemaining: battleState.DefendingUnits.ToGroupedUnitCounts().ToList(),
+					AttackerCasualties: attackingUnitsDestroyed.GroupByUnitDefId().ToList(),
+					DefenderCasualties: defendingUnitsDestroyed.GroupByUnitDefId().ToList()
+				));
 				if (!battleState.DefendingUnits.Any()) break;
 				if (!battleState.AttackingUnits.Any()) break;
 			}
@@ -56,7 +64,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				DefendingUnitsDestroyed = battleState.DefendingUnitsDestroyed.GroupByUnitDefId().ToList(),
 				DefendingUnitsSurvived = battleState.DefendingUnits.ToGroupedUnitCounts().ToList(),
 				ResourcesDestroyed = new List<Cost>(), // TODO
-				ResourcesStolen = new List<Cost>() // TODO
+				ResourcesStolen = new List<Cost>(), // TODO
+				Rounds = rounds
 			};
 		}
 
