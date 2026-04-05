@@ -18,6 +18,7 @@ namespace BrowserGameEngine.Shared {
 		public string MissionType { get; set; } = string.Empty;
 		public string Status { get; set; } = string.Empty;
 		public DateTime CreatedAt { get; set; }
+		public DateTime? ResolvedAt { get; set; }
 		public string? Result { get; set; }
 	}
 }
