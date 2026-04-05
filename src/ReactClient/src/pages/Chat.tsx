@@ -41,7 +41,7 @@ export function Chat({ gameId }: ChatProps) {
       return r.data
     },
     refetchInterval: 5_000,
-    enabled: allMessages.length > 0,
+    enabled: true,
   })
 
   // Scroll to bottom on new messages

@@ -58,13 +58,39 @@ export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Score</div>
             <div className="text-2xl font-bold">{Math.floor(player.score).toLocaleString()}</div>
           </div>
+          <div className="rounded border bg-secondary/20 p-3">
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Rank</div>
+            <div className="text-2xl font-bold">{player.rank} <span className="text-sm text-muted-foreground font-normal">/ {player.totalPlayers}</span></div>
+          </div>
+          <div className="rounded border bg-secondary/20 p-3">
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Techs Researched</div>
+            <div className="text-2xl font-bold">{player.techsResearched}</div>
+          </div>
           {player.protectionTicksRemaining > 0 && (
             <div className="rounded border border-yellow-700/50 bg-yellow-900/20 p-3">
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Protection</div>
-              <div className="text-lg font-semibold text-yellow-400">🛡 {player.protectionTicksRemaining} ticks</div>
+              <div className="text-lg font-semibold text-yellow-400">{player.protectionTicksRemaining} ticks</div>
             </div>
           )}
         </div>
+
+        {/* Alliance */}
+        {player.allianceName && (
+          <div className="rounded border bg-secondary/20 p-3">
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Alliance</div>
+            <div className="font-semibold">{player.allianceName}</div>
+            {player.allianceRole && (
+              <div className="text-sm text-muted-foreground capitalize">{player.allianceRole}</div>
+            )}
+          </div>
+        )}
+
+        {/* Agent badge */}
+        {player.isAgent && (
+          <div className="inline-block rounded-full border border-blue-700/50 bg-blue-900/20 px-3 py-1 text-xs text-blue-400 font-medium">
+            AI Agent
+          </div>
+        )}
       </div>
     </div>
   )

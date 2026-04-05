@@ -309,9 +309,16 @@ export interface InGamePlayerProfileViewModel {
   playerId: string
   playerName: string
   score: number
-  protectionTicksRemaining: number
+  rank: number
+  totalPlayers: number
+  allianceId: string | null
+  allianceName: string | null
+  allianceRole: string | null
+  techsResearched: number
   isOnline: boolean
   lastOnline: string | null
+  isAgent: boolean
+  protectionTicksRemaining: number
 }
 
 // Rankings
