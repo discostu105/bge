@@ -9,7 +9,7 @@ interface ChatProps {
   gameId: string
 }
 
-export function Chat({ gameId }: ChatProps) {
+export function ChatPanel({ gameId }: ChatProps) {
   const [body, setBody] = useState('')
   const [lastMessageId, setLastMessageId] = useState<string | null>(null)
   const [allMessages, setAllMessages] = useState<ChatMessagesViewModel['messages']>([])
@@ -74,9 +74,7 @@ export function Chat({ gameId }: ChatProps) {
   }
 
   return (
-    <div className="max-w-2xl space-y-3">
-      <h1 className="text-xl font-bold">Game Chat</h1>
-
+    <div className="space-y-3">
       {error && (
         <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
@@ -129,6 +127,15 @@ export function Chat({ gameId }: ChatProps) {
         )}
         <div ref={chatEndRef} />
       </div>
+    </div>
+  )
+}
+
+export function Chat({ gameId }: ChatProps) {
+  return (
+    <div className="max-w-2xl space-y-3">
+      <h1 className="text-xl font-bold">Game Chat</h1>
+      <ChatPanel gameId={gameId} />
     </div>
   )
 }
