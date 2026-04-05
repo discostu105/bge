@@ -48,3 +48,61 @@ jobs:
     - name: Lint
       working-directory: src/ReactClient
       run: npm run lint
+
+  e2e:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Start BGE stack
+      working-directory: src
+      env:
+        GITHUB_CLIENT_ID: placeholder
+        GITHUB_CLIENT_SECRET: placeholder
+      run: docker compose up -d
+
+    - name: Wait for server to be healthy
+      run: |
+        echo "Waiting for http://localhost:8080/health ..."
+        for i in $(seq 1 30); do
+          if curl -sf http://localhost:8080/health > /dev/null; then
+            echo "Server is healthy"
+            exit 0
+          fi
+          echo "  attempt $i/30 — sleeping 3 s"
+          sleep 3
+        done
+        echo "Server did not become healthy in time"
+        docker compose -f src/docker-compose.yml logs
+        exit 1
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: 'npm'
+        cache-dependency-path: src/ReactClient/package-lock.json
+
+    - name: Install dependencies
+      working-directory: src/ReactClient
+      run: npm ci
+
+    - name: Install Playwright browsers
+      working-directory: src/ReactClient
+      run: npx playwright install --with-deps chromium
+
+    - name: Run E2E smoke tests
+      working-directory: src/ReactClient
+      env:
+        E2E_BASE_URL: http://localhost:8080
+      run: npm run test:e2e
+
+    - name: Upload Playwright report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: src/ReactClient/playwright-report/
+        retention-days: 7
