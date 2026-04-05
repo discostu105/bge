@@ -21,7 +21,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="AspNet.Security.OAuth.GitHub" Version="10.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="10.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.7" />
@@ -38,8 +37,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\BrowserGameEngine.Persistence\BrowserGameEngine.Persistence.csproj" />
 		<ProjectReference Include="..\BrowserGameEngine.Persistence.S3\BrowserGameEngine.Persistence.S3.csproj" />
-		<ProjectReference Include="..\BrowserGameEngine.BlazorClient\BrowserGameEngine.BlazorClient.csproj" />
-		<ProjectReference Include="..\BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj" />
+<ProjectReference Include="..\BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj" />
 		<ProjectReference Include="..\BrowserGameEngine.Shared\BrowserGameEngine.ViewModels.csproj" />
 		<ProjectReference Include="..\BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj" />
 	</ItemGroup>

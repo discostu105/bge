@@ -553,7 +553,7 @@ export interface SendMessageRequest {
   body: string
 }
 
-// Achievements
+// Achievements (tech/in-game)
 
 export interface AchievementViewModel {
   id: string
@@ -567,20 +567,53 @@ export interface AchievementsViewModel {
   achievements: AchievementViewModel[]
 }
 
-// Player History
+// Player game-completion achievements (api/players/me/achievements)
 
-export interface PlayerHistoryEntryViewModel {
+export interface PlayerAchievementViewModel {
+  achievementType: string
+  achievementLabel: string
+  achievementIcon: string
   gameId: string
   gameName: string
-  playerName: string
-  rank: number
+  gameDefType: string
+  finalRank: number
   score: number
+  earnedAt: string
+}
+
+export interface PlayerAchievementsViewModel {
+  achievements: PlayerAchievementViewModel[]
+}
+
+// Player History (api/history)
+
+export interface PlayerGameHistoryEntryViewModel {
+  gameId: string
+  gameName: string
+  gameDefType: string
   startTime: string
-  endTime: string | null
+  endTime: string
+  finishedAt: string
+  finalRank: number
+  finalScore: number
+  playersInGame: number
+  isWin: boolean
 }
 
 export interface PlayerHistoryViewModel {
-  entries: PlayerHistoryEntryViewModel[]
+  totalGames: number
+  totalWins: number
+  bestRank: number
+  totalScore: number
+  games: PlayerGameHistoryEntryViewModel[]
+}
+
+// Update Game Request
+
+export interface UpdateGameRequest {
+  name: string
+  endTime: string
+  discordWebhookUrl: string | null
 }
 
 // Create Player
