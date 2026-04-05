@@ -30,6 +30,7 @@ import { AllianceDetail } from '@/pages/AllianceDetail'
 import { Achievements } from '@/pages/Achievements'
 import { PlayerHistory } from '@/pages/PlayerHistory'
 import { AdminGames } from '@/pages/admin/AdminGames'
+import { PlayersList } from '@/pages/PlayersList'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -164,7 +165,7 @@ const router = createBrowserRouter([
       { path: '/lobby', element: <GameLobby /> },
       { path: '/profile', element: <PlayerProfile /> },
       { path: '/profile/:userId', element: <TodoPage name="Public Profile" /> },
-      { path: '/players', element: <TodoPage name="Players" /> },
+      { path: '/players', element: <PlayersList /> },
       { path: '/alliances/:allianceId', element: <AllianceDetail /> },
       { path: '/achievements', element: <Achievements /> },
       { path: '/history', element: <PlayerHistory /> },

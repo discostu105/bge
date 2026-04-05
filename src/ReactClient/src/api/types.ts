@@ -700,6 +700,21 @@ export interface UpdateGameRequest {
   discordWebhookUrl: string | null
 }
 
+// Player List (all-time)
+
+export interface AllTimePlayerEntryViewModel {
+  userId: string
+  displayName: string
+  totalGames: number
+  totalWins: number
+  bestRank: number
+  totalScore: number
+}
+
+export interface AllTimePlayerListViewModel {
+  players: AllTimePlayerEntryViewModel[]
+}
+
 // Create Player
 
 export interface CreatePlayerRequest {
