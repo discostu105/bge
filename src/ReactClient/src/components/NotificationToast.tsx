@@ -87,7 +87,7 @@ function ToastItem({
   gameId: string | null
 }) {
   const navigate = useNavigate()
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     timerRef.current = setTimeout(() => dismiss(toast.id), AUTO_DISMISS_MS)

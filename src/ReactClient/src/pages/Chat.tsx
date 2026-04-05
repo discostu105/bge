@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { SendIcon, WifiIcon, WifiOffIcon } from 'lucide-react'
+import { SendIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { ChatMessagesViewModel, ChatMessageViewModel, PostChatMessageRequest } from '@/api/types'
 import { useSignalR } from '@/hooks/useSignalR'
