@@ -38,6 +38,8 @@ public class AdminController : ControllerBase
 	private readonly IBlobStorage storage;
 	private readonly IActionLogger actionLogger;
 	private readonly GameDef gameDef;
+	private readonly ScoreRepository scoreRepository;
+	private readonly MarketRepository marketRepository;
 
 	public AdminController(
 		ILogger<AdminController> logger,
@@ -54,7 +56,9 @@ public class AdminController : ControllerBase
 		GameStateJsonSerializer serializer,
 		IBlobStorage storage,
 		IActionLogger actionLogger,
-		GameDef gameDef
+		GameDef gameDef,
+		ScoreRepository scoreRepository,
+		MarketRepository marketRepository
 	)
 	{
 		this.logger = logger;
@@ -72,6 +76,8 @@ public class AdminController : ControllerBase
 		this.storage = storage;
 		this.actionLogger = actionLogger;
 		this.gameDef = gameDef;
+		this.scoreRepository = scoreRepository;
+		this.marketRepository = marketRepository;
 	}
 
 	// ── Existing cheat endpoints ──────────────────────────────────────────────
@@ -253,9 +259,125 @@ public class AdminController : ControllerBase
 		if (!options.Value.DevAuth) return NotFound();
 		return Ok(actionLogger.GetRecentEntries());
 	}
+
+	// ── Player Moderation ─────────────────────────────────────────────────────
+
+	[HttpGet("players/{playerId}")]
+	public ActionResult GetPlayerDetail(string playerId)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var pid = PlayerIdFactory.Create(playerId);
+		if (!playerRepository.Exists(pid)) return NotFound($"Player '{playerId}' not found.");
+		var player = playerRepository.Get(pid);
+		var resources = new Dictionary<string, decimal>();
+		foreach (var resDef in gameDef.Resources) {
+			resources[resDef.Id.Id] = resourceRepository.GetAmount(pid, resDef.Id);
+		}
+		return Ok(new {
+			playerId = player.PlayerId.Id,
+			name = player.Name,
+			playerType = player.PlayerType.Id,
+			created = player.Created,
+			lastOnline = player.LastOnline,
+			isBanned = player.IsBanned,
+			allianceId = player.AllianceId?.Id,
+			score = scoreRepository.GetScore(pid),
+			resources,
+			unitCount = player.State.Units.Count,
+			assetCount = player.State.Assets.Count,
+			currentTick = player.State.CurrentGameTick.Tick,
+			protectionTicksRemaining = player.State.ProtectionTicksRemaining,
+			mineralWorkers = player.State.MineralWorkers,
+			gasWorkers = player.State.GasWorkers,
+		});
+	}
+
+	[HttpGet("players-detail")]
+	public ActionResult GetPlayersDetail()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var players = playerRepository.GetAll().Select(p => new {
+			playerId = p.PlayerId.Id,
+			name = p.Name,
+			playerType = p.PlayerType.Id,
+			created = p.Created,
+			lastOnline = p.LastOnline,
+			isBanned = p.IsBanned,
+			allianceId = p.AllianceId?.Id,
+			score = scoreRepository.GetScore(p.PlayerId),
+			unitCount = p.State.Units.Count,
+			assetCount = p.State.Assets.Count,
+		}).OrderByDescending(p => p.score);
+		return Ok(players);
+	}
+
+	[HttpPost("ban-player")]
+	public ActionResult BanPlayer([FromBody] BanPlayerRequest request)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var playerId = PlayerIdFactory.Create(request.PlayerId);
+		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
+		playerRepositoryWrite.BanPlayer(playerId);
+		logger.LogWarning("Player {PlayerId} banned via admin endpoint", request.PlayerId);
+		return Ok(new { playerId = request.PlayerId, isBanned = true });
+	}
+
+	[HttpPost("unban-player")]
+	public ActionResult UnbanPlayer([FromBody] UnbanPlayerRequest request)
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var playerId = PlayerIdFactory.Create(request.PlayerId);
+		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
+		playerRepositoryWrite.UnbanPlayer(playerId);
+		logger.LogInformation("Player {PlayerId} unbanned via admin endpoint", request.PlayerId);
+		return Ok(new { playerId = request.PlayerId, isBanned = false });
+	}
+
+	// ── Live Stats ────────────────────────────────────────────────────────────
+
+	[HttpGet("live-stats")]
+	public ActionResult GetLiveStats()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var players = playerRepository.GetAll().ToList();
+		var totalResources = new Dictionary<string, decimal>();
+		foreach (var resDef in gameDef.Resources) {
+			totalResources[resDef.Id.Id] = players.Sum(p => p.State.Resources.TryGetValue(resDef.Id, out var val) ? val : 0);
+		}
+		var openOrders = marketRepository.GetOpenOrders();
+		var recentlyOnline = players.Count(p => p.LastOnline.HasValue && p.LastOnline.Value > DateTime.UtcNow.AddMinutes(-15));
+		var snapshot = worldState.ToImmutable();
+		return Ok(new {
+			totalPlayers = players.Count,
+			activePlayers = recentlyOnline,
+			bannedPlayers = players.Count(p => p.IsBanned),
+			totalResources,
+			openMarketOrders = openOrders.Count,
+			currentTick = snapshot.GameTickState.CurrentGameTick.Tick,
+			isPaused = gameTickEngine.IsPaused,
+			effectiveTickDurationSeconds = gameTickEngine.EffectiveTickDuration.TotalSeconds,
+		});
+	}
+
+	// ── Tick Status ───────────────────────────────────────────────────────────
+
+	[HttpGet("tick-status")]
+	public ActionResult GetTickStatus()
+	{
+		if (!options.Value.DevAuth) return NotFound();
+		var snapshot = worldState.ToImmutable();
+		return Ok(new {
+			currentTick = snapshot.GameTickState.CurrentGameTick.Tick,
+			isPaused = gameTickEngine.IsPaused,
+			effectiveTickDurationSeconds = gameTickEngine.EffectiveTickDuration.TotalSeconds,
+			defaultTickDurationSeconds = gameDef.TickDuration.TotalSeconds,
+		});
+	}
 }
 
 public record SetResourcesRequest(string PlayerId, string ResourceDefId, decimal Amount);
 public record GrantBuildingRequest(string PlayerId, string AssetDefId);
 public record GrantUnitsRequest(string PlayerId, string UnitDefId, int Count);
 public record ResetPlayerRequest(string PlayerId);
+public record BanPlayerRequest(string PlayerId);
+public record UnbanPlayerRequest(string PlayerId);

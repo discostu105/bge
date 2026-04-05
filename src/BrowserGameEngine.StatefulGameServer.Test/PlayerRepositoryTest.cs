@@ -1,4 +1,5 @@
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Linq;
 using Xunit;
@@ -153,6 +154,43 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			// player2 score = 1000, which is >= 1500 * 0.5 = 750
 
 			Assert.Null(game.PlayerRepository.GetIneligibilityReason(player1, player2));
+		}
+
+		[Fact]
+		public void BanPlayer_SetsIsBannedTrue() {
+			var game = new TestGame(playerCount: 1);
+			var playerId = PlayerIdFactory.Create("player0");
+
+			game.PlayerRepositoryWrite.BanPlayer(playerId);
+
+			var player = game.PlayerRepository.Get(playerId);
+			Assert.True(player.IsBanned);
+		}
+
+		[Fact]
+		public void UnbanPlayer_SetsIsBannedFalse() {
+			var game = new TestGame(playerCount: 1);
+			var playerId = PlayerIdFactory.Create("player0");
+
+			game.PlayerRepositoryWrite.BanPlayer(playerId);
+			game.PlayerRepositoryWrite.UnbanPlayer(playerId);
+
+			var player = game.PlayerRepository.Get(playerId);
+			Assert.False(player.IsBanned);
+		}
+
+		[Fact]
+		public void BanPlayer_IsBannedSurvivesSerialization() {
+			var game = new TestGame(playerCount: 1);
+			var playerId = PlayerIdFactory.Create("player0");
+
+			game.PlayerRepositoryWrite.BanPlayer(playerId);
+
+			// Round-trip through immutable/mutable
+			var immutable = game.World.ToImmutable();
+			var game2 = new TestGame(immutable);
+			var player = game2.PlayerRepository.Get(playerId);
+			Assert.True(player.IsBanned);
 		}
 	}
 }

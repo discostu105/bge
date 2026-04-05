@@ -118,6 +118,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
+		public void BanPlayer(PlayerId playerId) {
+			lock (_lock) {
+				world.GetPlayer(playerId).IsBanned = true;
+			}
+		}
+
+		public void UnbanPlayer(PlayerId playerId) {
+			lock (_lock) {
+				world.GetPlayer(playerId).IsBanned = false;
+			}
+		}
+
 		public void DeletePlayer(PlayerId playerId) {
 			lock (_lock) {
 				if (!world.PlayerExists(playerId)) return;

@@ -5,6 +5,7 @@ import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel, CreateGameRequest, UpdateGameRequest } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { AdminNav } from './AdminNav'
 
 interface EditState {
   gameId: string
@@ -156,6 +157,7 @@ export function AdminGames() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      <AdminNav />
       <h1 className="text-2xl font-bold mb-6">Game Admin</h1>
 
       {/* Create Game */}

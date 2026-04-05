@@ -15,6 +15,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public string? ApiKeyHash { get; set; }
 		public DateTime? LastOnline { get; set; }
 		public AllianceId? AllianceId { get; set; }
+		public bool IsBanned { get; set; }
 	}
 
 	internal static class PlayerExtensions {
@@ -28,7 +29,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UserId: player.UserId,
 				ApiKeyHash: player.ApiKeyHash,
 				LastOnline: player.LastOnline,
-				AllianceId: player.AllianceId
+				AllianceId: player.AllianceId,
+				IsBanned: player.IsBanned
 			);
 		}
 
@@ -42,7 +44,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UserId = playerImmutable.UserId,
 				ApiKeyHash = playerImmutable.ApiKeyHash,
 				LastOnline = playerImmutable.LastOnline,
-				AllianceId = playerImmutable.AllianceId
+				AllianceId = playerImmutable.AllianceId,
+				IsBanned = playerImmutable.IsBanned
 			};
 		}
 	}
