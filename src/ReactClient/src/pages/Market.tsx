@@ -191,7 +191,7 @@ export function Market({ gameId }: MarketProps) {
               </thead>
               <tbody>
                 {myOrders.map((order) => (
-                  <tr key={order.orderId} className="border-b border-border bg-blue-900/10">
+                  <tr key={order.orderId} className="border-b border-border bg-info/10">
                     <td className="py-2 px-3">
                       {order.offeredAmount} {order.offeredResourceName}
                     </td>
@@ -265,7 +265,7 @@ export function Market({ gameId }: MarketProps) {
                         <button
                           onClick={() => acceptMutation.mutate(order.orderId)}
                           disabled={acceptMutation.isPending}
-                          className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
+                          className="rounded bg-success px-2 py-0.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
                         >
                           Accept
                         </button>
