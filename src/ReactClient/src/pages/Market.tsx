@@ -182,11 +182,11 @@ export function Market({ gameId }: MarketProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>
@@ -236,12 +236,12 @@ export function Market({ gameId }: MarketProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Seller</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Seller</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>

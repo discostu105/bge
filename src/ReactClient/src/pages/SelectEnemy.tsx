@@ -121,8 +121,8 @@ export function SelectEnemy({ gameId }: SelectEnemyProps) {
                   <table className="w-full text-xs">
                     <thead className="border-b">
                       <tr>
-                        <th className="py-1 text-left font-medium text-muted-foreground">Unit</th>
-                        <th className="py-1 text-left font-medium text-muted-foreground">~Count</th>
+                        <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Unit</th>
+                        <th scope="col" className="py-1 text-left font-medium text-muted-foreground">~Count</th>
                       </tr>
                     </thead>
                     <tbody>

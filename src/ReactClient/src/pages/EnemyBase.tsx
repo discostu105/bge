@@ -107,8 +107,8 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
               <table className="w-full text-sm">
                 <thead className="border-b">
                   <tr>
-                    <th className="py-1 text-left font-medium text-muted-foreground">Unit</th>
-                    <th className="py-1 text-left font-medium text-muted-foreground">~Count</th>
+                    <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Unit</th>
+                    <th scope="col" className="py-1 text-left font-medium text-muted-foreground">~Count</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -221,8 +221,8 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
                   <table className="w-full text-xs">
                     <thead className="border-b">
                       <tr>
-                        <th className="py-1 text-left font-medium text-muted-foreground">Unit</th>
-                        <th className="py-1 text-left font-medium text-muted-foreground">Lost</th>
+                        <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Unit</th>
+                        <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Lost</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -247,8 +247,8 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
                   <table className="w-full text-xs">
                     <thead className="border-b">
                       <tr>
-                        <th className="py-1 text-left font-medium text-muted-foreground">Unit</th>
-                        <th className="py-1 text-left font-medium text-muted-foreground">Lost</th>
+                        <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Unit</th>
+                        <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Lost</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -279,10 +279,10 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
               <table className="w-full text-sm">
                 <thead className="border-b">
                   <tr>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Count</th>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Position</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Count</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Position</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -315,10 +315,10 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
               <table className="w-full text-sm">
                 <thead className="border-b">
                   <tr>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Count</th>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
-                    <th className="py-2 px-3 text-left font-medium text-muted-foreground">Position</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Count</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
+                    <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Position</th>
                   </tr>
                 </thead>
                 <tbody>

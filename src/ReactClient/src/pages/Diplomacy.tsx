@@ -118,11 +118,11 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b border-warning/30">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">From</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">From</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>
@@ -176,8 +176,8 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,10 +205,10 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Minerals/tick</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Gas/tick</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Minerals/tick</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Gas/tick</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
                 </tr>
               </thead>
               <tbody>
@@ -236,11 +236,11 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">To</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Proposed</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">To</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Proposed</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,12 +268,14 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
           <div className="flex gap-2">
             <button
               onClick={() => { setProposeMode('nap'); setError(null); setSuccess(null) }}
+              aria-pressed={proposeMode === 'nap'}
               className={`rounded px-3 py-1 text-xs ${proposeMode === 'nap' ? 'bg-primary text-primary-foreground' : 'border border-primary text-primary'}`}
             >
               Non-Aggression Pact
             </button>
             <button
               onClick={() => { setProposeMode('resource'); setError(null); setSuccess(null) }}
+              aria-pressed={proposeMode === 'resource'}
               className={`rounded px-3 py-1 text-xs ${proposeMode === 'resource' ? 'bg-primary text-primary-foreground' : 'border border-primary text-primary'}`}
             >
               Resource Agreement

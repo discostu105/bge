@@ -92,9 +92,9 @@ export function GameResults() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="py-2 pr-4">Rank</th>
-                <th className="py-2 pr-4">Player</th>
-                <th className="py-2">Score</th>
+                <th scope="col" className="py-2 pr-4">Rank</th>
+                <th scope="col" className="py-2 pr-4">Player</th>
+                <th scope="col" className="py-2">Score</th>
               </tr>
             </thead>
             <tbody>

@@ -287,10 +287,10 @@ export function AllianceDetail() {
 					<table className="w-full text-sm">
 						<thead className="border-b">
 							<tr>
-								<th className="py-2 px-3 text-left font-medium text-muted-foreground">Player</th>
-								<th className="py-2 px-3 text-left font-medium text-muted-foreground">Votes</th>
-								<th className="py-2 px-3 text-left font-medium text-muted-foreground">Joined</th>
-								{isLeader && <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>}
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Player</th>
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Votes</th>
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Joined</th>
+								{isLeader && <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>}
 							</tr>
 						</thead>
 						<tbody>
@@ -362,6 +362,7 @@ export function AllianceDetail() {
 					<div className="p-4 flex flex-wrap gap-2">
 						<button
 							onClick={() => { setShowInvite(!showInvite); setShowDeclareWar(false); setEditPassword(false) }}
+							aria-pressed={showInvite}
 							className={cn(
 								'rounded px-3 py-1.5 text-xs flex items-center gap-1',
 								showInvite ? 'bg-primary text-primary-foreground' : 'border border-primary text-primary'
@@ -372,6 +373,7 @@ export function AllianceDetail() {
 						</button>
 						<button
 							onClick={() => { setShowDeclareWar(!showDeclareWar); setShowInvite(false); setEditPassword(false) }}
+							aria-pressed={showDeclareWar}
 							className={cn(
 								'rounded px-3 py-1.5 text-xs flex items-center gap-1',
 								showDeclareWar ? 'bg-danger text-white' : 'border border-danger text-danger-foreground'
@@ -382,6 +384,7 @@ export function AllianceDetail() {
 						</button>
 						<button
 							onClick={() => { setEditPassword(!editPassword); setShowInvite(false); setShowDeclareWar(false) }}
+							aria-pressed={editPassword}
 							className={cn(
 								'rounded px-3 py-1.5 text-xs',
 								editPassword ? 'bg-secondary text-secondary-foreground' : 'border text-muted-foreground hover:text-foreground'

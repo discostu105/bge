@@ -60,11 +60,11 @@ export function GameLobby() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="py-2 pr-4">Game</th>
-                <th className="py-2 pr-4">Status</th>
-                <th className="py-2 pr-4">Players</th>
-                <th className="py-2 pr-4">Start Time</th>
-                <th className="py-2" />
+                <th scope="col" className="py-2 pr-4">Game</th>
+                <th scope="col" className="py-2 pr-4">Status</th>
+                <th scope="col" className="py-2 pr-4">Players</th>
+                <th scope="col" className="py-2 pr-4">Start Time</th>
+                <th scope="col" className="py-2" />
               </tr>
             </thead>
             <tbody>

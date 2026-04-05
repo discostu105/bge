@@ -34,6 +34,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
     <button
       key={f}
       onClick={() => setFilter(f)}
+      aria-pressed={filter === f}
       className={cn(
         'rounded px-3 py-1 text-sm',
         filter === f
@@ -64,14 +65,14 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
-                <th className="px-4 py-2 text-left w-10">#</th>
-                <th className="px-4 py-2 text-left">Player</th>
-                <th className="px-4 py-2 text-right">Score</th>
-                <th className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
-                <th className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
-                <th className="px-4 py-2 text-right hidden md:table-cell">Units</th>
-                <th className="px-4 py-2 text-center hidden md:table-cell">Type</th>
-                <th className="px-4 py-2 text-center">Status</th>
+                <th scope="col" className="px-4 py-2 text-left w-10">#</th>
+                <th scope="col" className="px-4 py-2 text-left">Player</th>
+                <th scope="col" className="px-4 py-2 text-right">Score</th>
+                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
+                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
+                <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Units</th>
+                <th scope="col" className="px-4 py-2 text-center hidden md:table-cell">Type</th>
+                <th scope="col" className="px-4 py-2 text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y">
