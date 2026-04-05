@@ -7,14 +7,26 @@ import { PlayerResources } from '@/components/PlayerResources'
 import { NotificationBell } from '@/components/NotificationBell'
 import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
+import { vcText, vcBadgeCss } from '@/lib/victory'
+import type { GameDetailViewModel } from '@/api/types'
 
-function GameEndedBanner({ status }: { status: string }) {
-  if (status !== 'Finished') return null
+function GameEndedBanner({ game }: { game: GameDetailViewModel }) {
+  if (game.status !== 'Finished') return null
   return (
     <div role="alert" className="bg-warning/20 border-b border-warning/50 px-4 py-2 text-warning-foreground text-sm flex items-center gap-2">
-      <span aria-hidden="true">⚠️</span>
+      <span aria-hidden="true">🏆</span>
       <span>
-        <strong>Game Over!</strong> The game has ended.{' '}
+        {game.winnerName ? (
+          <><strong>{game.winnerName} wins!</strong></>
+        ) : (
+          <strong>Game Over!</strong>
+        )}
+        {game.victoryConditionType && (
+          <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded ${vcBadgeCss(game.victoryConditionType)}`}>
+            {vcText(game.victoryConditionType)}
+          </span>
+        )}
+        {' — '}
         <NavLink to="results" className="underline hover:opacity-80">View final results</NavLink>
       </span>
     </div>
@@ -148,7 +160,7 @@ function GameLayoutInner() {
         {/* Banners */}
         {currentGame && (
           <>
-            <GameEndedBanner status={currentGame.status} />
+            <GameEndedBanner game={currentGame} />
             <TimeRemainingBanner endTime={currentGame.endTime} />
           </>
         )}

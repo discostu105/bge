@@ -250,8 +250,11 @@ export interface GameDetailViewModel {
   endTime: string
   playerCount: number
   winnerId: string | null
+  winnerName: string | null
   actualEndTime: string | null
   discordWebhookUrl: string | null
+  victoryConditionType: string | null
+  victoryConditionLabel: string | null
 }
 
 export interface GameSummaryViewModel {

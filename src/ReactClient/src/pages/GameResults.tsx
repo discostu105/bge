@@ -4,6 +4,7 @@ import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { vcEmoji, vcBadgeCss, vcText } from '@/lib/victory'
 
 function formatDuration(ms: number): string {
   const totalSec = Math.floor(ms / 1000)
@@ -13,33 +14,6 @@ function formatDuration(ms: number): string {
   if (days >= 1) return `${days}d ${hours}h`
   if (hours >= 1) return `${hours}h ${mins}m`
   return `${mins}m`
-}
-
-function vcEmoji(type: string | null | undefined): string {
-  switch (type) {
-    case 'EconomicThreshold': return '💰'
-    case 'TimeExpired': return '⏰'
-    case 'AdminFinalized': return '🛑'
-    default: return '🏁'
-  }
-}
-
-function vcBadgeCss(type: string | null | undefined): string {
-  switch (type) {
-    case 'EconomicThreshold': return 'bg-warning text-warning-foreground'
-    case 'TimeExpired': return 'bg-muted text-muted-foreground'
-    case 'AdminFinalized': return 'bg-danger text-danger-foreground'
-    default: return 'bg-muted text-muted-foreground'
-  }
-}
-
-function vcText(type: string | null | undefined): string {
-  switch (type) {
-    case 'EconomicThreshold': return 'CONQUERED'
-    case 'TimeExpired': return 'TIME EXPIRED'
-    case 'AdminFinalized': return 'ADMIN ENDED'
-    default: return 'FINISHED'
-  }
 }
 
 export function GameResults() {
