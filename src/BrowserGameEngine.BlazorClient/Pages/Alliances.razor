@@ -25,6 +25,27 @@
     <div class="alert alert-danger">@lastError</div>
 }
 
+@if (myInvites != null && myInvites.Count > 0) {
+    <div class="card mb-3">
+        <div class="card-header">Pending Invites</div>
+        <div class="card-body">
+            @foreach (var invite in myInvites) {
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="border:1px solid var(--color-border-default); border-radius:var(--radius-md)">
+                    <div>
+                        <strong>@invite.AllianceName</strong>
+                        <span class="text-muted ms-2">invited by @invite.InviterPlayerName</span>
+                        <span class="text-muted ms-2" style="font-size:0.8rem">expires @invite.ExpiresAt.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-success me-1" @onclick="() => AcceptInvite(invite)">Accept</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeclineInvite(invite)">Decline</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
 @if (myStatus != null && !myStatus.IsMember) {
     <div class="card mb-3">
         <div class="card-header">Create Alliance</div>
@@ -49,6 +70,7 @@
             <tr>
                 <th>Name</th>
                 <th>Members</th>
+                <th>Status</th>
                 <th>Created</th>
                 <th></th>
             </tr>
@@ -58,6 +80,13 @@
                 <tr>
                     <td><a href="alliances/@a.AllianceId">@a.Name</a></td>
                     <td>@a.MemberCount</td>
+                    <td>
+                        @if (a.IsAtWar) {
+                            <span class="badge bg-danger">At War</span>
+                        } else {
+                            <span class="badge bg-success">Peaceful</span>
+                        }
+                    </td>
                     <td>@a.Created.ToString("yyyy-MM-dd")</td>
                     <td>
                         @if (myStatus != null && !myStatus.IsMember) {
@@ -88,6 +117,7 @@
 
     private AllianceViewModel[]? alliances;
     private MyAllianceStatusViewModel? myStatus;
+    private List<AllianceInviteViewModel>? myInvites;
     private string createName = "";
     private string createPassword = "";
     private string joinPassword = "";
@@ -112,6 +142,11 @@
     private async Task Update() {
         alliances = await Http.GetFromJsonAsync<AllianceViewModel[]>("api/alliances");
         myStatus = await Http.GetFromJsonAsync<MyAllianceStatusViewModel>("api/alliances/my-status");
+        try {
+            myInvites = await Http.GetFromJsonAsync<List<AllianceInviteViewModel>>("api/alliances/my-invites");
+        } catch {
+            myInvites = new();
+        }
         lastError = null;
     }
 
@@ -148,6 +183,24 @@
 
     private async Task LeaveAlliance() {
         var response = await Http.DeleteAsync("api/alliances/leave");
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task AcceptInvite(AllianceInviteViewModel invite) {
+        var response = await Http.PostAsJsonAsync($"api/alliances/{invite.AllianceId}/accept-invite", new AcceptInviteRequest { InviteId = invite.InviteId });
+        if (response.IsSuccessStatusCode) {
+            await Update();
+        } else {
+            lastError = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    private async Task DeclineInvite(AllianceInviteViewModel invite) {
+        var response = await Http.PostAsJsonAsync($"api/alliances/{invite.AllianceId}/decline-invite", new AcceptInviteRequest { InviteId = invite.InviteId });
         if (response.IsSuccessStatusCode) {
             await Update();
         } else {
