@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { BellIcon } from 'lucide-react'
 import { useNotifications } from '@/hooks/useNotifications'
+import type { UseSignalRReturn } from '@/hooks/useSignalR'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -12,8 +13,16 @@ function notificationIcon(kind: string): string {
   }
 }
 
-export function NotificationBell() {
-  const { notifications, dismissAll } = useNotifications()
+interface NotificationBellProps {
+  signalR?: UseSignalRReturn
+  onRealTimeNotification?: (n: { type: string; title: string; body?: string; createdAt: string }) => void
+}
+
+export function NotificationBell({ signalR, onRealTimeNotification }: NotificationBellProps) {
+  const { notifications, dismissAll } = useNotifications({
+    signalR,
+    onRealTimeNotification,
+  })
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 

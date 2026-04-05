@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { SendIcon } from 'lucide-react'
+import { SendIcon, WifiIcon, WifiOffIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { ChatMessagesViewModel, PostChatMessageRequest } from '@/api/types'
+import type { ChatMessagesViewModel, ChatMessageViewModel, PostChatMessageRequest } from '@/api/types'
+import { useSignalR } from '@/hooks/useSignalR'
 import { cn } from '@/lib/utils'
 
 interface ChatProps {
@@ -15,6 +16,8 @@ export function ChatPanel({ gameId }: ChatProps) {
   const [allMessages, setAllMessages] = useState<ChatMessagesViewModel['messages']>([])
   const [error, setError] = useState<string | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const signalR = useSignalR('/gamehub')
+  const isRealTime = signalR.status === 'connected'
 
   // Initial load
   useEffect(() => {
@@ -25,7 +28,26 @@ export function ChatPanel({ gameId }: ChatProps) {
     })
   }, [gameId])
 
-  // Poll for new messages
+  // Listen for real-time chat messages via SignalR
+  const handleChatMessage = useCallback(
+    (...args: unknown[]) => {
+      const msg = args[0] as ChatMessageViewModel | undefined
+      if (!msg?.messageId) return
+      setAllMessages((prev) => {
+        if (prev.some((m) => m.messageId === msg.messageId)) return prev
+        return [...prev, msg]
+      })
+      setLastMessageId(msg.messageId)
+    },
+    []
+  )
+
+  useEffect(() => {
+    signalR.on('ReceiveChatMessage', handleChatMessage)
+    return () => signalR.off('ReceiveChatMessage', handleChatMessage)
+  }, [signalR, handleChatMessage])
+
+  // Fallback polling — only when SignalR is not connected
   useQuery({
     queryKey: ['chat-poll', gameId, lastMessageId],
     queryFn: async () => {
@@ -38,8 +60,8 @@ export function ChatPanel({ gameId }: ChatProps) {
       }
       return r.data
     },
-    refetchInterval: 5_000,
-    enabled: true,
+    refetchInterval: isRealTime ? false : 5_000,
+    enabled: !isRealTime,
   })
 
   // Scroll to bottom on new messages

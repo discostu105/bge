@@ -1,13 +1,14 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useCallback, useEffect } from 'react'
 import { Outlet, NavLink, useParams, Navigate, useLocation } from 'react-router'
-import { GamepadIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-react'
+import { GamepadIcon, LogOutIcon, MenuIcon, XIcon, WifiIcon, WifiOffIcon } from 'lucide-react'
 import { CurrentGameProvider, useCurrentGame } from '@/contexts/CurrentGameContext'
 import { NavMenu } from '@/components/NavMenu'
 import { PlayerResources } from '@/components/PlayerResources'
 import { NotificationBell } from '@/components/NotificationBell'
+import { NotificationToasts, useNotificationToasts } from '@/components/NotificationToast'
 import { PageLoader } from '@/components/PageLoader'
+import { useSignalR } from '@/hooks/useSignalR'
 import { cn } from '@/lib/utils'
-import { useEffect } from 'react'
 import { vcText, vcBadgeCss } from '@/lib/victory'
 import type { GameDetailViewModel } from '@/api/types'
 
@@ -96,6 +97,15 @@ function GameLayoutInner() {
   const { gameId, currentGame } = useCurrentGame()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const signalR = useSignalR('/gamehub')
+  const { toasts, addToast, dismiss } = useNotificationToasts()
+
+  const onRealTimeNotification = useCallback(
+    (n: { type: string; title: string; body?: string; createdAt: string }) => {
+      addToast(n)
+    },
+    [addToast]
+  )
 
   // Close mobile sidebar on navigation
   useEffect(() => {
@@ -154,7 +164,17 @@ function GameLayoutInner() {
           <div className="hidden md:block" />
           <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto">
             <PlayerResources gameId={gameId} />
-            <NotificationBell />
+            <span
+              className="hidden sm:inline-flex"
+              title={`Real-time: ${signalR.status}`}
+            >
+              {signalR.status === 'connected' ? (
+                <WifiIcon className="h-3.5 w-3.5 text-green-500" />
+              ) : (
+                <WifiOffIcon className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+            </span>
+            <NotificationBell signalR={signalR} onRealTimeNotification={onRealTimeNotification} />
           </div>
         </header>
 
@@ -173,6 +193,9 @@ function GameLayoutInner() {
           </Suspense>
         </main>
       </div>
+
+      {/* Real-time notification toasts */}
+      <NotificationToasts toasts={toasts} dismiss={dismiss} gameId={gameId} />
     </div>
   )
 }
