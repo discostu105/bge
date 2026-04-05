@@ -68,11 +68,23 @@ namespace BrowserGameEngine.StatefulGameServer {
 					return false;
 				}
 
-				// Swap resources
-				resourceRepositoryWrite.DeductCost(command.AcceptingPlayerId, offer.WantedResourceId, offer.WantedAmount);
-				resourceRepositoryWrite.AddResources(command.AcceptingPlayerId, offer.OfferedResourceId, offer.OfferedAmount);
-				resourceRepositoryWrite.DeductCost(offer.FromPlayerId, offer.OfferedResourceId, offer.OfferedAmount);
-				resourceRepositoryWrite.AddResources(offer.FromPlayerId, offer.WantedResourceId, offer.WantedAmount);
+				// Swap resources — guard against race where resources were spent after pre-check
+				try {
+					resourceRepositoryWrite.DeductCost(command.AcceptingPlayerId, offer.WantedResourceId, offer.WantedAmount);
+				} catch (CannotAffordException) {
+					return false;
+				}
+
+				try {
+					resourceRepositoryWrite.AddResources(command.AcceptingPlayerId, offer.OfferedResourceId, offer.OfferedAmount);
+					resourceRepositoryWrite.DeductCost(offer.FromPlayerId, offer.OfferedResourceId, offer.OfferedAmount);
+					resourceRepositoryWrite.AddResources(offer.FromPlayerId, offer.WantedResourceId, offer.WantedAmount);
+				} catch (CannotAffordException) {
+					// Offeror no longer has the resources — roll back the acceptor's deduction and cancel
+					resourceRepositoryWrite.AddResources(command.AcceptingPlayerId, offer.WantedResourceId, offer.WantedAmount);
+					offer.Status = TradeOfferStatus.Cancelled;
+					return false;
+				}
 
 				offer.Status = TradeOfferStatus.Accepted;
 				return true;
