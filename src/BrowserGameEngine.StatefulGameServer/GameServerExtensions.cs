@@ -59,6 +59,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<MarketRepository>();
 			services.AddSingleton<SpyRepository>();
 			services.AddSingleton<SpyRepositoryWrite>();
+			services.AddSingleton<SpyMissionRepository>();
+			services.AddSingleton<SpyMissionRepositoryWrite>();
 			services.AddSingleton<FogOfWarRepository>();
 			services.AddSingleton<TechRepository>();
 			services.AddSingleton<TechRepositoryWrite>();
@@ -71,6 +73,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, UpgradeTimer>();
 			services.AddSingleton<IGameTickModule, TechResearchTimerModule>();
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
+			services.AddSingleton<IGameTickModule, SpyMissionModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
 			services.AddSingleton<GameTickEngine>();
