@@ -74,7 +74,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 1000,
 						BuildTimeTicks = new GameTick( 10),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("commandcenter") }
 					},
@@ -85,7 +85,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 200), ("gas", 100)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 1250,
 						BuildTimeTicks = new GameTick( 40),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") }
 					},
@@ -96,7 +96,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 750,
 						BuildTimeTicks = new GameTick( 30),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") }
 					},
@@ -107,7 +107,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150), ("gas", 100)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 1300,
 						BuildTimeTicks = new GameTick( 40),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("factory") }
 					},
@@ -118,7 +118,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150),("gas", 0)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 600,
 						BuildTimeTicks = new GameTick( 30),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("barracks") }
 					},
@@ -129,7 +129,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 100),("gas", 150)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 850,
 						BuildTimeTicks = new GameTick( 50),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("spaceport") }
 					},
@@ -142,7 +142,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 400)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 1500,
 						BuildTimeTicks = new GameTick(40),
 						Prerequisites = new List<AssetDefId> { }
 					},
@@ -153,7 +153,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 750,
 						BuildTimeTicks = new GameTick(15),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("hive") }
 					},
@@ -164,7 +164,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 75)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 500,
 						BuildTimeTicks = new GameTick(40),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("spawningpool") }
 					},
@@ -175,7 +175,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 850,
 						BuildTimeTicks = new GameTick(20),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("spawningpool") }
 					},
@@ -243,7 +243,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 400)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 1000,
 						BuildTimeTicks = new GameTick(20),
 						Prerequisites = new List<AssetDefId> { }
 					},
@@ -254,7 +254,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 500,
 						BuildTimeTicks = new GameTick(10),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("nexus") }
 					},
@@ -265,7 +265,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 200)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 550,
 						BuildTimeTicks = new GameTick(15),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("gateway") }
 					},
@@ -276,7 +276,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 200)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 500,
 						BuildTimeTicks = new GameTick(18),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("gateway") }
 					},
@@ -287,7 +287,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 200), ("gas", 200)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 500,
 						BuildTimeTicks = new GameTick(20),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("forge") }
 					},
@@ -298,7 +298,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150), ("gas", 150)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 600,
 						BuildTimeTicks = new GameTick(30),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("roboticsfacility") }
 					},
@@ -309,7 +309,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 50), ("gas", 100)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 250,
 						BuildTimeTicks = new GameTick(24),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("roboticsfacility") }
 					},
