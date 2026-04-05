@@ -4,6 +4,7 @@ using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.Notifications;
+using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -277,12 +278,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var posts = allianceChatRepository.GetPosts(allianceId);
 			return Ok(posts.Select(p => {
 				string authorName;
-				try { authorName = playerRepository.Get(p.AuthorPlayerId).Name; }
-				catch { authorName = p.AuthorPlayerId.Id; }
+				string playerType;
+				try {
+					var player = playerRepository.Get(p.AuthorPlayerId);
+					authorName = player.Name;
+					playerType = player.PlayerType.Id;
+				} catch {
+					authorName = p.AuthorPlayerId.Id;
+					playerType = "";
+				}
 				return new AllianceChatPostViewModel {
 					PostId = p.PostId.ToString(),
 					AuthorPlayerId = p.AuthorPlayerId.Id,
 					AuthorName = authorName,
+					PlayerType = playerType,
 					Body = p.Body,
 					CreatedAt = p.CreatedAt
 				};
@@ -302,6 +311,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return NotFound();
 			} catch (NotAllianceMemberException e) {
 				return StatusCode(403, e.Message);
+			} catch (ChatRateLimitException e) {
+				return StatusCode(429, e.Message);
 			}
 		}
 

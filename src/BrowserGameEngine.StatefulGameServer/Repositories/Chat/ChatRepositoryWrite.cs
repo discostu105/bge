@@ -3,11 +3,16 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
+	public class ChatRateLimitException : Exception {
+		public ChatRateLimitException() : base("You can only send one message every 2 seconds.") { }
+	}
+
 	public class ChatRepositoryWrite {
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
@@ -15,6 +20,8 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 		private readonly TimeProvider timeProvider;
 		private readonly IGameEventPublisher eventPublisher;
 		private const int MaxMessages = 200;
+		private static readonly TimeSpan RateLimitInterval = TimeSpan.FromSeconds(2);
+		private readonly ConcurrentDictionary<PlayerId, DateTime> lastMessageTime = new();
 
 		public ChatRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider, IGameEventPublisher eventPublisher) {
 			this.worldStateAccessor = worldStateAccessor;
@@ -62,6 +69,12 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 		}
 
 		public ChatMessageId PostMessage(PostChatMessageCommand command) {
+			var now = timeProvider.GetUtcNow().UtcDateTime;
+			if (lastMessageTime.TryGetValue(command.AuthorPlayerId, out var lastTime)
+				&& (now - lastTime) < RateLimitInterval) {
+				throw new ChatRateLimitException();
+			}
+
 			var messageId = ChatMessageIdFactory.NewChatMessageId();
 			lock (ChatMessagesLock) {
 				world.ValidatePlayer(command.AuthorPlayerId);
@@ -69,20 +82,22 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 					MessageId = messageId,
 					AuthorPlayerId = command.AuthorPlayerId,
 					Body = command.Body,
-					CreatedAt = timeProvider.GetUtcNow().UtcDateTime
+					CreatedAt = now
 				});
 				// Ring buffer: drop oldest when over the limit
 				while (world.ChatMessages.Count > MaxMessages) {
 					world.ChatMessages.RemoveAt(0);
 				}
 			}
-			var authorName = world.GetPlayer(command.AuthorPlayerId).Name;
+			lastMessageTime[command.AuthorPlayerId] = now;
+			var player = world.GetPlayer(command.AuthorPlayerId);
 			eventPublisher.PublishToGame(GameEventTypes.ReceiveChatMessage, new {
 				messageId = messageId.Id,
 				authorPlayerId = command.AuthorPlayerId.Id,
-				authorName,
+				authorName = player.Name,
+				playerType = player.PlayerType.Id,
 				body = command.Body,
-				createdAt = timeProvider.GetUtcNow().UtcDateTime
+				createdAt = now
 			});
 			return messageId;
 		}

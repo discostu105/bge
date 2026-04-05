@@ -461,6 +461,7 @@ export interface AllianceChatPostViewModel {
   postId: string
   authorPlayerId: string
   authorName: string
+  playerType: string
   body: string
   createdAt: string
 }
@@ -653,6 +654,7 @@ export interface ChatMessageViewModel {
   messageId: string
   authorPlayerId: string
   authorName: string
+  playerType: string
   body: string
   createdAt: string
 }
