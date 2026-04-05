@@ -8,6 +8,7 @@ namespace BrowserGameEngine.GameModel {
 		IDictionary<AllianceId, AllianceImmutable>? Alliances = null,
 		GameId? GameId = null,  // null = legacy JSON; treated as "default" in ToMutable()
 		IList<MarketOrderImmutable>? MarketOrders = null,
-		IList<ChatMessageImmutable>? ChatMessages = null
+		IList<ChatMessageImmutable>? ChatMessages = null,
+		IDictionary<AllianceWarId, AllianceWarImmutable>? Wars = null
 	);
 }

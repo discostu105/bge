@@ -68,4 +68,39 @@ namespace BrowserGameEngine.Shared {
 	public class PostAllianceChatRequest {
 		public required string Body { get; set; }
 	}
+
+	public class AllianceInviteViewModel {
+		public required string InviteId { get; set; }
+		public required string AllianceId { get; set; }
+		public required string AllianceName { get; set; }
+		public required string InviterPlayerName { get; set; }
+		public DateTime ExpiresAt { get; set; }
+	}
+
+	public class AllianceWarViewModel {
+		public required string WarId { get; set; }
+		public required string AttackerAllianceId { get; set; }
+		public required string AttackerAllianceName { get; set; }
+		public required string DefenderAllianceId { get; set; }
+		public required string DefenderAllianceName { get; set; }
+		public required string Status { get; set; }
+		public DateTime DeclaredAt { get; set; }
+		public string? ProposerAllianceId { get; set; }
+	}
+
+	public class InvitePlayerRequest {
+		public required string TargetPlayerId { get; set; }
+	}
+
+	public class DeclareWarRequest {
+		public required string TargetAllianceId { get; set; }
+	}
+
+	public class AcceptInviteRequest {
+		public required string InviteId { get; set; }
+	}
+
+	public class PeaceRequest {
+		public required string WarId { get; set; }
+	}
 }

@@ -26,6 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		internal IList<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
 		internal readonly Lock ChatMessagesLock = new();
 
+		internal IDictionary<AllianceWarId, AllianceWar> Wars { get; set; } = new ConcurrentDictionary<AllianceWarId, AllianceWar>();
 
 		// throws if player not found
 		internal Player GetPlayer(PlayerId playerId) {
@@ -37,6 +38,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		internal Alliance GetAlliance(AllianceId allianceId) {
 			if (Alliances.TryGetValue(allianceId, out Alliance? alliance)) return alliance;
 			throw new AllianceNotFoundException(allianceId);
+		}
+
+		// throws if war not found
+		internal AllianceWar GetWar(AllianceWarId warId) {
+			if (Wars.TryGetValue(warId, out AllianceWar? war)) return war;
+			throw new WarNotFoundException(warId);
 		}
 
 		internal bool PlayerExists(PlayerId playerId) {
@@ -74,6 +81,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			worldState.GameActionQueue = mutable.GameActionQueue;
 			worldState.MarketOrders = mutable.MarketOrders;
 			worldState.ChatMessages = mutable.ChatMessages;
+			worldState.Wars = mutable.Wars;
 		}
 
 
@@ -97,7 +105,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Alliances: worldState.Alliances.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				GameId: worldState.GameId,
 				MarketOrders: marketOrdersSnapshot,
-				ChatMessages: chatMessagesSnapshot
+				ChatMessages: chatMessagesSnapshot,
+				Wars: worldState.Wars.ToDictionary(x => x.Key, y => y.Value.ToImmutable())
 			);
 		}
 
@@ -109,7 +118,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				GameTickState = worldStateImmutable.GameTickState.ToMutable(),
 				GameActionQueue = worldStateImmutable.GameActionQueue.Select(x => x.ToMutable()).ToList(),
 				MarketOrders = worldStateImmutable.MarketOrders?.ToMutable() ?? new List<MarketOrder>(),
-				ChatMessages = worldStateImmutable.ChatMessages?.ToMutable() ?? new List<ChatMessage>()
+				ChatMessages = worldStateImmutable.ChatMessages?.ToMutable() ?? new List<ChatMessage>(),
+				Wars = new ConcurrentDictionary<AllianceWarId, AllianceWar>(worldStateImmutable.Wars?.ToDictionary(x => x.Key, y => y.Value.ToMutable()) ?? new Dictionary<AllianceWarId, AllianceWar>())
 			};
 		}
 	}

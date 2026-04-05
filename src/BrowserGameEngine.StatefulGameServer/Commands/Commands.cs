@@ -6,6 +6,12 @@ using System.Text;
 
 namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record CreateAllianceCommand(PlayerId PlayerId, string AllianceName, string Password) : ICommand;
+	public record InvitePlayerToAllianceCommand(PlayerId InviterPlayerId, PlayerId InviteePlayerId) : ICommand;
+	public record AcceptAllianceInviteCommand(PlayerId PlayerId, AllianceInviteId InviteId) : ICommand;
+	public record DeclineAllianceInviteCommand(PlayerId PlayerId, AllianceInviteId InviteId) : ICommand;
+	public record DeclareAllianceWarCommand(PlayerId PlayerId, AllianceId TargetAllianceId) : ICommand;
+	public record ProposeAlliancePeaceCommand(PlayerId PlayerId, AllianceWarId WarId) : ICommand;
+	public record AcceptAlliancePeaceCommand(PlayerId PlayerId, AllianceWarId WarId) : ICommand;
 	public record JoinAllianceCommand(PlayerId PlayerId, AllianceId AllianceId, string Password) : ICommand;
 	public record AcceptMemberCommand(PlayerId PlayerId, PlayerId MemberPlayerId) : ICommand;
 	public record RejectMemberCommand(PlayerId PlayerId, PlayerId MemberPlayerId) : ICommand;
