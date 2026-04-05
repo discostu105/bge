@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class BattleReportRepositoryWrite {
-		internal const int MaxReportsPerPlayer = 50;
+		public const int MaxReportsPerPlayer = 50;
 		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
@@ -14,7 +14,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.worldStateAccessor = worldStateAccessor;
 		}
 
-		internal void AddBattleReport(PlayerId playerId, BattleReport report) {
+		public void AddBattleReport(PlayerId playerId, BattleReport report) {
 			lock (_lock) {
 				var reports = world.GetPlayer(playerId).State.BattleReports;
 				reports.Add(report);
