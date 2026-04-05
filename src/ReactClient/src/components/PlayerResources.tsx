@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { PlayerResourcesViewModel } from '@/api/types'
 
+function formatNumber(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 10_000) return `${(value / 1_000).toFixed(1)}K`
+  return Math.floor(value).toLocaleString()
+}
+
+function ResourceEntry({ name, value }: { name: string; value: number }) {
+  return (
+    <span className="flex items-center gap-1">
+      <strong className="capitalize text-xs">{name}</strong>
+      <span className="font-mono">{formatNumber(value)}</span>
+    </span>
+  )
+}
+
 export function PlayerResources({ gameId }: { gameId: string }) {
   const { data: resources } = useQuery({
     queryKey: ['resources', gameId],
@@ -14,21 +29,12 @@ export function PlayerResources({ gameId }: { gameId: string }) {
 
   return (
     <div className="flex items-center gap-4 text-sm">
-      <span className="flex items-center gap-1">
-        <span className="text-blue-400">💎</span>
-        <span className="font-mono">{Math.floor(resources.minerals).toLocaleString()}</span>
-        <span className="text-muted-foreground text-xs">min</span>
-      </span>
-      <span className="flex items-center gap-1">
-        <span className="text-green-400">⛽</span>
-        <span className="font-mono">{Math.floor(resources.gas).toLocaleString()}</span>
-        <span className="text-muted-foreground text-xs">gas</span>
-      </span>
-      <span className="flex items-center gap-1">
-        <span className="text-yellow-400">🏘️</span>
-        <span className="font-mono">{resources.land}</span>
-        <span className="text-muted-foreground text-xs">land</span>
-      </span>
+      {Object.entries(resources.primaryResource.cost).map(([name, value]) => (
+        <ResourceEntry key={name} name={name} value={value} />
+      ))}
+      {Object.entries(resources.secondaryResources.cost).map(([name, value]) => (
+        <ResourceEntry key={name} name={name} value={value} />
+      ))}
     </div>
   )
 }

@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils'
 
 export function SignIn() {
   const [devPlayerId, setDevPlayerId] = useState('')
-  const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') ?? '/'
+  const raw = new URLSearchParams(window.location.search).get('returnUrl') ?? '/'
+  const returnUrl = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
