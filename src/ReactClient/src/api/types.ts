@@ -369,14 +369,58 @@ export interface AllianceRankingViewModel {
 
 // Diplomacy
 
-export interface DiplomacyEntryViewModel {
-  playerId: string
-  playerName: string
-  relationshipStatus: string
+export type DiplomacyProposalType = 'Nap' | 'ResourceAgreement'
+
+export interface DiplomacyProposalViewModel {
+  proposalId: string
+  type: DiplomacyProposalType
+  proposerPlayerId: string
+  proposerPlayerName: string
+  targetPlayerId: string
+  targetPlayerName: string
+  durationTicks: number
+  mineralsPerTick: number
+  gasPerTick: number
+  proposedAt: string
 }
 
-export interface DiplomacyViewModel {
-  entries: DiplomacyEntryViewModel[]
+export interface ActiveNapViewModel {
+  napId: string
+  partnerPlayerId: string
+  partnerPlayerName: string
+  ticksRemaining: number
+}
+
+export interface ActiveResourceAgreementViewModel {
+  agreementId: string
+  partnerPlayerId: string
+  partnerPlayerName: string
+  mineralsPerTick: number
+  gasPerTick: number
+  ticksRemaining: number
+}
+
+export interface DiplomacyStatusViewModel {
+  pendingIncoming: DiplomacyProposalViewModel[]
+  pendingSent: DiplomacyProposalViewModel[]
+  activeNaps: ActiveNapViewModel[]
+  activeResourceAgreements: ActiveResourceAgreementViewModel[]
+}
+
+export interface ProposeNapRequest {
+  targetPlayerId: string
+  durationTicks: number
+}
+
+export interface ProposeResourceAgreementRequest {
+  targetPlayerId: string
+  durationTicks: number
+  mineralsPerTick: number
+  gasPerTick: number
+}
+
+export interface RespondToProposalRequest {
+  accept: boolean
 }
 
 // Spy
@@ -384,7 +428,8 @@ export interface DiplomacyViewModel {
 export interface SpyPlayerEntryViewModel {
   playerId: string
   playerName: string
-  spyCount: number
+  score: number
+  cooldownExpiresAt: string | null
 }
 
 export interface SpyMissionViewModel {
@@ -398,23 +443,27 @@ export interface SpyMissionViewModel {
   result: string | null
 }
 
+export interface UnitEstimateViewModel {
+  unitDefId: string
+  unitTypeName: string
+  approximateCount: number
+}
+
 export interface SpyReportViewModel {
-  id: string
-  sourceMissionId: string
   targetPlayerId: string
   targetPlayerName: string
-  missionType: string
-  success: boolean
-  reportData: string
-  createdAt: string
+  approximateMinerals: number
+  approximateGas: number
+  unitEstimates: UnitEstimateViewModel[]
+  reportTime: string
+  cooldownExpiresAt: string
 }
 
 export interface SpyAttemptViewModel {
   id: string
-  attackerPlayerName: string
-  missionType: string
-  success: boolean
-  createdAt: string
+  attackerName: string
+  actionType: string
+  timestamp: string
 }
 
 export interface SendSpyMissionRequest {
@@ -429,26 +478,34 @@ export interface SendSpyMissionResponse {
 
 // Enemy Base / Battle
 
-export interface EnemyBaseViewModel {
-  playerId: string
-  playerName: string
-  score: number
-  units: UnitViewModel[]
-  assets: AssetViewModel[]
+export interface UnitLossViewModel {
+  unitName: string
+  count: number
 }
 
-export interface SelectEnemyEntryViewModel {
-  playerId: string
-  playerName: string
-  score: number
-  protectionTicksRemaining: number
+export interface BattleResultViewModel {
+  attackerId: string | null
+  attackerName: string | null
+  defenderId: string | null
+  defenderName: string | null
+  outcome: string | null
+  totalAttackerStrengthBefore: number
+  totalDefenderStrengthBefore: number
+  unitsLostByAttacker: UnitLossViewModel[]
+  unitsLostByDefender: UnitLossViewModel[]
+  resourcesPillaged: Record<string, number>
+  landTransferred: number
+  workersCaptured: number
+}
+
+export interface EnemyBaseViewModel {
+  playerAttackingUnits: UnitsViewModel
+  enemyDefendingUnits: UnitsViewModel
+  spyCostLabel: string
 }
 
 export interface SelectEnemyViewModel {
-  unitId: string
-  unitName: string
-  unitCount: number
-  players: SelectEnemyEntryViewModel[]
+  attackablePlayers: PublicPlayerViewModel[]
 }
 
 // Chat
