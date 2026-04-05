@@ -73,7 +73,7 @@ export function NavMenu() {
         <NavItem to={g('research')} icon={FlaskConicalIcon} label="Research" />
         <NavItem to={g('market')} icon={ShoppingCartIcon} label="Market" />
         <NavItem to={g('spy')} icon={EyeIcon} label="Spy" />
-        <NavItem to={g('spies')} icon={CrosshairIcon} label="Operations" />
+        <NavItem to={g('operations')} icon={CrosshairIcon} label="Operations" />
 
         <SectionLabel>Info</SectionLabel>
         <NavItem to={g('unitdefinitions')} icon={BookOpenIcon} label="Unit Types" />
