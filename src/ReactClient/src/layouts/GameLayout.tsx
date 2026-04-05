@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Outlet, NavLink, useParams, Navigate, useLocation } from 'react-router'
 import { GamepadIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-react'
 import { CurrentGameProvider, useCurrentGame } from '@/contexts/CurrentGameContext'
 import { NavMenu } from '@/components/NavMenu'
 import { PlayerResources } from '@/components/PlayerResources'
 import { NotificationBell } from '@/components/NotificationBell'
+import { PageLoader } from '@/components/PageLoader'
 import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
 import { vcText, vcBadgeCss } from '@/lib/victory'
@@ -167,7 +168,9 @@ function GameLayoutInner() {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
