@@ -13,6 +13,7 @@ namespace BrowserGameEngine.GameModel {
 		string? UserId = null,
 		string? ApiKeyHash = null,
 		DateTime? LastOnline = null,
-		AllianceId? AllianceId = null
+		AllianceId? AllianceId = null,
+		bool IsBanned = false
 	);
 }

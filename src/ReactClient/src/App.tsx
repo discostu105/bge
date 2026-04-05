@@ -36,6 +36,9 @@ const Achievements = lazy(() => import('@/pages/Achievements').then(m => ({ defa
 const PlayerHistory = lazy(() => import('@/pages/PlayerHistory').then(m => ({ default: m.PlayerHistory })))
 const PublicProfile = lazy(() => import('@/pages/PublicProfile').then(m => ({ default: m.PublicProfile })))
 const AdminGames = lazy(() => import('@/pages/admin/AdminGames').then(m => ({ default: m.AdminGames })))
+const AdminPlayers = lazy(() => import('@/pages/admin/AdminPlayers').then(m => ({ default: m.AdminPlayers })))
+const AdminTickControl = lazy(() => import('@/pages/admin/AdminTickControl').then(m => ({ default: m.AdminTickControl })))
+const AdminStats = lazy(() => import('@/pages/admin/AdminStats').then(m => ({ default: m.AdminStats })))
 const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ default: m.PlayersList })))
 const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
 
@@ -184,6 +187,9 @@ const router = createBrowserRouter([
       { path: '/achievements', element: <Achievements /> },
       { path: '/history', element: <PlayerHistory /> },
       { path: '/admin/games', element: <AdminGames /> },
+      { path: '/admin/players', element: <AdminPlayers /> },
+      { path: '/admin/ticks', element: <AdminTickControl /> },
+      { path: '/admin/stats', element: <AdminStats /> },
     ],
   },
 ])
