@@ -41,7 +41,7 @@ function NavItem({
           )
         }
       >
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
         {label}
       </NavLink>
     </li>
@@ -66,7 +66,7 @@ export function NavMenu() {
   const g = (path: string) => `/games/${gameId}/${path}`
 
   return (
-    <nav>
+    <nav aria-label="Game navigation">
       <ul className="space-y-0.5">
         <SectionLabel>Play</SectionLabel>
         <NavItem to={g('base')} icon={LayersIcon} label="Base" />

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams, Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
@@ -8,10 +8,10 @@ import { ApiError } from '@/components/ApiError'
 
 function vcBadge(type: string | null | undefined): { css: string; text: string } {
   switch (type) {
-    case 'EconomicThreshold': return { css: 'bg-yellow-500 text-black', text: 'CONQUERED' }
-    case 'TimeExpired': return { css: 'bg-gray-500 text-white', text: 'TIME EXPIRED' }
-    case 'AdminFinalized': return { css: 'bg-red-600 text-white', text: 'ADMIN ENDED' }
-    default: return { css: 'bg-gray-500 text-white', text: 'FINISHED' }
+    case 'EconomicThreshold': return { css: 'bg-warning text-warning-foreground', text: 'CONQUERED' }
+    case 'TimeExpired': return { css: 'bg-muted text-muted-foreground', text: 'TIME EXPIRED' }
+    case 'AdminFinalized': return { css: 'bg-danger text-danger-foreground', text: 'ADMIN ENDED' }
+    default: return { css: 'bg-muted text-muted-foreground', text: 'FINISHED' }
   }
 }
 
@@ -24,7 +24,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
       <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
         <div className="flex justify-between items-start">
           <h3 className="font-semibold">{game.name}</h3>
-          <span className="text-xs font-bold px-2 py-0.5 rounded bg-green-700 text-white">LIVE</span>
+          <span className="text-xs font-bold px-2 py-0.5 rounded bg-success text-success-foreground">LIVE</span>
         </div>
         <div className="text-sm text-muted-foreground">
           <div>Players: {game.playerCount}{game.maxPlayers > 0 ? ` / ${game.maxPlayers}` : ''}</div>
@@ -33,26 +33,26 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         <div className="flex gap-2 mt-auto flex-wrap">
           {game.canJoin && (
             <button
-              className="text-sm px-3 py-1 rounded bg-green-700 text-white hover:bg-green-600"
+              className="text-sm px-3 py-1 rounded bg-success text-success-foreground hover:opacity-90"
               onClick={() => onJoin(game)}
             >
               Join
             </button>
           )}
           {game.isPlayerEnrolled && (
-            <a
-              href={`/games/${game.gameId}/base`}
-              className="text-sm px-3 py-1 rounded bg-blue-700 text-white hover:bg-blue-600"
+            <Link
+              to={`/games/${game.gameId}/base`}
+              className="text-sm px-3 py-1 rounded bg-primary text-primary-foreground hover:opacity-90"
             >
               Play Now
-            </a>
+            </Link>
           )}
-          <a
-            href={`/games/${game.gameId}/ranking`}
+          <Link
+            to={`/games/${game.gameId}/ranking`}
             className="text-sm px-3 py-1 rounded border border-border hover:bg-muted"
           >
             Spectate
-          </a>
+          </Link>
         </div>
       </div>
     )
@@ -63,7 +63,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
       <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
         <div className="flex justify-between items-start">
           <h3 className="font-semibold">{game.name}</h3>
-          <span className="text-xs font-bold px-2 py-0.5 rounded bg-yellow-500 text-black">UPCOMING</span>
+          <span className="text-xs font-bold px-2 py-0.5 rounded bg-warning text-warning-foreground">UPCOMING</span>
         </div>
         <div className="text-sm text-muted-foreground">
           <div>Players: {game.playerCount}{game.maxPlayers > 0 ? ` / ${game.maxPlayers}` : ''}</div>
@@ -72,15 +72,15 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         <div className="mt-auto">
           {game.canJoin ? (
             <button
-              className="text-sm px-3 py-1 rounded bg-green-700 text-white hover:bg-green-600"
+              className="text-sm px-3 py-1 rounded bg-success text-success-foreground hover:opacity-90"
               onClick={() => onJoin(game)}
             >
               Register Now
             </button>
           ) : game.maxPlayers > 0 && game.playerCount >= game.maxPlayers ? (
-            <span className="text-xs px-2 py-0.5 rounded bg-red-700 text-white">Full</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-danger text-danger-foreground">Full</span>
           ) : (
-            <span className="text-xs px-2 py-0.5 rounded bg-gray-600 text-white">Registered</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">Registered</span>
           )}
         </div>
       </div>
@@ -97,7 +97,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
       </div>
       <div className="text-sm text-muted-foreground">
         {game.winnerName && game.victoryConditionType === 'EconomicThreshold' && (
-          <div>🏅 Conqueror: <strong>{game.winnerName}</strong></div>
+          <div>Conqueror: <strong>{game.winnerName}</strong></div>
         )}
         {game.winnerName && game.victoryConditionType !== 'EconomicThreshold' && (
           <div>Winner: <strong>{game.winnerName}</strong></div>
@@ -105,12 +105,12 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         <div>Ended: {formatDate(game.endTime)}</div>
       </div>
       <div className="mt-auto">
-        <a
-          href={`/games/${game.gameId}/results`}
+        <Link
+          to={`/games/${game.gameId}/results`}
           className="text-sm px-3 py-1 rounded border border-border hover:bg-muted"
         >
           View Results
-        </a>
+        </Link>
       </div>
     </div>
   )
@@ -157,7 +157,7 @@ export function Games() {
       <h1 className="text-2xl font-bold">Season Schedule</h1>
 
       {isNewPlayer && (
-        <div className="rounded-lg border border-green-700 bg-green-900/20 p-4 text-sm">
+        <div className="rounded-lg border border-success/50 bg-success/10 p-4 text-sm">
           <strong>Welcome to BGE!</strong> Your commander is ready.{' '}
           <span className="text-muted-foreground">
             Join an active game below, or register for an upcoming season.
@@ -165,8 +165,8 @@ export function Games() {
         </div>
       )}
 
-      {success && <div className="rounded-lg border border-green-700 bg-green-900/20 p-3 text-sm">{success}</div>}
-      {error && <div className="rounded-lg border border-red-700 bg-red-900/20 p-3 text-sm text-red-400">{error}</div>}
+      {success && <div className="rounded-lg border border-success/50 bg-success/10 p-3 text-sm">{success}</div>}
+      {error && <div className="rounded-lg border border-danger/50 bg-danger/10 p-3 text-sm text-danger-foreground">{error}</div>}
 
       {queryLoading && <PageLoader message="Loading games..." />}
       {queryError && !data && <ApiError message="Failed to load games." onRetry={() => void refetch()} />}
@@ -210,7 +210,7 @@ export function Games() {
                 <h2 className="text-lg font-semibold">Finished</h2>
                 {finished.length > 5 && (
                   <button
-                    className="text-sm text-blue-400 hover:underline"
+                    className="text-sm text-primary hover:underline"
                     onClick={() => setShowAllFinished((v) => !v)}
                   >
                     {showAllFinished ? '▲ Collapse' : `▼ Show all (${finished.length})`}

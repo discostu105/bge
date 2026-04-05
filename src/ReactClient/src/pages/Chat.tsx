@@ -89,6 +89,7 @@ export function ChatPanel({ gameId }: ChatProps) {
             'placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring'
           )}
           placeholder="Type a message…"
+          aria-label="Chat message"
           maxLength={500}
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -109,7 +110,7 @@ export function ChatPanel({ gameId }: ChatProps) {
       <p className="text-xs text-muted-foreground">{body.length} / 500</p>
 
       {/* Chat window */}
-      <div className="h-[420px] overflow-y-auto rounded-lg border bg-card p-2 space-y-1.5">
+      <div className="h-[min(420px,60vh)] overflow-y-auto rounded-lg border bg-card p-2 space-y-1.5" role="log" aria-label="Chat messages">
         {allMessages.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm mt-8">No messages yet. Start the conversation!</p>
         ) : (

@@ -7,10 +7,10 @@ import { ApiError } from '@/components/ApiError'
 
 function statusBadge(status: string): { css: string; label: string } {
   switch (status.toLowerCase()) {
-    case 'upcoming': return { css: 'bg-yellow-500 text-black', label: 'Upcoming' }
-    case 'active': return { css: 'bg-green-700 text-white', label: 'Active' }
-    case 'finished': return { css: 'bg-gray-500 text-white', label: 'Finished' }
-    default: return { css: 'bg-gray-300 text-black', label: status }
+    case 'upcoming': return { css: 'bg-warning text-warning-foreground', label: 'Upcoming' }
+    case 'active': return { css: 'bg-success text-success-foreground', label: 'Active' }
+    case 'finished': return { css: 'bg-muted text-muted-foreground', label: 'Finished' }
+    default: return { css: 'bg-muted text-muted-foreground', label: status }
   }
 }
 
@@ -45,8 +45,8 @@ export function GameLobby() {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Game Lobby</h1>
 
-      {success && <div className="rounded border border-green-700 bg-green-900/20 p-3 text-sm">{success}</div>}
-      {error && <div className="rounded border border-red-700 bg-red-900/20 p-3 text-sm text-red-400">{error}</div>}
+      {success && <div className="rounded border border-success/50 bg-success/10 p-3 text-sm">{success}</div>}
+      {error && <div className="rounded border border-danger/50 bg-danger/10 p-3 text-sm text-danger-foreground">{error}</div>}
 
       {isLoading && <PageLoader message="Loading games..." />}
       {queryError && !data && <ApiError message="Failed to load games." onRetry={() => void refetch()} />}
@@ -87,7 +87,7 @@ export function GameLobby() {
                     <td className="py-2">
                       {game.canJoin && (
                         <button
-                          className="text-xs px-2 py-1 rounded bg-blue-700 text-white hover:bg-blue-600"
+                          className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground hover:opacity-90"
                           onClick={() => joinMutation.mutate(game)}
                           disabled={joinMutation.isPending}
                         >
