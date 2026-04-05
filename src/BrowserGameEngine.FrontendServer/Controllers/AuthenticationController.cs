@@ -14,6 +14,7 @@ using Mvc.Client.Extensions;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	public class AuthenticationController : Controller {
+		private readonly ILogger<AuthenticationController> logger;
 		private readonly IOptions<BgeOptions> options;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly PlayerRepository playerRepository;
@@ -27,6 +28,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, UserRepositoryWrite userRepositoryWrite
 			) {
+			this.logger = logger;
 			this.options = options;
 			this.currentUserContext = currentUserContext;
 			this.playerRepository = playerRepository;
@@ -47,6 +49,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (string.IsNullOrWhiteSpace(provider)) return BadRequest();
 			if (!await HttpContext.IsProviderSupportedAsync(provider)) return BadRequest();
 
+			logger.LogInformation("Auth: login initiated provider={Provider}", provider);
+
 			// Redirect back to the original page after login, or home if none/external.
 			var redirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
 
@@ -59,6 +63,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpGet("~/signout")]
 		[HttpPost("~/signout")]
 		public new IActionResult SignOut() {
+			var githubId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+			logger.LogInformation("Auth: user signed out githubId={GithubId}", githubId);
 			// Instruct the cookies middleware to delete the local cookie created
 			// when the user agent is redirected from the external identity provider
 			// after a successful authentication flow (e.g Google or Facebook).
