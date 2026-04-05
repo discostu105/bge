@@ -16,6 +16,9 @@ import { GameSummary } from '@/pages/GameSummary'
 import { GameResults } from '@/pages/GameResults'
 import { CreatePlayer } from '@/pages/CreatePlayer'
 import { UnitDefinitions } from '@/pages/UnitDefinitions'
+import { Achievements } from '@/pages/Achievements'
+import { PlayerHistory } from '@/pages/PlayerHistory'
+import { AdminGames } from '@/pages/admin/AdminGames'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -153,15 +156,15 @@ const router = createBrowserRouter([
   },
   {
     path: '/achievements',
-    element: <TodoPage name="Achievements" />,
+    element: <Achievements />,
   },
   {
     path: '/history',
-    element: <TodoPage name="Player History" />,
+    element: <PlayerHistory />,
   },
   {
     path: '/admin/games',
-    element: <TodoPage name="Admin — Games" />,
+    element: <AdminGames />,
   },
 ])
 
