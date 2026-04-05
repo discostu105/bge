@@ -17,6 +17,17 @@ import { Messages } from '@/pages/Messages'
 import { PlayerRanking } from '@/pages/PlayerRanking'
 import { PlayerProfile } from '@/pages/PlayerProfile'
 import { InGamePlayerProfile } from '@/pages/InGamePlayerProfile'
+import { Index } from '@/pages/Index'
+import { Games } from '@/pages/Games'
+import { GameLobby } from '@/pages/GameLobby'
+import { JoinGame } from '@/pages/JoinGame'
+import { GameSummary } from '@/pages/GameSummary'
+import { GameResults } from '@/pages/GameResults'
+import { CreatePlayer } from '@/pages/CreatePlayer'
+import { UnitDefinitions } from '@/pages/UnitDefinitions'
+import { Achievements } from '@/pages/Achievements'
+import { PlayerHistory } from '@/pages/PlayerHistory'
+import { AdminGames } from '@/pages/admin/AdminGames'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -104,8 +115,8 @@ const router = createBrowserRouter([
     children: [
       { path: '/signin', element: <SignIn /> },
 
-      { path: '/', element: <TodoPage name="Home" /> },
-      { path: '/games', element: <TodoPage name="Games" /> },
+      { path: '/', element: <Index /> },
+      { path: '/games', element: <Games /> },
 
       {
         path: '/games/:gameId',
@@ -125,12 +136,12 @@ const router = createBrowserRouter([
           { path: 'spies', element: <SpiesPage /> },
           { path: 'spy', element: <SpyReportsPage /> },
           { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
-          { path: 'unitdefinitions', element: <TodoPage name="Unit Definitions" /> },
+          { path: 'unitdefinitions', element: <UnitDefinitions /> },
           { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
           { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
-          { path: 'join', element: <TodoPage name="Join Game" /> },
-          { path: 'summary', element: <TodoPage name="Game Summary" /> },
-          { path: 'results', element: <TodoPage name="Game Results" /> },
+          { path: 'join', element: <JoinGame /> },
+          { path: 'summary', element: <GameSummary /> },
+          { path: 'results', element: <GameResults /> },
         ],
       },
 
@@ -142,15 +153,15 @@ const router = createBrowserRouter([
       { path: '/spy', element: <BareRouteRedirect path="spy" /> },
       { path: '/spies', element: <BareRouteRedirect path="spies" /> },
 
-      { path: '/createplayer', element: <TodoPage name="Create Player" /> },
-      { path: '/lobby', element: <TodoPage name="Game Lobby" /> },
+      { path: '/createplayer', element: <CreatePlayer /> },
+      { path: '/lobby', element: <GameLobby /> },
       { path: '/profile', element: <PlayerProfile /> },
       { path: '/profile/:userId', element: <TodoPage name="Public Profile" /> },
       { path: '/players', element: <TodoPage name="Players" /> },
       { path: '/alliances/:allianceId', element: <TodoPage name="Alliance Detail" /> },
-      { path: '/achievements', element: <TodoPage name="Achievements" /> },
-      { path: '/history', element: <TodoPage name="Player History" /> },
-      { path: '/admin/games', element: <TodoPage name="Admin — Games" /> },
+      { path: '/achievements', element: <Achievements /> },
+      { path: '/history', element: <PlayerHistory /> },
+      { path: '/admin/games', element: <AdminGames /> },
     ],
   },
 ])

@@ -148,7 +148,6 @@ app.UseForwardedHeaders(forwardedHeadersOptions);
 
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
-    app.UseWebAssemblyDebugging();
     var urls = app.Configuration["ASPNETCORE_URLS"] ?? string.Empty;
     if (urls.Contains("https://", StringComparison.OrdinalIgnoreCase)) {
         app.UseHttpsRedirection();
@@ -163,7 +162,6 @@ if (app.Configuration["Bge:EnableSwagger"] == "true") {
     });
 }
 
-app.UseBlazorFrameworkFiles();
 app.UseStaticFiles(new StaticFileOptions {
 	OnPrepareResponse = ctx => {
 		if (string.Equals(ctx.File.Name, "index.html", StringComparison.OrdinalIgnoreCase)) {

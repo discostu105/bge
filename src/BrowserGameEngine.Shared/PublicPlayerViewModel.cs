@@ -18,5 +18,6 @@ namespace BrowserGameEngine.Shared {
 		public decimal? ApproxMinerals { get; set; }
 		public decimal? ApproxGas { get; set; }
 		public int? ApproxHomeUnitCount { get; set; }
+		public bool IsCurrentPlayer { get; set; }
 	}
 }
