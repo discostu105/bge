@@ -186,20 +186,53 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Cost = CostHelper.Create(("minerals", 150), ("gas", 200)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 500,
 						BuildTimeTicks = new GameTick(50),
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("hydraliskden") }
+					},
+					new AssetDef {
+						Id = Id.AssetDef("spire"),
+						Name = "Spire",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 200), ("gas", 150)),
+						Attack = 0,
+						Defense = 0,
+						Hitpoints = 600,
+						BuildTimeTicks = new GameTick(40),
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("spawningpool") }
 					},
 					new AssetDef {
 						Id = Id.AssetDef("greaterspire"),
 						Name = "Greater Spire",
 						PlayerTypeRestriction = Id.PlayerType("zerg"),
-						Cost = CostHelper.Create(("minerals", 200), ("gas", 150)),
+						Cost = CostHelper.Create(("minerals", 100), ("gas", 150)),
 						Attack = 0,
 						Defense = 0,
-						Hitpoints = 500, // TODO
+						Hitpoints = 800,
 						BuildTimeTicks = new GameTick(60),
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") }
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spire") }
+					},
+					new AssetDef {
+						Id = Id.AssetDef("queensnest"),
+						Name = "Queen's Nest",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 150), ("gas", 100)),
+						Attack = 0,
+						Defense = 0,
+						Hitpoints = 400,
+						BuildTimeTicks = new GameTick(30),
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spawningpool") }
+					},
+					new AssetDef {
+						Id = Id.AssetDef("defilermond"),
+						Name = "Defiler Mound",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 100), ("gas", 100)),
+						Attack = 0,
+						Defense = 0,
+						Hitpoints = 400,
+						BuildTimeTicks = new GameTick(45),
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("ultraliskcavern") }
 					},
 
 					// Protoss buildings
@@ -496,7 +529,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Defense = 26,
 						Hitpoints = 120,
 						Speed = 7,
-						Prerequisites = new List<AssetDefId> { Id.AssetDef("greaterspire") },
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spire") },
 						AttackBonuses = [1, 2, 3],
 						DefenseBonuses = [2, 4, 6]
 					},
@@ -539,6 +572,59 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") },
 						AttackBonuses = [0, 0, 0],
 						DefenseBonuses = [2, 4, 6]
+					},
+					new UnitDef {
+						Id = Id.UnitDef("sporecolony"),
+						Name = "Spore Colony",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 125)),
+						Attack = 0,
+						Defense = 18,
+						Hitpoints = 200,
+						Speed = 0,
+						IsMobile = false,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("evolutionchamber") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [2, 4, 6]
+					},
+					new UnitDef {
+						Id = Id.UnitDef("queen"),
+						Name = "Queen",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 100), ("gas", 100)),
+						Attack = 8,
+						Defense = 10,
+						Hitpoints = 120,
+						Speed = 6,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("queensnest") },
+						AttackBonuses = [1, 2, 3],
+						DefenseBonuses = [1, 2, 3]
+					},
+					new UnitDef {
+						Id = Id.UnitDef("scourge"),
+						Name = "Scourge",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 25), ("gas", 75)),
+						Attack = 40,
+						Defense = 0,
+						Hitpoints = 25,
+						Speed = 4,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("spire") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [0, 0, 0]
+					},
+					new UnitDef {
+						Id = Id.UnitDef("defiler"),
+						Name = "Defiler",
+						PlayerTypeRestriction = Id.PlayerType("zerg"),
+						Cost = CostHelper.Create(("minerals", 50), ("gas", 150)),
+						Attack = 5,
+						Defense = 15,
+						Hitpoints = 80,
+						Speed = 8,
+						Prerequisites = new List<AssetDefId> { Id.AssetDef("defilermond") },
+						AttackBonuses = [0, 0, 0],
+						DefenseBonuses = [1, 2, 3]
 					},
 
 					// Protoss units
