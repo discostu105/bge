@@ -35,6 +35,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
+		[HttpGet("get")]
 		public ActionResult<MarketViewModel> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
