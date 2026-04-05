@@ -23,6 +23,12 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record SetAllianceMessageCommand(PlayerId PlayerId, string Message) : ICommand;
 	public record PostAllianceChatCommand(PlayerId PlayerId, AllianceId AllianceId, string Body) : ICommand;
 
+	public record StartElectionCommand(PlayerId PlayerId, AllianceId AllianceId, TimeSpan? NominationDuration = null, TimeSpan? VotingDuration = null) : ICommand;
+	public record NominateForElectionCommand(PlayerId PlayerId, AllianceElectionId ElectionId) : ICommand;
+	public record WithdrawNominationCommand(PlayerId PlayerId, AllianceElectionId ElectionId) : ICommand;
+	public record CastElectionVoteCommand(PlayerId PlayerId, AllianceElectionId ElectionId, PlayerId CandidatePlayerId) : ICommand;
+	public record CancelElectionCommand(PlayerId PlayerId, AllianceElectionId ElectionId) : ICommand;
+
 	public record BuildAssetCommand(PlayerId PlayerId, AssetDefId AssetDefId) : ICommand;
 	public record BuildUnitCommand(PlayerId PlayerId, UnitDefId UnitDefId, int Count) : ICommand;
 	public record MergeUnitsCommand(PlayerId PlayerId, UnitDefId UnitDefId) : ICommand;

@@ -91,6 +91,37 @@ namespace BrowserGameEngine.Shared {
 		public string? ProposerAllianceId { get; set; }
 	}
 
+	public class ElectionCandidateViewModel {
+		public required string PlayerId { get; set; }
+		public required string PlayerName { get; set; }
+		public DateTime NominatedAt { get; set; }
+		public int VoteCount { get; set; }
+	}
+
+	public class AllianceElectionViewModel {
+		public required string ElectionId { get; set; }
+		public required string AllianceId { get; set; }
+		public required string Status { get; set; }
+		public required string StartedByPlayerName { get; set; }
+		public DateTime StartedAt { get; set; }
+		public DateTime NominationEndsAt { get; set; }
+		public DateTime VotingEndsAt { get; set; }
+		public List<ElectionCandidateViewModel> Candidates { get; set; } = new();
+		public string? MyVote { get; set; }
+		public string? WinnerId { get; set; }
+		public string? WinnerName { get; set; }
+		public DateTime? CompletedAt { get; set; }
+	}
+
+	public class StartElectionRequest {
+		public double? NominationDurationHours { get; set; }
+		public double? VotingDurationHours { get; set; }
+	}
+
+	public class CastElectionVoteRequest {
+		public required string CandidatePlayerId { get; set; }
+	}
+
 	public class InvitePlayerRequest {
 		public required string TargetPlayerId { get; set; }
 	}

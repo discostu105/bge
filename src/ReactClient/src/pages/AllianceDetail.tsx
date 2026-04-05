@@ -16,6 +16,7 @@ import type {
 	MyAllianceStatusViewModel,
 	AllianceChatPostViewModel,
 	AllianceWarViewModel,
+	AllianceElectionViewModel,
 	AllianceViewModel,
 	PublicPlayerViewModel,
 	PlayerProfileViewModel,
@@ -81,6 +82,13 @@ export function AllianceDetail() {
 		refetchInterval: 10_000,
 	})
 
+	const { data: election } = useQuery<AllianceElectionViewModel>({
+		queryKey: ['alliance-election', allianceId],
+		queryFn: () => apiClient.get(`/api/alliances/${allianceId}/election`).then((r) => r.data),
+		refetchInterval: 10_000,
+		retry: false,
+	})
+
 	const { data: allAlliances } = useQuery<AllianceViewModel[]>({
 		queryKey: ['alliances-for-war'],
 		queryFn: () => apiClient.get('/api/alliances').then((r) => r.data),
@@ -108,6 +116,7 @@ export function AllianceDetail() {
 		void queryClient.invalidateQueries({ queryKey: ['alliance-detail', allianceId] })
 		void queryClient.invalidateQueries({ queryKey: ['alliance-chat', allianceId] })
 		void queryClient.invalidateQueries({ queryKey: ['alliance-wars', allianceId] })
+		void queryClient.invalidateQueries({ queryKey: ['alliance-election', allianceId] })
 		void queryClient.invalidateQueries({ queryKey: ['alliance-status-detail'] })
 	}
 
@@ -185,6 +194,41 @@ export function AllianceDetail() {
 		mutationFn: (warId: string) =>
 			apiClient.post(`/api/alliances/wars/${warId}/peace`, { warId }),
 		onSuccess: () => { setSuccess('Peace action sent.'); invalidateAll() },
+		onError: handleError,
+	})
+
+	const startElectionMut = useMutation({
+		mutationFn: () =>
+			apiClient.post(`/api/alliances/${allianceId}/elections`, {}),
+		onSuccess: () => { setSuccess('Election started!'); invalidateAll() },
+		onError: handleError,
+	})
+
+	const nominateMut = useMutation({
+		mutationFn: (electionId: string) =>
+			apiClient.post(`/api/alliances/${allianceId}/elections/${electionId}/nominate`),
+		onSuccess: () => { setSuccess('Nominated!'); invalidateAll() },
+		onError: handleError,
+	})
+
+	const withdrawNominationMut = useMutation({
+		mutationFn: (electionId: string) =>
+			apiClient.delete(`/api/alliances/${allianceId}/elections/${electionId}/nominate`),
+		onSuccess: () => { setSuccess('Nomination withdrawn.'); invalidateAll() },
+		onError: handleError,
+	})
+
+	const castElectionVoteMut = useMutation({
+		mutationFn: ({ electionId, candidatePlayerId }: { electionId: string; candidatePlayerId: string }) =>
+			apiClient.post(`/api/alliances/${allianceId}/elections/${electionId}/vote`, { candidatePlayerId }),
+		onSuccess: () => { setSuccess('Vote cast!'); invalidateAll() },
+		onError: handleError,
+	})
+
+	const cancelElectionMut = useMutation({
+		mutationFn: (electionId: string) =>
+			apiClient.delete(`/api/alliances/${allianceId}/elections/${electionId}`),
+		onSuccess: () => { setSuccess('Election cancelled.'); invalidateAll() },
 		onError: handleError,
 	})
 
@@ -362,6 +406,119 @@ export function AllianceDetail() {
 							</div>
 						))}
 					</div>
+				</div>
+			)}
+
+			{/* Election Panel (members only) */}
+			{isMember && (
+				<div className="rounded-lg border bg-card">
+					<div className="border-b px-4 py-3 flex items-center justify-between">
+						<strong className="text-sm flex items-center gap-1.5">
+							<VoteIcon className="h-4 w-4 text-primary" />
+							Leader Election
+						</strong>
+						{!election && (
+							<button
+								onClick={() => { setError(null); setSuccess(null); startElectionMut.mutate() }}
+								disabled={startElectionMut.isPending}
+								className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
+							>
+								{startElectionMut.isPending ? 'Starting…' : 'Start Election'}
+							</button>
+						)}
+						{election && isLeader && (
+							<button
+								onClick={() => { setError(null); setSuccess(null); cancelElectionMut.mutate(election.electionId) }}
+								disabled={cancelElectionMut.isPending}
+								className="rounded border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50"
+							>
+								Cancel Election
+							</button>
+						)}
+					</div>
+
+					{!election ? (
+						<div className="p-4 text-sm text-muted-foreground">
+							No active election. Any member can start one.
+						</div>
+					) : election.status === 'Nominating' ? (
+						<div className="p-4 space-y-3">
+							<div className="flex items-center justify-between">
+								<span className="text-sm font-medium">Nomination Phase</span>
+								<span className="text-xs text-muted-foreground">
+									Ends {relativeTime(election.nominationEndsAt)}
+								</span>
+							</div>
+							<div className="space-y-1">
+								{election.candidates.map((c) => (
+									<div key={c.playerId} className="flex items-center justify-between rounded border px-3 py-2">
+										<span className="text-sm font-medium">{c.playerName}</span>
+										{c.playerId === myPlayerId && (
+											<button
+												onClick={() => { setError(null); withdrawNominationMut.mutate(election.electionId) }}
+												disabled={withdrawNominationMut.isPending}
+												className="text-xs text-destructive hover:underline"
+											>
+												Withdraw
+											</button>
+										)}
+									</div>
+								))}
+							</div>
+							{myPlayerId && !election.candidates.some((c) => c.playerId === myPlayerId) && (
+								<button
+									onClick={() => { setError(null); nominateMut.mutate(election.electionId) }}
+									disabled={nominateMut.isPending}
+									className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
+								>
+									{nominateMut.isPending ? 'Nominating…' : 'Nominate Yourself'}
+								</button>
+							)}
+						</div>
+					) : election.status === 'Voting' ? (
+						<div className="p-4 space-y-3">
+							<div className="flex items-center justify-between">
+								<span className="text-sm font-medium">Voting Phase</span>
+								<span className="text-xs text-muted-foreground">
+									Ends {relativeTime(election.votingEndsAt)}
+								</span>
+							</div>
+							<div className="space-y-1">
+								{election.candidates.map((c) => {
+									const isMyVote = election.myVote === c.playerId
+									return (
+										<div key={c.playerId} className="flex items-center justify-between rounded border px-3 py-2">
+											<div>
+												<span className="text-sm font-medium">{c.playerName}</span>
+												<span className="ml-2 text-xs text-muted-foreground">
+													{c.voteCount} vote{c.voteCount !== 1 ? 's' : ''}
+												</span>
+											</div>
+											<button
+												onClick={() => { setError(null); castElectionVoteMut.mutate({ electionId: election.electionId, candidatePlayerId: c.playerId }) }}
+												disabled={castElectionVoteMut.isPending || isMyVote}
+												className={cn(
+													'rounded px-2 py-0.5 text-xs disabled:opacity-50',
+													isMyVote
+														? 'bg-primary text-primary-foreground'
+														: 'border border-primary text-primary hover:bg-primary/10'
+												)}
+											>
+												{isMyVote ? 'Voted' : 'Vote'}
+											</button>
+										</div>
+									)
+								})}
+							</div>
+						</div>
+					) : (
+						<div className="p-4 text-sm text-muted-foreground">
+							Election {election.status.toLowerCase()}.
+							{election.winnerName && (
+								<span className="font-medium text-foreground"> Winner: {election.winnerName}</span>
+							)}
+						</div>
+					)}
 				</div>
 			)}
 
