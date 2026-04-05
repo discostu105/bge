@@ -1,3 +1,4 @@
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
@@ -100,6 +101,16 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
 			Assert.Equal(GameStatus.Active, gameRecord.Status);
 			Assert.Empty(game.GlobalState.GetAchievements());
+		}
+
+		[Fact]
+		public void CalculateTick_WhenEndTimeReached_SetsVictoryConditionTypeToTimeExpired() {
+			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1));
+
+			module.CalculateTick(game.Player1);
+
+			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
+			Assert.Equal(VictoryConditionTypes.TimeExpired, gameRecord.VictoryConditionType);
 		}
 
 		[Fact]
