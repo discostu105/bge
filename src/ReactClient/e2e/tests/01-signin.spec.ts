@@ -12,10 +12,10 @@ test.describe('Sign-in page', () => {
 	test.use({ storageState: { cookies: [], origins: [] } }) // run unauthenticated
 
 	test('sign-in page renders with GitHub login button', async ({ page }) => {
+		// GET /signin is handled server-side and renders the Razor Signin.cshtml view.
 		await page.goto('/signin')
-		await expect(page.getByRole('heading', { name: 'Age of Agents' })).toBeVisible()
-		await expect(page.getByText('Sign in to continue')).toBeVisible()
-		await expect(page.getByRole('button', { name: /sign in with github/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Browser Game Engine' })).toBeVisible()
+		await expect(page.getByRole('button', { name: /continue with github/i })).toBeVisible()
 	})
 
 	test('unauthenticated access to protected route redirects to sign-in', async ({ page }) => {

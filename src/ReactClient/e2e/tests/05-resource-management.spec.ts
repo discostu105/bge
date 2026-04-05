@@ -44,7 +44,8 @@ test.describe('Resource management — worker assignment', () => {
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 		await expect(page.getByText('Total')).toBeVisible()
 		await expect(page.getByText(/Mining/)).toBeVisible()
-		await expect(page.getByText(/Gas/)).toBeVisible()
+		// Use a label-specific locator to avoid matching unrelated 'Gas' occurrences on the page
+		await expect(page.getByText('⚗️ Gas Workers')).toBeVisible()
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 
