@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,13 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 		private WorldState world => worldStateAccessor.WorldState;
 		private System.Threading.Lock ChatMessagesLock => world.ChatMessagesLock;
 		private readonly TimeProvider timeProvider;
+		private readonly IGameEventPublisher eventPublisher;
 		private const int MaxMessages = 200;
 
-		public ChatRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider) {
+		public ChatRepositoryWrite(IWorldStateAccessor worldStateAccessor, TimeProvider timeProvider, IGameEventPublisher eventPublisher) {
 			this.worldStateAccessor = worldStateAccessor;
 			this.timeProvider = timeProvider;
+			this.eventPublisher = eventPublisher;
 		}
 
 		public IList<ChatMessageImmutable> GetMessages(int count = 50) {
@@ -73,6 +76,14 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories.Chat {
 					world.ChatMessages.RemoveAt(0);
 				}
 			}
+			var authorName = world.GetPlayer(command.AuthorPlayerId).Name;
+			eventPublisher.PublishToGame(GameEventTypes.ReceiveChatMessage, new {
+				messageId = messageId.Id,
+				authorPlayerId = command.AuthorPlayerId.Id,
+				authorName,
+				body = command.Body,
+				createdAt = timeProvider.GetUtcNow().UtcDateTime
+			});
 			return messageId;
 		}
 	}

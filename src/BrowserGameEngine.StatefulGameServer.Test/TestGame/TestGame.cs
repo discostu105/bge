@@ -5,6 +5,7 @@ using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -96,7 +97,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
 			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger(), TechRepository));
 			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
-			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), Accessor, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System);
+			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), Accessor, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System, NullGameEventPublisher.Instance);
 		}
 	}
 }

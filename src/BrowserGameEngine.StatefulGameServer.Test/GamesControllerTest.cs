@@ -5,6 +5,7 @@ using BrowserGameEngine.Persistence;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -62,7 +63,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				persistenceService,
 				globalPersistenceService,
 				new NullGameNotificationService(),
-				new InMemoryPlayerNotificationService(),
+				new InMemoryPlayerNotificationService(NullGameEventPublisher.Instance),
 				userRepositoryWrite,
 				TimeProvider.System,
 				NullLogger<GameRegistry.GameLifecycleEngine>.Instance

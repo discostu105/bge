@@ -5,6 +5,7 @@ using System;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				game.AllianceRepository,
 				game.AllianceRepositoryWrite,
 				new AllianceChatRepository(game.Accessor),
-				new AllianceChatRepositoryWrite(game.Accessor, TimeProvider.System),
+				new AllianceChatRepositoryWrite(game.Accessor, TimeProvider.System, NullGameEventPublisher.Instance),
 				game.PlayerRepository,
 				NullNotificationService.Instance,
 				game.AllianceInviteRepository,

@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using System;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void Notify_AddsNotificationToPlayer() {
 			var game = new TestGame(playerCount: 2);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
 			service.Notify(Player1, GameNotificationType.AttackReceived, "Attack!", "You were attacked.");
 
@@ -30,7 +31,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void MarkRead_SetsReadAt() {
 			var game = new TestGame(playerCount: 1);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
 			service.Notify(Player1, GameNotificationType.MessageReceived, "Hello");
 			var notifications = service.GetNotifications(Player1);
@@ -45,7 +46,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void MarkAllRead_MarksAllNotificationsRead() {
 			var game = new TestGame(playerCount: 1);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
 			service.Notify(Player1, GameNotificationType.AttackReceived, "Attack 1");
 			service.Notify(Player1, GameNotificationType.MessageReceived, "Msg 1");
@@ -61,7 +62,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetNotifications_UnreadOnly_ReturnsOnlyUnread() {
 			var game = new TestGame(playerCount: 1);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
 			service.Notify(Player1, GameNotificationType.AttackReceived, "Attack 1");
 			service.Notify(Player1, GameNotificationType.MessageReceived, "Msg 1");
@@ -78,7 +79,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetNotifications_OrderedByCreatedAtDescending() {
 			var game = new TestGame(playerCount: 1);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
 			service.Notify(Player1, GameNotificationType.AttackReceived, "First");
 			service.Notify(Player1, GameNotificationType.MessageReceived, "Second");
@@ -94,7 +95,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void Notify_NonExistentPlayer_DoesNotThrow() {
 			var game = new TestGame(playerCount: 1);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 			var fakePlayerId = PlayerIdFactory.Create("nonexistent");
 
 			// Should silently do nothing
@@ -106,7 +107,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void Notifications_PersistedInPlayerStateImmutable() {
 			// Verify notifications are stored in player state (would survive serialization)
 			var game = new TestGame(playerCount: 1);
-			var service = new NotificationService(game.Accessor);
+			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
 			service.Notify(Player1, GameNotificationType.SpyAttempted, "Spy detected!");
 
@@ -121,7 +122,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void SendMessage_CreatesMessageReceivedNotification() {
 			var game = new TestGame(playerCount: 2);
 			// Use a real NotificationService (not the NullNotificationService from TestGame)
-			var notificationService = new NotificationService(game.Accessor);
+			var notificationService = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 			var messageRepositoryWrite = new MessageRepositoryWrite(game.Accessor, TimeProvider.System, notificationService);
 
 			messageRepositoryWrite.Send(new SendMessageCommand(Player1, Player2, "Hello", "World message body"));

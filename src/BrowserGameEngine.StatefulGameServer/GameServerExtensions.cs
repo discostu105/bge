@@ -5,6 +5,7 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(defaultInstance.WorldState);
 			services.AddSingleton(defaultInstance.GameDef);
 			services.AddSingleton(TimeProvider.System);
+			services.AddSingleton<IGameEventPublisher, NullGameEventPublisher>();
 			services.AddSingleton<GameRepository>();
 
 			services.AddSingleton<UserRepository>();

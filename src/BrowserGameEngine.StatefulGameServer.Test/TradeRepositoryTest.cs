@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using System;
@@ -15,7 +16,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void CreateOffer_ReturnsValidOfferId() {
 			var game = new TestGame(playerCount: 2);
 			var tradeRepo = new TradeRepository(game.Accessor);
-			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
+			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, NullGameEventPublisher.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
 
 			var offerId = tradeWriteRepo.CreateOffer(new CreateTradeOfferCommand(
 				FromPlayerId: Player1,
@@ -39,7 +40,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void Accept_TransfersResourcesBetweenPlayers() {
 			var game = new TestGame(playerCount: 2);
 			var tradeRepo = new TradeRepository(game.Accessor);
-			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
+			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, NullGameEventPublisher.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
 
 			var p1Res1Before = game.ResourceRepository.GetAmount(Player1, Id.ResDef("res1"));
 			var p1Res2Before = game.ResourceRepository.GetAmount(Player1, Id.ResDef("res2"));
@@ -78,7 +79,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void Accept_FailsIfAcceptorHasInsufficientResources() {
 			var game = new TestGame(playerCount: 2);
 			var tradeRepo = new TradeRepository(game.Accessor);
-			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
+			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, NullGameEventPublisher.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
 
 			var offerId = tradeWriteRepo.CreateOffer(new CreateTradeOfferCommand(
 				FromPlayerId: Player1,
@@ -104,7 +105,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void Decline_SetsStatusToDeclined() {
 			var game = new TestGame(playerCount: 2);
 			var tradeRepo = new TradeRepository(game.Accessor);
-			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
+			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, NullGameEventPublisher.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
 
 			var offerId = tradeWriteRepo.CreateOffer(new CreateTradeOfferCommand(
 				FromPlayerId: Player1,
@@ -130,7 +131,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void Cancel_ByOfferor_SetsStatusToCancelled() {
 			var game = new TestGame(playerCount: 2);
 			var tradeRepo = new TradeRepository(game.Accessor);
-			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
+			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, NullGameEventPublisher.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
 
 			var offerId = tradeWriteRepo.CreateOffer(new CreateTradeOfferCommand(
 				FromPlayerId: Player1,
@@ -155,7 +156,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void TradeOffers_RoundTripThroughImmutable() {
 			var game = new TestGame(playerCount: 2);
-			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
+			var tradeWriteRepo = new TradeRepositoryWrite(game.Accessor, TimeProvider.System, NullNotificationService.Instance, NullGameEventPublisher.Instance, game.ResourceRepository, game.ResourceRepositoryWrite);
 
 			tradeWriteRepo.CreateOffer(new CreateTradeOfferCommand(
 				FromPlayerId: Player1,
