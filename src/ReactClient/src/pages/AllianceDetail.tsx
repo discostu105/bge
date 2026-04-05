@@ -44,12 +44,11 @@ export function AllianceDetail() {
 	// Vote state
 	const [votePlayerId, setVotePlayerId] = useState('')
 
-	if (!allianceId) return null
-
 	const { data: detail, isLoading } = useQuery<AllianceDetailViewModel>({
 		queryKey: ['alliance-detail', allianceId],
 		queryFn: () => apiClient.get(`/api/alliances/${allianceId}`).then((r) => r.data),
 		refetchInterval: 10_000,
+		enabled: !!allianceId,
 	})
 
 	const { data: myStatus } = useQuery<MyAllianceStatusViewModel>({
@@ -65,13 +64,14 @@ export function AllianceDetail() {
 		queryKey: ['alliance-chat', allianceId],
 		queryFn: () => apiClient.get(`/api/alliances/${allianceId}/posts`).then((r) => r.data),
 		refetchInterval: 5_000,
-		enabled: !!isMember,
+		enabled: !!allianceId && !!isMember,
 	})
 
 	const { data: wars } = useQuery<AllianceWarViewModel[]>({
 		queryKey: ['alliance-wars', allianceId],
 		queryFn: () => apiClient.get(`/api/alliances/${allianceId}/wars`).then((r) => r.data),
 		refetchInterval: 10_000,
+		enabled: !!allianceId,
 	})
 
 	const { data: allAlliances } = useQuery<AllianceViewModel[]>({
@@ -91,9 +91,10 @@ export function AllianceDetail() {
 		chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 	}, [posts])
 
-	// Sync message text when detail loads
+	// Sync message text when detail loads (intentionally exclude editMessage to run only on detail change)
 	useEffect(() => {
 		if (detail?.message && !editMessage) setMessageText(detail.message)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [detail?.message])
 
 	function invalidateAll() {
@@ -182,6 +183,8 @@ export function AllianceDetail() {
 		},
 		onError: handleError,
 	})
+
+	if (!allianceId) return null
 
 	if (isLoading) {
 		return <div className="text-muted-foreground text-sm p-4">Loading alliance…</div>
@@ -408,7 +411,7 @@ export function AllianceDetail() {
 									{allPlayers
 										.filter((p) => !detail.members.some((m) => m.playerId === p.playerId))
 										.map((p) => (
-											<option key={p.playerId} value={p.playerId}>{p.playerName}</option>
+											<option key={p.playerId ?? ''} value={p.playerId ?? ''}>{p.playerName}</option>
 										))}
 								</select>
 							) : (
