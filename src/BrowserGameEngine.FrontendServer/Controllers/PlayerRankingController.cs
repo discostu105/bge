@@ -52,7 +52,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return playerRepository.GetAll().Select(p => {
 				bool isOwnPlayer = currentUserContext.PlayerId != null && p.PlayerId == currentUserContext.PlayerId;
 				SpyResult? intel = isOwnPlayer ? null : fogOfWarRepository.GetValidIntel(currentUserContext.PlayerId!, p.PlayerId);
-				return p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, intel, isOwnPlayer);
+				var vm = p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, intel, isOwnPlayer);
+				return vm with { IsCurrentPlayer = isOwnPlayer };
 			});
 		}
 
