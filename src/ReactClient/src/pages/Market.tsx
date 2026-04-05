@@ -37,7 +37,7 @@ export function Market({ gameId }: MarketProps) {
         wantedResourceId: wantResourceId,
         wantedAmount: wantAmount,
       }
-      return apiClient.post('/api/market', request)
+      return apiClient.post('/api/market/post', request)
     },
     onSuccess: () => {
       setPostError(null)

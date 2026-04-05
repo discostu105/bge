@@ -49,7 +49,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return viewModel;
 		}
 
-		[HttpPost]
+		[HttpPost("post")]
 		public ActionResult Post([FromBody] CreateMarketOrderRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
@@ -74,7 +74,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
-		[HttpPost]
+		[HttpPost("accept")]
 		public ActionResult Accept([FromQuery] Guid orderId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
@@ -91,7 +91,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
-		[HttpDelete]
+		[HttpDelete("cancel")]
 		public ActionResult Cancel([FromQuery] Guid orderId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
