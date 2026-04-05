@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using System;
@@ -72,7 +73,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			var updatedRecord = gameRecord with {
 				Status = GameStatus.Finished,
 				WinnerId = winnerId,
-				ActualEndTime = finishedAt
+				ActualEndTime = finishedAt,
+				VictoryConditionType = VictoryConditionTypes.TimeExpired
 			};
 			globalState.UpdateGame(gameRecord, updatedRecord);
 			gameRegistry.Remove(gameId);

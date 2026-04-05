@@ -100,7 +100,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				PlayerCount: playerCount,
 				WinnerId: record.WinnerId?.Id,
 				ActualEndTime: record.ActualEndTime,
-				DiscordWebhookUrl: record.DiscordWebhookUrl
+				DiscordWebhookUrl: record.DiscordWebhookUrl,
+				VictoryConditionType: record.VictoryConditionType,
+				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
 			));
 		}
 
@@ -207,7 +209,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				PlayerCount: GetPlayerCount(updated),
 				WinnerId: updated.WinnerId?.Id,
 				ActualEndTime: updated.ActualEndTime,
-				DiscordWebhookUrl: updated.DiscordWebhookUrl
+				DiscordWebhookUrl: updated.DiscordWebhookUrl,
+				VictoryConditionType: updated.VictoryConditionType,
+				VictoryConditionLabel: GetVictoryConditionLabel(updated.VictoryConditionType)
 			));
 		}
 
@@ -263,7 +267,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (record.Status != GameStatus.Active)
 				return BadRequest($"Game is not active (current status: {record.Status}).");
 
-			await gameLifecycleEngine.FinalizeGameEarlyAsync(record, timeProvider.GetUtcNow().UtcDateTime);
+			await gameLifecycleEngine.FinalizeGameEarlyAsync(record, timeProvider.GetUtcNow().UtcDateTime, BrowserGameEngine.GameDefinition.VictoryConditionTypes.AdminFinalized);
 			logger.LogInformation("Game {GameId} manually finalized by {UserId}", gameId, currentUserContext.UserId);
 			return Ok();
 		}
@@ -308,7 +312,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				ActualEndTime: record.ActualEndTime,
 				EndTime: record.EndTime,
 				Standings: standings,
-				CurrentPlayerId: currentPlayerId
+				CurrentPlayerId: currentPlayerId,
+				VictoryConditionType: record.VictoryConditionType,
+				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
 			));
 		}
 
@@ -337,7 +343,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
 				DiscordWebhookUrl: record.DiscordWebhookUrl,
-				IsPlayerEnrolled: isPlayerEnrolled
+				IsPlayerEnrolled: isPlayerEnrolled,
+				VictoryConditionType: record.VictoryConditionType
 			);
 		}
 
@@ -345,5 +352,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			return instance?.PlayerCount ?? 0;
 		}
+
+		private static string? GetVictoryConditionLabel(string? victoryConditionType) => victoryConditionType switch {
+			BrowserGameEngine.GameDefinition.VictoryConditionTypes.EconomicThreshold => "Economic victory — score threshold reached",
+			BrowserGameEngine.GameDefinition.VictoryConditionTypes.TimeExpired => "Time expired",
+			BrowserGameEngine.GameDefinition.VictoryConditionTypes.AdminFinalized => "Admin finalized",
+			_ => null
+		};
 	}
 }

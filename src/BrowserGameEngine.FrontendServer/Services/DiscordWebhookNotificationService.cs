@@ -24,12 +24,13 @@ namespace BrowserGameEngine.FrontendServer.Services {
 				color: 0x57F287);
 		}
 
-		public async Task NotifyGameFinishedAsync(GameRecordImmutable record, PlayerId? winnerId, string? winnerName, int playerCount) {
+		public async Task NotifyGameFinishedAsync(GameRecordImmutable record, PlayerId? winnerId, string? winnerName, int playerCount, string? victoryConditionLabel = null) {
 			if (string.IsNullOrEmpty(record.DiscordWebhookUrl)) return;
 			var winner = winnerName != null ? $"Winner: **{winnerName}**" : "No winner";
+			var conditionLine = victoryConditionLabel != null ? $"\nVictory: {victoryConditionLabel}" : string.Empty;
 			await PostEmbedAsync(record.DiscordWebhookUrl,
 				title: $"Game Over: {record.Name}",
-				description: $"{winner}\n\nhttps://ageofagents.net/games/{record.GameId.Id}/results",
+				description: $"{winner}{conditionLine}\n\nhttps://ageofagents.net/games/{record.GameId.Id}/results",
 				color: 0xED4245);
 		}
 
