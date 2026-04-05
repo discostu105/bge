@@ -1,10 +1,8 @@
 ﻿using BrowserGameEngine.StatefulGameServer.GameRegistry;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,7 +31,17 @@ namespace BrowserGameEngine.FrontendServer {
 				var count = Interlocked.Increment(ref executionCount);
 				logger.LogInformation("GameTickTimer #{Count}", count);
 				foreach (var instance in gameRegistry.GetAllInstances()) {
-					instance.TickEngine?.CheckAllTicks();
+					var sw = Stopwatch.StartNew();
+					try {
+						instance.TickEngine?.CheckAllTicks();
+					} catch (Exception ex) {
+						logger.LogError(ex, "GameTickFailure GameId={GameId}", instance.Record.GameId.Id);
+					} finally {
+						sw.Stop();
+						logger.LogInformation(
+							"GameTickCompleted GameId={GameId} TickDurationMs={TickDurationMs} PlayerCount={PlayerCount}",
+							instance.Record.GameId.Id, sw.ElapsedMilliseconds, instance.PlayerCount);
+					}
 				}
 			} finally {
 				Interlocked.Exchange(ref isactive, 0);
