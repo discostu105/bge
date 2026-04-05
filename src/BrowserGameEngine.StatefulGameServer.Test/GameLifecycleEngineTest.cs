@@ -96,6 +96,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new GameRegistryNs.NullGameNotificationService(),
 				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance),
 				userRepositoryWrite,
+				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
@@ -235,6 +236,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new GameRegistryNs.NullGameNotificationService(),
 				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance),
 				userRepoWrite,
+				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);

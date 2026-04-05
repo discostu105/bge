@@ -7,6 +7,14 @@ import { cn } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
+const VICTORY_THRESHOLD = 500_000
+
+function progressBarColor(percent: number): string {
+  if (percent >= 90) return 'bg-red-500'
+  if (percent >= 75) return 'bg-orange-500'
+  return 'bg-yellow-500'
+}
+
 interface PlayerRankingProps {
   gameId: string
 }
@@ -69,6 +77,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                 <th scope="col" className="px-4 py-2 text-left w-10">#</th>
                 <th scope="col" className="px-4 py-2 text-left">Player</th>
                 <th scope="col" className="px-4 py-2 text-right">Score</th>
+                <th scope="col" className="px-4 py-2 text-left hidden sm:table-cell w-32">Victory</th>
                 <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
                 <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
                 <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Units</th>
@@ -101,6 +110,22 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                     )}
                   </td>
                   <td className="px-4 py-2 text-right font-mono">{Math.floor(p.score).toLocaleString()}</td>
+                  <td className="px-4 py-2 hidden sm:table-cell">
+                    {(() => {
+                      const pct = Math.min(100, Math.round((p.score / VICTORY_THRESHOLD) * 100))
+                      return (
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+                            <div
+                              className={cn('h-full rounded-full transition-all', progressBarColor(pct))}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono w-7 text-right">{pct}%</span>
+                        </div>
+                      )
+                    })()}
+                  </td>
                   <td className="px-4 py-2 text-right font-mono hidden sm:table-cell">
                     {p.approxMinerals != null ? Math.floor(p.approxMinerals).toLocaleString() : <span className="text-muted-foreground italic">?</span>}
                   </td>

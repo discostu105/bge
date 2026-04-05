@@ -78,6 +78,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, TechResearchTimerModule>();
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
 			services.AddSingleton<IGameTickModule, SpyMissionModule>();
+			services.AddSingleton<IGameTickModule, VictoryProgressNotificationModule>();
 			services.AddSingleton<IGameTickModule, VictoryConditionModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this

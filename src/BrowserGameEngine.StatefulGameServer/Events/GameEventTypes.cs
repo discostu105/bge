@@ -9,4 +9,5 @@ public static class GameEventTypes
 	public const string ReceiveAllianceChatMessage = "ReceiveAllianceChatMessage";
 	public const string GameTickCompleted = "GameTickCompleted";
 	public const string MarketOrderFilled = "MarketOrderFilled";
+	public const string GameFinalized = "GameFinalized";
 }
