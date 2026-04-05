@@ -12,7 +12,9 @@ namespace BrowserGameEngine.Shared {
 		int PlayerCount,
 		string? WinnerId,
 		DateTime? ActualEndTime,
-		string? DiscordWebhookUrl = null
+		string? DiscordWebhookUrl = null,
+		string? VictoryConditionType = null,
+		string? VictoryConditionLabel = null
 	);
 
 	public record CreateGameRequest(
@@ -45,7 +47,9 @@ namespace BrowserGameEngine.Shared {
 		DateTime? ActualEndTime,
 		DateTime EndTime,
 		List<GameResultEntryViewModel> Standings,
-		string? CurrentPlayerId = null
+		string? CurrentPlayerId = null,
+		string? VictoryConditionType = null,
+		string? VictoryConditionLabel = null
 	);
 
 	/// <summary>A game the current user is actively playing in, with their player info.</summary>

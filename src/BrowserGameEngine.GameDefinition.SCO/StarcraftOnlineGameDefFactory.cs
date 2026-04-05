@@ -41,7 +41,17 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					new GameTickModuleDef("techresearch:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("spymission:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
+					new GameTickModuleDef("victorycondition:1", new Dictionary<string, string> {
+						{ "type", "EconomicThreshold" },
+						{ "threshold", "500000" }
+					}.ToFrozenDictionary()),
 					new GameTickModuleDef("gamefinalization:1", new Dictionary<string, string> { }.ToFrozenDictionary())
+				},
+
+				VictoryConditions = new List<VictoryConditionDef> {
+					new VictoryConditionDef(VictoryConditionTypes.EconomicThreshold, new Dictionary<string, string> {
+						{ "threshold", "500000" }
+					})
 				},
 
 				Assets = new List<AssetDef> {
