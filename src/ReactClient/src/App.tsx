@@ -3,6 +3,11 @@ import { Base } from '@/pages/Base'
 import { Units } from '@/pages/Units'
 import { Research } from '@/pages/Research'
 import { Market } from '@/pages/Market'
+import { Spies } from '@/pages/Spies'
+import { SpyReports } from '@/pages/SpyReports'
+import { Diplomacy } from '@/pages/Diplomacy'
+import { EnemyBase } from '@/pages/EnemyBase'
+import { SelectEnemy } from '@/pages/SelectEnemy'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -49,6 +54,36 @@ function MarketPage() {
   return <Market gameId={gameId} />
 }
 
+function SpiesPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Spies gameId={gameId} />
+}
+
+function SpyReportsPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <SpyReports gameId={gameId} />
+}
+
+function DiplomacyPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Diplomacy gameId={gameId} />
+}
+
+function EnemyBasePage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <EnemyBase gameId={gameId} />
+}
+
+function SelectEnemyPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <SelectEnemy gameId={gameId} />
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -72,13 +107,13 @@ const router = createBrowserRouter([
       { path: 'ranking', element: <TodoPage name="Player Ranking" /> },
       { path: 'alliances', element: <TodoPage name="Alliances" /> },
       { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
-      { path: 'diplomacy', element: <TodoPage name="Diplomacy" /> },
-      { path: 'spies', element: <TodoPage name="Spies" /> },
-      { path: 'spy', element: <TodoPage name="Spy Reports" /> },
-      { path: 'selectenemy/:unitId', element: <TodoPage name="Select Enemy" /> },
+      { path: 'diplomacy', element: <DiplomacyPage /> },
+      { path: 'spies', element: <SpiesPage /> },
+      { path: 'spy', element: <SpyReportsPage /> },
+      { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
       { path: 'unitdefinitions', element: <TodoPage name="Unit Definitions" /> },
       { path: 'player/:playerId', element: <TodoPage name="Player Profile" /> },
-      { path: 'enemybase/:enemyPlayerId', element: <TodoPage name="Enemy Base" /> },
+      { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
       { path: 'join', element: <TodoPage name="Join Game" /> },
       { path: 'summary', element: <TodoPage name="Game Summary" /> },
       { path: 'results', element: <TodoPage name="Game Results" /> },
