@@ -1,5 +1,3 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM node:22-alpine AS react-build
 WORKDIR /app
 COPY ReactClient/package.json ReactClient/package-lock.json* ./
@@ -13,6 +11,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
+# Restore dependencies in a separate layer so they are cached across source-only changes
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["BrowserGameEngine.FrontendServer/BrowserGameEngine.FrontendServer.csproj", "BrowserGameEngine.FrontendServer/"]
@@ -27,13 +26,11 @@ RUN dotnet restore "BrowserGameEngine.FrontendServer/BrowserGameEngine.FrontendS
 COPY . .
 COPY --from=react-build /app/dist BrowserGameEngine.FrontendServer/wwwroot/
 WORKDIR "/src/BrowserGameEngine.FrontendServer"
-RUN dotnet build "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/build
-
-FROM build AS publish
+# Publish directly; dotnet publish implies build, so a separate build step is redundant
 ARG COMMIT_SHA=dev
-RUN dotnet publish "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/publish /p:InformationalVersion=$COMMIT_SHA
+RUN dotnet publish "BrowserGameEngine.FrontendServer.csproj" -c Release --no-restore -o /app/publish /p:InformationalVersion=$COMMIT_SHA
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "BrowserGameEngine.FrontendServer.dll"]
