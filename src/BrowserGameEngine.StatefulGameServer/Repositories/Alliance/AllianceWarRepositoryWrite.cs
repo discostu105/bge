@@ -24,6 +24,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 				if (!world.Alliances.ContainsKey(command.TargetAllianceId)) throw new AllianceNotFoundException(command.TargetAllianceId);
 
+				if (command.TargetAllianceId == player.AllianceId) throw new AlreadyAtWarException();
+
 				var alreadyAtWar = world.Wars.Values.Any(w =>
 					w.Status != AllianceWarStatus.Ended &&
 					((w.AttackerAllianceId == player.AllianceId && w.DefenderAllianceId == command.TargetAllianceId) ||

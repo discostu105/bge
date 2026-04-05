@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System.Linq;
 using Xunit;
 
@@ -156,6 +157,42 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var missions = game.SpyMissionRepository.GetMissions(Player1);
 			Assert.Equal(2, missions.Count);
+		}
+
+		[Fact]
+		public void SendMission_AgainstProtectedPlayer_ThrowsPlayerNotAttackable() {
+			var game = new TestGame(playerCount: 2);
+
+			// Give Player2 active new-player protection
+			var snapshot = game.World.ToImmutable();
+			var player2State = snapshot.Players![Player2].State;
+			var protectedState = player2State with { ProtectionTicksRemaining = 10 };
+			var updatedPlayer2 = snapshot.Players[Player2] with { State = protectedState };
+			var updatedPlayers = new System.Collections.Generic.Dictionary<PlayerId, PlayerImmutable>(snapshot.Players!) { [Player2] = updatedPlayer2 };
+			game.World.ReplaceFrom(snapshot with { Players = updatedPlayers });
+
+			var ex = Assert.Throws<PlayerNotAttackableException>(() =>
+				game.SpyMissionRepositoryWrite.SendMission(
+					new SpyMissionCommand(Player1, Player2, SpyMissionType.Intelligence)));
+			Assert.Equal(AttackIneligibilityReason.DefenderProtected, ex.Reason);
+		}
+
+		[Fact]
+		public void SendMission_AgainstAllianceMember_ThrowsPlayerNotAttackable() {
+			var game = new TestGame(playerCount: 2);
+
+			// Put both players in the same alliance
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(
+				new Commands.CreateAllianceCommand(Player1, "TestAlliance", "pass"));
+			game.AllianceRepositoryWrite.JoinAlliance(
+				new Commands.JoinAllianceCommand(Player2, allianceId, "pass"));
+			game.AllianceRepositoryWrite.AcceptMember(
+				new Commands.AcceptMemberCommand(Player1, Player2));
+
+			var ex = Assert.Throws<PlayerNotAttackableException>(() =>
+				game.SpyMissionRepositoryWrite.SendMission(
+					new SpyMissionCommand(Player1, Player2, SpyMissionType.Intelligence)));
+			Assert.Equal(AttackIneligibilityReason.SameAlliance, ex.Reason);
 		}
 	}
 }

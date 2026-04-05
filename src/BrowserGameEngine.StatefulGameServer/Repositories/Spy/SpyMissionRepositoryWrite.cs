@@ -15,6 +15,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 		private readonly ResourceRepository resourceRepository;
 		private readonly TechRepository techRepository;
+		private readonly PlayerRepository playerRepository;
 		private readonly INotificationService notificationService;
 		private readonly TimeProvider timeProvider;
 		private readonly GameDef gameDef;
@@ -24,6 +25,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			ResourceRepositoryWrite resourceRepositoryWrite,
 			ResourceRepository resourceRepository,
 			TechRepository techRepository,
+			PlayerRepository playerRepository,
 			INotificationService notificationService,
 			TimeProvider timeProvider,
 			GameDef gameDef
@@ -32,6 +34,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 			this.resourceRepository = resourceRepository;
 			this.techRepository = techRepository;
+			this.playerRepository = playerRepository;
 			this.notificationService = notificationService;
 			this.timeProvider = timeProvider;
 			this.gameDef = gameDef;
@@ -41,6 +44,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				world.ValidatePlayer(command.SpyingPlayerId);
 				world.ValidatePlayer(command.TargetPlayerId);
+
+				var ineligibility = playerRepository.GetIneligibilityReason(command.SpyingPlayerId, command.TargetPlayerId);
+				if (ineligibility is AttackIneligibilityReason.DefenderProtected or
+					AttackIneligibilityReason.AttackerProtected or
+					AttackIneligibilityReason.SameAlliance) {
+					throw new PlayerNotAttackableException(command.TargetPlayerId, ineligibility.Value);
+				}
 
 				var cost = GetMissionCost(command.MissionType);
 				resourceRepositoryWrite.DeductCost(command.SpyingPlayerId, cost);
