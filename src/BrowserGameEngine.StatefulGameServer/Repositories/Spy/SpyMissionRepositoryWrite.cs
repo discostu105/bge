@@ -83,7 +83,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private void ResolveMission(PlayerId spyingPlayerId, SpyMission mission) {
 			var targetState = world.GetPlayer(mission.TargetPlayerId).State;
-			var rng = new Random();
+			var rng = Random.Shared;
 
 			var detectionProbability = techRepository.GetTotalEffectValue(mission.TargetPlayerId, TechEffectType.CounterIntelDetection);
 			var intercepted = detectionProbability > 0 && (decimal)rng.NextDouble() < detectionProbability;

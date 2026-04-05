@@ -66,7 +66,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					attackerName = attacker.UserId != null
 						? userRepository.GetDisplayNameByUserId(attacker.UserId) ?? attacker.Name
 						: attacker.Name;
-				} catch {
+				} catch (Exception ex) {
+					logger.LogWarning(ex, "Could not resolve attacker display name for player {PlayerId}", a.AttackerPlayerId);
 					attackerName = a.AttackerPlayerId.ToString();
 				}
 				return new SpyAttemptViewModel {
@@ -193,7 +194,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					targetName = target.UserId != null
 						? userRepository.GetDisplayNameByUserId(target.UserId) ?? target.Name
 						: target.Name;
-				} catch {
+				} catch (Exception ex) {
+					logger.LogWarning(ex, "Could not resolve target display name for player {PlayerId}", m.TargetPlayerId);
 					targetName = m.TargetPlayerId.ToString();
 				}
 				return new SpyMissionViewModel {
