@@ -25,6 +25,7 @@ const PlayerProfile = lazy(() => import('@/pages/PlayerProfile').then(m => ({ de
 const InGamePlayerProfile = lazy(() => import('@/pages/InGamePlayerProfile').then(m => ({ default: m.InGamePlayerProfile })))
 const Games = lazy(() => import('@/pages/Games').then(m => ({ default: m.Games })))
 const GameLobby = lazy(() => import('@/pages/GameLobby').then(m => ({ default: m.GameLobby })))
+const GameLobbyDetail = lazy(() => import('@/pages/GameLobbyDetail').then(m => ({ default: m.GameLobbyDetail })))
 const JoinGame = lazy(() => import('@/pages/JoinGame').then(m => ({ default: m.JoinGame })))
 const GameSummary = lazy(() => import('@/pages/GameSummary').then(m => ({ default: m.GameSummary })))
 const GameResults = lazy(() => import('@/pages/GameResults').then(m => ({ default: m.GameResults })))
@@ -182,6 +183,7 @@ const router = createBrowserRouter([
 
       { path: '/createplayer', element: <CreatePlayer /> },
       { path: '/lobby', element: <GameLobby /> },
+      { path: '/lobby/:gameId', element: <GameLobbyDetail /> },
       { path: '/profile', element: <PlayerProfile /> },
       { path: '/profile/:userId', element: <PublicProfile /> },
       { path: '/players', element: <PlayersList /> },

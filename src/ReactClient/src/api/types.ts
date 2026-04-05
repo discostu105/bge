@@ -275,6 +275,7 @@ export interface GameSummaryViewModel {
   isPlayerEnrolled: boolean
   victoryConditionType: string | null
   discordWebhookUrl: string | null
+  createdByUserId: string | null
 }
 
 export interface GameListViewModel {
@@ -311,6 +312,7 @@ export interface GameResultsViewModel {
 
 export interface JoinGameRequest {
   playerName: string
+  playerType?: string
 }
 
 export interface JoinGameViewModel {
@@ -324,6 +326,7 @@ export interface CreateGameRequest {
   endTime: string
   tickDuration: string
   discordWebhookUrl: string | null
+  maxPlayers: number
 }
 
 // Players / Profile
@@ -845,16 +848,28 @@ export interface UnitDefinitionsViewModel {
 export interface GameLobbyViewModel {
   gameId: string
   gameName: string
-  players: LobbyPlayerViewModel[]
-  startTime: string | null
   status: string
+  maxPlayers: number
+  startTime: string | null
+  endTime: string | null
+  players: LobbyPlayerViewModel[]
+  canJoin: boolean
 }
 
 export interface LobbyPlayerViewModel {
   playerId: string
   playerName: string
   playerType: string
-  isReady: boolean
+  joined: string
+}
+
+export interface RaceViewModel {
+  id: string
+  name: string
+}
+
+export interface RaceListViewModel {
+  races: RaceViewModel[]
 }
 
 // Tick info

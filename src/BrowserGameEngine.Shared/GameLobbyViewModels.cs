@@ -16,12 +16,35 @@ namespace BrowserGameEngine.Shared {
 		string? WinnerName = null,
 		bool IsPlayerEnrolled = false,
 		string? VictoryConditionType = null,
-		string? DiscordWebhookUrl = null
+		string? DiscordWebhookUrl = null,
+		string? CreatedByUserId = null
 	);
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);
 
-	public record JoinGameRequest(string PlayerName);
+	public record JoinGameRequest(string PlayerName, string? PlayerType = null);
 
 	public record JoinGameViewModel(string PlayerId);
+
+	public record GameLobbyViewModel(
+		string GameId,
+		string GameName,
+		string Status,
+		int MaxPlayers,
+		DateTime? StartTime,
+		DateTime? EndTime,
+		List<LobbyPlayerViewModel> Players,
+		bool CanJoin = false
+	);
+
+	public record LobbyPlayerViewModel(
+		string PlayerId,
+		string PlayerName,
+		string PlayerType,
+		DateTime Joined
+	);
+
+	public record RaceViewModel(string Id, string Name);
+
+	public record RaceListViewModel(List<RaceViewModel> Races);
 }

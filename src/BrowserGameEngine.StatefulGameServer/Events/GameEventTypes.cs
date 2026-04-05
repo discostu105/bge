@@ -10,4 +10,5 @@ public static class GameEventTypes
 	public const string GameTickCompleted = "GameTickCompleted";
 	public const string MarketOrderFilled = "MarketOrderFilled";
 	public const string GameFinalized = "GameFinalized";
+	public const string LobbyUpdated = "LobbyUpdated";
 }
