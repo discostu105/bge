@@ -12,6 +12,11 @@ import { SpyReports } from '@/pages/SpyReports'
 import { Diplomacy } from '@/pages/Diplomacy'
 import { EnemyBase } from '@/pages/EnemyBase'
 import { SelectEnemy } from '@/pages/SelectEnemy'
+import { Chat } from '@/pages/Chat'
+import { Messages } from '@/pages/Messages'
+import { PlayerRanking } from '@/pages/PlayerRanking'
+import { PlayerProfile } from '@/pages/PlayerProfile'
+import { InGamePlayerProfile } from '@/pages/InGamePlayerProfile'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -72,6 +77,26 @@ function SelectEnemyPage() {
   if (!gameId) return null
   return <SelectEnemy gameId={gameId} />
 }
+function ChatPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Chat gameId={gameId} />
+}
+function MessagesPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Messages gameId={gameId} />
+}
+function PlayerRankingPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <PlayerRanking gameId={gameId} />
+}
+function InGamePlayerProfilePage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <InGamePlayerProfile gameId={gameId} />
+}
 
 const router = createBrowserRouter([
   {
@@ -91,9 +116,9 @@ const router = createBrowserRouter([
           { path: 'research', element: <ResearchPage /> },
           { path: 'upgrades', element: <ResearchPage /> },
           { path: 'market', element: <MarketPage /> },
-          { path: 'chat', element: <TodoPage name="Chat" /> },
-          { path: 'messages', element: <TodoPage name="Messages" /> },
-          { path: 'ranking', element: <TodoPage name="Player Ranking" /> },
+          { path: 'chat', element: <ChatPage /> },
+          { path: 'messages', element: <MessagesPage /> },
+          { path: 'ranking', element: <PlayerRankingPage /> },
           { path: 'alliances', element: <TodoPage name="Alliances" /> },
           { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
           { path: 'diplomacy', element: <DiplomacyPage /> },
@@ -101,7 +126,7 @@ const router = createBrowserRouter([
           { path: 'spy', element: <SpyReportsPage /> },
           { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
           { path: 'unitdefinitions', element: <TodoPage name="Unit Definitions" /> },
-          { path: 'player/:playerId', element: <TodoPage name="Player Profile" /> },
+          { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
           { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
           { path: 'join', element: <TodoPage name="Join Game" /> },
           { path: 'summary', element: <TodoPage name="Game Summary" /> },
@@ -119,7 +144,7 @@ const router = createBrowserRouter([
 
       { path: '/createplayer', element: <TodoPage name="Create Player" /> },
       { path: '/lobby', element: <TodoPage name="Game Lobby" /> },
-      { path: '/profile', element: <TodoPage name="Player Profile" /> },
+      { path: '/profile', element: <PlayerProfile /> },
       { path: '/profile/:userId', element: <TodoPage name="Public Profile" /> },
       { path: '/players', element: <TodoPage name="Players" /> },
       { path: '/alliances/:allianceId', element: <TodoPage name="Alliance Detail" /> },
