@@ -14,9 +14,9 @@ namespace BrowserGameEngine.Shared {
 		bool CanJoin,
 		string? WinnerId = null,
 		string? WinnerName = null,
-		string? DiscordWebhookUrl = null,
 		bool IsPlayerEnrolled = false,
-		string? VictoryConditionType = null
+		string? VictoryConditionType = null,
+		string? DiscordWebhookUrl = null
 	);
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);

@@ -125,6 +125,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status409Conflict)]
 		public ActionResult<string> Create([FromBody] CreateAllianceRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (string.IsNullOrWhiteSpace(request.AllianceName)) return BadRequest("Alliance name is required.");
+			if (request.AllianceName.Length > 50) return BadRequest("Alliance name must be 50 characters or fewer.");
 			try {
 				var allianceId = allianceRepositoryWrite.CreateAlliance(
 					new CreateAllianceCommand(currentUserContext.PlayerId!, request.AllianceName, request.Password));
@@ -253,9 +255,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPatch("{id}/message")]
 		public ActionResult SetMessage(string id, [FromBody] SetAllianceMessageRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (request.Message?.Length > 1000) return BadRequest("Alliance message must be 1000 characters or fewer.");
 			try {
 				allianceRepositoryWrite.SetAllianceMessage(
-					new SetAllianceMessageCommand(currentUserContext.PlayerId!, request.Message));
+					new SetAllianceMessageCommand(currentUserContext.PlayerId!, request.Message ?? ""));
 				return Ok();
 			} catch (NotAllianceLeaderException e) {
 				return StatusCode(403, e.Message);
@@ -289,6 +292,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPost("{id}/posts")]
 		public ActionResult<string> PostChat(string id, [FromBody] PostAllianceChatRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (string.IsNullOrWhiteSpace(request.Body)) return BadRequest("Message body cannot be empty.");
+			if (request.Body.Length > 1000) return BadRequest("Alliance chat message must be 1000 characters or fewer.");
 			try {
 				var postId = allianceChatRepositoryWrite.Post(
 					new PostAllianceChatCommand(currentUserContext.PlayerId!, AllianceIdFactory.Create(id), request.Body));

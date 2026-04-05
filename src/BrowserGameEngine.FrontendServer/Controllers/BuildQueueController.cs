@@ -56,6 +56,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				return BadRequest("Invalid type. Must be 'unit' or 'asset'.");
 			}
 			if (request.Count <= 0) return BadRequest("Count must be greater than 0.");
+			if (request.Count > 10000) return BadRequest("Count must be 10,000 or less.");
 			buildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(
 				currentUserContext.PlayerId!,
 				request.Type,

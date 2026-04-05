@@ -12,6 +12,11 @@ namespace BrowserGameEngine.FrontendServer {
 		/// </summary>
 		public bool DevAuth { get; set; }
 
+		/// <summary>
+		/// User IDs that are granted admin privileges (e.g. access to admin endpoints, game creation).
+		/// </summary>
+		public List<string> AdminUserIds { get; set; } = new();
+
 		// "localfile", "s3"
 		public required string StorageType { get; set; }
 

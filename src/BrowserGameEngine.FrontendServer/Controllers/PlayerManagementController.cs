@@ -67,6 +67,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<PlayerSummaryViewModel> CreatePlayer(CreatePlayerForUserViewModel model) {
 			if (currentUserContext.UserId == null) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(model.PlayerName)) return BadRequest("PlayerName is required");
+			if (model.PlayerName.Length > 50) return BadRequest("PlayerName must be 50 characters or fewer.");
 
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			playerRepositoryWrite.CreatePlayer(playerId, currentUserContext.UserId);

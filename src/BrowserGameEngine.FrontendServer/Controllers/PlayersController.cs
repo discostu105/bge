@@ -25,7 +25,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				var list = g.ToList();
 				var displayName = globalState.GetUserDisplayName(g.Key) ?? list.First().PlayerName;
 				return new AllTimePlayerEntryViewModel(
-					UserId: g.Key,
 					DisplayName: displayName,
 					TotalGames: list.Count,
 					TotalWins: list.Count(a => a.FinalRank == 1),

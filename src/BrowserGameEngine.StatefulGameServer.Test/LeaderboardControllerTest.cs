@@ -67,10 +67,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var standings = Assert.IsAssignableFrom<List<AllTimeStandingViewModel>>(ok.Value);
 			Assert.Equal(2, standings.Count);
 			// user1 has more wins → ranked first
-			Assert.Equal("user1", standings[0].UserId);
 			Assert.Equal(2, standings[0].TotalWins);
 			Assert.Equal(1, standings[0].Rank);
-			Assert.Equal("user2", standings[1].UserId);
 			Assert.Equal(2, standings[1].Rank);
 		}
 

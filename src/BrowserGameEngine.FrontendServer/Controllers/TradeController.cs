@@ -45,7 +45,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (string.IsNullOrWhiteSpace(request.OfferedResourceId)) return BadRequest("Offered resource is required.");
 			if (string.IsNullOrWhiteSpace(request.WantedResourceId)) return BadRequest("Wanted resource is required.");
 			if (request.OfferedAmount <= 0) return BadRequest("Offered amount must be positive.");
+			if (request.OfferedAmount > 1_000_000) return BadRequest("Offered amount must be 1,000,000 or less.");
 			if (request.WantedAmount <= 0) return BadRequest("Wanted amount must be positive.");
+			if (request.WantedAmount > 1_000_000) return BadRequest("Wanted amount must be 1,000,000 or less.");
+			if (request.Note != null && request.Note.Length > 200) return BadRequest("Trade note must be 200 characters or fewer.");
 
 			var targetId = PlayerIdFactory.Create(request.TargetPlayerId);
 			if (targetId == currentUserContext.PlayerId) return BadRequest("Cannot send a trade offer to yourself.");
@@ -141,6 +144,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<System.Collections.Generic.List<TradeHistoryItemViewModel>> GetHistory([FromQuery] int skip = 0, [FromQuery] int take = 20) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (take > 100) take = 100;
 			var history = tradeRepository.GetHistory(currentUserContext.PlayerId!, skip, take)
 				.Select(o => ToHistoryViewModel(o, currentUserContext.PlayerId!))
 				.ToList();

@@ -38,7 +38,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var result = standings
 				.Select((s, idx) => new AllTimeStandingViewModel(
 					Rank: idx + 1,
-					UserId: s.UserId,
 					DisplayName: GetDisplayName(s.UserId),
 					TotalWins: s.TotalWins,
 					GamesPlayed: s.GamesPlayed,
