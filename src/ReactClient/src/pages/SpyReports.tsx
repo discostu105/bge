@@ -36,9 +36,9 @@ export function SpyReports({ gameId }: SpyReportsProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Attacker</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Operation Type</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Detected At</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Attacker</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Operation Type</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Detected At</th>
                 </tr>
               </thead>
               <tbody>

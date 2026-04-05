@@ -29,12 +29,12 @@ export function PlayersList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
-                <th className="px-4 py-2 text-left w-10">#</th>
-                <th className="px-4 py-2 text-left">Player</th>
-                <th className="px-4 py-2 text-right">Score</th>
-                <th className="px-4 py-2 text-right hidden sm:table-cell">Games</th>
-                <th className="px-4 py-2 text-right hidden sm:table-cell">Wins</th>
-                <th className="px-4 py-2 text-right hidden md:table-cell">Best Rank</th>
+                <th scope="col" className="px-4 py-2 text-left w-10">#</th>
+                <th scope="col" className="px-4 py-2 text-left">Player</th>
+                <th scope="col" className="px-4 py-2 text-right">Score</th>
+                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Games</th>
+                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Wins</th>
+                <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Best Rank</th>
               </tr>
             </thead>
             <tbody className="divide-y">

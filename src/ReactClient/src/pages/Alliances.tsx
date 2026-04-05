@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { ShieldIcon, SwordsIcon, UsersIcon } from 'lucide-react'
@@ -284,11 +284,11 @@ export function Alliances({ gameId }: AlliancesProps) {
 						<table className="w-full text-sm">
 							<thead className="border-b">
 								<tr>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Members</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Founded</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Members</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Founded</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
 								</tr>
 							</thead>
 							<tbody>
@@ -344,53 +344,97 @@ export function Alliances({ gameId }: AlliancesProps) {
 
 			{/* Join Alliance Modal */}
 			{joinAllianceId && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-					<div className="w-full max-w-sm rounded-lg border bg-card p-6 shadow-xl space-y-4">
-						<div className="flex items-center justify-between">
-							<strong className="text-sm">Join Alliance</strong>
-							<button
-								onClick={() => setJoinAllianceId(null)}
-								className="text-muted-foreground hover:text-foreground text-lg"
-							>
-								×
-							</button>
-						</div>
-						<p className="text-sm text-muted-foreground">
-							Enter the alliance password to request membership.
-						</p>
-						<div>
-							<label className="block text-sm text-muted-foreground mb-1">Password</label>
-							<input
-								type="password"
-								value={joinPassword}
-								onChange={(e) => setJoinPassword(e.target.value)}
-								placeholder="Alliance password"
-								className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-								onKeyDown={(e) => {
-									if (e.key === 'Enter' && joinPassword.trim()) {
-										joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })
-									}
-								}}
-							/>
-						</div>
-						<div className="flex gap-2">
-							<button
-								onClick={() => joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })}
-								disabled={!joinPassword.trim() || joinMutation.isPending}
-								className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
-							>
-								{joinMutation.isPending ? 'Joining…' : 'Join'}
-							</button>
-							<button
-								onClick={() => setJoinAllianceId(null)}
-								className="text-sm text-muted-foreground hover:text-foreground"
-							>
-								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
+				<JoinAllianceModal
+					joinAllianceId={joinAllianceId}
+					joinPassword={joinPassword}
+					setJoinPassword={setJoinPassword}
+					joinMutation={joinMutation}
+					onClose={() => setJoinAllianceId(null)}
+				/>
 			)}
+		</div>
+	)
+}
+
+function JoinAllianceModal({
+	joinAllianceId,
+	joinPassword,
+	setJoinPassword,
+	joinMutation,
+	onClose,
+}: {
+	joinAllianceId: string
+	joinPassword: string
+	setJoinPassword: (v: string) => void
+	joinMutation: { mutate: (v: { allianceId: string; password: string }) => void; isPending: boolean }
+	onClose: () => void
+}) {
+	const dialogRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onClose()
+		}
+		document.addEventListener('keydown', handleKeyDown)
+		dialogRef.current?.focus()
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [onClose])
+
+	return (
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+			<div
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="join-alliance-title"
+				tabIndex={-1}
+				className="w-full max-w-sm rounded-lg border bg-card p-6 shadow-xl space-y-4"
+				onClick={(e) => e.stopPropagation()}
+			>
+				<div className="flex items-center justify-between">
+					<strong id="join-alliance-title" className="text-sm">Join Alliance</strong>
+					<button
+						onClick={onClose}
+						aria-label="Close dialog"
+						className="text-muted-foreground hover:text-foreground text-lg"
+					>
+						×
+					</button>
+				</div>
+				<p className="text-sm text-muted-foreground">
+					Enter the alliance password to request membership.
+				</p>
+				<div>
+					<label className="block text-sm text-muted-foreground mb-1">Password</label>
+					<input
+						type="password"
+						value={joinPassword}
+						onChange={(e) => setJoinPassword(e.target.value)}
+						placeholder="Alliance password"
+						className="w-full rounded border bg-input px-2 py-1.5 text-sm"
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' && joinPassword.trim()) {
+								joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })
+							}
+						}}
+					/>
+				</div>
+				<div className="flex gap-2">
+					<button
+						onClick={() => joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })}
+						disabled={!joinPassword.trim() || joinMutation.isPending}
+						className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
+					>
+						{joinMutation.isPending ? 'Joining…' : 'Join'}
+					</button>
+					<button
+						onClick={onClose}
+						className="text-sm text-muted-foreground hover:text-foreground"
+					>
+						Cancel
+					</button>
+				</div>
+			</div>
 		</div>
 	)
 }

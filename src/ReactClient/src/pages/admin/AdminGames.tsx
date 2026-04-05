@@ -230,12 +230,12 @@ export function AdminGames() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                <th className="px-3 py-2 text-left font-medium">Name</th>
-                <th className="px-3 py-2 text-left font-medium">Status</th>
-                <th className="px-3 py-2 text-right font-medium">Players</th>
-                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">Start</th>
-                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">End</th>
-                <th className="px-3 py-2 text-right font-medium">Actions</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Name</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Status</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Players</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium hidden md:table-cell">Start</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium hidden md:table-cell">End</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>

@@ -68,13 +68,13 @@ export function PlayerHistory() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/40">
-              <th className="px-3 py-2 text-left font-medium"></th>
-              <th className="px-3 py-2 text-left font-medium">Game</th>
-              <th className="px-3 py-2 text-left font-medium">Ended</th>
-              <th className="px-3 py-2 text-left font-medium hidden sm:table-cell">Duration</th>
-              <th className="px-3 py-2 text-left font-medium">Rank</th>
-              <th className="px-3 py-2 text-right font-medium">Score</th>
-              <th className="px-3 py-2 text-right font-medium hidden sm:table-cell">Players</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium"></th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">Game</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">Ended</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium hidden sm:table-cell">Duration</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">Rank</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium hidden sm:table-cell">Players</th>
             </tr>
           </thead>
           <tbody>
