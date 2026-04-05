@@ -24,8 +24,6 @@ namespace BrowserGameEngine.Shared {
 
 	public record JoinGameRequest(string PlayerName, string? PlayerType = null);
 
-	public record JoinGameViewModel(string PlayerId);
-
 	public record GameLobbyViewModel(
 		string GameId,
 		string GameName,
