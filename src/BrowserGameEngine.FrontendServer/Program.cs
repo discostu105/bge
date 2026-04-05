@@ -23,12 +23,15 @@ using Serilog.Events;
 using System.Linq;
 using System.Threading.RateLimiting;
 
+var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
+    .WriteTo.Console(isProduction
+        ? new Serilog.Formatting.Json.JsonFormatter()
+        : new Serilog.Formatting.Display.MessageTemplateTextFormatter("[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"))
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -183,6 +186,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder
     .StartCollecting();
 
 app.UseAuthentication();
+app.UseMiddleware<RequestDurationMiddleware>();
 app.UseMiddleware<BearerTokenMiddleware>();
 app.UseRateLimiter();
 app.UseMiddleware<CurrentUserMiddleware>();

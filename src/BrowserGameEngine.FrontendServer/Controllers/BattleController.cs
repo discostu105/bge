@@ -18,7 +18,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 	[Authorize]
 	[Route("api/[controller]/{action?}")]
 	public class BattleController : ControllerBase {
-		private readonly ILogger<PlayerRankingController> logger;
+		private readonly ILogger<BattleController> logger;
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly ScoreRepository scoreRepository;
@@ -30,7 +30,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly OnlineStatusRepository onlineStatusRepository;
 		private readonly SpyRepositoryWrite spyRepositoryWrite;
 
-		public BattleController(ILogger<PlayerRankingController> logger
+		public BattleController(ILogger<BattleController> logger
 				, GameDef gameDef
 				, CurrentUserContext currentUserContext
 				, ScoreRepository scoreRepository
@@ -132,6 +132,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			bool attackerWon = !result.BtlResult.DefendingUnitsSurvived.Any() && result.BtlResult.AttackingUnitsSurvived.Any();
 			bool draw = !result.BtlResult.AttackingUnitsSurvived.Any() && !result.BtlResult.DefendingUnitsSurvived.Any();
 			string outcome = attackerWon ? "AttackerWon" : draw ? "Draw" : "DefenderWon";
+
+			logger.LogInformation(
+				"Battle: attacker={AttackerName} defender={DefenderName} outcome={Outcome} attackerStrength={AttackerStrength} defenderStrength={DefenderStrength} landTransferred={LandTransferred}",
+				attacker.Name, defender.Name, outcome,
+				result.BtlResult.TotalAttackerStrengthBefore, result.BtlResult.TotalDefenderStrengthBefore,
+				result.BtlResult.LandTransferred);
 
 			return new BattleResultViewModel {
 				AttackerId = result.Attacker.Id,
