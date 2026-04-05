@@ -14,6 +14,7 @@ import { BuildQueue } from '@/components/BuildQueue'
 import { BuildUnitsForm } from '@/components/BuildUnitsForm'
 import { WorkerAssignment } from '@/components/WorkerAssignment'
 import { CostBadge } from '@/components/CostBadge'
+import { VictoryProgressBar } from '@/components/VictoryProgressBar'
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -202,6 +203,10 @@ export function Base({ gameId }: BaseProps) {
           </a>
           .
         </div>
+      )}
+
+      {!isFinished && gameDetail?.gameDefType === 'sco' && (
+        <VictoryProgressBar gameId={gameId} />
       )}
 
       <WorkerAssignment gameId={gameId} />
