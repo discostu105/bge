@@ -20,6 +20,8 @@ import type {
 	PublicPlayerViewModel,
 } from '@/api/types'
 import { cn, relativeTime } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function AllianceDetail() {
 	const { allianceId } = useParams<{ allianceId: string }>()
@@ -44,9 +46,7 @@ export function AllianceDetail() {
 	// Vote state
 	const [votePlayerId, setVotePlayerId] = useState('')
 
-	if (!allianceId) return null
-
-	const { data: detail, isLoading } = useQuery<AllianceDetailViewModel>({
+	const { data: detail, isLoading, error: detailError, refetch: refetchDetail } = useQuery<AllianceDetailViewModel>({
 		queryKey: ['alliance-detail', allianceId],
 		queryFn: () => apiClient.get(`/api/alliances/${allianceId}`).then((r) => r.data),
 		refetchInterval: 10_000,
@@ -183,13 +183,10 @@ export function AllianceDetail() {
 		onError: handleError,
 	})
 
-	if (isLoading) {
-		return <div className="text-muted-foreground text-sm p-4">Loading alliance…</div>
-	}
-
-	if (!detail) {
-		return <div className="text-destructive text-sm p-4">Alliance not found.</div>
-	}
+	if (!allianceId) return null
+	if (isLoading) return <PageLoader message="Loading alliance..." />
+	if (detailError) return <ApiError message="Failed to load alliance." onRetry={() => void refetchDetail()} />
+	if (!detail) return <div className="text-destructive text-sm p-4">Alliance not found.</div>
 
 	const confirmedMembers = detail.members.filter((m) => !m.isPending)
 	const pendingMembers = detail.members.filter((m) => m.isPending)

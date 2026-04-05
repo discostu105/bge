@@ -4,6 +4,8 @@ import { Link, useParams } from 'react-router'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { EnemyBaseViewModel, BattleResultViewModel, SpyReportViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface EnemyBaseProps {
   gameId: string
@@ -15,7 +17,7 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
   const [battleResult, setBattleResult] = useState<BattleResultViewModel | null>(null)
   const [spyReport, setSpyReport] = useState<SpyReportViewModel | null>(null)
 
-  const { data: model } = useQuery<EnemyBaseViewModel>({
+  const { data: model, isLoading, error: queryError, refetch } = useQuery<EnemyBaseViewModel>({
     queryKey: ['enemybase', gameId, enemyPlayerId],
     queryFn: () =>
       apiClient
@@ -53,14 +55,9 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
     },
   })
 
-  if (!model) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Attack</h1>
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader message="Loading enemy base..." />
+  if (queryError) return <ApiError message="Failed to load enemy base." onRetry={() => void refetch()} />
+  if (!model) return null
 
   return (
     <div className="space-y-6">

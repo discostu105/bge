@@ -2,6 +2,8 @@ import { useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 function formatDuration(ms: number): string {
   const totalSec = Math.floor(ms / 1000)
@@ -43,14 +45,14 @@ function vcText(type: string | null | undefined): string {
 export function GameResults() {
   const { gameId } = useParams<{ gameId: string }>()
 
-  const { data: model, error, isLoading } = useQuery<GameResultsViewModel>({
+  const { data: model, error, isLoading, refetch } = useQuery<GameResultsViewModel>({
     queryKey: ['game-results', gameId],
     queryFn: () => apiClient.get(`/api/games/${gameId}/results`).then((r) => r.data),
     enabled: !!gameId,
   })
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>
-  if (error) return <div className="rounded border border-red-700 bg-red-900/20 p-3 text-sm text-red-400">{String(error)}</div>
+  if (isLoading) return <PageLoader message="Loading results..." />
+  if (error) return <ApiError message="Failed to load game results." onRetry={() => void refetch()} />
   if (!model) return null
 
   const end = new Date(model.actualEndTime ?? model.endTime)

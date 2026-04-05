@@ -4,6 +4,8 @@ import { useState } from 'react'
 import apiClient from '@/api/client'
 import type { UpgradesViewModel, TechTreeViewModel, TechNodeViewModel } from '@/api/types'
 import { CostBadge } from '@/components/CostBadge'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface ResearchProps {
   gameId: string
@@ -73,13 +75,13 @@ export function Research({ gameId }: ResearchProps) {
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
 
-  const { data: upgrades } = useQuery<UpgradesViewModel>({
+  const { data: upgrades, isLoading: upgradesLoading, error: upgradesError, refetch: refetchUpgrades } = useQuery<UpgradesViewModel>({
     queryKey: ['upgrades', gameId],
     queryFn: () => apiClient.get('/api/upgrades').then((r) => r.data),
     refetchInterval: 10_000,
   })
 
-  const { data: techTree } = useQuery<TechTreeViewModel>({
+  const { data: techTree, isLoading: techLoading, error: techError, refetch: refetchTech } = useQuery<TechTreeViewModel>({
     queryKey: ['research', gameId],
     queryFn: () => apiClient.get('/api/research').then((r) => r.data),
     refetchInterval: 10_000,
@@ -109,8 +111,9 @@ export function Research({ gameId }: ResearchProps) {
     },
   })
 
-  if (!upgrades && !techTree) {
-    return <div className="text-muted-foreground">Loading...</div>
+  if (upgradesLoading && techLoading) return <PageLoader message="Loading research..." />
+  if (upgradesError && techError) {
+    return <ApiError message="Failed to load research data." onRetry={() => { void refetchUpgrades(); void refetchTech() }} />
   }
 
   return (

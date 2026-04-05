@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameDetailViewModel, JoinGameRequest } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 function statusBadge(status: string): string {
   switch (status) {
@@ -20,7 +22,7 @@ export function JoinGame() {
   const [joinError, setJoinError] = useState<string | null>(null)
   const [alreadyJoined, setAlreadyJoined] = useState(false)
 
-  const { data: game, error: loadError, isLoading } = useQuery<GameDetailViewModel>({
+  const { data: game, error: loadError, isLoading, refetch } = useQuery<GameDetailViewModel>({
     queryKey: ['game', gameId],
     queryFn: () => apiClient.get(`/api/games/${gameId}`).then((r) => r.data),
     enabled: !!gameId,
@@ -52,16 +54,9 @@ export function JoinGame() {
     joinMutation.mutate({ playerName: playerName.trim() })
   }
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>
-
-  if (loadError || !game) {
-    return (
-      <div className="space-y-3">
-        <div className="rounded border border-red-700 bg-red-900/20 p-3 text-sm text-red-400">Game not found.</div>
-        <a href="/games" className="text-sm text-blue-400 hover:underline">← Back to Games</a>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader message="Loading game..." />
+  if (loadError) return <ApiError message="Failed to load game." onRetry={() => void refetch()} />
+  if (!game) return <ApiError message="Game not found." />
 
   return (
     <div className="space-y-4">

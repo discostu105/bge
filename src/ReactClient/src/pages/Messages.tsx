@@ -5,6 +5,8 @@ import apiClient from '@/api/client'
 import type { MessageInboxViewModel, MessageViewModel, SendMessageViewModel, PublicPlayerViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface MessagesProps {
   gameId: string
@@ -96,7 +98,7 @@ export function Messages({ gameId }: MessagesProps) {
   const [selected, setSelected] = useState<MessageViewModel | null>(null)
   const [composing, setComposing] = useState(false)
 
-  const { data: inbox } = useQuery({
+  const { data: inbox, isLoading: inboxLoading, error: inboxError, refetch: refetchInbox } = useQuery({
     queryKey: ['messages-inbox', gameId],
     queryFn: () =>
       apiClient.get<MessageInboxViewModel>('/api/messages/inbox').then((r) => r.data),
@@ -127,6 +129,9 @@ export function Messages({ gameId }: MessagesProps) {
 
   const messages = tab === 'inbox' ? inbox?.messages ?? [] : sent?.messages ?? []
   const unread = inbox?.messages.filter((m) => !m.isRead).length ?? 0
+
+  if (inboxLoading) return <PageLoader message="Loading messages..." />
+  if (inboxError && !inbox) return <ApiError message="Failed to load messages." onRetry={() => void refetchInbox()} />
 
   return (
     <div className="max-w-3xl">

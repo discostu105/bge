@@ -2,6 +2,8 @@ import { useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 function formatDuration(ms: number): string {
   const totalSec = Math.floor(ms / 1000)
@@ -16,29 +18,15 @@ function formatDuration(ms: number): string {
 export function GameSummary() {
   const { gameId } = useParams<{ gameId: string }>()
 
-  const { data: model, error, isLoading } = useQuery<GameResultsViewModel>({
+  const { data: model, error, isLoading, refetch } = useQuery<GameResultsViewModel>({
     queryKey: ['game-results', gameId],
     queryFn: () => apiClient.get(`/api/games/${gameId}/results`).then((r) => r.data),
     enabled: !!gameId,
   })
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <span className="animate-spin">⟳</span> Loading game summary...
-      </div>
-    )
-  }
-
-  if (error || !model) {
-    return (
-      <div className="rounded border border-yellow-700 bg-yellow-900/20 p-4 space-y-2 text-sm">
-        <p className="font-medium">⚠️ No summary available for this game.</p>
-        {error && <p className="text-muted-foreground">{String(error)}</p>}
-        <a href="/games" className="text-blue-400 hover:underline">← Back to Games List</a>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader message="Loading game summary..." />
+  if (error) return <ApiError message="Failed to load game summary." onRetry={() => void refetch()} />
+  if (!model) return <ApiError message="No summary available for this game." />
 
   const end = new Date(model.actualEndTime ?? model.endTime)
   const start = new Date(model.startTime)

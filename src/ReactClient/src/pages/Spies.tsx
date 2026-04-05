@@ -8,6 +8,7 @@ import type {
   SendSpyMissionRequest,
   SendSpyMissionResponse,
 } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
 
 interface SpiesProps {
   gameId: string
@@ -180,7 +181,7 @@ export function Spies({ gameId }: SpiesProps) {
       <div className="rounded-lg border bg-card p-5">
         <h2 className="font-semibold mb-4">Send Spy</h2>
         {!players ? (
-          <div className="text-muted-foreground text-sm">Loading players...</div>
+          <PageLoader message="Loading players..." />
         ) : players.length === 0 ? (
           <div className="text-muted-foreground text-sm">No other players to target.</div>
         ) : (

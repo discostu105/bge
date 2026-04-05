@@ -5,6 +5,8 @@ import axios from 'axios'
 import apiClient from '@/api/client'
 import type { UnitsViewModel, UnitViewModel } from '@/api/types'
 import { BuildQueue } from '@/components/BuildQueue'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface UnitsProps {
   gameId: string
@@ -138,7 +140,7 @@ export function Units({ gameId }: UnitsProps) {
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery<UnitsViewModel>({
+  const { data, isLoading, error: queryError, refetch } = useQuery<UnitsViewModel>({
     queryKey: ['units', gameId],
     queryFn: () => apiClient.get('/api/units').then((r) => r.data),
     refetchInterval: 10_000,
@@ -182,7 +184,9 @@ export function Units({ gameId }: UnitsProps) {
       <BuildQueue gameId={gameId} />
 
       {isLoading ? (
-        <div className="text-muted-foreground">Loading units...</div>
+        <PageLoader message="Loading units..." />
+      ) : queryError && !data ? (
+        <ApiError message="Failed to load units." onRetry={() => void refetch()} />
       ) : !data || data.units.length === 0 ? (
         <div className="rounded-lg border bg-card p-8 text-center">
           <div className="text-4xl mb-3">🪖</div>

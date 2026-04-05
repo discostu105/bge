@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router'
 import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 function vcBadge(type: string | null | undefined): { css: string; text: string } {
   switch (type) {
@@ -123,7 +125,7 @@ export function Games() {
   const [success, setSuccess] = useState<string | null>(null)
   const [showAllFinished, setShowAllFinished] = useState(false)
 
-  const { data } = useQuery<GameListViewModel>({
+  const { data, isLoading: queryLoading, error: queryError, refetch } = useQuery<GameListViewModel>({
     queryKey: ['games'],
     queryFn: () => apiClient.get('/api/games').then((r) => r.data),
     refetchInterval: 30_000,
@@ -166,9 +168,8 @@ export function Games() {
       {success && <div className="rounded-lg border border-green-700 bg-green-900/20 p-3 text-sm">{success}</div>}
       {error && <div className="rounded-lg border border-red-700 bg-red-900/20 p-3 text-sm text-red-400">{error}</div>}
 
-      {!data && (
-        <div className="text-muted-foreground text-sm">Loading...</div>
-      )}
+      {queryLoading && <PageLoader message="Loading games..." />}
+      {queryError && !data && <ApiError message="Failed to load games." onRetry={() => void refetch()} />}
 
       {data && (
         <>
