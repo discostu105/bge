@@ -119,6 +119,67 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public void GetBattleReports_EmptyByDefault() {
+			var game = new TestGame(playerCount: 2);
+			var reports = game.BattleReportRepository.GetBattleReports(Player1);
+			Assert.Empty(reports);
+		}
+
+		[Fact]
+		public void AddBattleReport_BothPlayersGetSameReport() {
+			var game = new TestGame(playerCount: 2);
+			var reportId = Guid.NewGuid();
+			var report = CreateTestReport(reportId);
+
+			game.BattleReportRepositoryWrite.AddBattleReport(Player1, report);
+			game.BattleReportRepositoryWrite.AddBattleReport(Player2, report);
+
+			var p1Report = game.BattleReportRepository.GetBattleReport(Player1, reportId);
+			var p2Report = game.BattleReportRepository.GetBattleReport(Player2, reportId);
+			Assert.NotNull(p1Report);
+			Assert.NotNull(p2Report);
+			Assert.Equal(p1Report!.Id, p2Report!.Id);
+			Assert.Equal("Attacker won", p1Report.Outcome);
+			Assert.Equal(100, p1Report.TotalAttackerStrengthBefore);
+			Assert.Equal(80, p1Report.TotalDefenderStrengthBefore);
+		}
+
+		[Fact]
+		public void BattleReport_PreservesRoundDetails() {
+			var game = new TestGame(playerCount: 2);
+			var report = CreateTestReport();
+			game.BattleReportRepositoryWrite.AddBattleReport(Player1, report);
+
+			var retrieved = game.BattleReportRepository.GetBattleReports(Player1)[0];
+			Assert.Single(retrieved.Rounds);
+			var round = retrieved.Rounds[0];
+			Assert.Equal(1, round.RoundNumber);
+			Assert.Single(round.AttackerUnitsRemaining);
+			Assert.Equal(9, round.AttackerUnitsRemaining[0].Count);
+			Assert.Single(round.DefenderUnitsRemaining);
+			Assert.Equal(5, round.DefenderUnitsRemaining[0].Count);
+			Assert.Single(round.AttackerCasualties);
+			Assert.Equal(1, round.AttackerCasualties[0].Count);
+			Assert.Single(round.DefenderCasualties);
+			Assert.Equal(3, round.DefenderCasualties[0].Count);
+		}
+
+		[Fact]
+		public void BattleReport_PreservesResourcesAndSpoils() {
+			var game = new TestGame(playerCount: 2);
+			var report = CreateTestReport();
+			game.BattleReportRepositoryWrite.AddBattleReport(Player1, report);
+
+			var retrieved = game.BattleReportRepository.GetBattleReports(Player1)[0];
+			Assert.Equal(5, retrieved.LandTransferred);
+			Assert.Equal(2, retrieved.WorkersCaptured);
+			Assert.Single(retrieved.ResourcesStolen);
+			Assert.Equal(100m, retrieved.ResourcesStolen["minerals"]);
+			Assert.Equal("Terran", retrieved.AttackerRace);
+			Assert.Equal("Zerg", retrieved.DefenderRace);
+		}
+
+		[Fact]
 		public void BattleReport_ToImmutable_RoundTrip() {
 			var report = CreateTestReport();
 			var immutable = report.ToImmutable();
