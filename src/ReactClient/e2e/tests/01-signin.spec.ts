@@ -1,4 +1,4 @@
-import { test, expect, request } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 
 /**
  * Sign-in flow tests.
