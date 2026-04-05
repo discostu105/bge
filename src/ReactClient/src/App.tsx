@@ -1,38 +1,43 @@
+import { lazy } from 'react'
 import { createBrowserRouter, RouterProvider, useParams } from 'react-router'
 import { RootLayout } from '@/layouts/RootLayout'
 import { GameLayout } from '@/layouts/GameLayout'
 import { BareRouteRedirect } from '@/components/BareRouteRedirect'
+
+// Eagerly loaded — must render instantly
 import { SignIn } from '@/pages/SignIn'
-import { Base } from '@/pages/Base'
-import { Units } from '@/pages/Units'
-import { Research } from '@/pages/Research'
-import { Market } from '@/pages/Market'
-import { Spies } from '@/pages/Spies'
-import { SpyReports } from '@/pages/SpyReports'
-import { Diplomacy } from '@/pages/Diplomacy'
-import { EnemyBase } from '@/pages/EnemyBase'
-import { SelectEnemy } from '@/pages/SelectEnemy'
-import { Chat } from '@/pages/Chat'
-import { Messages } from '@/pages/Messages'
-import { PlayerRanking } from '@/pages/PlayerRanking'
-import { PlayerProfile } from '@/pages/PlayerProfile'
-import { InGamePlayerProfile } from '@/pages/InGamePlayerProfile'
 import { Index } from '@/pages/Index'
-import { Games } from '@/pages/Games'
-import { GameLobby } from '@/pages/GameLobby'
-import { JoinGame } from '@/pages/JoinGame'
-import { GameSummary } from '@/pages/GameSummary'
-import { GameResults } from '@/pages/GameResults'
-import { CreatePlayer } from '@/pages/CreatePlayer'
-import { UnitDefinitions } from '@/pages/UnitDefinitions'
-import { Alliances } from '@/pages/Alliances'
-import { AllianceDetail } from '@/pages/AllianceDetail'
-import { Achievements } from '@/pages/Achievements'
-import { PlayerHistory } from '@/pages/PlayerHistory'
-import { PublicProfile } from '@/pages/PublicProfile'
-import { AdminGames } from '@/pages/admin/AdminGames'
-import { PlayersList } from '@/pages/PlayersList'
-import { Trade } from '@/pages/Trade'
+
+// Lazy-loaded pages — split into separate chunks
+const Base = lazy(() => import('@/pages/Base').then(m => ({ default: m.Base })))
+const Units = lazy(() => import('@/pages/Units').then(m => ({ default: m.Units })))
+const Research = lazy(() => import('@/pages/Research').then(m => ({ default: m.Research })))
+const Market = lazy(() => import('@/pages/Market').then(m => ({ default: m.Market })))
+const Spies = lazy(() => import('@/pages/Spies').then(m => ({ default: m.Spies })))
+const SpyReports = lazy(() => import('@/pages/SpyReports').then(m => ({ default: m.SpyReports })))
+const Diplomacy = lazy(() => import('@/pages/Diplomacy').then(m => ({ default: m.Diplomacy })))
+const EnemyBase = lazy(() => import('@/pages/EnemyBase').then(m => ({ default: m.EnemyBase })))
+const SelectEnemy = lazy(() => import('@/pages/SelectEnemy').then(m => ({ default: m.SelectEnemy })))
+const Chat = lazy(() => import('@/pages/Chat').then(m => ({ default: m.Chat })))
+const Messages = lazy(() => import('@/pages/Messages').then(m => ({ default: m.Messages })))
+const PlayerRanking = lazy(() => import('@/pages/PlayerRanking').then(m => ({ default: m.PlayerRanking })))
+const PlayerProfile = lazy(() => import('@/pages/PlayerProfile').then(m => ({ default: m.PlayerProfile })))
+const InGamePlayerProfile = lazy(() => import('@/pages/InGamePlayerProfile').then(m => ({ default: m.InGamePlayerProfile })))
+const Games = lazy(() => import('@/pages/Games').then(m => ({ default: m.Games })))
+const GameLobby = lazy(() => import('@/pages/GameLobby').then(m => ({ default: m.GameLobby })))
+const JoinGame = lazy(() => import('@/pages/JoinGame').then(m => ({ default: m.JoinGame })))
+const GameSummary = lazy(() => import('@/pages/GameSummary').then(m => ({ default: m.GameSummary })))
+const GameResults = lazy(() => import('@/pages/GameResults').then(m => ({ default: m.GameResults })))
+const CreatePlayer = lazy(() => import('@/pages/CreatePlayer').then(m => ({ default: m.CreatePlayer })))
+const UnitDefinitions = lazy(() => import('@/pages/UnitDefinitions').then(m => ({ default: m.UnitDefinitions })))
+const Alliances = lazy(() => import('@/pages/Alliances').then(m => ({ default: m.Alliances })))
+const AllianceDetail = lazy(() => import('@/pages/AllianceDetail').then(m => ({ default: m.AllianceDetail })))
+const Achievements = lazy(() => import('@/pages/Achievements').then(m => ({ default: m.Achievements })))
+const PlayerHistory = lazy(() => import('@/pages/PlayerHistory').then(m => ({ default: m.PlayerHistory })))
+const PublicProfile = lazy(() => import('@/pages/PublicProfile').then(m => ({ default: m.PublicProfile })))
+const AdminGames = lazy(() => import('@/pages/admin/AdminGames').then(m => ({ default: m.AdminGames })))
+const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ default: m.PlayersList })))
+const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
