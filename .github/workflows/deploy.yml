@@ -3,6 +3,8 @@ name: Build & Deploy
 on:
   push:
     branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 env:
@@ -14,6 +16,8 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
@@ -25,10 +29,46 @@ jobs:
         run: |
           dotnet restore
           dotnet build --configuration Release --no-restore
-          dotnet test --no-restore --verbosity normal
+          dotnet test --no-restore --verbosity normal \
+            --collect "XPlat Code Coverage" \
+            --results-directory ./coverage
+      - name: Generate coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
+        with:
+          reports: src/coverage/**/coverage.cobertura.xml
+          targetdir: src/coverage/report
+          reporttypes: MarkdownSummaryGithub;Cobertura
+      - name: Post coverage summary
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: src/coverage/report/SummaryGithub.md
+      - name: Check coverage threshold
+        working-directory: src
+        run: |
+          python3 - <<'EOF'
+          import xml.etree.ElementTree as ET, sys, glob
+
+          files = glob.glob("coverage/report/Cobertura.xml")
+          if not files:
+              print("No Cobertura report found; skipping threshold check.")
+              sys.exit(0)
+
+          tree = ET.parse(files[0])
+          root = tree.getroot()
+          line_rate = float(root.attrib.get("line-rate", 0))
+          pct = line_rate * 100
+          threshold = 60.0
+
+          print(f"Line coverage: {pct:.1f}% (threshold: {threshold}%)")
+          if pct < threshold:
+              print(f"ERROR: Coverage {pct:.1f}% is below threshold {threshold}%")
+              sys.exit(1)
+          EOF
 
   deploy:
     needs: test
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
