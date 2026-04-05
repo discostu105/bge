@@ -29,6 +29,7 @@ import { Alliances } from '@/pages/Alliances'
 import { AllianceDetail } from '@/pages/AllianceDetail'
 import { Achievements } from '@/pages/Achievements'
 import { PlayerHistory } from '@/pages/PlayerHistory'
+import { PublicProfile } from '@/pages/PublicProfile'
 import { AdminGames } from '@/pages/admin/AdminGames'
 import { PlayersList } from '@/pages/PlayersList'
 
@@ -164,7 +165,7 @@ const router = createBrowserRouter([
       { path: '/createplayer', element: <CreatePlayer /> },
       { path: '/lobby', element: <GameLobby /> },
       { path: '/profile', element: <PlayerProfile /> },
-      { path: '/profile/:userId', element: <TodoPage name="Public Profile" /> },
+      { path: '/profile/:userId', element: <PublicProfile /> },
       { path: '/players', element: <PlayersList /> },
       { path: '/alliances/:allianceId', element: <AllianceDetail /> },
       { path: '/achievements', element: <Achievements /> },

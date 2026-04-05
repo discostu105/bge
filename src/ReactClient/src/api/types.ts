@@ -769,10 +769,40 @@ export interface UserPreferencesViewModel {
 // Profile
 
 export interface ProfileViewModel {
-  userId: string
-  userName: string
+  playerName: string | null
+  displayName: string | null
+  avatarUrl: string | null
+  score: number
+  land: number
+  minerals: number
+  gas: number
+  armySize: number
+  rank: number
+  totalPlayers: number
+  gamesPlayed: number
+  wins: number
+  bestRank: number
   currentGameId: string | null
-  currentPlayerId: string | null
-  currentPlayerName: string | null
-  isAdmin: boolean
+}
+
+// Public cross-game stats
+
+export interface PlayerCrossGameEntry {
+  gameId: string
+  gameName: string
+  gameStatus: string
+  gameEndTime: string
+  finalRank: number
+  finalScore: number
+  isWinner: boolean
+}
+
+export interface PlayerCrossGameStatsViewModel {
+  userId: string
+  playerName: string | null
+  totalGames: number
+  totalWins: number
+  bestRank: number
+  totalScore: number
+  games: PlayerCrossGameEntry[]
 }
