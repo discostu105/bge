@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { InGamePlayerProfileViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface InGamePlayerProfileProps {
   gameId: string
@@ -11,7 +13,7 @@ interface InGamePlayerProfileProps {
 export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
   const { playerId } = useParams<{ playerId: string }>()
 
-  const { data: player, isLoading } = useQuery({
+  const { data: player, isLoading, error, refetch } = useQuery({
     queryKey: ['ingame-player', gameId, playerId],
     queryFn: () =>
       apiClient
@@ -20,7 +22,8 @@ export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
     enabled: !!playerId,
   })
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Loading…</p>
+  if (isLoading) return <PageLoader message="Loading player..." />
+  if (error) return <ApiError message="Failed to load player profile." onRetry={() => void refetch()} />
   if (!player) return <p className="text-destructive text-sm">Player not found.</p>
 
   return (

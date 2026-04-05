@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { PlayerAchievementsViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function Achievements() {
-  const { data, isLoading, error } = useQuery<PlayerAchievementsViewModel>({
+  const { data, isLoading, error, refetch } = useQuery<PlayerAchievementsViewModel>({
     queryKey: ['achievements'],
     queryFn: () => apiClient.get('/api/players/me/achievements').then((r) => r.data),
   })
@@ -19,24 +21,8 @@ export function Achievements() {
     return 'bg-secondary text-secondary-foreground'
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2 p-6">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <span className="text-muted-foreground">Loading achievements...</span>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          Failed to load achievements.
-        </div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader message="Loading achievements..." />
+  if (error) return <ApiError message="Failed to load achievements." onRetry={() => void refetch()} />
 
   const achievements = data?.achievements ?? []
 

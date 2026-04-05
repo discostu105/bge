@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { SpyAttemptViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface SpyReportsProps {
   gameId: string
 }
 
 export function SpyReports({ gameId }: SpyReportsProps) {
-  const { data: attempts, isLoading } = useQuery<SpyAttemptViewModel[]>({
+  const { data: attempts, isLoading, error, refetch } = useQuery<SpyAttemptViewModel[]>({
     queryKey: ['spyattempts', gameId],
     queryFn: () => apiClient.get('/api/spy/attempts').then((r) => r.data),
     refetchInterval: 30_000,
@@ -21,7 +23,9 @@ export function SpyReports({ gameId }: SpyReportsProps) {
       </p>
 
       {isLoading ? (
-        <div className="text-muted-foreground">Loading...</div>
+        <PageLoader message="Loading intel..." />
+      ) : error ? (
+        <ApiError message="Failed to load spy reports." onRetry={() => void refetch()} />
       ) : !attempts || attempts.length === 0 ? (
         <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground text-sm">
           No detected spy attempts. Upgrade Counter-Intelligence in the Tech Tree to improve detection.

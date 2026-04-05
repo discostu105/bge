@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { ProfileViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function Index() {
   const navigate = useNavigate()
 
-  const { data: profile, isLoading } = useQuery<ProfileViewModel>({
+  const { data: profile, isLoading, error, refetch } = useQuery<ProfileViewModel>({
     queryKey: ['profile'],
     queryFn: () => apiClient.get('/api/profile').then((r) => r.data),
   })
@@ -21,13 +23,8 @@ export function Index() {
     }
   }, [profile, navigate])
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-muted-foreground text-sm">Loading...</div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader />
+  if (error) return <ApiError message="Failed to load profile." onRetry={() => void refetch()} />
 
   return null
 }

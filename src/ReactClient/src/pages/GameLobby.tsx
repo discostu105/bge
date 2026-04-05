@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 function statusBadge(status: string): { css: string; label: string } {
   switch (status.toLowerCase()) {
@@ -17,7 +19,7 @@ export function GameLobby() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery<GameListViewModel>({
+  const { data, isLoading, error: queryError, refetch } = useQuery<GameListViewModel>({
     queryKey: ['games'],
     queryFn: () => apiClient.get('/api/games').then((r) => r.data),
     refetchInterval: 30_000,
@@ -46,7 +48,8 @@ export function GameLobby() {
       {success && <div className="rounded border border-green-700 bg-green-900/20 p-3 text-sm">{success}</div>}
       {error && <div className="rounded border border-red-700 bg-red-900/20 p-3 text-sm text-red-400">{error}</div>}
 
-      {isLoading && <p className="text-muted-foreground text-sm">Loading...</p>}
+      {isLoading && <PageLoader message="Loading games..." />}
+      {queryError && !data && <ApiError message="Failed to load games." onRetry={() => void refetch()} />}
 
       {!isLoading && games.length === 0 && (
         <p className="text-muted-foreground text-sm">No games available.</p>

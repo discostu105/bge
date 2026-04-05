@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { UnitDefinitionViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function UnitDefinitions() {
-  const { data: units, isLoading, error } = useQuery<UnitDefinitionViewModel[]>({
+  const { data: units, isLoading, error, refetch } = useQuery<UnitDefinitionViewModel[]>({
     queryKey: ['unit-definitions'],
     queryFn: () => apiClient.get('/api/unitdefinitions').then((r) => r.data),
   })
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Loading...</p>
-  if (error) return <div className="text-sm text-red-400">Failed to load unit definitions.</div>
+  if (isLoading) return <PageLoader message="Loading unit definitions..." />
+  if (error) return <ApiError message="Failed to load unit definitions." onRetry={() => void refetch()} />
 
   return (
     <div className="space-y-4">

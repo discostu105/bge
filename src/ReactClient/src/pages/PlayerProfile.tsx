@@ -3,14 +3,17 @@ import { Link } from 'react-router'
 import { TrophyIcon, SwordsIcon, StarIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { ProfileViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function PlayerProfile() {
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ['profile'],
     queryFn: () => apiClient.get<ProfileViewModel>('/api/profile').then((r) => r.data),
   })
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">Loading…</p>
+  if (isLoading) return <PageLoader message="Loading profile..." />
+  if (error) return <ApiError message="Failed to load profile." onRetry={() => void refetch()} />
   if (!profile) return <p className="text-destructive text-sm">Failed to load profile.</p>
 
   const displayName = profile.displayName ?? profile.playerName ?? 'Unknown'

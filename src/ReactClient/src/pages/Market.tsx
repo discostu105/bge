@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { MarketViewModel, MarketOrderViewModel, CreateMarketOrderRequest } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface MarketProps {
   gameId: string
@@ -23,7 +25,7 @@ export function Market({ gameId }: MarketProps) {
   const [wantResourceId, setWantResourceId] = useState('')
   const [wantAmount, setWantAmount] = useState(100)
 
-  const { data, isLoading } = useQuery<MarketViewModel>({
+  const { data, isLoading, error: queryError, refetch } = useQuery<MarketViewModel>({
     queryKey: ['market', gameId],
     queryFn: () => apiClient.get('/api/market').then((r) => r.data),
     refetchInterval: 30_000,
@@ -94,14 +96,9 @@ export function Market({ gameId }: MarketProps) {
     },
   })
 
-  if (isLoading || !data) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Market</h1>
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader message="Loading market..." />
+  if (queryError) return <ApiError message="Failed to load market." onRetry={() => void refetch()} />
+  if (!data) return null
 
   const myOrders = data.openOrders.filter((o) => o.sellerPlayerId === data.currentPlayerId)
   const otherOrders = data.openOrders.filter((o) => o.sellerPlayerId !== data.currentPlayerId)

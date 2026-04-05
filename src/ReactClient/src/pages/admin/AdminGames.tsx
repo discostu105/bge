@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel, CreateGameRequest, UpdateGameRequest } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface EditState {
   gameId: string
@@ -35,7 +37,7 @@ export function AdminGames() {
   const [editSuccess, setEditSuccess] = useState<string | null>(null)
   const [finalizeError, setFinalizeError] = useState<string | null>(null)
 
-  const { data, isLoading, error } = useQuery<GameListViewModel>({
+  const { data, isLoading, error, refetch } = useQuery<GameListViewModel>({
     queryKey: ['admin-games'],
     queryFn: () => apiClient.get('/api/games').then((r) => r.data),
   })
@@ -145,9 +147,7 @@ export function AdminGames() {
     return (
       <div className="p-6 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">Game Admin</h1>
-        <div className="rounded border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          Failed to load games.
-        </div>
+        <ApiError message="Failed to load games." onRetry={() => void refetch()} />
       </div>
     )
   }
@@ -222,10 +222,7 @@ export function AdminGames() {
         </div>
       )}
       {isLoading ? (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          Loading...
-        </div>
+        <PageLoader message="Loading games..." />
       ) : games.length === 0 ? (
         <p className="text-muted-foreground">No games found.</p>
       ) : (
