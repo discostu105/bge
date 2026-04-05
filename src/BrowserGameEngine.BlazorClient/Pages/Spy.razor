@@ -159,7 +159,8 @@
     private async Task LoadIntelAttempts() {
         try {
             intelAttempts = await Http.GetFromJsonAsync<SpyAttemptViewModel[]>("api/spy/attempts");
-        } catch {
+        } catch (Exception ex) {
+            pageError = ex.Message;
             intelAttempts = Array.Empty<SpyAttemptViewModel>();
         }
     }
