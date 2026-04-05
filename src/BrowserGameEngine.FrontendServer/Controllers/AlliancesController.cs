@@ -21,6 +21,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly AllianceChatRepositoryWrite allianceChatRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
 		private readonly INotificationService notificationService;
+		private readonly AllianceInviteRepository allianceInviteRepository;
+		private readonly AllianceInviteRepositoryWrite allianceInviteRepositoryWrite;
+		private readonly AllianceWarRepository allianceWarRepository;
+		private readonly AllianceWarRepositoryWrite allianceWarRepositoryWrite;
 
 		public AlliancesController(
 			CurrentUserContext currentUserContext,
@@ -29,7 +33,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			AllianceChatRepository allianceChatRepository,
 			AllianceChatRepositoryWrite allianceChatRepositoryWrite,
 			PlayerRepository playerRepository,
-			INotificationService notificationService
+			INotificationService notificationService,
+			AllianceInviteRepository allianceInviteRepository,
+			AllianceInviteRepositoryWrite allianceInviteRepositoryWrite,
+			AllianceWarRepository allianceWarRepository,
+			AllianceWarRepositoryWrite allianceWarRepositoryWrite
 		) {
 			this.currentUserContext = currentUserContext;
 			this.allianceRepository = allianceRepository;
@@ -38,6 +46,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.allianceChatRepositoryWrite = allianceChatRepositoryWrite;
 			this.playerRepository = playerRepository;
 			this.notificationService = notificationService;
+			this.allianceInviteRepository = allianceInviteRepository;
+			this.allianceInviteRepositoryWrite = allianceInviteRepositoryWrite;
+			this.allianceWarRepository = allianceWarRepository;
+			this.allianceWarRepositoryWrite = allianceWarRepositoryWrite;
 		}
 
 		/// <summary>Returns all alliances in the current game.</summary>
@@ -285,6 +297,196 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			} catch (NotAllianceMemberException e) {
 				return StatusCode(403, e.Message);
 			}
+		}
+
+		/// <summary>Invites a player to the alliance (leader only).</summary>
+		/// <param name="id">The alliance ID.</param>
+		/// <param name="request">The invite request containing the target player ID.</param>
+		[HttpPost("{id}/invite")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public ActionResult InvitePlayer(string id, [FromBody] InvitePlayerRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var targetPlayerId = PlayerIdFactory.Create(request.TargetPlayerId);
+			if (!playerRepository.Exists(targetPlayerId)) return NotFound();
+			try {
+				allianceInviteRepositoryWrite.InvitePlayer(
+					new InvitePlayerToAllianceCommand(currentUserContext.PlayerId!, targetPlayerId));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (NotAllianceLeaderException e) {
+				return StatusCode(403, e.Message);
+			} catch (AlreadyInAllianceException e) {
+				return Conflict(e.Message);
+			} catch (InviteAlreadyExistsException e) {
+				return Conflict(e.Message);
+			}
+		}
+
+		/// <summary>Accepts an alliance invite.</summary>
+		/// <param name="id">The alliance ID.</param>
+		/// <param name="request">The accept invite request containing the invite ID.</param>
+		[HttpPost("{id}/accept-invite")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult AcceptInvite(string id, [FromBody] AcceptInviteRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceInviteRepositoryWrite.AcceptInvite(
+					new AcceptAllianceInviteCommand(currentUserContext.PlayerId!, AllianceInviteIdFactory.Create(request.InviteId)));
+				return Ok();
+			} catch (InviteNotFoundException) {
+				return NotFound();
+			}
+		}
+
+		/// <summary>Declines an alliance invite.</summary>
+		/// <param name="id">The alliance ID.</param>
+		/// <param name="request">The decline invite request containing the invite ID.</param>
+		[HttpPost("{id}/decline-invite")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult DeclineInvite(string id, [FromBody] AcceptInviteRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceInviteRepositoryWrite.DeclineInvite(
+					new DeclineAllianceInviteCommand(currentUserContext.PlayerId!, AllianceInviteIdFactory.Create(request.InviteId)));
+				return Ok();
+			} catch (InviteNotFoundException) {
+				return NotFound();
+			}
+		}
+
+		/// <summary>Returns all active invites for the current player.</summary>
+		[HttpGet("my-invites")]
+		[ProducesResponseType(typeof(IEnumerable<AllianceInviteViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<IEnumerable<AllianceInviteViewModel>> GetMyInvites() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var invites = allianceInviteRepository.GetActiveInvitesForPlayer(currentUserContext.PlayerId!);
+			return Ok(invites.Select(i => {
+				string allianceName;
+				try { allianceName = allianceRepository.Get(i.AllianceId)?.Name ?? i.AllianceId.ToString(); }
+				catch { allianceName = i.AllianceId.ToString(); }
+				string inviterName;
+				try { inviterName = playerRepository.Get(i.InviterPlayerId).Name; }
+				catch { inviterName = i.InviterPlayerId.Id; }
+				return new AllianceInviteViewModel {
+					InviteId = i.InviteId.ToString(),
+					AllianceId = i.AllianceId.ToString(),
+					AllianceName = allianceName,
+					InviterPlayerName = inviterName,
+					ExpiresAt = i.ExpiresAt
+				};
+			}));
+		}
+
+		/// <summary>Declares war on another alliance (leader only).</summary>
+		/// <param name="id">The declaring alliance ID.</param>
+		/// <param name="request">The declare war request containing the target alliance ID.</param>
+		[HttpPost("{id}/declare-war")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public ActionResult DeclareWar(string id, [FromBody] DeclareWarRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceWarRepositoryWrite.DeclareWar(
+					new DeclareAllianceWarCommand(currentUserContext.PlayerId!, AllianceIdFactory.Create(request.TargetAllianceId)));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (NotAllianceLeaderException e) {
+				return StatusCode(403, e.Message);
+			} catch (AllianceNotFoundException) {
+				return NotFound();
+			} catch (AlreadyAtWarException e) {
+				return Conflict(e.Message);
+			}
+		}
+
+		/// <summary>Proposes or accepts peace for a war (based on current war state).</summary>
+		/// <param name="warId">The war ID.</param>
+		/// <param name="request">The peace request.</param>
+		[HttpPost("wars/{warId}/peace")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public ActionResult Peace(string warId, [FromBody] PeaceRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				var warIdTyped = AllianceWarIdFactory.Create(warId);
+				var war = allianceWarRepository.GetWar(warIdTyped);
+				var player = playerRepository.Get(currentUserContext.PlayerId!);
+
+				if (war.Status == GameModel.AllianceWarStatus.Active) {
+					allianceWarRepositoryWrite.ProposePeace(new ProposeAlliancePeaceCommand(currentUserContext.PlayerId!, warIdTyped));
+					return Ok();
+				} else if (war.Status == GameModel.AllianceWarStatus.PeaceProposed) {
+					// Proposer cannot accept own proposal — map the leader exception from AcceptPeace to 409
+					try {
+						allianceWarRepositoryWrite.AcceptPeace(new AcceptAlliancePeaceCommand(currentUserContext.PlayerId!, warIdTyped));
+						return Ok();
+					} catch (NotAllianceLeaderException e) {
+						// If the leader tried to accept their own proposal, treat as conflict
+						return Conflict(e.Message);
+					}
+				} else {
+					return BadRequest("War is not in an active state.");
+				}
+			} catch (WarNotFoundException) {
+				return NotFound();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (PeaceAlreadyProposedException e) {
+				return Conflict(e.Message);
+			} catch (NotAtWarException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
+		/// <summary>Returns all active and recent wars for an alliance.</summary>
+		/// <param name="id">The alliance ID.</param>
+		[HttpGet("{id}/wars")]
+		[ProducesResponseType(typeof(IEnumerable<AllianceWarViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult<IEnumerable<AllianceWarViewModel>> GetWars(string id) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var allianceId = AllianceIdFactory.Create(id);
+			if (allianceRepository.Get(allianceId) == null) return NotFound();
+			var wars = allianceWarRepository.GetActiveWars(allianceId);
+			return Ok(wars.Select(w => {
+				string attackerName;
+				try { attackerName = allianceRepository.Get(w.AttackerAllianceId)?.Name ?? w.AttackerAllianceId.ToString(); }
+				catch { attackerName = w.AttackerAllianceId.ToString(); }
+				string defenderName;
+				try { defenderName = allianceRepository.Get(w.DefenderAllianceId)?.Name ?? w.DefenderAllianceId.ToString(); }
+				catch { defenderName = w.DefenderAllianceId.ToString(); }
+				return new AllianceWarViewModel {
+					WarId = w.WarId.ToString(),
+					AttackerAllianceId = w.AttackerAllianceId.ToString(),
+					AttackerAllianceName = attackerName,
+					DefenderAllianceId = w.DefenderAllianceId.ToString(),
+					DefenderAllianceName = defenderName,
+					Status = w.Status.ToString(),
+					DeclaredAt = w.DeclaredAt,
+					ProposerAllianceId = w.ProposerAllianceId?.ToString()
+				};
+			}));
 		}
 	}
 }

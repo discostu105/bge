@@ -37,6 +37,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<AllianceRepositoryWrite>();
 			services.AddSingleton<AllianceChatRepository>();
 			services.AddSingleton<AllianceChatRepositoryWrite>();
+			services.AddSingleton<AllianceInviteRepository>();
+			services.AddSingleton<AllianceInviteRepositoryWrite>();
+			services.AddSingleton<AllianceWarRepository>();
+			services.AddSingleton<AllianceWarRepositoryWrite>();
 			services.AddSingleton<ChatRepositoryWrite>();
 			services.AddSingleton<AllianceScoreRepository>();
 			services.AddSingleton<AssetRepository>();

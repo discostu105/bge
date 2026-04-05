@@ -17,6 +17,7 @@ namespace BrowserGameEngine.GameModel {
 		DateTime Created,
 		IList<AllianceMemberImmutable> Members,
 		string? Message = null,
-		IList<AlliancePostImmutable>? Posts = null
+		IList<AlliancePostImmutable>? Posts = null,
+		IList<AllianceInviteImmutable>? Invites = null
 	);
 }
