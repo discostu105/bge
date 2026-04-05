@@ -1,0 +1,586 @@
+// TypeScript interfaces ported from BrowserGameEngine.Shared C# ViewModels
+
+// Core
+
+export interface CostViewModel {
+  cost: Record<string, number>
+}
+
+export interface UnitDefinitionViewModel {
+  id: string
+  name: string
+  playerTypeRestriction: string
+  cost: CostViewModel
+  attack: number
+  defense: number
+  hitpoints: number
+  speed: number
+  isMobile: boolean
+  prerequisites: string[]
+  prerequisitesMet: boolean
+}
+
+export interface AssetDefinitionViewModel {
+  id: string
+  name: string
+  playerTypeRestriction: string
+  cost: Record<string, number>
+  attack: number
+  defense: number
+  hitpoints: number
+  prerequisites: string[]
+  buildTimeTicks: number
+}
+
+// Assets
+
+export interface AssetViewModel {
+  definition: AssetDefinitionViewModel
+  level: number
+  built: boolean
+  ticksLeftForBuild: number
+  prerequisites: string
+  prerequisitesMet: boolean
+  alreadyQueued: boolean
+  cost: CostViewModel
+  canAfford: boolean
+  availableUnits: UnitDefinitionViewModel[]
+}
+
+export interface AssetsViewModel {
+  assets: AssetViewModel[]
+}
+
+// Units
+
+export interface UnitViewModel {
+  unitId: string
+  definition: UnitDefinitionViewModel
+  count: number
+  positionPlayerId: string | null
+  positionPlayerName: string | null
+}
+
+export interface UnitsViewModel {
+  units: UnitViewModel[]
+}
+
+// Build Queue
+
+export interface BuildQueueEntryViewModel {
+  id: string
+  type: string
+  defId: string
+  name: string
+  count: number
+  priority: number
+}
+
+export interface BuildQueueViewModel {
+  entries: BuildQueueEntryViewModel[]
+}
+
+export interface AddToQueueRequest {
+  type: string
+  defId: string
+  count: number
+}
+
+export interface ReorderQueueRequest {
+  entryId: string
+  newPriority: number
+}
+
+// Resources
+
+export interface PlayerResourcesViewModel {
+  primaryResource: CostViewModel
+  secondaryResources: CostViewModel
+  colonizationCostPerLand: number
+}
+
+// Worker Assignment
+
+export interface WorkerAssignmentViewModel {
+  totalWorkers: number
+  mineralWorkers: number
+  gasWorkers: number
+  idleWorkers: number
+}
+
+// Research / Upgrades
+
+export interface UpgradesViewModel {
+  attackUpgradeLevel: number
+  defenseUpgradeLevel: number
+  upgradeResearchTimer: number
+  upgradeBeingResearched: string
+  maxUpgradeLevel: number
+  nextAttackUpgradeCost: CostViewModel | null
+  nextDefenseUpgradeCost: CostViewModel | null
+  playerType: string
+}
+
+export interface TechNodeViewModel {
+  id: string
+  name: string
+  description: string
+  tier: number
+  cost: CostViewModel
+  researchTimeTicks: number
+  prerequisiteIds: string[]
+  effectType: string
+  effectValue: number
+  status: 'Unlocked' | 'InProgress' | 'Available' | 'Locked'
+}
+
+export interface TechTreeViewModel {
+  playerType: string
+  currentResearchId: string | null
+  researchTimerTicks: number
+  nodes: TechNodeViewModel[]
+}
+
+// Market
+
+export interface MarketOrderViewModel {
+  orderId: string
+  sellerPlayerId: string
+  sellerPlayerName: string
+  offeredResourceId: string
+  offeredResourceName: string
+  offeredAmount: number
+  wantedResourceId: string
+  wantedResourceName: string
+  wantedAmount: number
+  createdAt: string
+  isOwnOrder: boolean
+}
+
+export interface ResourceOptionViewModel {
+  id: string
+  name: string
+}
+
+export interface MarketViewModel {
+  openOrders: MarketOrderViewModel[]
+  currentPlayerId: string
+  resourceOptions: ResourceOptionViewModel[]
+}
+
+export interface CreateMarketOrderRequest {
+  offeredResourceId: string
+  offeredAmount: number
+  wantedResourceId: string
+  wantedAmount: number
+}
+
+// Trade / Colonize
+
+export interface TradeResourceRequest {
+  fromResource: string | null
+  amount: number
+}
+
+// Notifications
+
+export type NotificationKind =
+  | 'Info'
+  | 'Warning'
+  | 'GameEvent'
+  | 'AttackReceived'
+  | 'AllianceRequest'
+  | 'MessageReceived'
+  | 'SpyAttempted'
+
+export interface PlayerNotificationViewModel {
+  id: string
+  message: string
+  kind: NotificationKind
+  createdAt: string
+  isRead: boolean
+}
+
+// Game
+
+export interface GameDetailViewModel {
+  gameId: string
+  name: string
+  gameDefType: string
+  status: string
+  startTime: string
+  endTime: string
+  playerCount: number
+  winnerId: string | null
+  actualEndTime: string | null
+  discordWebhookUrl: string | null
+}
+
+export interface GameSummaryViewModel {
+  gameId: string
+  name: string
+  gameDefType: string
+  status: string
+  playerCount: number
+  maxPlayers: number
+  startTime: string | null
+  endTime: string | null
+  canJoin: boolean
+  winnerId: string | null
+  winnerName: string | null
+  discordWebhookUrl: string | null
+  isPlayerEnrolled: boolean
+}
+
+export interface GameListViewModel {
+  games: GameSummaryViewModel[]
+}
+
+export interface MyGameViewModel {
+  gameId: string
+  gameName: string
+  gameStatus: string
+  playerId: string
+  playerName: string
+}
+
+export interface GameResultEntryViewModel {
+  rank: number
+  playerName: string
+  playerId: string
+  score: number
+  isWinner: boolean
+}
+
+export interface GameResultsViewModel {
+  gameId: string
+  name: string
+  startTime: string
+  actualEndTime: string | null
+  endTime: string
+  standings: GameResultEntryViewModel[]
+  currentPlayerId: string | null
+}
+
+export interface JoinGameRequest {
+  playerName: string
+}
+
+export interface JoinGameViewModel {
+  playerId: string
+}
+
+export interface CreateGameRequest {
+  name: string
+  gameDefType: string
+  startTime: string
+  endTime: string
+  tickDuration: string
+  discordWebhookUrl: string | null
+}
+
+// Players / Profile
+
+export interface PlayerProfileViewModel {
+  playerId: string | null
+  playerName: string | null
+  score: number
+  protectionTicksRemaining: number
+  isOnline: boolean
+  lastOnline: string | null
+}
+
+export interface PublicPlayerViewModel {
+  playerId: string
+  playerName: string
+  score: number
+  isOnline: boolean
+}
+
+export interface InGamePlayerProfileViewModel {
+  playerId: string
+  playerName: string
+  score: number
+  protectionTicksRemaining: number
+  isOnline: boolean
+  lastOnline: string | null
+}
+
+// Rankings
+
+export interface PlayerRankingEntryViewModel {
+  rank: number
+  playerId: string
+  playerName: string
+  score: number
+}
+
+export interface PlayerRankingViewModel {
+  entries: PlayerRankingEntryViewModel[]
+}
+
+// Alliance
+
+export interface AllianceMemberViewModel {
+  playerId: string
+  playerName: string
+  isPending: boolean
+  joinedAt: string
+  voteCount: number
+  isLeader: boolean
+}
+
+export interface AllianceViewModel {
+  allianceId: string
+  name: string
+  message: string | null
+  memberCount: number
+  created: string
+}
+
+export interface AllianceDetailViewModel {
+  allianceId: string
+  name: string
+  message: string | null
+  created: string
+  leaderId: string
+  members: AllianceMemberViewModel[]
+}
+
+export interface MyAllianceStatusViewModel {
+  allianceId: string | null
+  allianceName: string | null
+  isMember: boolean
+  isPending: boolean
+  isLeader: boolean
+}
+
+export interface AllianceRankingEntryViewModel {
+  rank: number
+  allianceId: string
+  allianceName: string
+  memberCount: number
+  totalScore: number
+}
+
+export interface AllianceRankingViewModel {
+  entries: AllianceRankingEntryViewModel[]
+}
+
+// Diplomacy
+
+export interface DiplomacyEntryViewModel {
+  playerId: string
+  playerName: string
+  relationshipStatus: string
+}
+
+export interface DiplomacyViewModel {
+  entries: DiplomacyEntryViewModel[]
+}
+
+// Spy
+
+export interface SpyPlayerEntryViewModel {
+  playerId: string
+  playerName: string
+  spyCount: number
+}
+
+export interface SpyMissionViewModel {
+  id: string
+  targetPlayerId: string
+  targetPlayerName: string
+  missionType: string
+  status: string
+  createdAt: string
+  resolvedAt: string | null
+  result: string | null
+}
+
+export interface SpyReportViewModel {
+  id: string
+  sourceMissionId: string
+  targetPlayerId: string
+  targetPlayerName: string
+  missionType: string
+  success: boolean
+  reportData: string
+  createdAt: string
+}
+
+export interface SpyAttemptViewModel {
+  id: string
+  attackerPlayerName: string
+  missionType: string
+  success: boolean
+  createdAt: string
+}
+
+export interface SendSpyMissionRequest {
+  targetPlayerId: string
+  missionType: string
+}
+
+export interface SendSpyMissionResponse {
+  missionId: string
+  estimatedResolveAt: string
+}
+
+// Enemy Base / Battle
+
+export interface EnemyBaseViewModel {
+  playerId: string
+  playerName: string
+  score: number
+  units: UnitViewModel[]
+  assets: AssetViewModel[]
+}
+
+export interface SelectEnemyEntryViewModel {
+  playerId: string
+  playerName: string
+  score: number
+  protectionTicksRemaining: number
+}
+
+export interface SelectEnemyViewModel {
+  unitId: string
+  unitName: string
+  unitCount: number
+  players: SelectEnemyEntryViewModel[]
+}
+
+// Chat
+
+export interface ChatMessageViewModel {
+  id: string
+  playerName: string
+  playerId: string
+  message: string
+  createdAt: string
+}
+
+export interface ChatViewModel {
+  messages: ChatMessageViewModel[]
+}
+
+export interface PostChatMessageRequest {
+  message: string
+}
+
+// Messages
+
+export interface MessageViewModel {
+  id: string
+  senderId: string
+  senderName: string
+  recipientId: string
+  recipientName: string
+  subject: string
+  body: string
+  isRead: boolean
+  sentAt: string
+}
+
+export interface MessageListViewModel {
+  messages: MessageViewModel[]
+}
+
+export interface SendMessageRequest {
+  recipientId: string
+  subject: string
+  body: string
+}
+
+// Achievements
+
+export interface AchievementViewModel {
+  id: string
+  name: string
+  description: string
+  unlockedAt: string | null
+  isUnlocked: boolean
+}
+
+export interface AchievementsViewModel {
+  achievements: AchievementViewModel[]
+}
+
+// Player History
+
+export interface PlayerHistoryEntryViewModel {
+  gameId: string
+  gameName: string
+  playerName: string
+  rank: number
+  score: number
+  startTime: string
+  endTime: string | null
+}
+
+export interface PlayerHistoryViewModel {
+  entries: PlayerHistoryEntryViewModel[]
+}
+
+// Create Player
+
+export interface CreatePlayerRequest {
+  playerName: string
+  playerType: string
+}
+
+// Unit Definitions
+
+export interface UnitDefinitionsViewModel {
+  unitDefinitions: UnitDefinitionViewModel[]
+}
+
+// Lobby
+
+export interface GameLobbyViewModel {
+  gameId: string
+  gameName: string
+  players: LobbyPlayerViewModel[]
+  startTime: string | null
+  status: string
+}
+
+export interface LobbyPlayerViewModel {
+  playerId: string
+  playerName: string
+  playerType: string
+  isReady: boolean
+}
+
+// Tick info
+
+export interface TickInfoViewModel {
+  currentTick: number
+  tickDuration: string
+  lastTickAt: string
+}
+
+// Version
+
+export interface VersionInfoViewModel {
+  version: string
+  commitHash: string | null
+}
+
+// User Preferences
+
+export interface UserPreferencesViewModel {
+  theme: string
+}
+
+// Profile
+
+export interface ProfileViewModel {
+  userId: string
+  userName: string
+  currentGameId: string | null
+  currentPlayerId: string | null
+  currentPlayerName: string | null
+  isAdmin: boolean
+}
