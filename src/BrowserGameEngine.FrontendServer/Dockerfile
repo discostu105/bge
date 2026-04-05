@@ -1,5 +1,14 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
+FROM node:22-alpine AS react-build
+WORKDIR /app
+COPY ReactClient/package.json ReactClient/package-lock.json* ./
+RUN npm ci
+COPY ReactClient/ ./
+ARG VITE_DEV_AUTH=true
+ENV VITE_DEV_AUTH=$VITE_DEV_AUTH
+RUN npm run build
+
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
@@ -10,13 +19,13 @@ COPY ["BrowserGameEngine.FrontendServer/BrowserGameEngine.FrontendServer.csproj"
 COPY ["BrowserGameEngine.GameDefinition.SCO/BrowserGameEngine.GameDefinition.SCO.csproj", "BrowserGameEngine.GameDefinition.SCO/"]
 COPY ["BrowserGameEngine.GameModel/BrowserGameEngine.GameModel.csproj", "BrowserGameEngine.GameModel/"]
 COPY ["BrowserGameEngine.GameDefinition/BrowserGameEngine.GameDefinition.csproj", "BrowserGameEngine.GameDefinition/"]
-COPY ["BrowserGameEngine.BlazorClient/BrowserGameEngine.BlazorClient.csproj", "BrowserGameEngine.BlazorClient/"]
 COPY ["BrowserGameEngine.Shared/BrowserGameEngine.ViewModels.csproj", "BrowserGameEngine.Shared/"]
 COPY ["BrowserGameEngine.Persistence/BrowserGameEngine.Persistence.csproj", "BrowserGameEngine.Persistence/"]
 COPY ["BrowserGameEngine.Persistence.S3/BrowserGameEngine.Persistence.S3.csproj", "BrowserGameEngine.Persistence.S3/"]
 COPY ["BrowserGameEngine.StatefulGameServer/BrowserGameEngine.StatefulGameServer.csproj", "BrowserGameEngine.StatefulGameServer/"]
 RUN dotnet restore "BrowserGameEngine.FrontendServer/BrowserGameEngine.FrontendServer.csproj"
 COPY . .
+COPY --from=react-build /app/dist BrowserGameEngine.FrontendServer/wwwroot/
 WORKDIR "/src/BrowserGameEngine.FrontendServer"
 RUN dotnet build "BrowserGameEngine.FrontendServer.csproj" -c Release -o /app/build
 

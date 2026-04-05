@@ -288,7 +288,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
                 >
                   <option value="">— Select a player —</option>
                   {players.map((p) => (
-                    <option key={p.playerId ?? ''} value={p.playerId ?? ''}>
+                    <option key={p.playerId ?? ""} value={p.playerId ?? ""}>
                       {p.playerName}
                     </option>
                   ))}

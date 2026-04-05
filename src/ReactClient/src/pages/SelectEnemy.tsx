@@ -23,7 +23,7 @@ export function SelectEnemy({ gameId }: SelectEnemyProps) {
 
   useEffect(() => {
     if (model?.attackablePlayers && model.attackablePlayers.length > 0 && !selectedPlayerId) {
-      setSelectedPlayerId(model.attackablePlayers[0].playerId ?? '')
+      setSelectedPlayerId(model.attackablePlayers[0].playerId ?? "")
     }
   }, [model, selectedPlayerId])
 
@@ -74,7 +74,7 @@ export function SelectEnemy({ gameId }: SelectEnemyProps) {
                 className="w-full rounded border bg-input px-2 py-1.5 text-sm"
               >
                 {model.attackablePlayers.map((p) => (
-                  <option key={p.playerId ?? ''} value={p.playerId ?? ''}>
+                  <option key={p.playerId ?? ""} value={p.playerId ?? ""}>
                     {p.playerName} ({Math.round(p.score)})
                   </option>
                 ))}
