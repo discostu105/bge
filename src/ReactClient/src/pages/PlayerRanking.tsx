@@ -21,7 +21,8 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
     refetchInterval: 30_000,
   })
 
-  const filtered = (players ?? []).filter((p) => {
+  const sorted = [...(players ?? [])].sort((a, b) => b.score - a.score)
+  const filtered = sorted.filter((p) => {
     if (filter === 'human') return !p.isAgent
     if (filter === 'agent') return p.isAgent
     return true
@@ -71,14 +72,23 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
             </thead>
             <tbody className="divide-y">
               {filtered.map((p, i) => (
-                <tr key={p.playerId} className="hover:bg-secondary/20 transition-colors">
+                <tr key={p.playerId} className={cn(
+                  'transition-colors',
+                  p.isCurrentPlayer
+                    ? 'bg-primary/10 border-l-2 border-l-primary font-semibold'
+                    : 'hover:bg-secondary/20'
+                )}>
                   <td className="px-4 py-2 font-mono text-muted-foreground">#{i + 1}</td>
                   <td className="px-4 py-2">
                     <Link
                       to={`/games/${gameId}/player/${p.playerId}`}
-                      className="hover:text-primary transition-colors font-medium"
+                      className={cn(
+                        'hover:text-primary transition-colors font-medium',
+                        p.isCurrentPlayer && 'text-primary'
+                      )}
                     >
                       {p.playerName}
+                      {p.isCurrentPlayer && <span className="ml-1.5 text-xs text-muted-foreground font-normal">(you)</span>}
                     </Link>
                     {p.protectionTicksRemaining > 0 && (
                       <span className="ml-1.5 text-[10px] text-yellow-400" title="Under protection">🛡</span>

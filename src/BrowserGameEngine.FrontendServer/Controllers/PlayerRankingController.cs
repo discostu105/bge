@@ -54,7 +54,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				SpyResult? intel = isOwnPlayer ? null : fogOfWarRepository.GetValidIntel(currentUserContext.PlayerId!, p.PlayerId);
 				var vm = p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, intel, isOwnPlayer);
 				return vm with { IsCurrentPlayer = isOwnPlayer };
-			});
+			}).OrderByDescending(p => p.Score);
 		}
 
 		/// <summary>Returns the current game's leaderboard ranked by score.</summary>

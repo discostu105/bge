@@ -306,6 +306,7 @@ export interface PublicPlayerViewModel {
   approxMinerals: number | null
   approxGas: number | null
   approxHomeUnitCount: number | null
+  isCurrentPlayer: boolean
 }
 
 export interface InGamePlayerProfileViewModel {
