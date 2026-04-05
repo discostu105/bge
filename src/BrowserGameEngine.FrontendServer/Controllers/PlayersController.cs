@@ -16,7 +16,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[AllowAnonymous]
-		[HttpGet("")]
+		[HttpGet("all")]
 		public ActionResult<AllTimePlayerListViewModel> GetAll() {
 			var achievements = globalState.GetAchievements();
 			var grouped = achievements.GroupBy(a => a.UserId);
