@@ -51,7 +51,7 @@
         <div class="card-header">Create Alliance</div>
         <div class="card-body">
             <div class="mb-2">
-                <input class="form-control" placeholder="Alliance name" @bind="createName" />
+                <input class="form-control" placeholder="Alliance name" @bind="createName" @bind:event="oninput" />
             </div>
             <div class="mb-2">
                 <input class="form-control" type="password" placeholder="Password" @bind="createPassword" />
