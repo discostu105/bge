@@ -17,6 +17,7 @@ namespace BrowserGameEngine.Shared {
 		public string? Message { get; set; }
 		public int MemberCount { get; set; }
 		public DateTime Created { get; set; }
+		public bool IsAtWar { get; set; }
 	}
 
 	public class AllianceDetailViewModel {

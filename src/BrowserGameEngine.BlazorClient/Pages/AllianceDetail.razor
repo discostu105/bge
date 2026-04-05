@@ -65,11 +65,68 @@
                     <input class="form-control" type="password" @bind="newPassword" placeholder="New password..." />
                     <button class="btn btn-sm btn-secondary mt-1" @onclick="SetPassword">Change Password</button>
                 </div>
+                <div class="mb-2">
+                    <label>Invite Player</label>
+                    <div class="input-group">
+                        <select class="form-select" @bind="invitePlayerId">
+                            <option value="">— Select a player —</option>
+                            @foreach (var p in (allPlayers ?? Array.Empty<PublicPlayerViewModel>())) {
+                                <option value="@p.PlayerId">@p.PlayerName</option>
+                            }
+                        </select>
+                        <button class="btn btn-sm btn-outline-success" @onclick="InvitePlayer">Invite</button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(inviteResult)) {
+                        <div class="small @(inviteResult.StartsWith("Error") ? "text-danger" : "text-success") mt-1">@inviteResult</div>
+                    }
+                </div>
+                <div class="mb-2">
+                    <label>Declare War</label>
+                    <div class="input-group">
+                        <select class="form-select" @bind="warTargetAllianceId">
+                            <option value="">— Select an alliance —</option>
+                            @foreach (var a in (allAlliances ?? Array.Empty<AllianceListItem>())) {
+                                @if (a.AllianceId != detail?.AllianceId) {
+                                    <option value="@a.AllianceId">@a.Name</option>
+                                }
+                            }
+                        </select>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="DeclareWar">Declare War</button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(warResult)) {
+                        <div class="small @(warResult.StartsWith("Error") ? "text-danger" : "text-success") mt-1">@warResult</div>
+                    }
+                </div>
             </div>
         </div>
     }
 
-    @if (myStatus.IsMember && !myStatus.IsPending) {
+    @if (wars != null && wars.Count > 0) {
+        <h3>Wars</h3>
+        <div class="card mb-3">
+            <div class="card-body">
+                @foreach (var war in wars) {
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="border:1px solid var(--color-border-default); border-radius:var(--radius-md)">
+                        <div>
+                            <span class="badge @(war.Status == "PeaceProposed" ? "bg-warning text-dark" : "bg-danger")">@war.Status</span>
+                            <span class="ms-2">vs <strong>@(war.AttackerAllianceId == detail?.AllianceId ? war.DefenderAllianceName : war.AttackerAllianceName)</strong></span>
+                            <span class="text-muted ms-2" style="font-size:0.8rem">since @war.DeclaredAt.ToString("yyyy-MM-dd")</span>
+                            @if (war.Status == "PeaceProposed" && war.ProposerAllianceId != detail?.AllianceId) {
+                                <span class="badge bg-info ms-2">Peace offered to us</span>
+                            }
+                        </div>
+                        @if (myStatus != null && myStatus.IsLeader && !myStatus.IsPending) {
+                            <button class="btn btn-sm btn-outline-warning" @onclick="() => HandlePeace(war)">
+                                @(war.Status == "PeaceProposed" && war.ProposerAllianceId != detail?.AllianceId ? "Accept Peace" : "Propose Peace")
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (myStatus!.IsMember && !myStatus.IsPending) {
         <h3>Chat</h3>
         <div class="card mb-3">
             <div class="card-body">
@@ -105,11 +162,20 @@
     private AllianceDetailViewModel? detail;
     private MyAllianceStatusViewModel? myStatus;
     private List<AllianceChatPostViewModel>? chatPosts;
+    private List<AllianceWarViewModel>? wars;
+    private PublicPlayerViewModel[]? allPlayers;
+    private AllianceListItem[]? allAlliances;
     private string newMessage = "";
     private string newPassword = "";
     private string newChatBody = "";
+    private string invitePlayerId = "";
+    private string? inviteResult;
+    private string warTargetAllianceId = "";
+    private string? warResult;
     private string? lastError;
     private CancellationTokenSource? _cts;
+
+    private record AllianceListItem(string AllianceId, string Name);
 
     protected override async Task OnInitializedAsync() {
         await Update();
@@ -131,7 +197,30 @@
         if (myStatus?.IsMember == true && myStatus.IsPending == false) {
             chatPosts = await Http.GetFromJsonAsync<List<AllianceChatPostViewModel>>($"api/alliances/{AllianceId}/posts");
         }
+        await LoadWars();
+        if (myStatus?.IsLeader == true && myStatus.IsPending == false) {
+            try {
+                allPlayers = await Http.GetFromJsonAsync<PublicPlayerViewModel[]>("api/playerranking");
+            } catch {
+                allPlayers = Array.Empty<PublicPlayerViewModel>();
+            }
+            try {
+                var allianceList = await Http.GetFromJsonAsync<AllianceViewModel[]>("api/alliances");
+                allAlliances = allianceList?.Select(a => new AllianceListItem(a.AllianceId, a.Name)).ToArray()
+                    ?? Array.Empty<AllianceListItem>();
+            } catch {
+                allAlliances = Array.Empty<AllianceListItem>();
+            }
+        }
         lastError = null;
+    }
+
+    private async Task LoadWars() {
+        try {
+            wars = await Http.GetFromJsonAsync<List<AllianceWarViewModel>>($"api/alliances/{AllianceId}/wars");
+        } catch {
+            wars = new();
+        }
     }
 
     private async Task Accept(string playerId) {
@@ -175,6 +264,36 @@
         var r = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/posts", new PostAllianceChatRequest { Body = newChatBody });
         if (r.IsSuccessStatusCode) { newChatBody = ""; await Update(); }
         else lastError = await r.Content.ReadAsStringAsync();
+    }
+
+    private async Task InvitePlayer() {
+        inviteResult = null;
+        if (string.IsNullOrEmpty(invitePlayerId)) return;
+        var response = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/invite",
+            new InvitePlayerRequest { TargetPlayerId = invitePlayerId });
+        inviteResult = response.IsSuccessStatusCode ? "Invite sent." : $"Error: {await response.Content.ReadAsStringAsync()}";
+        invitePlayerId = "";
+    }
+
+    private async Task DeclareWar() {
+        warResult = null;
+        if (string.IsNullOrEmpty(warTargetAllianceId)) return;
+        var response = await Http.PostAsJsonAsync($"api/alliances/{AllianceId}/declare-war",
+            new DeclareWarRequest { TargetAllianceId = warTargetAllianceId });
+        if (response.IsSuccessStatusCode) {
+            warResult = "War declared.";
+            await LoadWars();
+        } else {
+            warResult = $"Error: {await response.Content.ReadAsStringAsync()}";
+        }
+        warTargetAllianceId = "";
+    }
+
+    private async Task HandlePeace(AllianceWarViewModel war) {
+        var response = await Http.PostAsJsonAsync($"api/alliances/wars/{war.WarId}/peace",
+            new PeaceRequest { WarId = war.WarId });
+        if (response.IsSuccessStatusCode) await LoadWars();
+        else lastError = await response.Content.ReadAsStringAsync();
     }
 
     public void Dispose() {

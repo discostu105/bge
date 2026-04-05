@@ -61,7 +61,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Name = a.Name,
 				Message = a.Message,
 				MemberCount = a.Members.Count(m => !m.IsPending),
-				Created = a.Created
+				Created = a.Created,
+				IsAtWar = allianceWarRepository.GetActiveWars(a.AllianceId).Any()
 			}));
 		}
 
