@@ -64,6 +64,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<FogOfWarRepository>();
 			services.AddSingleton<TechRepository>();
 			services.AddSingleton<TechRepositoryWrite>();
+			services.AddSingleton<TradeRepository>();
+			services.AddSingleton<TradeRepositoryWrite>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
