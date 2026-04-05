@@ -41,6 +41,7 @@ const AdminTickControl = lazy(() => import('@/pages/admin/AdminTickControl').the
 const AdminStats = lazy(() => import('@/pages/admin/AdminStats').then(m => ({ default: m.AdminStats })))
 const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ default: m.PlayersList })))
 const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
+const Help = lazy(() => import('@/pages/Help').then(m => ({ default: m.Help })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -161,6 +162,7 @@ const router = createBrowserRouter([
           { path: 'spy', element: <SpyReportsPage /> },
           { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
           { path: 'unitdefinitions', element: <UnitDefinitions /> },
+          { path: 'help', element: <Help /> },
           { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
           { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
           { path: 'join', element: <JoinGame /> },

@@ -55,7 +55,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Score = scoreRepository.GetScore(player.PlayerId),
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
 				IsOnline = onlineStatusRepository.IsOnline(player.PlayerId),
-				LastOnline = player.LastOnline
+				LastOnline = player.LastOnline,
+				TutorialCompleted = player.State.TutorialCompleted
 			};
 		}
 
@@ -110,6 +111,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			playerRepositoryWrite.CreatePlayer(playerId, currentUserContext.UserId);
 			playerRepositoryWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, model.PlayerName!));
 			currentUserContext.Activate(playerId);
+			return Ok();
+		}
+
+		/// <summary>Marks the tutorial as completed for the current player.</summary>
+		[HttpPost]
+		[Route("complete-tutorial")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult CompleteTutorial() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			playerRepositoryWrite.CompleteTutorial(currentUserContext.PlayerId!);
 			return Ok();
 		}
 

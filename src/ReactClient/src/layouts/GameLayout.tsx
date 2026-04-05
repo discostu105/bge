@@ -6,6 +6,7 @@ import { NavMenu } from '@/components/NavMenu'
 import { PlayerResources } from '@/components/PlayerResources'
 import { NotificationBell } from '@/components/NotificationBell'
 import { NotificationToasts, useNotificationToasts } from '@/components/NotificationToast'
+import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { PageLoader } from '@/components/PageLoader'
 import { useSignalR } from '@/hooks/useSignalR'
 import { cn } from '@/lib/utils'
@@ -196,6 +197,9 @@ function GameLayoutInner() {
 
       {/* Real-time notification toasts */}
       <NotificationToasts toasts={toasts} dismiss={dismiss} gameId={gameId} />
+
+      {/* First-time player tutorial */}
+      <TutorialOverlay />
     </div>
   )
 }

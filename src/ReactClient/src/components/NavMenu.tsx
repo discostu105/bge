@@ -15,6 +15,7 @@ import {
   TrophyIcon,
   BookOpenIcon,
   HistoryIcon,
+  HelpCircleIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
@@ -80,6 +81,7 @@ export function NavMenu() {
         <SectionLabel>Info</SectionLabel>
         <NavItem to={g('unitdefinitions')} icon={BookOpenIcon} label="Unit Types" />
         <NavItem to={g('ranking')} icon={BarChart2Icon} label="Ranking" />
+        <NavItem to={g('help')} icon={HelpCircleIcon} label="Help" />
 
         <SectionLabel>Social</SectionLabel>
         <NavItem to={g('diplomacy')} icon={FlagIcon} label="Diplomacy" />

@@ -26,6 +26,7 @@ namespace BrowserGameEngine.GameModel {
 		IDictionary<string, SpyResult>? LastSpyResults = null,
 		IList<SpyAttemptLog>? SpyAttemptLogs = null,
 		IList<GameNotification>? Notifications = null,
-		IList<SpyMissionImmutable>? SpyMissions = null
+		IList<SpyMissionImmutable>? SpyMissions = null,
+		bool TutorialCompleted = false
 	);
 }
