@@ -1,6 +1,9 @@
 import { chromium } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * Global setup: authenticates as the shared E2E test user via dev auth
