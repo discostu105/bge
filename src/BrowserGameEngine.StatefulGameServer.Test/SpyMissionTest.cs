@@ -102,11 +102,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			}
 
 			var missions = game.SpyMissionRepository.GetMissions(Player1);
-			// If completed (not intercepted), target should have fewer resources
-			if (missions[0].Status == SpyMissionStatus.Completed) {
-				var targetAfter = game.ResourceRepository.GetAmount(Player2, growthResourceId);
-				Assert.True(targetAfter < targetBefore, "Sabotage should have reduced target resources.");
-			}
+			// No counter-intel tech in TestGame so detection probability = 0; mission always completes
+			Assert.Equal(SpyMissionStatus.Completed, missions[0].Status);
+			var targetAfter = game.ResourceRepository.GetAmount(Player2, growthResourceId);
+			Assert.True(targetAfter < targetBefore, "Sabotage should have reduced target resources.");
 		}
 
 		[Fact]
@@ -127,12 +126,12 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			}
 
 			var missions = game.SpyMissionRepository.GetMissions(Player1);
-			if (missions[0].Status == SpyMissionStatus.Completed) {
-				var attackerAfter = game.ResourceRepository.GetAmount(Player1, growthResourceId);
-				var targetAfter = game.ResourceRepository.GetAmount(Player2, growthResourceId);
-				Assert.True(attackerAfter > attackerBefore, "Attacker should have gained resources from steal.");
-				Assert.True(targetAfter < targetBefore, "Target should have lost resources from steal.");
-			}
+			// No counter-intel tech in TestGame so detection probability = 0; mission always completes
+			Assert.Equal(SpyMissionStatus.Completed, missions[0].Status);
+			var attackerAfter = game.ResourceRepository.GetAmount(Player1, growthResourceId);
+			var targetAfter = game.ResourceRepository.GetAmount(Player2, growthResourceId);
+			Assert.True(attackerAfter > attackerBefore, "Attacker should have gained resources from steal.");
+			Assert.True(targetAfter < targetBefore, "Target should have lost resources from steal.");
 		}
 
 		[Fact]
