@@ -690,6 +690,81 @@ resource "aws_cloudwatch_metric_alarm" "unhandled_exceptions" {
   }
 }
 
+# --- Application Log Metric Filter: Game Tick Failures ---
+
+resource "aws_cloudwatch_log_metric_filter" "tick_failures" {
+  name           = "${var.app_name}-tick-failures"
+  log_group_name = aws_cloudwatch_log_group.app.name
+  # Matches structured log lines emitted by GameTickTimerService on tick errors,
+  # as well as the critical guard log from GameTickEngine when a tick hangs.
+  pattern = "?GameTickFailure ?\"CheckAllTicks exceeded\""
+
+  metric_transformation {
+    name          = "GameTickFailures"
+    namespace     = "BGE/Application"
+    value         = "1"
+    default_value = "0"
+  }
+}
+
+# Alert after 3 consecutive 1-minute periods each recording at least one tick failure.
+resource "aws_cloudwatch_metric_alarm" "tick_failures" {
+  alarm_name          = "${var.app_name}-tick-failures"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 3
+  metric_name         = "GameTickFailures"
+  namespace           = "BGE/Application"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 0
+  alarm_description   = "BGE: Game tick failures detected for 3 consecutive minutes"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+# --- Application Log Metric Filter: Container Restarts ---
+
+# Matches the ASP.NET Core hosted-service shutdown log emitted when the container stops.
+# Each occurrence indicates the game server process exited (and ECS will restart it).
+resource "aws_cloudwatch_log_metric_filter" "container_restarts" {
+  name           = "${var.app_name}-container-restarts"
+  log_group_name = aws_cloudwatch_log_group.app.name
+  pattern        = "\"Timed Hosted Service is stopping\""
+
+  metric_transformation {
+    name          = "ContainerRestarts"
+    namespace     = "BGE/Application"
+    value         = "1"
+    default_value = "0"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "container_restarts" {
+  alarm_name          = "${var.app_name}-container-restarts"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ContainerRestarts"
+  namespace           = "BGE/Application"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 0
+  alarm_description   = "BGE: Container/hosted-service restart detected"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
 # --- AWS Budget Alert ---
 
 resource "aws_budgets_budget" "monthly" {
@@ -723,12 +798,9 @@ resource "aws_budgets_budget" "monthly" {
 resource "aws_cloudwatch_dashboard" "production" {
   dashboard_name = "BGE-Production"
 
-  lifecycle {
-    ignore_changes = [dashboard_body]
-  }
-
   dashboard_body = jsonencode({
     widgets = [
+      # Row 0: ECS / ALB infrastructure overview
       {
         type   = "metric"
         x      = 0
@@ -804,6 +876,7 @@ resource "aws_cloudwatch_dashboard" "production" {
           view   = "timeSeries"
         }
       },
+      # Row 6: Latency & ALB health
       {
         type   = "metric"
         x      = 0
@@ -842,11 +915,12 @@ resource "aws_cloudwatch_dashboard" "production" {
           yAxis  = { left = { min = 0 } }
         }
       },
+      # Row 12: Application-level metrics
       {
         type   = "metric"
         x      = 0
         y      = 12
-        width  = 12
+        width  = 8
         height = 6
         properties = {
           title  = "Unhandled Application Exceptions"
@@ -858,6 +932,58 @@ resource "aws_cloudwatch_dashboard" "production" {
           period = 300
           view   = "timeSeries"
           yAxis  = { left = { min = 0 } }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 8
+        y      = 12
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Game Tick Failures"
+          region = var.aws_region
+          metrics = [[
+            "BGE/Application", "GameTickFailures"
+          ]]
+          stat   = "Sum"
+          period = 60
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0 } }
+        }
+      },
+      {
+        type   = "metric"
+        x      = 16
+        y      = 12
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Container Restarts"
+          region = var.aws_region
+          metrics = [[
+            "BGE/Application", "ContainerRestarts"
+          ]]
+          stat   = "Sum"
+          period = 300
+          view   = "timeSeries"
+          yAxis  = { left = { min = 0 } }
+        }
+      },
+      # Row 18: Game tick duration (Logs Insights)
+      {
+        type = "log"
+        x    = 0
+        y    = 18
+        width  = 24
+        height = 6
+        properties = {
+          title   = "Game Tick Duration (ms) — last 3 hours"
+          region  = var.aws_region
+          view    = "timeSeries"
+          stacked = false
+          query   = "SOURCE '/ecs/${var.app_name}' | fields @timestamp, TickDurationMs, PlayerCount, GameId | filter ispresent(TickDurationMs) | stats avg(TickDurationMs) as AvgMs, max(TickDurationMs) as MaxMs, avg(PlayerCount) as AvgPlayers by bin(1m)"
+          period  = 60
         }
       }
     ]

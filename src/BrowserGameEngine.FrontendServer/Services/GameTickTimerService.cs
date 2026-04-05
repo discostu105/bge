@@ -1,10 +1,8 @@
 ﻿using BrowserGameEngine.StatefulGameServer.GameRegistry;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,12 +29,22 @@ namespace BrowserGameEngine.FrontendServer {
 			if (Interlocked.CompareExchange(ref isactive, 1, 0) != 0) return;
 			try {
 				var count = Interlocked.Increment(ref executionCount);
-				var sw = System.Diagnostics.Stopwatch.StartNew();
+				var totalSw = Stopwatch.StartNew();
 				foreach (var instance in gameRegistry.GetAllInstances()) {
-					instance.TickEngine?.CheckAllTicks();
+					var sw = Stopwatch.StartNew();
+					try {
+						instance.TickEngine?.CheckAllTicks();
+					} catch (Exception ex) {
+						logger.LogError(ex, "GameTickFailure GameId={GameId}", instance.Record.GameId.Id);
+					} finally {
+						sw.Stop();
+						logger.LogInformation(
+							"GameTickCompleted GameId={GameId} TickDurationMs={TickDurationMs} PlayerCount={PlayerCount}",
+							instance.Record.GameId.Id, sw.ElapsedMilliseconds, instance.PlayerCount);
+					}
 				}
-				sw.Stop();
-				logger.LogInformation("GameTick #{Count} completed in {ElapsedMs}ms", count, sw.ElapsedMilliseconds);
+				totalSw.Stop();
+				logger.LogInformation("GameTick #{Count} completed in {ElapsedMs}ms", count, totalSw.ElapsedMilliseconds);
 			} finally {
 				Interlocked.Exchange(ref isactive, 0);
 			}
