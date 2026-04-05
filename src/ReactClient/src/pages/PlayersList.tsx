@@ -6,7 +6,7 @@ import type { AllTimePlayerListViewModel } from '@/api/types'
 export function PlayersList() {
   const { data, isLoading } = useQuery<AllTimePlayerListViewModel>({
     queryKey: ['players-list'],
-    queryFn: () => apiClient.get<AllTimePlayerListViewModel>('/api/players').then((r) => r.data),
+    queryFn: () => apiClient.get<AllTimePlayerListViewModel>('/api/players/all').then((r) => r.data),
     refetchInterval: 30_000,
   })
 
