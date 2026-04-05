@@ -8,6 +8,9 @@ import { SpyReports } from '@/pages/SpyReports'
 import { Diplomacy } from '@/pages/Diplomacy'
 import { EnemyBase } from '@/pages/EnemyBase'
 import { SelectEnemy } from '@/pages/SelectEnemy'
+import { Alliances } from '@/pages/Alliances'
+import { AllianceDetail } from '@/pages/AllianceDetail'
+import { AllianceRanking } from '@/pages/AllianceRanking'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -84,6 +87,24 @@ function SelectEnemyPage() {
   return <SelectEnemy gameId={gameId} />
 }
 
+function AlliancesPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Alliances gameId={gameId} />
+}
+
+function AllianceRankingPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <AllianceRanking gameId={gameId} />
+}
+
+function AllianceDetailPage() {
+  const { allianceId } = useParams<{ allianceId: string }>()
+  if (!allianceId) return null
+  return <AllianceDetail allianceId={allianceId} />
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -105,8 +126,8 @@ const router = createBrowserRouter([
       { path: 'chat', element: <TodoPage name="Chat" /> },
       { path: 'messages', element: <TodoPage name="Messages" /> },
       { path: 'ranking', element: <TodoPage name="Player Ranking" /> },
-      { path: 'alliances', element: <TodoPage name="Alliances" /> },
-      { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
+      { path: 'alliances', element: <AlliancesPage /> },
+      { path: 'allianceranking', element: <AllianceRankingPage /> },
       { path: 'diplomacy', element: <DiplomacyPage /> },
       { path: 'spies', element: <SpiesPage /> },
       { path: 'spy', element: <SpyReportsPage /> },
@@ -141,7 +162,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/alliances/:allianceId',
-    element: <TodoPage name="Alliance Detail" />,
+    element: <AllianceDetailPage />,
   },
   {
     path: '/achievements',
