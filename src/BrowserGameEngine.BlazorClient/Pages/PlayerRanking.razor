@@ -47,7 +47,7 @@
                 </thead>
                 <tbody>
                     @foreach (var (rank, item) in group.players) {
-                    <tr>
+                    <tr class="@(item.IsCurrentPlayer ? "table-primary fw-bold" : "")">
                         <td><strong>#@rank</strong></td>
                         <td>
                             @if (GameId != null && item.PlayerId != null) {

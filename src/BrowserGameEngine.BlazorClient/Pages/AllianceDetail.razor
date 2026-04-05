@@ -1,4 +1,5 @@
 @page "/alliances/{AllianceId}"
+@page "/games/{GameId}/alliances/{AllianceId}"
 @using BrowserGameEngine.Shared
 @inject HttpClient Http
 @implements IDisposable
@@ -158,6 +159,7 @@
 
 @code {
     [Parameter] public required string AllianceId { get; set; }
+    [Parameter] public string? GameId { get; set; }
 
     private AllianceDetailViewModel? detail;
     private MyAllianceStatusViewModel? myStatus;
