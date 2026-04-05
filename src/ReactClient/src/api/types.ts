@@ -99,6 +99,19 @@ export interface PlayerResourcesViewModel {
   colonizationCostPerLand: number
 }
 
+// Resource History
+
+export interface ResourceSnapshotViewModel {
+  tick: number
+  minerals: number
+  gas: number
+  land: number
+}
+
+export interface ResourceHistoryViewModel {
+  snapshots: ResourceSnapshotViewModel[]
+}
+
 // Worker Assignment
 
 export interface WorkerAssignmentViewModel {
