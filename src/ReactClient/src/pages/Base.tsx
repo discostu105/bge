@@ -288,7 +288,7 @@ export function Base({ gameId }: BaseProps) {
             />
           ))}
         </div>
-      )}
+      ) : null}
 
       <BuildQueue gameId={gameId} />
 
