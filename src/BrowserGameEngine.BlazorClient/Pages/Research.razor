@@ -119,6 +119,12 @@
 
 	.tech-node-btn:hover { opacity: 0.85; }
 
+	.tech-section-divider {
+		border: none;
+		border-top: 1px solid #374151;
+		margin: 0.5rem 0 1.5rem;
+	}
+
 	@@keyframes tech-pulse {
 		0%, 100% { box-shadow: 0 0 4px var(--race-color); }
 		50%       { box-shadow: 0 0 12px var(--race-color); }
@@ -152,11 +158,9 @@
 			<span class="error">@lastError</span>
 		}
 
-		@if (upgradesModel != null) {
-			<h3>Upgrades</h3>
+		<div class="tech-tree race-@(upgradesModel?.PlayerType.ToLowerInvariant() ?? techTreeModel?.PlayerType.ToLowerInvariant() ?? "")">
 
-			<div class="tech-tree race-@upgradesModel.PlayerType.ToLowerInvariant()">
-
+			@if (upgradesModel != null) {
 				<div class="tech-row">
 					<div class="tech-row-label">Attack</div>
 					@for (int lvl = 1; lvl <= upgradesModel.MaxUpgradeLevel; lvl++) {
@@ -212,14 +216,12 @@
 						}
 					}
 				</div>
+			}
 
-			</div>
-		}
-
-		@if (techTreeModel != null) {
-			<h3>Tech Tree</h3>
-
-			<div class="tech-tree race-@techTreeModel.PlayerType.ToLowerInvariant()">
+			@if (techTreeModel != null) {
+				@if (upgradesModel != null) {
+					<hr class="tech-section-divider" />
+				}
 
 				@foreach (var tier in new[] { 1, 2, 3 }) {
 					var tierNodes = techTreeModel.Nodes.Where(n => n.Tier == tier).ToList();
@@ -256,9 +258,9 @@
 						}
 					</div>
 				}
+			}
 
-			</div>
-		}
+		</div>
 	}
 </div>
 
