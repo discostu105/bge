@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider, Outlet, useParams, Navigate } from 'react-router'
+import { createBrowserRouter, RouterProvider, useParams } from 'react-router'
+import { RootLayout } from '@/layouts/RootLayout'
+import { GameLayout } from '@/layouts/GameLayout'
+import { BareRouteRedirect } from '@/components/BareRouteRedirect'
+import { SignIn } from '@/pages/SignIn'
 import { Base } from '@/pages/Base'
 import { Units } from '@/pages/Units'
 import { Research } from '@/pages/Research'
@@ -8,6 +12,11 @@ import { SpyReports } from '@/pages/SpyReports'
 import { Diplomacy } from '@/pages/Diplomacy'
 import { EnemyBase } from '@/pages/EnemyBase'
 import { SelectEnemy } from '@/pages/SelectEnemy'
+import { Chat } from '@/pages/Chat'
+import { Messages } from '@/pages/Messages'
+import { PlayerRanking } from '@/pages/PlayerRanking'
+import { PlayerProfile } from '@/pages/PlayerProfile'
+import { InGamePlayerProfile } from '@/pages/InGamePlayerProfile'
 import { Index } from '@/pages/Index'
 import { Games } from '@/pages/Games'
 import { GameLobby } from '@/pages/GameLobby'
@@ -33,138 +42,127 @@ function TodoPage({ name }: { name: string }) {
   )
 }
 
-// Game layout wrapper — provides gameId to child pages
-function GameLayout() {
-  const { gameId } = useParams<{ gameId: string }>()
-  if (!gameId) return <Navigate to="/games" />
-  return <Outlet context={{ gameId }} />
-}
-
-// Wrappers that pull gameId from router context
+// Thin wrappers that pluck gameId from router params and pass to page components
 function BasePage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Base gameId={gameId} />
 }
-
 function UnitsPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Units gameId={gameId} />
 }
-
 function ResearchPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Research gameId={gameId} />
 }
-
 function MarketPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Market gameId={gameId} />
 }
-
 function SpiesPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Spies gameId={gameId} />
 }
-
 function SpyReportsPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <SpyReports gameId={gameId} />
 }
-
 function DiplomacyPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Diplomacy gameId={gameId} />
 }
-
 function EnemyBasePage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <EnemyBase gameId={gameId} />
 }
-
 function SelectEnemyPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <SelectEnemy gameId={gameId} />
 }
+function ChatPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Chat gameId={gameId} />
+}
+function MessagesPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Messages gameId={gameId} />
+}
+function PlayerRankingPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <PlayerRanking gameId={gameId} />
+}
+function InGamePlayerProfilePage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <InGamePlayerProfile gameId={gameId} />
+}
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Index />,
-  },
-  {
-    path: '/games',
-    element: <Games />,
-  },
-  {
-    path: '/games/:gameId',
-    element: <GameLayout />,
+    element: <RootLayout />,
     children: [
-      { path: 'base', element: <BasePage /> },
-      { path: 'units', element: <UnitsPage /> },
-      { path: 'research', element: <ResearchPage /> },
-      { path: 'upgrades', element: <ResearchPage /> },
-      { path: 'market', element: <MarketPage /> },
-      { path: 'chat', element: <TodoPage name="Chat" /> },
-      { path: 'messages', element: <TodoPage name="Messages" /> },
-      { path: 'ranking', element: <TodoPage name="Player Ranking" /> },
-      { path: 'alliances', element: <TodoPage name="Alliances" /> },
-      { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
-      { path: 'diplomacy', element: <DiplomacyPage /> },
-      { path: 'spies', element: <SpiesPage /> },
-      { path: 'spy', element: <SpyReportsPage /> },
-      { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
-      { path: 'unitdefinitions', element: <UnitDefinitions /> },
-      { path: 'player/:playerId', element: <TodoPage name="Player Profile" /> },
-      { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
-      { path: 'join', element: <JoinGame /> },
-      { path: 'summary', element: <GameSummary /> },
-      { path: 'results', element: <GameResults /> },
+      { path: '/signin', element: <SignIn /> },
+
+      { path: '/', element: <Index /> },
+      { path: '/games', element: <Games /> },
+
+      {
+        path: '/games/:gameId',
+        element: <GameLayout />,
+        children: [
+          { path: 'base', element: <BasePage /> },
+          { path: 'units', element: <UnitsPage /> },
+          { path: 'research', element: <ResearchPage /> },
+          { path: 'upgrades', element: <ResearchPage /> },
+          { path: 'market', element: <MarketPage /> },
+          { path: 'chat', element: <ChatPage /> },
+          { path: 'messages', element: <MessagesPage /> },
+          { path: 'ranking', element: <PlayerRankingPage /> },
+          { path: 'alliances', element: <TodoPage name="Alliances" /> },
+          { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
+          { path: 'diplomacy', element: <DiplomacyPage /> },
+          { path: 'spies', element: <SpiesPage /> },
+          { path: 'spy', element: <SpyReportsPage /> },
+          { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
+          { path: 'unitdefinitions', element: <UnitDefinitions /> },
+          { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
+          { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
+          { path: 'join', element: <JoinGame /> },
+          { path: 'summary', element: <GameSummary /> },
+          { path: 'results', element: <GameResults /> },
+        ],
+      },
+
+      // Bare routes — redirect to current game
+      { path: '/base', element: <BareRouteRedirect path="base" /> },
+      { path: '/units', element: <BareRouteRedirect path="units" /> },
+      { path: '/research', element: <BareRouteRedirect path="research" /> },
+      { path: '/market', element: <BareRouteRedirect path="market" /> },
+      { path: '/spy', element: <BareRouteRedirect path="spy" /> },
+      { path: '/spies', element: <BareRouteRedirect path="spies" /> },
+
+      { path: '/createplayer', element: <CreatePlayer /> },
+      { path: '/lobby', element: <GameLobby /> },
+      { path: '/profile', element: <PlayerProfile /> },
+      { path: '/profile/:userId', element: <TodoPage name="Public Profile" /> },
+      { path: '/players', element: <TodoPage name="Players" /> },
+      { path: '/alliances/:allianceId', element: <TodoPage name="Alliance Detail" /> },
+      { path: '/achievements', element: <Achievements /> },
+      { path: '/history', element: <PlayerHistory /> },
+      { path: '/admin/games', element: <AdminGames /> },
     ],
-  },
-  {
-    path: '/createplayer',
-    element: <CreatePlayer />,
-  },
-  {
-    path: '/lobby',
-    element: <GameLobby />,
-  },
-  {
-    path: '/profile',
-    element: <TodoPage name="Player Profile" />,
-  },
-  {
-    path: '/profile/:userId',
-    element: <TodoPage name="Public Profile" />,
-  },
-  {
-    path: '/players',
-    element: <TodoPage name="Players" />,
-  },
-  {
-    path: '/alliances/:allianceId',
-    element: <TodoPage name="Alliance Detail" />,
-  },
-  {
-    path: '/achievements',
-    element: <Achievements />,
-  },
-  {
-    path: '/history',
-    element: <PlayerHistory />,
-  },
-  {
-    path: '/admin/games',
-    element: <AdminGames />,
   },
 ])
 
