@@ -43,6 +43,7 @@ const AdminStats = lazy(() => import('@/pages/admin/AdminStats').then(m => ({ de
 const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ default: m.PlayersList })))
 const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
 const Help = lazy(() => import('@/pages/Help').then(m => ({ default: m.Help })))
+const BattleReplay = lazy(() => import('@/pages/BattleReplay').then(m => ({ default: m.BattleReplay })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -128,6 +129,11 @@ function TradePage() {
   if (!gameId) return null
   return <Trade gameId={gameId} />
 }
+function BattleReplayPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <BattleReplay gameId={gameId} />
+}
 function AlliancesPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
@@ -166,6 +172,7 @@ const router = createBrowserRouter([
           { path: 'help', element: <Help /> },
           { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
           { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
+          { path: 'battles/:reportId', element: <BattleReplayPage /> },
           { path: 'join', element: <JoinGame /> },
           { path: 'summary', element: <GameSummary /> },
           { path: 'results', element: <GameResults /> },

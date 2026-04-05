@@ -635,6 +635,48 @@ export interface SelectEnemyViewModel {
   attackablePlayers: PublicPlayerViewModel[]
 }
 
+// Battle Reports
+
+export interface UnitCountViewModel {
+  unitName: string
+  count: number
+}
+
+export interface BattleRoundViewModel {
+  roundNumber: number
+  attackerUnitsRemaining: UnitCountViewModel[]
+  defenderUnitsRemaining: UnitCountViewModel[]
+  attackerCasualties: UnitCountViewModel[]
+  defenderCasualties: UnitCountViewModel[]
+}
+
+export interface BattleReportSummaryViewModel {
+  id: string
+  opponentName: string
+  outcome: string
+  createdAt: string
+}
+
+export interface BattleReportDetailViewModel {
+  id: string
+  attackerId: string
+  attackerName: string
+  defenderId: string
+  defenderName: string
+  attackerRace: string
+  defenderRace: string
+  outcome: string
+  totalAttackerStrengthBefore: number
+  totalDefenderStrengthBefore: number
+  attackerUnitsInitial: UnitCountViewModel[]
+  defenderUnitsInitial: UnitCountViewModel[]
+  rounds: BattleRoundViewModel[]
+  landTransferred: number
+  workersCaptured: number
+  resourcesStolen: Record<string, number>
+  createdAt: string
+}
+
 // Chat
 
 export interface ChatMessageViewModel {

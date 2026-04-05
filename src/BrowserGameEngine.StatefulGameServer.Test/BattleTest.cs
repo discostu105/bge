@@ -120,6 +120,82 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(3, result.DefendingUnitsDestroyed.Sum(x => x.Count));
 			Assert.Equal(1, result.AttackingUnitsDestroyed.Sum(x => x.Count));
 		}
+		[Fact]
+		public void BattleRounds_PopulatedWithCorrectCount() {
+			var battleBehavior = new BattleBehaviorScoOriginal(OutputHelper.ToLogger<IBattleBehavior>());
+
+			var attackers = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+			var defenders = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+
+			var result = battleBehavior.CalculateResult(attackers, defenders);
+
+			Assert.NotNull(result.Rounds);
+			Assert.Equal(8, result.Rounds.Count); // all 8 rounds run (neither side eliminated)
+			Assert.All(result.Rounds, r => Assert.True(r.RoundNumber >= 1 && r.RoundNumber <= 8));
+		}
+
+		[Fact]
+		public void BattleRounds_EarlyTermination_ProducesFewerRounds() {
+			var battleBehavior = new BattleBehaviorScoOriginal(OutputHelper.ToLogger<IBattleBehavior>());
+
+			// Strong attacker destroys weak defender quickly
+			var attackers = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 20, Defense = 10, Count = 10 }
+			};
+			var defenders = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+
+			var result = battleBehavior.CalculateResult(attackers, defenders);
+
+			Assert.NotNull(result.Rounds);
+			Assert.True(result.Rounds.Count < 8, $"Expected fewer than 8 rounds but got {result.Rounds.Count}");
+			// Last round should have no defender units remaining
+			var lastRound = result.Rounds[^1];
+			Assert.Empty(lastRound.DefenderUnitsRemaining);
+		}
+
+		[Fact]
+		public void BattleRounds_CasualtiesSumToTotals() {
+			var battleBehavior = new BattleBehaviorScoOriginal(OutputHelper.ToLogger<IBattleBehavior>());
+
+			var attackers = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+			var defenders = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+
+			var result = battleBehavior.CalculateResult(attackers, defenders);
+
+			int totalAttackerCasualties = result.Rounds.SelectMany(r => r.AttackerCasualties).Sum(u => u.Count);
+			int totalDefenderCasualties = result.Rounds.SelectMany(r => r.DefenderCasualties).Sum(u => u.Count);
+
+			Assert.Equal(result.AttackingUnitsDestroyed.Sum(u => u.Count), totalAttackerCasualties);
+			Assert.Equal(result.DefendingUnitsDestroyed.Sum(u => u.Count), totalDefenderCasualties);
+		}
+
+		[Fact]
+		public void BattleRounds_RoundNumbersAreSequential() {
+			var battleBehavior = new BattleBehaviorScoOriginal(OutputHelper.ToLogger<IBattleBehavior>());
+
+			var attackers = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+			var defenders = new List<BtlUnit> {
+				new BtlUnit { UnitDefId = Id.UnitDef("unit1"), Hitpoints = 100, Attack = 10, Defense = 10, Count = 10 }
+			};
+
+			var result = battleBehavior.CalculateResult(attackers, defenders);
+
+			for (int i = 0; i < result.Rounds.Count; i++) {
+				Assert.Equal(i + 1, result.Rounds[i].RoundNumber);
+			}
+		}
 	}
 
 }

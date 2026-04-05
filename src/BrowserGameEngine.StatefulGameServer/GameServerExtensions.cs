@@ -56,6 +56,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<MessageRepository>();
 			services.AddSingleton<MessageRepositoryWrite>();
 			services.AddSingleton<BattleReportGenerator>();
+			services.AddSingleton<BattleReportRepository>();
+			services.AddSingleton<BattleReportRepositoryWrite>();
 			services.AddSingleton<UpgradeRepository>();
 			services.AddSingleton<UpgradeRepositoryWrite>();
 			services.AddSingleton<BuildQueueRepository>();
