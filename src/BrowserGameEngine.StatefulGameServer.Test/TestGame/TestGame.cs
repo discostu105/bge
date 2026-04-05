@@ -45,6 +45,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public MarketRepository MarketRepository { get; }
 		public SpyRepository SpyRepository { get; }
 		public SpyRepositoryWrite SpyRepositoryWrite { get; }
+		public SpyMissionRepository SpyMissionRepository { get; }
+		public SpyMissionRepositoryWrite SpyMissionRepositoryWrite { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
@@ -87,6 +89,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			MarketRepository = new MarketRepository(Accessor, ResourceRepository, ResourceRepositoryWrite);
 			SpyRepository = new SpyRepository(Accessor, TimeProvider.System);
 			SpyRepositoryWrite = new SpyRepositoryWrite(Accessor, SpyRepository, ResourceRepositoryWrite, TechRepository, GameDef, TimeProvider.System);
+			SpyMissionRepository = new SpyMissionRepository(Accessor);
+			SpyMissionRepositoryWrite = new SpyMissionRepositoryWrite(Accessor, ResourceRepositoryWrite, ResourceRepository, TechRepository, NullNotificationService.Instance, TimeProvider.System, GameDef);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));

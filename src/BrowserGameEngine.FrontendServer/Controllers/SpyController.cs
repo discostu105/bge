@@ -20,6 +20,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly SpyRepositoryWrite spyRepositoryWrite;
 		private readonly SpyRepository spyRepository;
+		private readonly SpyMissionRepositoryWrite spyMissionRepositoryWrite;
+		private readonly SpyMissionRepository spyMissionRepository;
 		private readonly PlayerRepository playerRepository;
 		private readonly UserRepository userRepository;
 		private readonly ScoreRepository scoreRepository;
@@ -30,6 +32,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			CurrentUserContext currentUserContext,
 			SpyRepositoryWrite spyRepositoryWrite,
 			SpyRepository spyRepository,
+			SpyMissionRepositoryWrite spyMissionRepositoryWrite,
+			SpyMissionRepository spyMissionRepository,
 			PlayerRepository playerRepository,
 			UserRepository userRepository,
 			ScoreRepository scoreRepository,
@@ -39,6 +43,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.currentUserContext = currentUserContext;
 			this.spyRepositoryWrite = spyRepositoryWrite;
 			this.spyRepository = spyRepository;
+			this.spyMissionRepositoryWrite = spyMissionRepositoryWrite;
+			this.spyMissionRepository = spyMissionRepository;
 			this.playerRepository = playerRepository;
 			this.userRepository = userRepository;
 			this.scoreRepository = scoreRepository;
@@ -143,6 +149,63 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			} catch (CannotAffordException e) {
 				return BadRequest(e.Message);
 			}
+		}
+
+		/// <summary>Dispatches an offensive spy mission against a target player.</summary>
+		[HttpPost]
+		[Route("api/spy/send")]
+		[ProducesResponseType(typeof(SendSpyMissionResponse), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<SendSpyMissionResponse> Send([FromBody] SendSpyMissionRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			if (!Enum.TryParse<SpyMissionType>(request.MissionType, ignoreCase: true, out var missionType)) {
+				return BadRequest($"Unknown mission type: {request.MissionType}");
+			}
+			try {
+				var (missionId, estimatedResolveAt) = spyMissionRepositoryWrite.SendMission(new SpyMissionCommand(
+					currentUserContext.PlayerId!,
+					PlayerIdFactory.Create(request.TargetPlayerId),
+					missionType
+				));
+				return StatusCode(StatusCodes.Status201Created, new SendSpyMissionResponse {
+					MissionId = missionId,
+					EstimatedResolveAt = estimatedResolveAt
+				});
+			} catch (CannotAffordException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
+		/// <summary>Returns all outgoing spy missions for the current player, most recent first.</summary>
+		[HttpGet]
+		[Route("api/spy/missions")]
+		[ProducesResponseType(typeof(IEnumerable<SpyMissionViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<IEnumerable<SpyMissionViewModel>> Missions() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var currentPlayerId = currentUserContext.PlayerId!;
+			var missions = spyMissionRepository.GetMissions(currentPlayerId);
+			return missions.Select(m => {
+				string targetName;
+				try {
+					var target = playerRepository.Get(m.TargetPlayerId);
+					targetName = target.UserId != null
+						? userRepository.GetDisplayNameByUserId(target.UserId) ?? target.Name
+						: target.Name;
+				} catch {
+					targetName = m.TargetPlayerId.ToString();
+				}
+				return new SpyMissionViewModel {
+					Id = m.Id,
+					TargetPlayerId = m.TargetPlayerId.ToString(),
+					TargetPlayerName = targetName,
+					MissionType = m.MissionType.ToString(),
+					Status = m.Status.ToString(),
+					CreatedAt = m.CreatedAt,
+					Result = m.Result
+				};
+			}).ToList();
 		}
 	}
 }

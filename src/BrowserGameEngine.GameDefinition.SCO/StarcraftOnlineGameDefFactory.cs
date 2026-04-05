@@ -40,6 +40,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("techresearch:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
+					new GameTickModuleDef("spymission:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("gamefinalization:1", new Dictionary<string, string> { }.ToFrozenDictionary())
 				},
 
