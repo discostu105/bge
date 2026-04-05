@@ -23,14 +23,14 @@ CI runs `dotnet build --configuration Release` and `dotnet test` on push/PR to m
 
 ## Architecture
 
-Stateful monolith: per-game world state lives in `WorldState` (one per active game), cross-game state in `GlobalState` (users, game registry, achievements). Both are serialized to blob storage every 10 seconds. A `GameRegistry` singleton manages all active `GameInstance` objects. Blazor WebAssembly client communicates via REST API (no SignalR).
+Stateful monolith: per-game world state lives in `WorldState` (one per active game), cross-game state in `GlobalState` (users, game registry, achievements). Both are serialized to blob storage every 10 seconds. A `GameRegistry` singleton manages all active `GameInstance` objects. React SPA client communicates via REST API and SignalR.
 
 See `docs/ARCHITECTURE.md` for the full architecture reference.
 
 ### Project Dependency Graph (dependencies flow downward only)
 
 ```
-BlazorClient            → Shared (ViewModels only)
+ReactClient             → Shared (ViewModels via API types)
 FrontendServer          → everything (sole composition root)
 StatefulGameServer      → GameDefinition, GameModel, Persistence
 Persistence.S3          → Persistence
@@ -50,7 +50,7 @@ GameDefinition          → (nothing)
 - **StatefulGameServer** — Core engine. `GameRegistry` holds all active `GameInstance` objects. Repositories inject `IWorldStateAccessor` to access the appropriate `WorldState`. Read/write repositories are strictly separated. Game tick modules implement `IGameTickModule`.
 - **Shared** — ViewModels/DTOs. The API contract between server and client.
 - **FrontendServer** — ASP.NET Core host (composition root). Controllers, hosted services, middleware. All game endpoints require `[Authorize]` and must check `CurrentUserContext.IsValid`.
-- **BlazorClient** — Blazor WASM SPA. Only references Shared. Uses `RefreshService` event bus for cross-component updates.
+- **ReactClient** — React SPA (Vite + TypeScript). Communicates with the server via REST API and SignalR.
 
 ### Key Patterns
 
@@ -67,7 +67,7 @@ GameDefinition          → (nothing)
 2. Add or extend repository (read + write); inject `IWorldStateAccessor`, not `WorldState`
 3. Add ViewModel in `Shared`
 4. Add controller endpoint in `FrontendServer/Controllers/`
-5. Add Blazor page in `BlazorClient/Pages/`
+5. Add React page in `ReactClient/src/pages/` and route in `App.tsx`
 6. If tick-based, add `IGameTickModule` and register in `GameServerExtensions`
 
 ## Code Style
