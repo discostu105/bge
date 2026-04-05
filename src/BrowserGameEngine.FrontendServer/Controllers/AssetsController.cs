@@ -79,11 +79,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
-		[HttpPost]
-		public async Task Upgrade(string assetDefId) {
-			throw new NotImplementedException();
-		}
-
 		private AssetViewModel CreateAssetViewModel(AssetDef assetDef) {
 			return new AssetViewModel {
 				Definition = AssetDefinitionViewModel.Create(assetDef),

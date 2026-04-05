@@ -151,27 +151,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
 		}
 
-		[HttpPost("{gameId}/players")]
-		public ActionResult<JoinGameViewModel> JoinGame(string gameId) {
-			if (!currentUserContext.IsValid) return Unauthorized();
-			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
-			if (record == null) return NotFound();
-			if (record.Status != GameStatus.Upcoming && record.Status != GameStatus.Active)
-				return BadRequest("This game is not open for joining.");
-
-			var instance = gameRegistry.TryGetInstance(record.GameId);
-			if (instance == null) return NotFound();
-
-			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			try {
-				playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
-			} catch (PlayerAlreadyExistsException) {
-				return Conflict("You have already joined this game.");
-			}
-			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
-			return Ok(new JoinGameViewModel(currentUserContext.PlayerId!.Id));
-		}
-
 		/// <summary>Updates game settings (name, end time, Discord webhook). Only the game creator may update.</summary>
 		/// <param name="gameId">The game identifier.</param>
 		/// <param name="request">Game update parameters.</param>
