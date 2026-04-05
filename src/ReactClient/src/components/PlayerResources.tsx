@@ -28,7 +28,7 @@ export function PlayerResources({ gameId }: { gameId: string }) {
   if (!resources) return null
 
   return (
-    <div className="flex items-center gap-4 text-sm">
+    <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm whitespace-nowrap">
       {Object.entries(resources.primaryResource.cost).map(([name, value]) => (
         <ResourceEntry key={name} name={name} value={value} />
       ))}

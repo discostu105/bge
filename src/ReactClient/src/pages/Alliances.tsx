@@ -130,7 +130,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 				{!inAlliance && !showCreate && (
 					<button
 						onClick={() => { setShowCreate(true); setError(null); setSuccess(null) }}
-						className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90"
+						className="rounded bg-primary min-h-[44px] px-4 py-2 text-sm text-primary-foreground hover:opacity-90"
 					>
 						Create Alliance
 					</button>
@@ -146,7 +146,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 			{/* Current Alliance Status */}
 			{myStatus?.isMember && (
 				<div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
-					<div className="flex items-center justify-between">
+					<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 						<div>
 							<div className="text-sm text-muted-foreground">Your Alliance</div>
 							<Link
@@ -169,7 +169,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 						<button
 							onClick={() => { setError(null); setSuccess(null); leaveMutation.mutate() }}
 							disabled={leaveMutation.isPending}
-							className="rounded border border-destructive px-3 py-1 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50"
+							className="rounded border border-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50"
 						>
 							{leaveMutation.isPending ? 'Leaving…' : 'Leave Alliance'}
 						</button>
@@ -187,7 +187,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 					</div>
 					<div className="divide-y divide-yellow-700/30">
 						{invites!.map((inv) => (
-							<div key={inv.inviteId} className="flex items-center justify-between px-4 py-3">
+							<div key={inv.inviteId} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3">
 								<div>
 									<span className="font-medium">{inv.allianceName}</span>
 									<span className="ml-2 text-sm text-muted-foreground">
@@ -197,13 +197,13 @@ export function Alliances({ gameId }: AlliancesProps) {
 										expires {relativeTime(inv.expiresAt)}
 									</span>
 								</div>
-								<div className="flex gap-2">
+								<div className="flex gap-2 shrink-0">
 									<button
 										onClick={() => {
 											setError(null); setSuccess(null)
 											acceptInviteMutation.mutate({ allianceId: inv.allianceId, inviteId: inv.inviteId })
 										}}
-										className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90"
+										className="rounded bg-green-600 min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90"
 									>
 										Accept
 									</button>
@@ -212,7 +212,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 											setError(null); setSuccess(null)
 											declineInviteMutation.mutate({ allianceId: inv.allianceId, inviteId: inv.inviteId })
 										}}
-										className="rounded border border-destructive px-2 py-0.5 text-xs text-destructive hover:bg-destructive/10"
+										className="rounded border border-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10"
 									>
 										Decline
 									</button>
@@ -328,7 +328,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 														setJoinAllianceId(a.allianceId)
 														setJoinPassword('')
 													}}
-													className="rounded border border-primary px-2 py-0.5 text-xs text-primary hover:bg-primary/10"
+													className="rounded border border-primary min-h-[36px] px-3 py-1.5 text-xs text-primary hover:bg-primary/10"
 												>
 													Join
 												</button>
@@ -345,7 +345,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 			{/* Join Alliance Modal */}
 			{joinAllianceId && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-					<div className="w-full max-w-sm rounded-lg border bg-card p-6 shadow-xl space-y-4">
+					<div className="w-full max-w-sm mx-4 rounded-lg border bg-card p-6 shadow-xl space-y-4">
 						<div className="flex items-center justify-between">
 							<strong className="text-sm">Join Alliance</strong>
 							<button

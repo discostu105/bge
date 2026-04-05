@@ -139,7 +139,7 @@ export function Messages({ gameId }: MessagesProps) {
         <h1 className="text-xl font-bold">Messages</h1>
         <button
           onClick={() => { setComposing(true); setSelected(null) }}
-          className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="flex items-center gap-1.5 rounded bg-primary min-h-[44px] px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <PenSquareIcon className="h-4 w-4" />
           Compose
@@ -153,7 +153,7 @@ export function Messages({ gameId }: MessagesProps) {
             <button
               onClick={() => setTab('inbox')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 py-2 text-sm',
+                'flex-1 flex items-center justify-center gap-1.5 min-h-[44px] py-2 text-sm',
                 tab === 'inbox' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -168,7 +168,7 @@ export function Messages({ gameId }: MessagesProps) {
             <button
               onClick={() => setTab('sent')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 py-2 text-sm',
+                'flex-1 flex items-center justify-center gap-1.5 min-h-[44px] py-2 text-sm',
                 tab === 'sent' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
               )}
             >

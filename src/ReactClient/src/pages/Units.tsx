@@ -53,13 +53,13 @@ function SplitUnitForm({
       <button
         onClick={() => splitMutation.mutate()}
         disabled={splitMutation.isPending}
-        className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground hover:opacity-90"
+        className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
       >
         Split
       </button>
       <button
         onClick={onDone}
-        className="rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+        className="rounded min-h-[36px] px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
       >
         Cancel
       </button>
@@ -96,18 +96,18 @@ function UnitRow({
         </td>
       )}
       <td className="py-2 px-3">
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {!unit.positionPlayerId && (
             <Link
               to={`/games/${gameId}/selectenemy/${unit.unitId}`}
-              className="rounded bg-destructive px-2 py-0.5 text-xs text-destructive-foreground hover:opacity-90"
+              className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90 inline-flex items-center"
             >
               Attack
             </Link>
           )}
           <button
             onClick={() => onMerge(unit.definition.id)}
-            className="rounded bg-secondary px-2 py-0.5 text-xs text-secondary-foreground hover:opacity-90"
+            className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
           >
             Merge
           </button>
@@ -116,7 +116,7 @@ function UnitRow({
               {!showSplit ? (
                 <button
                   onClick={() => setShowSplit(true)}
-                  className="rounded bg-secondary px-2 py-0.5 text-xs text-secondary-foreground hover:opacity-90"
+                  className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
                 >
                   Split
                 </button>
@@ -197,11 +197,11 @@ export function Units({ gameId }: UnitsProps) {
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => mergeAllMutation.mutate()}
               disabled={mergeAllMutation.isPending}
-              className="rounded bg-secondary px-3 py-1 text-sm text-secondary-foreground hover:opacity-90 disabled:opacity-50"
+              className="rounded bg-secondary min-h-[44px] px-4 py-2 text-sm text-secondary-foreground hover:opacity-90 disabled:opacity-50"
               title="Combine all unit stacks of the same type into single stacks"
             >
               Merge All

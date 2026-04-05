@@ -35,7 +35,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
       key={f}
       onClick={() => setFilter(f)}
       className={cn(
-        'rounded px-3 py-1 text-sm',
+        'rounded min-h-[44px] px-4 py-2 text-sm',
         filter === f
           ? 'bg-primary text-primary-foreground'
           : 'border hover:bg-secondary text-muted-foreground'

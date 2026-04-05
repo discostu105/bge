@@ -60,7 +60,7 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
               </div>
               <button
                 onClick={() => removeMutation.mutate(entry.id)}
-                className="rounded px-2 py-0.5 text-xs text-destructive hover:bg-destructive/10"
+                className="rounded min-h-[36px] px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10"
               >
                 Remove
               </button>

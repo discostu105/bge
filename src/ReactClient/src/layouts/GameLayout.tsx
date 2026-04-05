@@ -1,5 +1,6 @@
-import { Outlet, NavLink, useParams, Navigate } from 'react-router'
-import { GamepadIcon, LogOutIcon } from 'lucide-react'
+import { useState } from 'react'
+import { Outlet, NavLink, useParams, Navigate, useLocation } from 'react-router'
+import { GamepadIcon, LogOutIcon, MenuIcon, XIcon } from 'lucide-react'
 import { CurrentGameProvider, useCurrentGame } from '@/contexts/CurrentGameContext'
 import { NavMenu } from '@/components/NavMenu'
 import { PlayerResources } from '@/components/PlayerResources'
@@ -47,19 +48,49 @@ function TimeRemainingBanner({ endTime }: { endTime: string }) {
 
 function GameLayoutInner() {
   const { gameId, currentGame } = useCurrentGame()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation()
+
+  // Close sidebar on navigation
+  const locationKey = location.pathname
+  const [lastPath, setLastPath] = useState(locationKey)
+  if (locationKey !== lastPath) {
+    setLastPath(locationKey)
+    if (sidebarOpen) setSidebarOpen(false)
+  }
 
   if (!gameId) return <Navigate to="/games" />
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* ── Mobile sidebar overlay ──────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* ── Sidebar ─────────────────────────────────────────── */}
-      <aside className="w-52 shrink-0 flex flex-col border-r bg-card overflow-y-auto">
+      <aside className={cn(
+        'fixed inset-y-0 left-0 z-50 w-52 flex flex-col border-r bg-card overflow-y-auto transition-transform duration-200 ease-in-out md:static md:translate-x-0 md:shrink-0',
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      )}>
         <div className="px-4 py-3 border-b">
-          <div className="flex items-center gap-2">
-            <GamepadIcon className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-sm truncate">
-              {currentGame?.name ?? 'Game'}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <GamepadIcon className="h-5 w-5 text-primary shrink-0" />
+              <span className="font-semibold text-sm truncate">
+                {currentGame?.name ?? 'Game'}
+              </span>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="ml-2 p-1 rounded hover:bg-secondary md:hidden"
+              aria-label="Close menu"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
           </div>
           <NavLink to="/games" className="text-xs text-muted-foreground hover:text-foreground mt-1 block">
             ← All Games
@@ -73,7 +104,7 @@ function GameLayoutInner() {
         <div className="border-t p-3">
           <a
             href="/signout"
-            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground min-h-[44px] items-center"
           >
             <LogOutIcon className="h-3.5 w-3.5" />
             Sign out
@@ -84,9 +115,16 @@ function GameLayoutInner() {
       {/* ── Main area ────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-12 shrink-0 border-b flex items-center justify-between px-4 bg-card">
-          <div />
-          <div className="flex items-center gap-3">
+        <header className="h-12 shrink-0 border-b flex items-center justify-between px-3 sm:px-4 bg-card">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-1 rounded hover:bg-secondary md:hidden"
+            aria-label="Open menu"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </button>
+          <div className="hidden md:block" />
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto">
             <PlayerResources gameId={gameId} />
             <NotificationBell />
           </div>
@@ -101,7 +139,7 @@ function GameLayoutInner() {
         )}
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4">
           <Outlet />
         </main>
       </div>

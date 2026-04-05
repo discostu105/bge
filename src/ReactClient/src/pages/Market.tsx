@@ -108,7 +108,7 @@ export function Market({ gameId }: MarketProps) {
       <h1 className="text-2xl font-bold">Market</h1>
 
       {/* Post Offer */}
-      <div className="rounded-lg border bg-card p-5 max-w-lg">
+      <div className="rounded-lg border bg-card p-4 sm:p-5 max-w-lg">
         <h2 className="font-semibold mb-4">Post Trade Offer</h2>
         {postError && (
           <div className="text-destructive text-sm mb-3">{postError}</div>
@@ -167,7 +167,7 @@ export function Market({ gameId }: MarketProps) {
           <button
             onClick={() => postOfferMutation.mutate()}
             disabled={postOfferMutation.isPending}
-            className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            className="rounded bg-primary min-h-[44px] px-4 py-2 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
             Post Offer
           </button>
@@ -209,7 +209,7 @@ export function Market({ gameId }: MarketProps) {
                         <button
                           onClick={() => cancelMutation.mutate(order.orderId)}
                           disabled={cancelMutation.isPending}
-                          className="rounded bg-destructive px-2 py-0.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
+                          className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
                         >
                           Cancel
                         </button>
@@ -265,7 +265,7 @@ export function Market({ gameId }: MarketProps) {
                         <button
                           onClick={() => acceptMutation.mutate(order.orderId)}
                           disabled={acceptMutation.isPending}
-                          className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
+                          className="rounded bg-green-600 min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
                         >
                           Accept
                         </button>
