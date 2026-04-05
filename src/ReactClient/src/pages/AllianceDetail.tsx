@@ -18,6 +18,7 @@ import type {
 	AllianceWarViewModel,
 	AllianceViewModel,
 	PublicPlayerViewModel,
+	PaginatedResponse,
 } from '@/api/types'
 import { cn, relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
@@ -80,11 +81,12 @@ export function AllianceDetail() {
 		enabled: !!isLeader && showDeclareWar,
 	})
 
-	const { data: allPlayers } = useQuery<PublicPlayerViewModel[]>({
+	const { data: allPlayersResp } = useQuery<PaginatedResponse<PublicPlayerViewModel>>({
 		queryKey: ['players-for-invite'],
-		queryFn: () => apiClient.get('/api/playerranking').then((r) => r.data),
+		queryFn: () => apiClient.get('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
 		enabled: !!isLeader && showInvite,
 	})
+	const allPlayers = allPlayersResp?.items
 
 	// Scroll chat on new posts
 	useEffect(() => {

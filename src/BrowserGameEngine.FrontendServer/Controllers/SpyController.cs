@@ -51,15 +51,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
-		/// <summary>Returns all detected spy attempts against the current player, most recent first.</summary>
+		/// <summary>Returns detected spy attempts against the current player, most recent first. Supports optional pagination via page/pageSize query params.</summary>
 		[HttpGet]
-		[ProducesResponseType(typeof(IEnumerable<SpyAttemptViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PaginatedResponse<SpyAttemptViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<IEnumerable<SpyAttemptViewModel>> Attempts() {
+		public ActionResult<PaginatedResponse<SpyAttemptViewModel>> Attempts([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var currentPlayerId = currentUserContext.PlayerId!;
 			var attempts = spyRepository.GetDetectedSpyAttempts(currentPlayerId);
-			return attempts.Select(a => {
+			var vms = attempts.Select(a => {
 				string attackerName;
 				try {
 					var attacker = playerRepository.Get(a.AttackerPlayerId);
@@ -77,7 +77,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					Detected = a.Detected,
 					Timestamp = a.Timestamp
 				};
-			}).ToList();
+			});
+			return PaginatedResponse<SpyAttemptViewModel>.Create(vms, page, pageSize);
 		}
 
 		/// <summary>Returns all players except the current player, with per-target spy cooldown status, sorted by score descending.</summary>
@@ -177,15 +178,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 		}
 
-		/// <summary>Returns all outgoing spy missions for the current player, most recent first.</summary>
+		/// <summary>Returns outgoing spy missions for the current player, most recent first. Supports optional pagination via page/pageSize query params.</summary>
 		[HttpGet("missions")]
-		[ProducesResponseType(typeof(IEnumerable<SpyMissionViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PaginatedResponse<SpyMissionViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<IEnumerable<SpyMissionViewModel>> Missions() {
+		public ActionResult<PaginatedResponse<SpyMissionViewModel>> Missions([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var currentPlayerId = currentUserContext.PlayerId!;
 			var missions = spyMissionRepository.GetMissions(currentPlayerId);
-			return missions.Select(m => {
+			var vms = missions.Select(m => {
 				string targetName;
 				try {
 					var target = playerRepository.Get(m.TargetPlayerId);
@@ -205,7 +206,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					CreatedAt = m.CreatedAt,
 					Result = m.Result
 				};
-			}).ToList();
+			});
+			return PaginatedResponse<SpyMissionViewModel>.Create(vms, page, pageSize);
 		}
 	}
 }

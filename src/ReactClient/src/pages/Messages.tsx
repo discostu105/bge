@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { PenSquareIcon, InboxIcon, SendIcon, ReplyIcon, MessageSquareIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { MessageInboxViewModel, MessageViewModel, MessageThreadViewModel, SendMessageViewModel, PublicPlayerViewModel } from '@/api/types'
+import type { MessageInboxViewModel, MessageViewModel, MessageThreadViewModel, SendMessageViewModel, PublicPlayerViewModel, PaginatedResponse } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { ChatPanel } from '@/pages/Chat'
@@ -99,23 +99,26 @@ export function Messages({ gameId }: MessagesProps) {
   const [selected, setSelected] = useState<MessageViewModel | null>(null)
   const [composing, setComposing] = useState(false)
 
-  const { data: inbox, isLoading: inboxLoading, error: inboxError, refetch: refetchInbox } = useQuery({
+  const { data: inboxResp, isLoading: inboxLoading, error: inboxError, refetch: refetchInbox } = useQuery({
     queryKey: ['messages-inbox', gameId],
     queryFn: () =>
-      apiClient.get<MessageInboxViewModel>('/api/messages/inbox').then((r) => r.data),
+      apiClient.get<PaginatedResponse<MessageViewModel>>('/api/messages/inbox', { params: { pageSize: 100 } }).then((r) => r.data),
   })
+  const inbox = inboxResp ? { messages: inboxResp.items } as MessageInboxViewModel : undefined
 
-  const { data: sent } = useQuery({
+  const { data: sentResp } = useQuery({
     queryKey: ['messages-sent', gameId],
     queryFn: () =>
-      apiClient.get<MessageInboxViewModel>('/api/messages/sent').then((r) => r.data),
+      apiClient.get<PaginatedResponse<MessageViewModel>>('/api/messages/sent', { params: { pageSize: 100 } }).then((r) => r.data),
   })
+  const sent = sentResp ? { messages: sentResp.items } as MessageInboxViewModel : undefined
 
-  const { data: players = [] } = useQuery({
+  const { data: playersResp } = useQuery({
     queryKey: ['players-list'],
     queryFn: () =>
-      apiClient.get<PublicPlayerViewModel[]>('/api/playerranking').then((r) => r.data),
+      apiClient.get<PaginatedResponse<PublicPlayerViewModel>>('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
   })
+  const players = playersResp?.items ?? []
 
   // Derive thread partner ID as a stable string — never use the `selected` object
   // directly as a query key, as object identity changes on each render and would

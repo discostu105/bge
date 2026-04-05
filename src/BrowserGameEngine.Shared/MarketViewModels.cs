@@ -25,6 +25,10 @@ namespace BrowserGameEngine.Shared {
 		public List<MarketOrderViewModel> OpenOrders { get; set; } = new();
 		public string CurrentPlayerId { get; set; } = "";
 		public List<ResourceOptionViewModel> ResourceOptions { get; set; } = new();
+		public int TotalCount { get; set; }
+		public int Page { get; set; } = 1;
+		public int PageSize { get; set; } = 25;
+		public int TotalPages { get; set; }
 	}
 
 	public record CreateMarketOrderRequest {

@@ -9,6 +9,7 @@ import type {
 	CreateTradeOfferRequest,
 	MarketViewModel,
 	PublicPlayerViewModel,
+	PaginatedResponse,
 } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
@@ -38,10 +39,11 @@ export function Trade({ gameId }: TradeProps) {
 	})
 
 	// Fetch players for target dropdown
-	const { data: players } = useQuery<PublicPlayerViewModel[]>({
+	const { data: playersResp } = useQuery<PaginatedResponse<PublicPlayerViewModel>>({
 		queryKey: ['players-for-trade', gameId],
-		queryFn: () => apiClient.get('/api/playerranking').then((r) => r.data),
+		queryFn: () => apiClient.get('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
 	})
+	const players = playersResp?.items
 
 	// Incoming offers
 	const { data: incoming, isLoading: incomingLoading } = useQuery<TradeOfferViewModel[]>({
