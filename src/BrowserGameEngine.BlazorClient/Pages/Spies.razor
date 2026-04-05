@@ -1,0 +1,225 @@
+@page "/spies"
+@page "/games/{GameId}/spies"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+
+<PageTitle>Intelligence Operations — Age of Agents</PageTitle>
+
+<h1>Intelligence Operations</h1>
+
+@if (!string.IsNullOrEmpty(pageError)) {
+	<div class="alert alert-danger">@pageError</div>
+}
+
+@* ── Send Spy card ──────────────────────────────────────── *@
+<div class="card mb-4">
+	<div class="card-header">
+		<strong>Send Spy</strong>
+	</div>
+	<div class="card-body">
+		@if (players == null) {
+			<p class="text-muted"><em>Loading players...</em></p>
+		} else if (players.Count == 0) {
+			<p class="text-muted">No other players to target.</p>
+		} else {
+			<div class="mb-3">
+				<label class="form-label">Target Player</label>
+				<select class="form-select" style="max-width:300px" @bind="selectedPlayerId">
+					<option value="">— select target —</option>
+					@foreach (var p in players) {
+						<option value="@p.PlayerId">@p.PlayerName (@((int)p.Score) pts)</option>
+					}
+				</select>
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label">Mission Type</label>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="missionType" id="mt-intel"
+					       checked="@(selectedMissionType == MissionTypeIntelligence)"
+					       @onchange="@(() => selectedMissionType = MissionTypeIntelligence)" />
+					<label class="form-check-label" for="mt-intel">
+						<strong>Gather Intelligence</strong> — reveal approximate resources and unit counts
+					</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="missionType" id="mt-sabotage"
+					       checked="@(selectedMissionType == MissionTypeSabotage)"
+					       @onchange="@(() => selectedMissionType = MissionTypeSabotage)" />
+					<label class="form-check-label" for="mt-sabotage">
+						<strong>Sabotage</strong> — destroy a portion of target resources
+					</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="missionType" id="mt-steal"
+					       checked="@(selectedMissionType == MissionTypeSteal)"
+					       @onchange="@(() => selectedMissionType = MissionTypeSteal)" />
+					<label class="form-check-label" for="mt-steal">
+						<strong>Steal Resources</strong> — transfer a portion of target minerals/gas to you
+					</label>
+				</div>
+			</div>
+
+			<p class="text-muted small mb-3">Mission cost: 50 minerals · Risk of interception increases with target counter-intelligence</p>
+
+			@if (!string.IsNullOrEmpty(sendError)) {
+				<div class="alert alert-danger py-2 mb-2">@sendError</div>
+			}
+			@if (!string.IsNullOrEmpty(sendSuccess)) {
+				<div class="alert alert-success py-2 mb-2">@sendSuccess</div>
+			}
+
+			<button class="btn btn-primary"
+			        @onclick="SendMission"
+			        disabled="@(string.IsNullOrEmpty(selectedPlayerId) || sending)">
+				@(sending ? "Sending..." : "Send Spy")
+			</button>
+		}
+	</div>
+</div>
+
+@* ── Active Missions list ───────────────────────────────── *@
+<div class="card mb-4">
+	<div class="card-header d-flex justify-content-between align-items-center">
+		<strong>Active Missions</strong>
+		<button class="btn btn-sm btn-outline-secondary" @onclick="LoadMissions" disabled="@loadingMissions">
+			@(loadingMissions ? "Refreshing..." : "Refresh")
+		</button>
+	</div>
+	<div class="card-body p-0">
+		@if (missions == null) {
+			<p class="text-muted p-3 mb-0"><em>Loading...</em></p>
+		} else if (missions.Count == 0) {
+			<p class="text-muted p-3 mb-0">No active missions.</p>
+		} else {
+			<table class="table table-hover mb-0">
+				<thead>
+					<tr>
+						<th>Target</th>
+						<th>Mission</th>
+						<th>Status</th>
+						<th>Launched</th>
+						<th>Resolved</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var m in missions) {
+						<tr>
+							<td>@m.TargetPlayerName</td>
+							<td>@MissionTypeLabel(m.MissionType)</td>
+							<td><span class="badge @StatusBadgeClass(m.Status)">@StatusLabel(m.Status)</span></td>
+							<td><small>@m.CreatedAt.ToLocalTime().ToString("MM/dd HH:mm")</small></td>
+							<td><small>@(m.ResolvedAt.HasValue ? m.ResolvedAt.Value.ToLocalTime().ToString("MM/dd HH:mm") : "—")</small></td>
+							<td>
+								@if (!string.IsNullOrEmpty(m.Result)) {
+									<button class="btn btn-sm btn-outline-secondary" @onclick="() => ShowDetail(m)">
+										Details
+									</button>
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+	</div>
+</div>
+
+<_SpyMissionDetailModal @ref="detailModal" />
+
+@code {
+	private const string MissionTypeIntelligence = "intelligence";
+	private const string MissionTypeSabotage = "sabotage";
+	private const string MissionTypeSteal = "steal_resources";
+
+	[Parameter]
+	public string? GameId { get; set; }
+
+	private List<PublicPlayerViewModel>? players;
+	private List<SpyMissionViewModel>? missions;
+	private string selectedPlayerId = "";
+	private string selectedMissionType = "intelligence";
+	private bool sending;
+	private bool loadingMissions;
+	private string? sendError;
+	private string? sendSuccess;
+	private string? pageError;
+	private _SpyMissionDetailModal? detailModal;
+
+	protected override async Task OnInitializedAsync() {
+		await Task.WhenAll(LoadPlayers(), LoadMissions());
+	}
+
+	private async Task LoadPlayers() {
+		try {
+			players = await Http.GetFromJsonAsync<List<PublicPlayerViewModel>>("api/playerranking") ?? new();
+			// Remove self — the server may or may not filter this, so dedupe by checking
+		} catch (Exception ex) {
+			pageError = ex.Message;
+			players = new();
+		}
+	}
+
+	private async Task LoadMissions() {
+		loadingMissions = true;
+		try {
+			missions = await Http.GetFromJsonAsync<List<SpyMissionViewModel>>("api/spy/missions") ?? new();
+		} catch {
+			missions = new();
+		}
+		loadingMissions = false;
+	}
+
+	private async Task SendMission() {
+		sendError = null;
+		sendSuccess = null;
+		sending = true;
+		StateHasChanged();
+
+		try {
+			var request = new SendSpyMissionRequest {
+				TargetPlayerId = selectedPlayerId,
+				MissionType = selectedMissionType
+			};
+			var response = await Http.PostAsJsonAsync("api/spy/send", request);
+			if (response.IsSuccessStatusCode) {
+				var result = await response.Content.ReadFromJsonAsync<SendSpyMissionResponse>();
+				sendSuccess = $"Spy dispatched! Estimated resolution: {result?.EstimatedResolveAt.ToLocalTime():HH:mm}";
+				selectedPlayerId = "";
+				await LoadMissions();
+			} else {
+				sendError = await response.Content.ReadAsStringAsync();
+			}
+		} catch (Exception ex) {
+			sendError = ex.Message;
+		}
+
+		sending = false;
+	}
+
+	private void ShowDetail(SpyMissionViewModel mission) {
+		detailModal?.Show(mission);
+	}
+
+	private static string MissionTypeLabel(string type) => type switch {
+		"intelligence" => "Intelligence",
+		"sabotage" => "Sabotage",
+		"steal_resources" => "Steal Resources",
+		_ => type
+	};
+
+	private static string StatusLabel(string status) => status switch {
+		"in_transit" => "In Transit",
+		"completed" => "Completed",
+		"intercepted" => "Intercepted",
+		_ => status
+	};
+
+	private static string StatusBadgeClass(string status) => status switch {
+		"in_transit" => "bg-warning text-dark",
+		"completed" => "bg-success",
+		"intercepted" => "bg-danger",
+		_ => "bg-secondary"
+	};
+}

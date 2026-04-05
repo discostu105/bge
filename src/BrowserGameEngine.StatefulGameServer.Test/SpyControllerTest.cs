@@ -22,6 +22,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userCtx,
 				game.SpyRepositoryWrite,
 				game.SpyRepository,
+				game.SpyMissionRepositoryWrite,
+				game.SpyMissionRepository,
 				game.PlayerRepository,
 				userRepository,
 				game.ScoreRepository,
