@@ -243,13 +243,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
-			// Enforce max players
-			if (record.MaxPlayers > 0 && instance.PlayerCount >= record.MaxPlayers)
-				return BadRequest("This game is full.");
-
-			// Check if user already has a player in this game (by UserId)
-			if (instance.HasUserPlayer(currentUserContext.UserId!)) return Conflict("You have already joined this game.");
-
 			// Validate race selection — default to first available race
 			var playerType = request.PlayerType ?? gameDef.PlayerTypes.First().Id.Id;
 			if (!gameDef.PlayerTypes.Any(pt => pt.Id.Id == playerType))
@@ -257,7 +250,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId, playerType);
+
+			// Atomically check capacity + duplicate user + create player inside the lock
+			var joinResult = playerRepoWrite.TryCreatePlayer(playerId, currentUserContext.UserId, playerType, record.MaxPlayers);
+			if (joinResult == JoinGameResult.GameFull) return BadRequest("This game is full.");
+			if (joinResult == JoinGameResult.AlreadyJoined) return Conflict("You have already joined this game.");
+
 			playerRepoWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, request.PlayerName));
 
 			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName} ({Race})", playerId.Id, gameId, request.PlayerName, playerType);

@@ -1,8 +1,8 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '@/api/client'
-import type { GameLobbyViewModel } from '@/api/types'
+import type { GameLobbyViewModel, RaceListViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { useSignalR } from '@/hooks/useSignalR'
@@ -13,15 +13,6 @@ function statusBadge(status: string): { css: string; label: string } {
     case 'active': return { css: 'bg-success text-success-foreground', label: 'Active' }
     case 'finished': return { css: 'bg-muted text-muted-foreground', label: 'Finished' }
     default: return { css: 'bg-muted text-muted-foreground', label: status }
-  }
-}
-
-function raceLabel(playerType: string): string {
-  switch (playerType) {
-    case 'terran': return 'Terran'
-    case 'protoss': return 'Protoss'
-    case 'zerg': return 'Zerg'
-    default: return playerType
   }
 }
 
@@ -36,6 +27,17 @@ export function GameLobbyDetail() {
     enabled: !!gameId,
     refetchInterval: 15_000,
   })
+
+  const { data: racesData } = useQuery<RaceListViewModel>({
+    queryKey: ['races'],
+    queryFn: () => apiClient.get('/api/games/races').then((r) => r.data),
+    staleTime: Infinity,
+  })
+
+  const raceLabel = useMemo(() => {
+    const map = new Map(racesData?.races.map((r) => [r.id, r.name]) ?? [])
+    return (playerType: string) => map.get(playerType) ?? playerType
+  }, [racesData])
 
   const handleLobbyUpdate = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ['game-lobby', gameId] })

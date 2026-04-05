@@ -4,9 +4,16 @@ using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
+	public enum JoinGameResult {
+		Success,
+		GameFull,
+		AlreadyJoined
+	}
+
 	public class PlayerRepositoryWrite {
 		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
@@ -91,31 +98,50 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void CreatePlayer(PlayerId playerId, string? userId = null, string playerType = "terran") {
 			lock (_lock) {
-				if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
-				world.Players[playerId] = new Player() {
-					Created = timeProvider.GetLocalNow().DateTime,
-					PlayerId = playerId,
-					Name = playerId.Id,
-					PlayerType = Id.PlayerType(playerType),
-					UserId = userId,
-					State = new PlayerState {
-						LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
-						CurrentGameTick = world.GameTickState.CurrentGameTick,
-						Resources = new Dictionary<ResourceDefId, decimal> {
-							{ Id.ResDef("land"), 50 },
-							{ Id.ResDef("minerals"), 5000 },
-							{ Id.ResDef("gas"), 3000 }
-						},
-						Assets = new HashSet<Asset> {
-							new Asset {
-								AssetDefId = Id.AssetDef("commandcenter"),
-								Level = 1
-							},
-						},
-						ProtectionTicksRemaining = 480  // 4 hours at 30s/tick
-					}
-				};
+				CreatePlayerInternal(playerId, userId, playerType);
 			}
+		}
+
+		/// <summary>
+		/// Atomically checks max player capacity and duplicate user, then creates the player.
+		/// Returns a <see cref="JoinGameResult"/> indicating the outcome.
+		/// </summary>
+		public JoinGameResult TryCreatePlayer(PlayerId playerId, string? userId, string playerType, int maxPlayers) {
+			lock (_lock) {
+				if (userId != null && world.Players.Values.Any(p => p.UserId == userId))
+					return JoinGameResult.AlreadyJoined;
+				if (maxPlayers > 0 && world.Players.Count >= maxPlayers)
+					return JoinGameResult.GameFull;
+				CreatePlayerInternal(playerId, userId, playerType);
+				return JoinGameResult.Success;
+			}
+		}
+
+		private void CreatePlayerInternal(PlayerId playerId, string? userId, string playerType) {
+			if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
+			world.Players[playerId] = new Player() {
+				Created = timeProvider.GetLocalNow().DateTime,
+				PlayerId = playerId,
+				Name = playerId.Id,
+				PlayerType = Id.PlayerType(playerType),
+				UserId = userId,
+				State = new PlayerState {
+					LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
+					CurrentGameTick = world.GameTickState.CurrentGameTick,
+					Resources = new Dictionary<ResourceDefId, decimal> {
+						{ Id.ResDef("land"), 50 },
+						{ Id.ResDef("minerals"), 5000 },
+						{ Id.ResDef("gas"), 3000 }
+					},
+					Assets = new HashSet<Asset> {
+						new Asset {
+							AssetDefId = Id.AssetDef("commandcenter"),
+							Level = 1
+						},
+					},
+					ProtectionTicksRemaining = 480  // 4 hours at 30s/tick
+				}
+			};
 		}
 
 		public void CompleteTutorial(PlayerId playerId) {
