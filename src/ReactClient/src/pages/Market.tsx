@@ -182,16 +182,16 @@ export function Market({ gameId }: MarketProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>
                 {myOrders.map((order) => (
-                  <tr key={order.orderId} className="border-b border-border bg-blue-900/10">
+                  <tr key={order.orderId} className="border-b border-border bg-info/10">
                     <td className="py-2 px-3">
                       {order.offeredAmount} {order.offeredResourceName}
                     </td>
@@ -236,12 +236,12 @@ export function Market({ gameId }: MarketProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Seller</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Seller</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>
@@ -265,7 +265,7 @@ export function Market({ gameId }: MarketProps) {
                         <button
                           onClick={() => acceptMutation.mutate(order.orderId)}
                           disabled={acceptMutation.isPending}
-                          className="rounded bg-green-600 min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
+                          className="rounded bg-success min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
                         >
                           Accept
                         </button>

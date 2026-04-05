@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { ShieldIcon, SwordsIcon, UsersIcon } from 'lucide-react'
@@ -138,7 +138,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 			</div>
 
 			{error && <div className="text-destructive text-sm">{error}</div>}
-			{success && <div className="text-green-400 text-sm">{success}</div>}
+			{success && <div className="text-success-foreground text-sm">{success}</div>}
 
 			{alliancesLoading && <PageLoader message="Loading alliances..." />}
 			{alliancesError && !alliances && <ApiError message="Failed to load alliances." onRetry={() => void refetchAlliances()} />}
@@ -156,12 +156,12 @@ export function Alliances({ gameId }: AlliancesProps) {
 								{myStatus.allianceName}
 							</Link>
 							{myStatus.isPending && (
-								<span className="ml-2 rounded bg-yellow-700/30 px-2 py-0.5 text-xs text-yellow-300">
+								<span className="ml-2 rounded bg-warning/30 px-2 py-0.5 text-xs text-warning-foreground">
 									Pending Approval
 								</span>
 							)}
 							{myStatus.isLeader && (
-								<span className="ml-2 rounded bg-amber-700/30 px-2 py-0.5 text-xs text-amber-300">
+								<span className="ml-2 rounded bg-warning/30 px-2 py-0.5 text-xs text-warning-foreground">
 									Leader
 								</span>
 							)}
@@ -179,13 +179,13 @@ export function Alliances({ gameId }: AlliancesProps) {
 
 			{/* Pending Invites */}
 			{(invites?.length ?? 0) > 0 && !inAlliance && (
-				<div className="rounded-lg border border-yellow-700 bg-yellow-900/10">
-					<div className="border-b border-yellow-700 bg-yellow-900/20 px-4 py-3">
-						<strong className="text-sm text-yellow-200">
+				<div className="rounded-lg border border-warning/50 bg-warning/10">
+					<div className="border-b border-warning/50 bg-warning/20 px-4 py-3">
+						<strong className="text-sm text-warning-foreground">
 							Pending Invites ({invites!.length})
 						</strong>
 					</div>
-					<div className="divide-y divide-yellow-700/30">
+					<div className="divide-y divide-warning/30">
 						{invites!.map((inv) => (
 							<div key={inv.inviteId} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3">
 								<div>
@@ -203,7 +203,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 											setError(null); setSuccess(null)
 											acceptInviteMutation.mutate({ allianceId: inv.allianceId, inviteId: inv.inviteId })
 										}}
-										className="rounded bg-green-600 min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90"
+										className="rounded bg-success min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90"
 									>
 										Accept
 									</button>
@@ -284,11 +284,11 @@ export function Alliances({ gameId }: AlliancesProps) {
 						<table className="w-full text-sm">
 							<thead className="border-b">
 								<tr>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Members</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Founded</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Members</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Founded</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
 								</tr>
 							</thead>
 							<tbody>
@@ -311,7 +311,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 										</td>
 										<td className="py-2 px-3">
 											{a.isAtWar && (
-												<span className="inline-flex items-center gap-1 rounded bg-red-700/30 px-2 py-0.5 text-xs text-red-300">
+												<span className="inline-flex items-center gap-1 rounded bg-danger/30 px-2 py-0.5 text-xs text-danger-foreground">
 													<SwordsIcon className="h-3 w-3" />
 													At War
 												</span>
@@ -344,53 +344,97 @@ export function Alliances({ gameId }: AlliancesProps) {
 
 			{/* Join Alliance Modal */}
 			{joinAllianceId && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-					<div className="w-full max-w-sm mx-4 rounded-lg border bg-card p-6 shadow-xl space-y-4">
-						<div className="flex items-center justify-between">
-							<strong className="text-sm">Join Alliance</strong>
-							<button
-								onClick={() => setJoinAllianceId(null)}
-								className="text-muted-foreground hover:text-foreground text-lg"
-							>
-								×
-							</button>
-						</div>
-						<p className="text-sm text-muted-foreground">
-							Enter the alliance password to request membership.
-						</p>
-						<div>
-							<label className="block text-sm text-muted-foreground mb-1">Password</label>
-							<input
-								type="password"
-								value={joinPassword}
-								onChange={(e) => setJoinPassword(e.target.value)}
-								placeholder="Alliance password"
-								className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-								onKeyDown={(e) => {
-									if (e.key === 'Enter' && joinPassword.trim()) {
-										joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })
-									}
-								}}
-							/>
-						</div>
-						<div className="flex gap-2">
-							<button
-								onClick={() => joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })}
-								disabled={!joinPassword.trim() || joinMutation.isPending}
-								className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
-							>
-								{joinMutation.isPending ? 'Joining…' : 'Join'}
-							</button>
-							<button
-								onClick={() => setJoinAllianceId(null)}
-								className="text-sm text-muted-foreground hover:text-foreground"
-							>
-								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
+				<JoinAllianceModal
+					joinAllianceId={joinAllianceId}
+					joinPassword={joinPassword}
+					setJoinPassword={setJoinPassword}
+					joinMutation={joinMutation}
+					onClose={() => setJoinAllianceId(null)}
+				/>
 			)}
+		</div>
+	)
+}
+
+function JoinAllianceModal({
+	joinAllianceId,
+	joinPassword,
+	setJoinPassword,
+	joinMutation,
+	onClose,
+}: {
+	joinAllianceId: string
+	joinPassword: string
+	setJoinPassword: (v: string) => void
+	joinMutation: { mutate: (v: { allianceId: string; password: string }) => void; isPending: boolean }
+	onClose: () => void
+}) {
+	const dialogRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') onClose()
+		}
+		document.addEventListener('keydown', handleKeyDown)
+		dialogRef.current?.focus()
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [onClose])
+
+	return (
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+			<div
+				ref={dialogRef}
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="join-alliance-title"
+				tabIndex={-1}
+				className="w-full max-w-sm rounded-lg border bg-card p-6 shadow-xl space-y-4"
+				onClick={(e) => e.stopPropagation()}
+			>
+				<div className="flex items-center justify-between">
+					<strong id="join-alliance-title" className="text-sm">Join Alliance</strong>
+					<button
+						onClick={onClose}
+						aria-label="Close dialog"
+						className="text-muted-foreground hover:text-foreground text-lg"
+					>
+						×
+					</button>
+				</div>
+				<p className="text-sm text-muted-foreground">
+					Enter the alliance password to request membership.
+				</p>
+				<div>
+					<label className="block text-sm text-muted-foreground mb-1">Password</label>
+					<input
+						type="password"
+						value={joinPassword}
+						onChange={(e) => setJoinPassword(e.target.value)}
+						placeholder="Alliance password"
+						className="w-full rounded border bg-input px-2 py-1.5 text-sm"
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' && joinPassword.trim()) {
+								joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })
+							}
+						}}
+					/>
+				</div>
+				<div className="flex gap-2">
+					<button
+						onClick={() => joinMutation.mutate({ allianceId: joinAllianceId, password: joinPassword })}
+						disabled={!joinPassword.trim() || joinMutation.isPending}
+						className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
+					>
+						{joinMutation.isPending ? 'Joining…' : 'Join'}
+					</button>
+					<button
+						onClick={onClose}
+						className="text-sm text-muted-foreground hover:text-foreground"
+					>
+						Cancel
+					</button>
+				</div>
+			</div>
 		</div>
 	)
 }

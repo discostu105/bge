@@ -90,6 +90,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (record == null) return NotFound();
 
 			var playerCount = GetPlayerCount(record);
+			var winnerName = ResolveWinnerName(record);
 			return Ok(new GameDetailViewModel(
 				GameId: record.GameId.Id,
 				Name: record.Name,
@@ -99,6 +100,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: record.EndTime,
 				PlayerCount: playerCount,
 				WinnerId: record.WinnerId?.Id,
+				WinnerName: winnerName,
 				ActualEndTime: record.ActualEndTime,
 				DiscordWebhookUrl: record.DiscordWebhookUrl,
 				VictoryConditionType: record.VictoryConditionType,
@@ -208,6 +210,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: updated.EndTime,
 				PlayerCount: GetPlayerCount(updated),
 				WinnerId: updated.WinnerId?.Id,
+				WinnerName: ResolveWinnerName(updated),
 				ActualEndTime: updated.ActualEndTime,
 				DiscordWebhookUrl: updated.DiscordWebhookUrl,
 				VictoryConditionType: updated.VictoryConditionType,
@@ -318,13 +321,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			));
 		}
 
+		private string? ResolveWinnerName(GameRecordImmutable record) {
+			if (record.WinnerId == null) return null;
+			return globalState.GetAchievements()
+				.FirstOrDefault(a => a.GameId == record.GameId && a.PlayerId == record.WinnerId)
+				?.PlayerName;
+		}
+
 		private GameSummaryViewModel ToSummary(GameRecordImmutable record) {
-			string? winnerName = null;
-			if (record.WinnerId != null) {
-				winnerName = globalState.GetAchievements()
-					.FirstOrDefault(a => a.GameId == record.GameId && a.PlayerId == record.WinnerId)
-					?.PlayerName;
-			}
+			var winnerName = ResolveWinnerName(record);
 			bool isPlayerEnrolled = false;
 			if (currentUserContext.IsValid && currentUserContext.UserId != null) {
 				var instance = gameRegistry.TryGetInstance(record.GameId);

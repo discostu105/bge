@@ -11,7 +11,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		int PlayerCount,
 		string? WinnerId,
-		DateTime? ActualEndTime,
+		string? WinnerName = null,
+		DateTime? ActualEndTime = null,
 		string? DiscordWebhookUrl = null,
 		string? VictoryConditionType = null,
 		string? VictoryConditionLabel = null

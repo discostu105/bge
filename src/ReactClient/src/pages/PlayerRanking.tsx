@@ -34,6 +34,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
     <button
       key={f}
       onClick={() => setFilter(f)}
+      aria-pressed={filter === f}
       className={cn(
         'rounded min-h-[44px] px-4 py-2 text-sm',
         filter === f
@@ -64,14 +65,14 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
-                <th className="px-4 py-2 text-left w-10">#</th>
-                <th className="px-4 py-2 text-left">Player</th>
-                <th className="px-4 py-2 text-right">Score</th>
-                <th className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
-                <th className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
-                <th className="px-4 py-2 text-right hidden md:table-cell">Units</th>
-                <th className="px-4 py-2 text-center hidden md:table-cell">Type</th>
-                <th className="px-4 py-2 text-center">Status</th>
+                <th scope="col" className="px-4 py-2 text-left w-10">#</th>
+                <th scope="col" className="px-4 py-2 text-left">Player</th>
+                <th scope="col" className="px-4 py-2 text-right">Score</th>
+                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
+                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
+                <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Units</th>
+                <th scope="col" className="px-4 py-2 text-center hidden md:table-cell">Type</th>
+                <th scope="col" className="px-4 py-2 text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -95,7 +96,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                       {p.isCurrentPlayer && <span className="ml-1.5 text-xs text-muted-foreground font-normal">(you)</span>}
                     </Link>
                     {p.protectionTicksRemaining > 0 && (
-                      <span className="ml-1.5 text-[10px] text-yellow-400" title="Under protection">🛡</span>
+                      <span className="ml-1.5 text-[10px] text-warning-foreground" title="Under protection">🛡</span>
                     )}
                   </td>
                   <td className="px-4 py-2 text-right font-mono">{Math.floor(p.score).toLocaleString()}</td>
@@ -111,7 +112,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                   <td className="px-4 py-2 text-center hidden md:table-cell">
                     <span className={cn(
                       'rounded px-1.5 py-0.5 text-[10px] font-medium',
-                      p.isAgent ? 'bg-purple-900/50 text-purple-300' : 'bg-blue-900/50 text-blue-300'
+                      p.isAgent ? 'bg-accent text-accent-foreground' : 'bg-info/50 text-info-foreground'
                     )}>
                       {p.isAgent ? 'AI' : 'Human'}
                     </span>
@@ -119,7 +120,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                   <td className="px-4 py-2 text-center">
                     <span className={cn(
                       'inline-block h-2 w-2 rounded-full',
-                      p.isOnline ? 'bg-green-400' : 'bg-muted-foreground'
+                      p.isOnline ? 'bg-success' : 'bg-muted-foreground'
                     )} title={p.isOnline ? 'Online' : 'Offline'} />
                   </td>
                 </tr>

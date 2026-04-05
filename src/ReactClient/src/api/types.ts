@@ -175,7 +175,45 @@ export interface CreateMarketOrderRequest {
   wantedAmount: number
 }
 
-// Trade / Colonize
+// Trade (player-to-player)
+
+export interface TradeOfferViewModel {
+  offerId: string
+  fromPlayerId: string
+  fromPlayerName: string
+  toPlayerId: string
+  toPlayerName: string
+  offeredAmount: number
+  offeredResourceId: string
+  wantedAmount: number
+  wantedResourceId: string
+  note: string | null
+  sentAt: string
+  status: string
+}
+
+export interface TradeHistoryItemViewModel {
+  offerId: string
+  withPlayerId: string
+  withPlayerName: string
+  gaveAmount: number
+  gaveResourceId: string
+  receivedAmount: number
+  receivedResourceId: string
+  completedAt: string
+  status: string
+}
+
+export interface CreateTradeOfferRequest {
+  targetPlayerId: string
+  offeredResourceId: string
+  offeredAmount: number
+  wantedResourceId: string
+  wantedAmount: number
+  note: string | null
+}
+
+// Colonize
 
 export interface TradeResourceRequest {
   fromResource: string | null
@@ -212,8 +250,11 @@ export interface GameDetailViewModel {
   endTime: string
   playerCount: number
   winnerId: string | null
+  winnerName: string | null
   actualEndTime: string | null
   discordWebhookUrl: string | null
+  victoryConditionType: string | null
+  victoryConditionLabel: string | null
 }
 
 export interface GameSummaryViewModel {
@@ -336,6 +377,14 @@ export interface PlayerRankingEntryViewModel {
 
 export interface PlayerRankingViewModel {
   entries: PlayerRankingEntryViewModel[]
+}
+
+export interface LeaderboardEntryViewModel {
+  rank: number
+  playerId: string
+  playerName: string
+  score: number
+  isCurrentPlayer: boolean
 }
 
 // Alliance
@@ -632,6 +681,12 @@ export interface MessageInboxViewModel {
   messages: MessageViewModel[]
 }
 
+export interface MessageThreadViewModel {
+  withPlayerId: string
+  withPlayerName: string
+  messages: MessageViewModel[]
+}
+
 export interface SendMessageViewModel {
   recipientId: string
   subject: string
@@ -652,7 +707,7 @@ export interface AchievementsViewModel {
   achievements: AchievementViewModel[]
 }
 
-// Player game-completion achievements (api/players/me/achievements)
+// Player game-completion achievements (api/player-management/me/achievements)
 
 export interface PlayerAchievementViewModel {
   achievementType: string

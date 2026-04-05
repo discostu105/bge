@@ -13,6 +13,21 @@ export function UnitDefinitions() {
   if (isLoading) return <PageLoader message="Loading unit definitions..." />
   if (error) return <ApiError message="Failed to load unit definitions." onRetry={() => void refetch()} />
 
+  if (!units || units.length === 0) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">Unit Definitions</h1>
+        <div className="rounded-lg border bg-card p-8 text-center">
+          <div className="text-4xl mb-3" aria-hidden="true">📋</div>
+          <div className="font-semibold mb-1">No unit types available</div>
+          <div className="text-sm text-muted-foreground">
+            Unit definitions will appear here once the game is configured.
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Unit Definitions</h1>
@@ -20,13 +35,13 @@ export function UnitDefinitions() {
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="border-b border-border text-left text-muted-foreground">
-              <th className="py-2 pr-4">ID</th>
-              <th className="py-2 pr-4">Name</th>
-              <th className="py-2 pr-4">Attack</th>
-              <th className="py-2 pr-4">Defense</th>
-              <th className="py-2 pr-4">HP</th>
-              <th className="py-2 pr-4">Speed</th>
-              <th className="py-2">Cost</th>
+              <th scope="col" className="py-2 pr-4">ID</th>
+              <th scope="col" className="py-2 pr-4">Name</th>
+              <th scope="col" className="py-2 pr-4">Attack</th>
+              <th scope="col" className="py-2 pr-4">Defense</th>
+              <th scope="col" className="py-2 pr-4">HP</th>
+              <th scope="col" className="py-2 pr-4">Speed</th>
+              <th scope="col" className="py-2">Cost</th>
             </tr>
           </thead>
           <tbody>

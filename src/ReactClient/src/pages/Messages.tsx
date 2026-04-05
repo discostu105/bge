@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { PenSquareIcon, InboxIcon, SendIcon, ReplyIcon } from 'lucide-react'
+import { PenSquareIcon, InboxIcon, SendIcon, ReplyIcon, MessageSquareIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { MessageInboxViewModel, MessageViewModel, SendMessageViewModel, PublicPlayerViewModel } from '@/api/types'
+import type { MessageInboxViewModel, MessageViewModel, MessageThreadViewModel, SendMessageViewModel, PublicPlayerViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { ChatPanel } from '@/pages/Chat'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -94,7 +95,7 @@ function ComposeForm({
 
 export function Messages({ gameId }: MessagesProps) {
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState<'inbox' | 'sent'>('inbox')
+  const [tab, setTab] = useState<'inbox' | 'sent' | 'chat'>('inbox')
   const [selected, setSelected] = useState<MessageViewModel | null>(null)
   const [composing, setComposing] = useState(false)
 
@@ -116,6 +117,24 @@ export function Messages({ gameId }: MessagesProps) {
       apiClient.get<PublicPlayerViewModel[]>('/api/playerranking').then((r) => r.data),
   })
 
+  // Derive thread partner ID as a stable string — never use the `selected` object
+  // directly as a query key, as object identity changes on each render and would
+  // cause the thread query to re-run in an infinite loop.
+  const threadPartnerId: string | null = selected
+    ? tab === 'inbox'
+      ? (selected.senderId ?? null)
+      : selected.recipientId
+    : null
+
+  const { data: thread } = useQuery({
+    queryKey: ['messages-thread', gameId, threadPartnerId],
+    queryFn: () =>
+      apiClient
+        .get<MessageThreadViewModel>(`/api/messages/thread/${threadPartnerId}`)
+        .then((r) => r.data),
+    enabled: !!threadPartnerId,
+  })
+
   const markRead = useMutation({
     mutationFn: (id: string) => apiClient.post(`/api/messages/${id}/read`, {}),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['messages-inbox'] }),
@@ -124,7 +143,9 @@ export function Messages({ gameId }: MessagesProps) {
   function openMessage(msg: MessageViewModel) {
     setSelected(msg)
     setComposing(false)
-    if (!msg.isRead) markRead.mutate(msg.messageId)
+    // Only mark as read for inbox messages — sent messages are owned by the
+    // recipient and the server will return 403 if we try to mark them read.
+    if (tab === 'inbox' && !msg.isRead) markRead.mutate(msg.messageId)
   }
 
   const messages = tab === 'inbox' ? inbox?.messages ?? [] : sent?.messages ?? []
@@ -137,46 +158,62 @@ export function Messages({ gameId }: MessagesProps) {
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Messages</h1>
+        {tab !== 'chat' && (
+          <button
+            onClick={() => { setComposing(true); setSelected(null) }}
+            className="flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <PenSquareIcon className="h-4 w-4" />
+            Compose
+          </button>
+        )}
+      </div>
+
+      {/* Top-level tabs */}
+      <div className="flex border-b mb-4">
         <button
-          onClick={() => { setComposing(true); setSelected(null) }}
-          className="flex items-center gap-1.5 rounded bg-primary min-h-[44px] px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          onClick={() => setTab('inbox')}
+          className={cn(
+            'flex items-center gap-1.5 px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            tab === 'inbox' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
         >
-          <PenSquareIcon className="h-4 w-4" />
-          Compose
+          <InboxIcon className="h-3.5 w-3.5" />
+          Inbox
+          {unread > 0 && (
+            <span className="ml-1 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+              {unread}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('sent')}
+          className={cn(
+            'flex items-center gap-1.5 min-h-[44px] px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            tab === 'sent' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <SendIcon className="h-3.5 w-3.5" />
+          Sent
+        </button>
+        <button
+          onClick={() => { setTab('chat'); setComposing(false); setSelected(null) }}
+          className={cn(
+            'flex items-center gap-1.5 min-h-[44px] px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
+            tab === 'chat' ? 'border-primary text-foreground font-medium' : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <MessageSquareIcon className="h-3.5 w-3.5" />
+          Alliance Chat
         </button>
       </div>
 
+      {tab === 'chat' ? (
+        <ChatPanel gameId={gameId} />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-4">
         {/* List pane */}
         <div className="rounded-lg border overflow-hidden">
-          <div className="flex border-b">
-            <button
-              onClick={() => setTab('inbox')}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 min-h-[44px] py-2 text-sm',
-                tab === 'inbox' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <InboxIcon className="h-3.5 w-3.5" />
-              Inbox
-              {unread > 0 && (
-                <span className="ml-1 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
-                  {unread}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setTab('sent')}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 min-h-[44px] py-2 text-sm',
-                tab === 'sent' ? 'bg-secondary text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <SendIcon className="h-3.5 w-3.5" />
-              Sent
-            </button>
-          </div>
-
           <ul className="divide-y max-h-[420px] overflow-y-auto">
             {messages.length === 0 ? (
               <li className="px-3 py-4 text-center text-sm text-muted-foreground">Empty</li>
@@ -218,16 +255,39 @@ export function Messages({ gameId }: MessagesProps) {
             </>
           ) : selected ? (
             <div className="space-y-3">
-              <div>
-                <div className="flex justify-between items-start">
-                  <h3 className="font-semibold">{selected.subject}</h3>
-                  <span className="text-xs text-muted-foreground">{relativeTime(selected.sentAt)}</span>
-                </div>
+              <div className="border-b pb-2">
+                <h3 className="font-semibold">{selected.subject}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  From: <span className="text-foreground">{selected.senderName}</span>
+                  {tab === 'sent'
+                    ? <>To: <span className="text-foreground">{selected.recipientName}</span></>
+                    : <>From: <span className="text-foreground">{selected.senderName}</span></>
+                  }
                 </p>
               </div>
-              <p className="text-sm whitespace-pre-wrap">{selected.body}</p>
+              {thread ? (
+                <ul className="space-y-2 max-h-80 overflow-y-auto">
+                  {thread.messages.map((msg) => {
+                    const isMine = msg.senderId !== threadPartnerId && msg.senderId !== null
+                    return (
+                      <li
+                        key={msg.messageId}
+                        className={cn(
+                          'rounded p-2 text-sm',
+                          isMine ? 'ml-6 bg-primary/10' : 'mr-6 bg-secondary'
+                        )}
+                      >
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>{isMine ? 'You' : msg.senderName}</span>
+                          <span>{relativeTime(msg.sentAt)}</span>
+                        </div>
+                        <p className="whitespace-pre-wrap">{msg.body}</p>
+                      </li>
+                    )
+                  })}
+                </ul>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{selected.body}</p>
+              )}
               {tab === 'inbox' && (
                 <button
                   onClick={() => { setComposing(true) }}
@@ -243,6 +303,7 @@ export function Messages({ gameId }: MessagesProps) {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

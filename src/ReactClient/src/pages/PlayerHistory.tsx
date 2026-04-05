@@ -17,9 +17,9 @@ function formatDuration(startIso: string, endIso: string): string {
 }
 
 function rankBadgeClass(rank: number, players: number): string {
-  if (rank === 1) return 'bg-yellow-500 text-black'
-  if (rank === 2) return 'bg-gray-400 text-black'
-  if (rank === 3) return 'bg-amber-700 text-white'
+  if (rank === 1) return 'bg-warning text-black'
+  if (rank === 2) return 'bg-muted-foreground text-black'
+  if (rank === 3) return 'bg-warning/60 text-white'
   if (rank > players / 2) return 'bg-secondary text-secondary-foreground opacity-60'
   return 'bg-secondary text-secondary-foreground'
 }
@@ -53,7 +53,7 @@ export function PlayerHistory() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
           { label: 'Games Played', value: data.totalGames, color: '' },
-          { label: 'Wins', value: data.totalWins, color: 'text-yellow-400' },
+          { label: 'Wins', value: data.totalWins, color: 'text-warning-foreground' },
           { label: 'Best Rank', value: `#${data.bestRank}`, color: '' },
           { label: 'Total Score', value: Number(data.totalScore).toLocaleString(), color: '' },
         ].map(({ label, value, color }) => (
@@ -68,13 +68,13 @@ export function PlayerHistory() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/40">
-              <th className="px-3 py-2 text-left font-medium"></th>
-              <th className="px-3 py-2 text-left font-medium">Game</th>
-              <th className="px-3 py-2 text-left font-medium">Ended</th>
-              <th className="px-3 py-2 text-left font-medium hidden sm:table-cell">Duration</th>
-              <th className="px-3 py-2 text-left font-medium">Rank</th>
-              <th className="px-3 py-2 text-right font-medium">Score</th>
-              <th className="px-3 py-2 text-right font-medium hidden sm:table-cell">Players</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium"></th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">Game</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">Ended</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium hidden sm:table-cell">Duration</th>
+              <th scope="col" className="px-3 py-2 text-left font-medium">Rank</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium hidden sm:table-cell">Players</th>
             </tr>
           </thead>
           <tbody>

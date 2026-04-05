@@ -8,10 +8,10 @@ import { ApiError } from '@/components/ApiError'
 
 function statusBadge(status: string): string {
   switch (status) {
-    case 'Active': return 'bg-green-700 text-white'
-    case 'Upcoming': return 'bg-yellow-500 text-black'
-    case 'Finished': return 'bg-gray-500 text-white'
-    default: return 'bg-gray-300 text-black'
+    case 'Active': return 'bg-success text-success-foreground'
+    case 'Upcoming': return 'bg-warning text-warning-foreground'
+    case 'Finished': return 'bg-muted text-muted-foreground'
+    default: return 'bg-muted text-muted-foreground'
   }
 }
 
@@ -69,8 +69,8 @@ export function JoinGame() {
 
       {alreadyJoined ? (
         <div className="space-y-3">
-          <div className="rounded border border-blue-700 bg-blue-900/20 p-3 text-sm">You have already joined this game.</div>
-          <a href={`/games/${gameId}/base`} className="inline-block text-sm px-4 py-2 rounded bg-blue-700 text-white hover:bg-blue-600">
+          <div className="rounded border border-info/50 bg-info/10 p-3 text-sm">You have already joined this game.</div>
+          <a href={`/games/${gameId}/base`} className="inline-block text-sm px-4 py-2 rounded bg-primary text-primary-foreground hover:opacity-90">
             Play
           </a>
         </div>
@@ -79,7 +79,7 @@ export function JoinGame() {
           <h2 className="font-semibold">Choose your commander</h2>
 
           {joinError && (
-            <div className="rounded border border-red-700 bg-red-900/20 p-2 text-sm text-red-400">{joinError}</div>
+            <div role="alert" className="rounded border border-danger/50 bg-danger/10 p-2 text-sm text-danger-foreground">{joinError}</div>
           )}
 
           <div className="space-y-1">
@@ -96,7 +96,7 @@ export function JoinGame() {
           </div>
 
           <button
-            className="w-full py-2 rounded bg-blue-700 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
+            className="w-full py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
             onClick={handleJoin}
             disabled={joinMutation.isPending}
           >

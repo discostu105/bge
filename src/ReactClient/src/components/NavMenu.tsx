@@ -4,6 +4,7 @@ import {
   ShieldIcon,
   FlaskConicalIcon,
   ShoppingCartIcon,
+  ArrowRightLeftIcon,
   EyeIcon,
   CrosshairIcon,
   BarChart2Icon,
@@ -40,7 +41,7 @@ function NavItem({
           )
         }
       >
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
         {label}
       </NavLink>
     </li>
@@ -65,13 +66,14 @@ export function NavMenu() {
   const g = (path: string) => `/games/${gameId}/${path}`
 
   return (
-    <nav>
+    <nav aria-label="Game navigation">
       <ul className="space-y-0.5">
         <SectionLabel>Play</SectionLabel>
         <NavItem to={g('base')} icon={LayersIcon} label="Base" />
         <NavItem to={g('units')} icon={ShieldIcon} label="Units" />
         <NavItem to={g('research')} icon={FlaskConicalIcon} label="Research" />
         <NavItem to={g('market')} icon={ShoppingCartIcon} label="Market" />
+        <NavItem to={g('trade')} icon={ArrowRightLeftIcon} label="Trade" />
         <NavItem to={g('spy')} icon={EyeIcon} label="Spy" />
         <NavItem to={g('operations')} icon={CrosshairIcon} label="Operations" />
 
