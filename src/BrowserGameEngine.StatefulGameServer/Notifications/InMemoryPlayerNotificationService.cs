@@ -1,3 +1,5 @@
+using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,6 +11,11 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 
 		// Each user has a fixed-capacity ring of notifications; newest first
 		private readonly ConcurrentDictionary<string, LinkedList<PlayerNotification>> _store = new();
+		private readonly IGameEventPublisher eventPublisher;
+
+		public InMemoryPlayerNotificationService(IGameEventPublisher eventPublisher) {
+			this.eventPublisher = eventPublisher;
+		}
 
 		public void Push(string userId, string message, NotificationKind kind) {
 			var notification = new PlayerNotification(
@@ -35,6 +42,13 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 					return existing;
 				}
 			);
+
+			// userId is the PlayerId string for this service
+			eventPublisher.PublishToPlayer(PlayerIdFactory.Create(userId), GameEventTypes.ReceiveAlert, new {
+				message,
+				kind = kind.ToString(),
+				createdAt = notification.CreatedAt
+			});
 		}
 
 		public List<PlayerNotification> GetRecent(string userId, int limit = 20) {

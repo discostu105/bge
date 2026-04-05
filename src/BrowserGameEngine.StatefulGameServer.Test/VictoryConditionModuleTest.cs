@@ -3,6 +3,7 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
@@ -39,7 +40,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				persistenceService,
 				globalPersistenceService,
 				new GameRegistryNs.NullGameNotificationService(),
-				new InMemoryPlayerNotificationService(),
+				new InMemoryPlayerNotificationService(NullGameEventPublisher.Instance),
 				userRepositoryWrite,
 				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance

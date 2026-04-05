@@ -1,8 +1,11 @@
 using Amazon.S3;
 using BrowserGameEngine.FrontendServer;
+using BrowserGameEngine.FrontendServer.Events;
+using BrowserGameEngine.FrontendServer.Hubs;
 using Microsoft.AspNetCore.DataProtection;
 using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.FrontendServer.Services;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.GameModel;
@@ -55,6 +58,9 @@ builder.Services.AddLogging();
 builder.Services.AddHealthChecks()
     .AddCheck<BlobStorageHealthCheck>("blob-storage");
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<PlayerConnectionTracker>();
+builder.Services.AddSingleton<IGameEventPublisher, SignalRGameEventPublisher>();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -210,6 +216,7 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
 app.MapDefaultControllerRoute();
 app.MapRazorPages();
 app.MapControllers();
+app.MapHub<GameHub>("/hubs/game");
 app.MapMetrics();
 app.MapFallbackToFile("index.html", new StaticFileOptions {
 	OnPrepareResponse = ctx => {

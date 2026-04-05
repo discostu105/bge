@@ -1,4 +1,5 @@
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,11 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
+		private readonly IGameEventPublisher eventPublisher;
 
-		public NotificationService(IWorldStateAccessor worldStateAccessor) {
+		public NotificationService(IWorldStateAccessor worldStateAccessor, IGameEventPublisher eventPublisher) {
 			this.worldStateAccessor = worldStateAccessor;
+			this.eventPublisher = eventPublisher;
 		}
 
 		public void Notify(PlayerId playerId, GameNotificationType type, string title, string? body = null) {
@@ -28,6 +31,12 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 			lock (_lock) {
 				world.GetPlayer(playerId).State.Notifications.Add(notification);
 			}
+			eventPublisher.PublishToPlayer(playerId, GameEventTypes.ReceiveNotification, new {
+				type = type.ToString(),
+				title,
+				body,
+				createdAt = notification.CreatedAt
+			});
 		}
 
 		public void MarkRead(PlayerId playerId, Guid notificationId) {
