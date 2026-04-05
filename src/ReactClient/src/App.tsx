@@ -67,7 +67,7 @@ function MarketPage() {
   if (!gameId) return null
   return <Market gameId={gameId} />
 }
-function SpiesPage() {
+function OperationsPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Spies gameId={gameId} />
@@ -142,7 +142,7 @@ const router = createBrowserRouter([
           { path: 'alliances', element: <AlliancesPage /> },
           { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
           { path: 'diplomacy', element: <DiplomacyPage /> },
-          { path: 'spies', element: <SpiesPage /> },
+          { path: 'operations', element: <OperationsPage /> },
           { path: 'spy', element: <SpyReportsPage /> },
           { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
           { path: 'unitdefinitions', element: <UnitDefinitions /> },
@@ -160,7 +160,7 @@ const router = createBrowserRouter([
       { path: '/research', element: <BareRouteRedirect path="research" /> },
       { path: '/market', element: <BareRouteRedirect path="market" /> },
       { path: '/spy', element: <BareRouteRedirect path="spy" /> },
-      { path: '/spies', element: <BareRouteRedirect path="spies" /> },
+      { path: '/operations', element: <BareRouteRedirect path="operations" /> },
 
       { path: '/createplayer', element: <CreatePlayer /> },
       { path: '/lobby', element: <GameLobby /> },
