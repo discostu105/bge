@@ -28,6 +28,10 @@ export default async function globalSetup() {
 		form: { playerid: 'e2e-test-admin', returnUrl: '/' },
 	})
 
+	// Dismiss the new-player tutorial overlay so it never blocks UI interactions
+	// in tests that use the shared auth state.
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`)
+
 	// Save auth cookies so all tests share the session
 	await context.storageState({ path: path.join(authDir, 'state.json') })
 	await browser.close()

@@ -97,10 +97,11 @@ test.describe('Join game and navigate in-game pages', () => {
 
 test.describe('Create player', () => {
 	test('create player page renders and form is functional', async ({ page }) => {
-		// Sign in as a fresh user who has no player profile yet
+		// Sign in as a fresh user who has no player profile yet.
+		// createPlayer=false skips the automatic player creation so /createplayer works as intended.
 		const freshUserId = `e2e-newuser-${Date.now()}`
 		await page.request.post(`${baseURL}/signindev`, {
-			form: { playerid: freshUserId, returnUrl: '/' },
+			form: { playerid: freshUserId, returnUrl: '/', createPlayer: 'false' },
 		})
 
 		await page.goto('/createplayer')

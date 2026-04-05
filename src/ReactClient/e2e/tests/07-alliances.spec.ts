@@ -38,6 +38,8 @@ async function signInFreshUser(
 	const page = await context.newPage()
 	// signindev creates the user AND the player in the default game world state
 	await page.request.post(`${baseURL}/signindev`, { form: { playerid: playerId, returnUrl: '/' } })
+	// Dismiss the new-player tutorial overlay so it never blocks UI interactions
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`)
 	return { page, context, playerId }
 }
 
@@ -77,13 +79,14 @@ test('player joins alliance with password and leader accepts via UI', async ({ b
 	const { page: memberPage, context: memberCtx } = await signInFreshUser(browser, 'joiner')
 
 	// Leader creates alliance via API
+	// The endpoint returns the alliance ID as plain text (not JSON-encoded), so use .text()
 	const allianceName = `JoinTest-${Date.now()}`
 	const password = 'joinpass'
 	const createRes = await leaderPage.request.post(`${baseURL}/api/alliances`, {
 		data: { allianceName, password },
 	})
 	expect(createRes.ok()).toBeTruthy()
-	const allianceId = (await createRes.json()) as string
+	const allianceId = await createRes.text()
 
 	const gameId = await createNavGame(leaderPage)
 
@@ -125,12 +128,13 @@ test('leader invites player and invitee accepts invite via UI', async ({ browser
 	const { page: inviteePage, context: inviteeCtx, playerId: inviteePlayerId } = await signInFreshUser(browser, 'invitee')
 
 	// Leader creates alliance via API
+	// The endpoint returns the alliance ID as plain text (not JSON-encoded), so use .text()
 	const allianceName = `InviteTest-${Date.now()}`
 	const createRes = await leaderPage.request.post(`${baseURL}/api/alliances`, {
 		data: { allianceName, password: 'invpass' },
 	})
 	expect(createRes.ok()).toBeTruthy()
-	const allianceId = (await createRes.json()) as string
+	const allianceId = await createRes.text()
 
 	// Leader sends an invite via API (avoids dropdown complexity in UI)
 	const inviteRes = await leaderPage.request.post(`${baseURL}/api/alliances/${allianceId}/invite`, {
