@@ -79,6 +79,65 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok();
 		}
 
+		/// <summary>Returns all messages sent by the current player.</summary>
+		[HttpGet("sent")]
+		[ProducesResponseType(typeof(MessageInboxViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<MessageInboxViewModel> Sent() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var messages = messageRepository.GetSentMessages(currentUserContext.PlayerId!)
+				.Select(m => ToViewModel(m))
+				.ToList();
+			return new MessageInboxViewModel { Messages = messages };
+		}
+
+		/// <summary>Returns the message thread between the current player and another player.</summary>
+		/// <param name="withPlayerId">The other player's ID.</param>
+		[HttpGet("thread/{withPlayerId}")]
+		[ProducesResponseType(typeof(MessageThreadViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public ActionResult<MessageThreadViewModel> GetThread(string withPlayerId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var otherId = PlayerIdFactory.Create(withPlayerId);
+			if (!playerRepository.Exists(otherId)) return BadRequest("Player not found.");
+			var messages = messageRepository.GetThread(currentUserContext.PlayerId!, otherId)
+				.Select(m => ToViewModel(m))
+				.ToList();
+			var otherName = playerRepository.Get(otherId).Name;
+			return new MessageThreadViewModel {
+				WithPlayerId = withPlayerId,
+				WithPlayerName = otherName,
+				Messages = messages
+			};
+		}
+
+		/// <summary>Replies to a message (sends a new message to the original sender).</summary>
+		/// <param name="id">The original message ID.</param>
+		/// <param name="model">The reply body.</param>
+		[HttpPost("{id}/reply")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		public ActionResult Reply(string id, [FromBody] ReplyMessageViewModel model) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var messageId = MessageIdFactory.Create(id);
+			if (!messageRepository.IsRecipient(currentUserContext.PlayerId!, messageId)) return Forbid();
+			var inbox = messageRepository.GetMessages(currentUserContext.PlayerId!);
+			var original = inbox.FirstOrDefault(m => m.Id == messageId);
+			if (original == null) return BadRequest("Message not found.");
+			if (original.SenderId == null) return BadRequest("Cannot reply to system messages.");
+			if (string.IsNullOrWhiteSpace(model.Body)) return BadRequest("Body is required.");
+			messageRepositoryWrite.Send(new SendMessageCommand(
+				SenderId: currentUserContext.PlayerId!,
+				RecipientId: original.SenderId,
+				Subject: $"Re: {original.Subject}",
+				Body: model.Body
+			));
+			return Ok();
+		}
+
 		private MessageViewModel ToViewModel(MessageImmutable message) {
 			var senderName = message.SenderId != null && playerRepository.Exists(message.SenderId)
 				? playerRepository.Get(message.SenderId).Name

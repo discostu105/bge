@@ -22,4 +22,14 @@ namespace BrowserGameEngine.Shared {
 		public string Subject { get; set; } = "";
 		public string Body { get; set; } = "";
 	}
+
+	public class MessageThreadViewModel {
+		public string WithPlayerId { get; set; } = "";
+		public string WithPlayerName { get; set; } = "";
+		public List<MessageViewModel> Messages { get; set; } = new();
+	}
+
+	public class ReplyMessageViewModel {
+		public string Body { get; set; } = "";
+	}
 }
