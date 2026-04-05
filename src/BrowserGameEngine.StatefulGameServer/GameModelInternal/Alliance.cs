@@ -39,6 +39,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public string? Message { get; set; }
 		public List<AlliancePost> Posts { get; set; } = new List<AlliancePost>();
 		public List<AllianceInvite> Invites { get; set; } = new List<AllianceInvite>();
+		public AllianceElection? ActiveElection { get; set; }
+		public List<AllianceElection> ElectionHistory { get; set; } = new List<AllianceElection>();
 	}
 
 	internal static class AllianceExtensions {
@@ -114,7 +116,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Members: alliance.Members.Select(m => m.ToImmutable()).ToList(),
 				Message: alliance.Message,
 				Posts: alliance.Posts.Select(p => p.ToImmutable()).ToList(),
-				Invites: alliance.Invites.Select(i => i.ToImmutable()).ToList()
+				Invites: alliance.Invites.Select(i => i.ToImmutable()).ToList(),
+				ActiveElection: alliance.ActiveElection?.ToImmutable(),
+				ElectionHistory: alliance.ElectionHistory.Select(e => e.ToImmutable()).ToList()
 			);
 		}
 
@@ -128,7 +132,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Members = alliance.Members.Select(m => m.ToMutable()).ToList(),
 				Message = alliance.Message,
 				Posts = alliance.Posts?.Select(p => p.ToMutable()).ToList() ?? new List<AlliancePost>(),
-				Invites = alliance.Invites?.Select(i => i.ToMutable()).ToList() ?? new List<AllianceInvite>()
+				Invites = alliance.Invites?.Select(i => i.ToMutable()).ToList() ?? new List<AllianceInvite>(),
+				ActiveElection = alliance.ActiveElection?.ToMutable(),
+				ElectionHistory = alliance.ElectionHistory?.Select(e => e.ToMutable()).ToList() ?? new List<AllianceElection>()
 			};
 		}
 	}

@@ -26,7 +26,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				game.AllianceInviteRepository,
 				game.AllianceInviteRepositoryWrite,
 				game.AllianceWarRepository,
-				game.AllianceWarRepositoryWrite
+				game.AllianceWarRepositoryWrite,
+				game.AllianceElectionRepository,
+				game.AllianceElectionRepositoryWrite
 			);
 		}
 

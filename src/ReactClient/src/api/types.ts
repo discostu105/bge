@@ -448,6 +448,28 @@ export interface AllianceInviteViewModel {
   expiresAt: string
 }
 
+export interface ElectionCandidateViewModel {
+  playerId: string
+  playerName: string
+  nominatedAt: string
+  voteCount: number
+}
+
+export interface AllianceElectionViewModel {
+  electionId: string
+  allianceId: string
+  status: string
+  startedByPlayerName: string
+  startedAt: string
+  nominationEndsAt: string
+  votingEndsAt: string
+  candidates: ElectionCandidateViewModel[]
+  myVote: string | null
+  winnerId: string | null
+  winnerName: string | null
+  completedAt: string | null
+}
+
 export interface AllianceWarViewModel {
   warId: string
   attackerAllianceId: string

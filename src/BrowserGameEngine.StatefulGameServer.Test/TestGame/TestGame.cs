@@ -26,6 +26,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public AllianceInviteRepositoryWrite AllianceInviteRepositoryWrite { get; }
 		public AllianceWarRepository AllianceWarRepository { get; }
 		public AllianceWarRepositoryWrite AllianceWarRepositoryWrite { get; }
+		public AllianceElectionRepository AllianceElectionRepository { get; }
+		public AllianceElectionRepositoryWrite AllianceElectionRepositoryWrite { get; }
 		public PlayerRepository PlayerRepository { get; }
 		public PlayerRepositoryWrite PlayerRepositoryWrite { get; }
 		public ResourceRepository ResourceRepository { get; }
@@ -70,6 +72,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			AllianceInviteRepositoryWrite = new AllianceInviteRepositoryWrite(Accessor, AllianceInviteRepository);
 			AllianceWarRepository = new AllianceWarRepository(Accessor);
 			AllianceWarRepositoryWrite = new AllianceWarRepositoryWrite(Accessor);
+			AllianceElectionRepository = new AllianceElectionRepository(Accessor);
+			AllianceElectionRepositoryWrite = new AllianceElectionRepositoryWrite(Accessor, AllianceElectionRepository, AllianceRepository);
 			PlayerRepository = new PlayerRepository(Accessor, ScoreRepository, AllianceRepository);
 			PlayerRepositoryWrite = new PlayerRepositoryWrite(Accessor, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(Accessor, GameDef);

@@ -26,6 +26,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly AllianceInviteRepositoryWrite allianceInviteRepositoryWrite;
 		private readonly AllianceWarRepository allianceWarRepository;
 		private readonly AllianceWarRepositoryWrite allianceWarRepositoryWrite;
+		private readonly AllianceElectionRepository allianceElectionRepository;
+		private readonly AllianceElectionRepositoryWrite allianceElectionRepositoryWrite;
 
 		public AlliancesController(
 			CurrentUserContext currentUserContext,
@@ -38,7 +40,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			AllianceInviteRepository allianceInviteRepository,
 			AllianceInviteRepositoryWrite allianceInviteRepositoryWrite,
 			AllianceWarRepository allianceWarRepository,
-			AllianceWarRepositoryWrite allianceWarRepositoryWrite
+			AllianceWarRepositoryWrite allianceWarRepositoryWrite,
+			AllianceElectionRepository allianceElectionRepository,
+			AllianceElectionRepositoryWrite allianceElectionRepositoryWrite
 		) {
 			this.currentUserContext = currentUserContext;
 			this.allianceRepository = allianceRepository;
@@ -51,6 +55,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.allianceInviteRepositoryWrite = allianceInviteRepositoryWrite;
 			this.allianceWarRepository = allianceWarRepository;
 			this.allianceWarRepositoryWrite = allianceWarRepositoryWrite;
+			this.allianceElectionRepository = allianceElectionRepository;
+			this.allianceElectionRepositoryWrite = allianceElectionRepositoryWrite;
 		}
 
 		/// <summary>Returns all alliances in the current game.</summary>
@@ -486,6 +492,186 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			} catch (NotAtWarException e) {
 				return BadRequest(e.Message);
 			}
+		}
+
+		/// <summary>Returns the active election for an alliance.</summary>
+		[HttpGet("{id}/election")]
+		[ProducesResponseType(typeof(AllianceElectionViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult<AllianceElectionViewModel> GetActiveElection(string id) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var allianceId = AllianceIdFactory.Create(id);
+			var election = allianceElectionRepository.GetActiveElection(allianceId);
+			if (election == null) return NotFound();
+			return Ok(MapElectionViewModel(election, currentUserContext.PlayerId));
+		}
+
+		/// <summary>Starts a new election for the alliance.</summary>
+		[HttpPost("{id}/elections")]
+		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status409Conflict)]
+		public ActionResult<string> StartElection(string id, [FromBody] StartElectionRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				var nominationDuration = request.NominationDurationHours.HasValue ? TimeSpan.FromHours(request.NominationDurationHours.Value) : (TimeSpan?)null;
+				var votingDuration = request.VotingDurationHours.HasValue ? TimeSpan.FromHours(request.VotingDurationHours.Value) : (TimeSpan?)null;
+				var electionId = allianceElectionRepositoryWrite.StartElection(
+					new StartElectionCommand(currentUserContext.PlayerId!, AllianceIdFactory.Create(id), nominationDuration, votingDuration));
+				return Ok(electionId.ToString());
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (ElectionAlreadyActiveException e) {
+				return Conflict(e.Message);
+			} catch (InvalidElectionDurationException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
+		/// <summary>Nominate yourself as a candidate in the active election.</summary>
+		[HttpPost("{id}/elections/{electionId}/nominate")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult Nominate(string id, string electionId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceElectionRepositoryWrite.Nominate(
+					new NominateForElectionCommand(currentUserContext.PlayerId!, AllianceElectionIdFactory.Create(electionId)));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (ElectionNotFoundException e) {
+				return NotFound(e.Message);
+			} catch (ElectionNotInNominationPhaseException e) {
+				return BadRequest(e.Message);
+			} catch (AlreadyNominatedException e) {
+				return Conflict(e.Message);
+			}
+		}
+
+		/// <summary>Withdraw your nomination from the active election.</summary>
+		[HttpDelete("{id}/elections/{electionId}/nominate")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult WithdrawNomination(string id, string electionId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceElectionRepositoryWrite.WithdrawNomination(
+					new WithdrawNominationCommand(currentUserContext.PlayerId!, AllianceElectionIdFactory.Create(electionId)));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (ElectionNotFoundException e) {
+				return NotFound(e.Message);
+			} catch (ElectionNotInNominationPhaseException e) {
+				return BadRequest(e.Message);
+			} catch (NotACandidateException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
+		/// <summary>Cast or change your vote in the active election.</summary>
+		[HttpPost("{id}/elections/{electionId}/vote")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult CastVote(string id, string electionId, [FromBody] CastElectionVoteRequest request) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceElectionRepositoryWrite.CastVote(
+					new CastElectionVoteCommand(currentUserContext.PlayerId!, AllianceElectionIdFactory.Create(electionId), PlayerIdFactory.Create(request.CandidatePlayerId)));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (ElectionNotFoundException e) {
+				return NotFound(e.Message);
+			} catch (ElectionNotInVotingPhaseException e) {
+				return BadRequest(e.Message);
+			} catch (NotACandidateException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
+		/// <summary>Cancel the active election (leader only).</summary>
+		[HttpDelete("{id}/elections/{electionId}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		public ActionResult CancelElection(string id, string electionId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceElectionRepositoryWrite.CancelElection(
+					new CancelElectionCommand(currentUserContext.PlayerId!, AllianceElectionIdFactory.Create(electionId)));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			} catch (NotAllianceLeaderException e) {
+				return StatusCode(403, e.Message);
+			} catch (ElectionNotFoundException e) {
+				return NotFound(e.Message);
+			}
+		}
+
+		/// <summary>Returns the election history for an alliance.</summary>
+		[HttpGet("{id}/elections/history")]
+		[ProducesResponseType(typeof(IEnumerable<AllianceElectionViewModel>), StatusCodes.Status200OK)]
+		public ActionResult<IEnumerable<AllianceElectionViewModel>> GetElectionHistory(string id) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var allianceId = AllianceIdFactory.Create(id);
+			var history = allianceElectionRepository.GetElectionHistory(allianceId);
+			return Ok(history.Select(e => MapElectionViewModel(e, currentUserContext.PlayerId)));
+		}
+
+		private AllianceElectionViewModel MapElectionViewModel(GameModel.AllianceElectionImmutable election, PlayerId? currentPlayerId) {
+			string startedByName;
+			try { startedByName = playerRepository.Get(election.StartedByPlayerId).Name; }
+			catch { startedByName = election.StartedByPlayerId.Id; }
+
+			string? winnerName = null;
+			if (election.WinnerId != null) {
+				try { winnerName = playerRepository.Get(election.WinnerId).Name; }
+				catch { winnerName = election.WinnerId.Id; }
+			}
+
+			// Count votes per candidate
+			var voteCounts = election.Candidates.ToDictionary(c => c.PlayerId, _ => 0);
+			foreach (var vote in election.Votes) {
+				if (voteCounts.ContainsKey(vote.CandidatePlayerId)) {
+					voteCounts[vote.CandidatePlayerId]++;
+				}
+			}
+
+			var myVote = currentPlayerId != null
+				? election.Votes.FirstOrDefault(v => v.VoterPlayerId == currentPlayerId)?.CandidatePlayerId?.Id
+				: null;
+
+			return new AllianceElectionViewModel {
+				ElectionId = election.ElectionId.ToString(),
+				AllianceId = election.AllianceId.ToString(),
+				Status = election.Status.ToString(),
+				StartedByPlayerName = startedByName,
+				StartedAt = election.StartedAt,
+				NominationEndsAt = election.NominationEndsAt,
+				VotingEndsAt = election.VotingEndsAt,
+				Candidates = election.Candidates.Select(c => {
+					string playerName;
+					try { playerName = playerRepository.Get(c.PlayerId).Name; }
+					catch { playerName = c.PlayerId.Id; }
+					return new ElectionCandidateViewModel {
+						PlayerId = c.PlayerId.Id,
+						PlayerName = playerName,
+						NominatedAt = c.NominatedAt,
+						VoteCount = election.Status == GameModel.AllianceElectionStatus.Nominating ? 0 : voteCounts.GetValueOrDefault(c.PlayerId, 0)
+					};
+				}).ToList(),
+				MyVote = myVote,
+				WinnerId = election.WinnerId?.Id,
+				WinnerName = winnerName,
+				CompletedAt = election.CompletedAt
+			};
 		}
 
 		/// <summary>Returns all active and recent wars for an alliance.</summary>
