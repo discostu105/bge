@@ -32,6 +32,7 @@ import { PlayerHistory } from '@/pages/PlayerHistory'
 import { PublicProfile } from '@/pages/PublicProfile'
 import { AdminGames } from '@/pages/admin/AdminGames'
 import { PlayersList } from '@/pages/PlayersList'
+import { Trade } from '@/pages/Trade'
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -112,6 +113,11 @@ function InGamePlayerProfilePage() {
   if (!gameId) return null
   return <InGamePlayerProfile gameId={gameId} />
 }
+function TradePage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Trade gameId={gameId} />
+}
 function AlliancesPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
@@ -136,6 +142,7 @@ const router = createBrowserRouter([
           { path: 'research', element: <ResearchPage /> },
           { path: 'upgrades', element: <ResearchPage /> },
           { path: 'market', element: <MarketPage /> },
+          { path: 'trade', element: <TradePage /> },
           { path: 'chat', element: <ChatPage /> },
           { path: 'messages', element: <MessagesPage /> },
           { path: 'ranking', element: <PlayerRankingPage /> },
@@ -159,6 +166,7 @@ const router = createBrowserRouter([
       { path: '/units', element: <BareRouteRedirect path="units" /> },
       { path: '/research', element: <BareRouteRedirect path="research" /> },
       { path: '/market', element: <BareRouteRedirect path="market" /> },
+      { path: '/trade', element: <BareRouteRedirect path="trade" /> },
       { path: '/spy', element: <BareRouteRedirect path="spy" /> },
       { path: '/operations', element: <BareRouteRedirect path="operations" /> },
 

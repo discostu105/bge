@@ -175,7 +175,45 @@ export interface CreateMarketOrderRequest {
   wantedAmount: number
 }
 
-// Trade / Colonize
+// Trade (player-to-player)
+
+export interface TradeOfferViewModel {
+  offerId: string
+  fromPlayerId: string
+  fromPlayerName: string
+  toPlayerId: string
+  toPlayerName: string
+  offeredAmount: number
+  offeredResourceId: string
+  wantedAmount: number
+  wantedResourceId: string
+  note: string | null
+  sentAt: string
+  status: string
+}
+
+export interface TradeHistoryItemViewModel {
+  offerId: string
+  withPlayerId: string
+  withPlayerName: string
+  gaveAmount: number
+  gaveResourceId: string
+  receivedAmount: number
+  receivedResourceId: string
+  completedAt: string
+  status: string
+}
+
+export interface CreateTradeOfferRequest {
+  targetPlayerId: string
+  offeredResourceId: string
+  offeredAmount: number
+  wantedResourceId: string
+  wantedAmount: number
+  note: string | null
+}
+
+// Colonize
 
 export interface TradeResourceRequest {
   fromResource: string | null
