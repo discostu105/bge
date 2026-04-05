@@ -2,7 +2,7 @@
 
 ## Overview
 
-Browser Game Engine (BGE) is a stateful monolith hosting a multi-game platform for StarCraft-themed browser strategy games. The server manages multiple concurrent game instances, each with its own in-memory `WorldState`. A separate `GlobalState` holds cross-game data (users, game registry, player achievements). All state is serialized periodically to blob storage. The client is a Blazor WebAssembly SPA that communicates via REST API.
+Browser Game Engine (BGE) is a stateful monolith hosting a multi-game platform for StarCraft-themed browser strategy games. The server manages multiple concurrent game instances, each with its own in-memory `WorldState`. A separate `GlobalState` holds cross-game data (users, game registry, player achievements). All state is serialized periodically to blob storage. The client is a React SPA (Vite + TypeScript) that communicates via REST API and SignalR.
 
 ## Project Dependency Graph
 
@@ -14,7 +14,7 @@ StatefulGameServer      ← GameDefinition, GameModel, Persistence
 Shared (ViewModels)     ← GameDefinition, GameModel
 GameDefinition.SCO      ← GameDefinition, GameModel
 Persistence.S3          ← Persistence
-BlazorClient            ← Shared (ViewModels)
+ReactClient             ← Shared (ViewModels via API types)
 FrontendServer          ← everything (composition root)
 ```
 
@@ -115,7 +115,7 @@ public interface IWorldStateAccessor {
 All repositories, `WorldState`, and `GlobalState` are registered as **singletons** in DI (scoped to the default game for the current single-active-game setup).
 
 ### 6. Shared / ViewModels (`BrowserGameEngine.Shared`)
-DTOs for API responses. Referenced by both server controllers and Blazor client. Includes game management ViewModels (`GameSummaryViewModel`, `GameDetailViewModel`, `CreateGameRequest`) and leaderboard ViewModels (`LeaderboardEntryViewModel`, `GameResultViewModel`).
+DTOs for API responses. Referenced by server controllers and mirrored in the React client's TypeScript types. Includes game management ViewModels (`GameSummaryViewModel`, `GameDetailViewModel`, `CreateGameRequest`) and leaderboard ViewModels (`LeaderboardEntryViewModel`, `GameResultViewModel`).
 
 ### 7. Frontend Server (`BrowserGameEngine.FrontendServer`)
 ASP.NET Core host — the composition root. Wires everything together.
@@ -157,18 +157,19 @@ ASP.NET Core host — the composition root. Wires everything together.
 
 **Auth**: Cookie-based with GitHub OAuth2. AJAX requests get 401 instead of redirect. API key auth via `BearerTokenMiddleware`.
 
-### 8. Blazor Client (`BrowserGameEngine.BlazorClient`)
-Blazor WebAssembly SPA. Calls the REST API via `HttpClient`. No SignalR — polling only.
+### 8. React Client (`ReactClient`)
+React SPA built with Vite and TypeScript. Communicates via REST API and SignalR for real-time updates.
 
-- `RedirectIfUnauthorizedHandler` — intercepts 401s, redirects to `/signin`
-- `RefreshService` — event bus for cross-component refresh
-
-**Pages**: Index, Base, Units, EnemyBase, SelectEnemy, PlayerRanking, PlayerProfile, CreatePlayer, UnitDefinition, Upgrades, Alliances, AllianceDetail, AllianceRanking, Messages, Players, GameLobby, Games, PlayerHistory, Games/Results, Games/Summary, Games/PublicProfile
+- Located in `src/ReactClient/`
+- Uses `@tanstack/react-query` for data fetching and caching
+- Uses `@microsoft/signalr` for real-time events (chat, notifications, game ticks)
+- Tailwind CSS for styling, `lucide-react` for icons
+- Code-split with React lazy loading
 
 ## Data Flow
 
 ```
-User action → Blazor Page → HTTP POST → Controller → Write Repository → WorldState (in memory)
+User action → React Page → HTTP POST → Controller → Write Repository → WorldState (in memory)
                                               ↓
                                     Validates via Read Repository
                                               ↓
@@ -240,7 +241,7 @@ Background:  GameLifecycleService → GlobalState game records → transitions U
 ### API
 - **All game endpoints require `[Authorize]`** and must check `CurrentUserContext.IsValid`.
 - **Game list and leaderboard endpoints are public** (`[AllowAnonymous]`).
-- **No SignalR currently.** The client polls. If adding real-time push, use SignalR and keep the REST API as-is.
+- **SignalR is used for real-time push** (chat messages, notifications, game ticks). REST API remains the primary interface for actions.
 
 ### Adding Features from the Specification
 `docs/SPECIFICATION.md` describes the full original game. When implementing new features:
@@ -248,7 +249,7 @@ Background:  GameLifecycleService → GlobalState game records → transitions U
 - Add new repositories (read + write) or extend existing ones; always inject `IWorldStateAccessor`
 - Add new `IGameTickModule` implementations for tick-based processing; register in `GameServerExtensions`
 - Add new ViewModels in `Shared` and new controllers in `FrontendServer`
-- Add new Blazor pages in `BlazorClient`
+- Add new React pages in `ReactClient/src/pages/` and routes in `App.tsx`
 
 ### Testing
 - `StatefulGameServer.Test` — unit tests for game logic
