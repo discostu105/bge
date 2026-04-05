@@ -27,6 +27,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly TimeProvider timeProvider;
 		private readonly GameLifecycleEngine gameLifecycleEngine;
 		private readonly IGameEventPublisher gameEventPublisher;
+		private readonly PlayerRepository playerRepository;
+		private readonly ScoreRepository scoreRepository;
+		private readonly UserRepository userRepository;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -37,7 +40,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			CurrentUserContext currentUserContext,
 			TimeProvider timeProvider,
 			GameLifecycleEngine gameLifecycleEngine,
-			IGameEventPublisher gameEventPublisher
+			IGameEventPublisher gameEventPublisher,
+			PlayerRepository playerRepository,
+			ScoreRepository scoreRepository,
+			UserRepository userRepository
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -48,6 +54,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.timeProvider = timeProvider;
 			this.gameLifecycleEngine = gameLifecycleEngine;
 			this.gameEventPublisher = gameEventPublisher;
+			this.playerRepository = playerRepository;
+			this.scoreRepository = scoreRepository;
+			this.userRepository = userRepository;
 		}
 
 		/// <summary>Returns games where the authenticated user has an active player.</summary>
@@ -364,6 +373,33 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				VictoryConditionType: record.VictoryConditionType,
 				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
 			));
+		}
+
+		/// <summary>Returns the current game's leaderboard ranked by score.</summary>
+		/// <param name="gameId">The game identifier (used for routing; server uses current player's game context).</param>
+		[HttpGet("{gameId}/leaderboard")]
+		[ProducesResponseType(typeof(IEnumerable<LeaderboardEntryViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<IEnumerable<LeaderboardEntryViewModel>> GetLeaderboard(string gameId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var players = playerRepository.GetAll()
+				.Select(p => (
+					player: p,
+					score: scoreRepository.GetScore(p.PlayerId),
+					name: p.UserId != null ? userRepository.GetDisplayNameByUserId(p.UserId) ?? p.Name : p.Name
+				))
+				.OrderByDescending(x => x.score)
+				.ToList();
+
+			return players
+				.Select((x, idx) => new LeaderboardEntryViewModel(
+					Rank: idx + 1,
+					PlayerId: x.player.PlayerId.Id,
+					PlayerName: x.name,
+					Score: x.score,
+					IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId
+				))
+				.ToList();
 		}
 
 		private string? ResolveWinnerName(GameRecordImmutable record) {

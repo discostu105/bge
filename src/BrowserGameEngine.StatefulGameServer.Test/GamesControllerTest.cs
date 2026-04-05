@@ -79,7 +79,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userCtx,
 				TimeProvider.System,
 				lifecycleEngine,
-				NullGameEventPublisher.Instance
+				NullGameEventPublisher.Instance,
+				game.PlayerRepository,
+				game.ScoreRepository,
+				new UserRepository(globalState, game.World)
 			);
 		}
 
