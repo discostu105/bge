@@ -408,7 +408,7 @@ export function AllianceDetail() {
 									{allPlayers
 										.filter((p) => !detail.members.some((m) => m.playerId === p.playerId))
 										.map((p) => (
-											<option key={p.playerId} value={p.playerId}>{p.playerName}</option>
+											<option key={p.playerId ?? ""} value={p.playerId ?? ""}>{p.playerName}</option>
 										))}
 								</select>
 							) : (
