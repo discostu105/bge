@@ -142,11 +142,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var senderName = message.SenderId != null && playerRepository.Exists(message.SenderId)
 				? playerRepository.Get(message.SenderId).Name
 				: null;
+			var recipientName = playerRepository.Exists(message.RecipientId)
+				? playerRepository.Get(message.RecipientId).Name
+				: "Unknown";
 			return new MessageViewModel {
 				MessageId = message.Id.ToString(),
 				SenderId = message.SenderId?.Id,
 				SenderName = senderName ?? "System",
 				RecipientId = message.RecipientId.Id,
+				RecipientName = recipientName,
 				Subject = message.Subject,
 				Body = message.Body,
 				IsRead = message.IsRead,

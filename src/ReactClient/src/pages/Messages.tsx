@@ -186,7 +186,7 @@ export function Messages({ gameId }: MessagesProps) {
                       tab === 'inbox' && !msg.isRead && 'font-semibold'
                     )}
                   >
-                    <div className="truncate">{tab === 'inbox' ? msg.senderName : msg.recipientId}</div>
+                    <div className="truncate">{tab === 'inbox' ? msg.senderName : msg.recipientName}</div>
                     <div className="truncate text-xs text-muted-foreground">{msg.subject}</div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">{relativeTime(msg.sentAt)}</div>
                   </button>
@@ -200,11 +200,13 @@ export function Messages({ gameId }: MessagesProps) {
         <div className="rounded-lg border p-4 min-h-[200px]">
           {composing ? (
             <>
-              <h3 className="font-semibold text-sm mb-3">New Message</h3>
+              <h3 className="font-semibold text-sm mb-3">{selected ? 'Reply' : 'New Message'}</h3>
               <ComposeForm
                 players={players}
+                replyTo={selected ?? undefined}
                 onSent={() => {
                   setComposing(false)
+                  setSelected(null)
                   queryClient.invalidateQueries({ queryKey: ['messages-sent'] })
                 }}
               />

@@ -551,6 +551,7 @@ export interface MessageViewModel {
   senderId: string | null
   senderName: string
   recipientId: string
+  recipientName: string
   subject: string
   body: string
   isRead: boolean
