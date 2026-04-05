@@ -118,6 +118,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
+		public void CompleteTutorial(PlayerId playerId) {
+			lock (_lock) {
+				world.GetPlayer(playerId).State.TutorialCompleted = true;
+			}
+		}
+
 		public void BanPlayer(PlayerId playerId) {
 			lock (_lock) {
 				world.GetPlayer(playerId).IsBanned = true;

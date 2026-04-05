@@ -28,6 +28,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public List<SpyAttemptLog> SpyAttemptLogs { get; set; } = new List<SpyAttemptLog>();
 		public List<GameNotification> Notifications { get; set; } = new List<GameNotification>();
 		public List<SpyMission> SpyMissions { get; set; } = new List<SpyMission>();
+		public bool TutorialCompleted { get; set; }
 	}
 
 	internal static class PlayerStateExtensions {
@@ -54,7 +55,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults),
 				SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs),
 				Notifications: new List<GameNotification>(playerState.Notifications),
-				SpyMissions: playerState.SpyMissions.Select(x => x.ToImmutable()).ToList()
+				SpyMissions: playerState.SpyMissions.Select(x => x.ToImmutable()).ToList(),
+				TutorialCompleted: playerState.TutorialCompleted
 			);
 		}
 
@@ -93,7 +95,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 					? new List<GameNotification>(playerStateImmutable.Notifications)
 					: new List<GameNotification>(),
 				SpyMissions = (playerStateImmutable.SpyMissions ?? new List<SpyMissionImmutable>())
-					.Select(x => x.ToMutable()).ToList()
+					.Select(x => x.ToMutable()).ToList(),
+				TutorialCompleted = playerStateImmutable.TutorialCompleted
 			};
 		}
 	}

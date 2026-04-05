@@ -335,6 +335,7 @@ export interface PlayerProfileViewModel {
   protectionTicksRemaining: number
   isOnline: boolean
   lastOnline: string | null
+  tutorialCompleted: boolean
 }
 
 export interface PublicPlayerViewModel {
