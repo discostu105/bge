@@ -12,7 +12,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		[Fact]
 		public async Task Get_Unauthenticated_Returns401() {
 			var client = CreateClient();
-			var response = await client.GetAsync("/api/market/get");
+			var response = await client.GetAsync("/api/market");
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
@@ -22,7 +22,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			await CreatePlayerAsync(userId, "MarketPlayer1");
 
 			var client = CreateClient(userId);
-			var response = await client.GetAsync("/api/market/get");
+			var response = await client.GetAsync("/api/market");
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 			var vm = await DeserializeAsync<MarketViewModel>(response);
 			Assert.NotNull(vm);

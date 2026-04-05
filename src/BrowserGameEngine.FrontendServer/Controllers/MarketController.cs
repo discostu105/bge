@@ -12,7 +12,7 @@ using System.Linq;
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
-	[Route("api/[controller]/{action?}/{id?}")]
+	[Route("api/[controller]")]
 	public class MarketController : ControllerBase {
 		private readonly ILogger<MarketController> logger;
 		private readonly CurrentUserContext currentUserContext;
