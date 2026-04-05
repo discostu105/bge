@@ -291,10 +291,18 @@ export interface PlayerProfileViewModel {
 }
 
 export interface PublicPlayerViewModel {
-  playerId: string
-  playerName: string
+  playerId: string | null
+  playerName: string | null
   score: number
+  protectionTicksRemaining: number
+  userId: string | null
+  userDisplayName: string | null
+  isAgent: boolean
+  lastOnline: string | null
   isOnline: boolean
+  approxMinerals: number | null
+  approxGas: number | null
+  approxHomeUnitCount: number | null
 }
 
 export interface InGamePlayerProfileViewModel {
@@ -511,40 +519,39 @@ export interface SelectEnemyViewModel {
 // Chat
 
 export interface ChatMessageViewModel {
-  id: string
-  playerName: string
-  playerId: string
-  message: string
+  messageId: string
+  authorPlayerId: string
+  authorName: string
+  body: string
   createdAt: string
 }
 
-export interface ChatViewModel {
+export interface ChatMessagesViewModel {
   messages: ChatMessageViewModel[]
 }
 
 export interface PostChatMessageRequest {
-  message: string
+  body: string
 }
 
 // Messages
 
 export interface MessageViewModel {
-  id: string
-  senderId: string
+  messageId: string
+  senderId: string | null
   senderName: string
   recipientId: string
-  recipientName: string
   subject: string
   body: string
   isRead: boolean
   sentAt: string
 }
 
-export interface MessageListViewModel {
+export interface MessageInboxViewModel {
   messages: MessageViewModel[]
 }
 
-export interface SendMessageRequest {
+export interface SendMessageViewModel {
   recipientId: string
   subject: string
   body: string
