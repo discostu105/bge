@@ -17,6 +17,7 @@ namespace BrowserGameEngine.GameModel {
 		DateTime? ActualEndTime = null,
 		string? VictoryConditionType = null,
 		string? CreatedByUserId = null,
-		string? DiscordWebhookUrl = null
+		string? DiscordWebhookUrl = null,
+		int MaxPlayers = 0
 	);
 }

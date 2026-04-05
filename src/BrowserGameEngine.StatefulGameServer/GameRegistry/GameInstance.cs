@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
@@ -33,6 +34,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			return (player.PlayerId, player.Name);
 		}
 
+		/// <summary>Returns immutable snapshots of all non-banned players for lobby display.</summary>
+		public List<PlayerImmutable> GetLobbyPlayers() =>
+			WorldState.Players.Values
+				.Where(p => !p.IsBanned)
+				.Select(p => p.ToImmutable())
+				.ToList();
 
 		public void SetTickEngine(GameTickEngine tickEngine) { TickEngine = tickEngine; }
 	}

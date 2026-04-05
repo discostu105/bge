@@ -78,7 +78,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				game.GameDef,
 				userCtx,
 				TimeProvider.System,
-				lifecycleEngine
+				lifecycleEngine,
+				NullGameEventPublisher.Instance
 			);
 		}
 

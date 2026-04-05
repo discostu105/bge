@@ -3,6 +3,7 @@ using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +26,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly TimeProvider timeProvider;
 		private readonly GameLifecycleEngine gameLifecycleEngine;
+		private readonly IGameEventPublisher gameEventPublisher;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -34,7 +36,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			GameDef gameDef,
 			CurrentUserContext currentUserContext,
 			TimeProvider timeProvider,
-			GameLifecycleEngine gameLifecycleEngine
+			GameLifecycleEngine gameLifecycleEngine,
+			IGameEventPublisher gameEventPublisher
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -44,6 +47,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.currentUserContext = currentUserContext;
 			this.timeProvider = timeProvider;
 			this.gameLifecycleEngine = gameLifecycleEngine;
+			this.gameEventPublisher = gameEventPublisher;
 		}
 
 		/// <summary>Returns games where the authenticated user has an active player.</summary>
@@ -107,11 +111,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			));
 		}
 
-		/// <summary>Creates a new game. Requires authentication.</summary>
+		/// <summary>Creates a new game. Any authenticated player can create a game.</summary>
 		/// <param name="request">Game creation parameters.</param>
 		/// <returns>Summary of the newly created game.</returns>
 		[HttpPost]
-		[Authorize(Policy = "Admin")]
 		[ProducesResponseType(typeof(GameSummaryViewModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -123,6 +126,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (!TimeSpan.TryParse(request.TickDuration, out var tickDuration) || tickDuration <= TimeSpan.Zero) {
 				return BadRequest("TickDuration must be a valid positive timespan (HH:MM:SS)");
 			}
+			if (request.MaxPlayers < 0) return BadRequest("MaxPlayers cannot be negative.");
 
 			var gameId = new GameId(Guid.NewGuid().ToString("N")[..12]);
 			var record = new GameRecordImmutable(
@@ -134,7 +138,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: request.EndTime.ToUniversalTime(),
 				TickDuration: tickDuration,
 				DiscordWebhookUrl: request.DiscordWebhookUrl,
-				CreatedByUserId: currentUserContext.UserId
+				CreatedByUserId: currentUserContext.UserId,
+				MaxPlayers: request.MaxPlayers
 			);
 
 			// Create a fresh world state for the new game
@@ -217,9 +222,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			));
 		}
 
-		/// <summary>Joins an upcoming game with the current player. Requires authentication.</summary>
+		/// <summary>Joins an upcoming or active game with race selection.</summary>
 		/// <param name="gameId">The game identifier.</param>
-		/// <param name="request">Join request containing the player name.</param>
+		/// <param name="request">Join request containing the player name and optional race.</param>
 		[HttpPost("{gameId}/join")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -238,16 +243,79 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) return NotFound();
 
+			// Enforce max players
+			if (record.MaxPlayers > 0 && instance.PlayerCount >= record.MaxPlayers)
+				return BadRequest("This game is full.");
+
 			// Check if user already has a player in this game (by UserId)
 			if (instance.HasUserPlayer(currentUserContext.UserId!)) return Conflict("You have already joined this game.");
 
+			// Validate race selection — default to first available race
+			var playerType = request.PlayerType ?? gameDef.PlayerTypes.First().Id.Id;
+			if (!gameDef.PlayerTypes.Any(pt => pt.Id.Id == playerType))
+				return BadRequest($"Invalid race: {playerType}");
+
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId);
+			playerRepoWrite.CreatePlayer(playerId, currentUserContext.UserId, playerType);
 			playerRepoWrite.ChangePlayerName(new ChangePlayerNameCommand(playerId, request.PlayerName));
 
-			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName}", playerId.Id, gameId, request.PlayerName);
+			logger.LogInformation("Player {PlayerId} joined game {GameId} as {PlayerName} ({Race})", playerId.Id, gameId, request.PlayerName, playerType);
+
+			// Broadcast lobby update via SignalR
+			gameEventPublisher.PublishToGame(GameEventTypes.LobbyUpdated, new { GameId = gameId });
+
 			return Ok(new { PlayerId = playerId.Id });
+		}
+
+		/// <summary>Returns lobby details for a game including the player list.</summary>
+		/// <param name="gameId">The game identifier.</param>
+		[AllowAnonymous]
+		[HttpGet("{gameId}/lobby")]
+		[ProducesResponseType(typeof(GameLobbyViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult<GameLobbyViewModel> GetLobby(string gameId) {
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
+			if (record == null) return NotFound();
+
+			var instance = gameRegistry.TryGetInstance(record.GameId);
+			var players = new List<LobbyPlayerViewModel>();
+			if (instance != null) {
+				players = instance.GetLobbyPlayers()
+					.OrderBy(p => p.Created)
+					.Select(p => new LobbyPlayerViewModel(
+						PlayerId: p.PlayerId.Id,
+						PlayerName: p.Name,
+						PlayerType: p.PlayerType.Id,
+						Joined: p.Created
+					))
+					.ToList();
+			}
+
+			bool canJoin = (record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active)
+				&& (record.MaxPlayers == 0 || players.Count < record.MaxPlayers);
+
+			return Ok(new GameLobbyViewModel(
+				GameId: record.GameId.Id,
+				GameName: record.Name,
+				Status: record.Status.ToString(),
+				MaxPlayers: record.MaxPlayers,
+				StartTime: record.StartTime,
+				EndTime: record.EndTime,
+				Players: players,
+				CanJoin: canJoin
+			));
+		}
+
+		/// <summary>Returns available races for a game definition.</summary>
+		[AllowAnonymous]
+		[HttpGet("races")]
+		[ProducesResponseType(typeof(RaceListViewModel), StatusCodes.Status200OK)]
+		public ActionResult<RaceListViewModel> GetRaces() {
+			var races = gameDef.PlayerTypes
+				.Select(pt => new RaceViewModel(pt.Id.Id, pt.Name))
+				.ToList();
+			return Ok(new RaceListViewModel(races));
 		}
 
 		/// <summary>Manually finalizes an active game early. Only the game creator may do this.</summary>
@@ -335,21 +403,25 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				var instance = gameRegistry.TryGetInstance(record.GameId);
 				isPlayerEnrolled = instance?.HasUserPlayer(currentUserContext.UserId) ?? false;
 			}
+			var playerCount = GetPlayerCount(record);
+			bool canJoin = (record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active)
+				&& (record.MaxPlayers == 0 || playerCount < record.MaxPlayers);
 			return new GameSummaryViewModel(
 				GameId: record.GameId.Id,
 				Name: record.Name,
 				GameDefType: record.GameDefType,
 				Status: record.Status.ToString(),
-				PlayerCount: GetPlayerCount(record),
-				MaxPlayers: 0,
+				PlayerCount: playerCount,
+				MaxPlayers: record.MaxPlayers,
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
-				CanJoin: record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active,
+				CanJoin: canJoin,
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
 				IsPlayerEnrolled: isPlayerEnrolled,
 				VictoryConditionType: record.VictoryConditionType,
-				DiscordWebhookUrl: record.DiscordWebhookUrl
+				DiscordWebhookUrl: record.DiscordWebhookUrl,
+				CreatedByUserId: record.CreatedByUserId
 			);
 		}
 
