@@ -9,6 +9,7 @@ import type {
   ProposeNapRequest,
   ProposeResourceAgreementRequest,
   RespondToProposalRequest,
+  PaginatedResponse,
 } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -48,11 +49,12 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
     refetchInterval: 10_000,
   })
 
-  const { data: players } = useQuery<PublicPlayerViewModel[]>({
+  const { data: playersResp } = useQuery<PaginatedResponse<PublicPlayerViewModel>>({
     queryKey: ['playerranking', gameId],
-    queryFn: () => apiClient.get('/api/playerranking').then((r) => r.data),
+    queryFn: () => apiClient.get('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
     refetchInterval: 30_000,
   })
+  const players = playersResp?.items
 
   const respondMutation = useMutation({
     mutationFn: ({ proposalId, accept }: { proposalId: string; accept: boolean }) => {

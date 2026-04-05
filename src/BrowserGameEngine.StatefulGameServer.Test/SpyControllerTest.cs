@@ -88,8 +88,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var result = controller.Attempts();
 
-			var ok = Assert.IsType<ActionResult<IEnumerable<SpyAttemptViewModel>>>(result);
-			Assert.Empty(ok.Value!);
+			var ok = Assert.IsType<ActionResult<PaginatedResponse<SpyAttemptViewModel>>>(result);
+			Assert.Empty(ok.Value!.Items);
 		}
 
 		[Fact]

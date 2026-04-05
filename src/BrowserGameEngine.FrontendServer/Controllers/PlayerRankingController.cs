@@ -45,16 +45,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.techRepository = techRepository;
 		}
 
-		/// <summary>Returns the current game's player ranking list with scores and online status. Resource and unit counts are fog-of-war gated.</summary>
+		/// <summary>Returns the current game's player ranking list with scores and online status. Resource and unit counts are fog-of-war gated. Supports optional pagination via page/pageSize query params.</summary>
 		[HttpGet]
-		[ProducesResponseType(typeof(System.Collections.Generic.IEnumerable<PublicPlayerViewModel>), StatusCodes.Status200OK)]
-		public IEnumerable<PublicPlayerViewModel> Get() {
-			return playerRepository.GetAll().Select(p => {
+		[ProducesResponseType(typeof(PaginatedResponse<PublicPlayerViewModel>), StatusCodes.Status200OK)]
+		public ActionResult<PaginatedResponse<PublicPlayerViewModel>> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
+			var players = playerRepository.GetAll().Select(p => {
 				bool isOwnPlayer = currentUserContext.PlayerId != null && p.PlayerId == currentUserContext.PlayerId;
 				SpyResult? intel = isOwnPlayer ? null : fogOfWarRepository.GetValidIntel(currentUserContext.PlayerId!, p.PlayerId);
 				var vm = p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, intel, isOwnPlayer);
 				return vm with { IsCurrentPlayer = isOwnPlayer };
 			}).OrderByDescending(p => p.Score);
+			return PaginatedResponse<PublicPlayerViewModel>.Create(players, page, pageSize);
 		}
 
 		/// <summary>Returns the current game's leaderboard ranked by score.</summary>

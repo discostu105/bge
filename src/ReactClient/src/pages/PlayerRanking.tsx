@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import apiClient from '@/api/client'
-import type { PublicPlayerViewModel } from '@/api/types'
+import type { PublicPlayerViewModel, PaginatedResponse } from '@/api/types'
 import { cn } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -16,13 +16,14 @@ type Filter = 'all' | 'human' | 'agent'
 export function PlayerRanking({ gameId }: PlayerRankingProps) {
   const [filter, setFilter] = useState<Filter>('all')
 
-  const { data: players, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['ranking', gameId],
     queryFn: () =>
-      apiClient.get<PublicPlayerViewModel[]>('/api/playerranking').then((r) => r.data),
+      apiClient.get<PaginatedResponse<PublicPlayerViewModel>>('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
     refetchInterval: 30_000,
   })
 
+  const players = data?.items
   const sorted = [...(players ?? [])].sort((a, b) => b.score - a.score)
   const filtered = sorted.filter((p) => {
     if (filter === 'human') return !p.isAgent

@@ -166,6 +166,10 @@ export interface MarketViewModel {
   openOrders: MarketOrderViewModel[]
   currentPlayerId: string
   resourceOptions: ResourceOptionViewModel[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
 }
 
 export interface CreateMarketOrderRequest {
@@ -861,4 +865,14 @@ export interface PlayerCrossGameStatsViewModel {
   bestRank: number
   totalScore: number
   games: PlayerCrossGameEntry[]
+}
+
+// Pagination
+
+export interface PaginatedResponse<T> {
+  items: T[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
 }
