@@ -62,6 +62,7 @@ namespace BrowserGameEngine.Shared {
 		public required string PostId { get; set; }
 		public required string AuthorPlayerId { get; set; }
 		public required string AuthorName { get; set; }
+		public string PlayerType { get; set; } = "";
 		public required string Body { get; set; }
 		public DateTime CreatedAt { get; set; }
 	}

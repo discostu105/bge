@@ -43,12 +43,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			var vms = messages.Select(m => {
 				string authorName;
-				try { authorName = playerRepository.Get(m.AuthorPlayerId).Name; }
-				catch { authorName = m.AuthorPlayerId.Id; }
+				string playerType;
+				try {
+					var player = playerRepository.Get(m.AuthorPlayerId);
+					authorName = player.Name;
+					playerType = player.PlayerType.Id;
+				} catch {
+					authorName = m.AuthorPlayerId.Id;
+					playerType = "";
+				}
 				return new ChatMessageViewModel(
 					MessageId: m.MessageId.ToString(),
 					AuthorPlayerId: m.AuthorPlayerId.Id,
 					AuthorName: authorName,
+					PlayerType: playerType,
 					Body: m.Body,
 					CreatedAt: m.CreatedAt
 				);
@@ -67,10 +75,14 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (string.IsNullOrWhiteSpace(request.Body)) return BadRequest("Message body cannot be empty.");
 			if (request.Body.Length > 500) return BadRequest("Message body cannot exceed 500 characters.");
 
-			var messageId = chatRepositoryWrite.PostMessage(
-				new PostChatMessageCommand(currentUserContext.PlayerId!, request.Body));
-			logger.LogInformation("Player {PlayerId} posted chat message {MessageId}", currentUserContext.PlayerId!.Id, messageId);
-			return Ok(messageId.ToString());
+			try {
+				var messageId = chatRepositoryWrite.PostMessage(
+					new PostChatMessageCommand(currentUserContext.PlayerId!, request.Body));
+				logger.LogInformation("Player {PlayerId} posted chat message {MessageId}", currentUserContext.PlayerId!.Id, messageId);
+				return Ok(messageId.ToString());
+			} catch (ChatRateLimitException e) {
+				return StatusCode(429, e.Message);
+			}
 		}
 	}
 }

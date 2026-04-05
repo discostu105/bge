@@ -6,6 +6,7 @@ namespace BrowserGameEngine.Shared {
 		string MessageId,
 		string AuthorPlayerId,
 		string AuthorName,
+		string PlayerType,
 		string Body,
 		DateTime CreatedAt
 	);
