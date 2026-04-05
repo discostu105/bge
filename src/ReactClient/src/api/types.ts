@@ -337,6 +337,14 @@ export interface PlayerRankingViewModel {
   entries: PlayerRankingEntryViewModel[]
 }
 
+export interface LeaderboardEntryViewModel {
+  rank: number
+  playerId: string
+  playerName: string
+  score: number
+  isCurrentPlayer: boolean
+}
+
 // Alliance
 
 export interface AllianceMemberViewModel {
