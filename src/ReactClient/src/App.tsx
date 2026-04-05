@@ -25,6 +25,8 @@ import { GameSummary } from '@/pages/GameSummary'
 import { GameResults } from '@/pages/GameResults'
 import { CreatePlayer } from '@/pages/CreatePlayer'
 import { UnitDefinitions } from '@/pages/UnitDefinitions'
+import { Alliances } from '@/pages/Alliances'
+import { AllianceDetail } from '@/pages/AllianceDetail'
 import { Achievements } from '@/pages/Achievements'
 import { PlayerHistory } from '@/pages/PlayerHistory'
 import { AdminGames } from '@/pages/admin/AdminGames'
@@ -108,6 +110,11 @@ function InGamePlayerProfilePage() {
   if (!gameId) return null
   return <InGamePlayerProfile gameId={gameId} />
 }
+function AlliancesPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Alliances gameId={gameId} />
+}
 
 const router = createBrowserRouter([
   {
@@ -130,7 +137,7 @@ const router = createBrowserRouter([
           { path: 'chat', element: <ChatPage /> },
           { path: 'messages', element: <MessagesPage /> },
           { path: 'ranking', element: <PlayerRankingPage /> },
-          { path: 'alliances', element: <TodoPage name="Alliances" /> },
+          { path: 'alliances', element: <AlliancesPage /> },
           { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
           { path: 'diplomacy', element: <DiplomacyPage /> },
           { path: 'spies', element: <SpiesPage /> },
@@ -158,7 +165,7 @@ const router = createBrowserRouter([
       { path: '/profile', element: <PlayerProfile /> },
       { path: '/profile/:userId', element: <TodoPage name="Public Profile" /> },
       { path: '/players', element: <TodoPage name="Players" /> },
-      { path: '/alliances/:allianceId', element: <TodoPage name="Alliance Detail" /> },
+      { path: '/alliances/:allianceId', element: <AllianceDetail /> },
       { path: '/achievements', element: <Achievements /> },
       { path: '/history', element: <PlayerHistory /> },
       { path: '/admin/games', element: <AdminGames /> },
