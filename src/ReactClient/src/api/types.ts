@@ -274,6 +274,7 @@ export interface GameSummaryViewModel {
   winnerName: string | null
   isPlayerEnrolled: boolean
   victoryConditionType: string | null
+  discordWebhookUrl: string | null
 }
 
 export interface GameListViewModel {

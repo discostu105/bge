@@ -348,7 +348,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
 				IsPlayerEnrolled: isPlayerEnrolled,
-				VictoryConditionType: record.VictoryConditionType
+				VictoryConditionType: record.VictoryConditionType,
+				DiscordWebhookUrl: record.DiscordWebhookUrl
 			);
 		}
 
