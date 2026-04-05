@@ -11,7 +11,7 @@ These features exist and are functional in the current codebase.
 | Spec Section | Feature | Notes |
 |---|---|---|
 | 1.1 | Tick-based game world | Per-player tick engine with pluggable modules. 30s ticks (configurable). |
-| 1.2 | Race selection at registration | Terran/Zerg/Protoss choice, permanent. Terran fully defined; Zerg & Protoss partially defined. |
+| 1.2 | Race selection at registration | Terran/Zerg/Protoss choice, permanent. All three races fully defined. (BGE-639, BGE-640) |
 | 2.1 | Two resource types (Minerals, Gas) | Tracked per player. Land is the score resource. |
 | 2.2 | Worker roles (mineral / gas / idle) | `MineralWorkers` and `GasWorkers` on player state. `AssignWorkersCommand` + `WorkersController`. |
 | 2.3 | Resource income per round | `ResourceGrowthSco` tick module. Full efficiency formula implemented: `efficiency = clamp(land / (workers * factor), 0.2, 100)`. |
@@ -63,6 +63,19 @@ These features exist and are functional in the current codebase.
 | — | Action feed / log | `IActionLogger` ring buffer in `StatefulGameServer`. `GET /api/admin/action-log`. |
 | — | 10s auto-refresh | All game-state pages poll every 10s via `PeriodicTimer`. (BGE-189) |
 | — | Bot client support | `BearerTokenMiddleware` + API key auth. Bot quickstart guide in `docs/BOT-CLIENT.md`. |
+| — | React client | Full React SPA replacing Blazor WASM. All pages migrated. BlazorClient deleted. (BGE-520–526, BGE-548–550) |
+| — | Victory conditions | `EconomicThreshold` win condition with progress bar and winner banner. `VictoryConditionType` tracking. (BGE-511, BGE-513) |
+| — | Spy / offensive actions | Spy operations backend + UI with Intel tab. (BGE-465, BGE-479) |
+| — | Alliance war system | Declare war, peace, invite. Alliance invite & war backend + UI. (BGE-467, BGE-471) |
+| — | Player-to-player trading | `TradePlayerResourceCommand` + Trade UI page. (BGE-489, BGE-577) |
+| — | In-game leaderboard | Dedicated leaderboard page + API endpoint. (BGE-466) |
+| — | Balance simulation CLI | `tools/BalanceSim` standalone console project for combat simulations. (BGE-586) |
+| — | SignalR real-time events | `GameHub` publishes game events; React client shows real-time notification toasts. (BGE-612, BGE-613) |
+| — | Admin dashboard | Player moderation, game management, admin controls UI. (BGE-629) |
+| — | API pagination | Cursor-based pagination on all list endpoints. (BGE-614) |
+| — | Production monitoring | CloudWatch alarms, ECS health check, performance benchmarks. (BGE-627, BGE-628, BGE-610) |
+| — | Security hardening | Steps 1-6 applied. (BGE-651) |
+| — | E2E Playwright tests | Full E2E test framework + tests for resources, attacks, alliances, critical flows. (BGE-562, BGE-584, BGE-650) |
 
 ---
 
@@ -74,27 +87,28 @@ These features are specified, not yet implemented, or have PRs pending merge.
 
 | Spec Section | Feature | What to Build |
 |---|---|---|
-| 1.2 | Complete Zerg & Protoss definitions | `GameDefinition.SCO` has Terran fully defined. Port the spec tables for Zerg and Protoss buildings + units. Purely data work. |
+| 1.2 | Complete Zerg & Protoss definitions | **Done** — Zerg (PR #205) and Protoss with shields mechanic (PR #206) fully implemented. All three races complete. |
 
 ### Multi-Game Registration & Season Flow
 
 | Feature | What to Build | Status |
 |---|---|---|
-| Player registration UI | Dedicated registration page with name/race form. (BGE-157) | PR #64 open, pending merge |
-| Join game UI improvements | Polished join-game flow with validation and error states. (BGE-158) | PR #60 open, pending merge |
-| Season subscription + auto-join | Users subscribe to a season; auto-enrolled in the next game start. (BGE-269) | PR #85 open, pending merge |
+| Player registration UI | Dedicated registration page with name/race form. (BGE-157) | **Done** — React client (PR #525 area) includes full join/registration UI |
+| Join game UI improvements | Polished join-game flow with validation and error states. (BGE-158) | **Done** — React client includes polished join game flow |
+| Season subscription + auto-join | Users subscribe to a season; auto-enrolled in the next game start. (BGE-269) | **Done** — implemented and merged |
 
 ### Social & Communication Polish
 
 | Spec Section | Feature | What to Build |
 |---|---|---|
 | 9.1 | Alliance leader election | Voting mechanism for alliance leader. Leader management of members. Currently leader = creator. |
+| — | Real-time game chat | In-game chat with alliance channel and rate limiting (BGE-641) | PR #212 open, pending merge |
 
 ### Developer Tooling
 
 | Feature | What to Build |
 |---|---|
-| Balance simulation CLI | Standalone console project (`tools/BalanceSim`) — run combat simulations without the server. Critical before completing Zerg/Protoss data. |
+| Balance simulation CLI | **Done** — `tools/BalanceSim` standalone console project (PR #191, BGE-586). |
 
 ---
 
@@ -104,7 +118,7 @@ These features from the spec or era are intentionally excluded.
 
 | Feature | Reason |
 |---|---|
-| Real-time chat (public + alliance) | Adds significant complexity (WebSockets/SignalR). Discord serves this purpose externally. Revisit if player demand warrants it. |
+| Real-time chat (public + alliance) | **Moved to planned** — BGE-641 implements in-game chat via SignalR (PR #212). |
 | Forum / MBBS integration | The spec notes this should be dropped. Use external community tools. |
 | Photo album, calendar | Unrelated to the game. Omit permanently. |
 | Multi-account detection | Complex anti-cheat. Not needed for a small player base. Add if abuse becomes a problem. |
@@ -134,9 +148,11 @@ These features from the spec or era are intentionally excluded.
 ## Suggested Build Order
 
 ```
-Merge BGE-157/158 PRs            (player registration + join UI)
-Merge BGE-269 PR                 (season subscription + auto-join)
-Balance simulation CLI           (before Zerg/Protoss data)
-Zerg & Protoss data              (complete core game)
-Alliance leader election         (social completeness)
+✅ Merge BGE-157/158 PRs            (player registration + join UI) — DONE (React client)
+✅ Merge BGE-269 PR                 (season subscription + auto-join) — DONE
+✅ Balance simulation CLI           (before Zerg/Protoss data) — DONE (PR #191)
+✅ Zerg & Protoss data              (complete core game) — DONE (PRs #205, #206)
+   Merge PR #211                   (cross-race integration tests for Zerg/Protoss)
+   Merge PR #212 / BGE-641         (real-time game chat)
+   Alliance leader election        (social completeness)
 ```
