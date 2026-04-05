@@ -126,9 +126,21 @@
 							<div class="card-body">
 								<div class="d-flex justify-content-between align-items-start mb-2">
 									<h5 class="card-title mb-0">@game.Name</h5>
-									<span class="badge bg-secondary">FINISHED</span>
+									@{
+										var (badgeCss, badgeText) = game.VictoryConditionType switch {
+											"EconomicThreshold" => ("bg-warning text-dark", "CONQUERED"),
+											"TimeExpired"       => ("bg-secondary", "TIME EXPIRED"),
+											"AdminFinalized"    => ("bg-danger", "ADMIN ENDED"),
+											_                   => ("bg-secondary", "FINISHED")
+										};
+									}
+									<span class="badge @badgeCss">@badgeText</span>
 								</div>
-								@if (!string.IsNullOrEmpty(game.WinnerName)) {
+								@if (!string.IsNullOrEmpty(game.WinnerName) && game.VictoryConditionType == "EconomicThreshold") {
+									<p class="card-text mb-0">
+										<small class="text-muted">🏅 Conqueror: <strong>@game.WinnerName</strong></small>
+									</p>
+								} else if (!string.IsNullOrEmpty(game.WinnerName)) {
 									<p class="card-text mb-0">
 										<small class="text-muted">Winner: <strong>@game.WinnerName</strong></small>
 									</p>

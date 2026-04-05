@@ -1735,3 +1735,46 @@ button[type="submit"]:hover {
 .table-responsive .table {
     margin-bottom: 0;
 }
+
+/* --- Victory Conditions UI ------------------------------------------- */
+.bge-victory-modal .modal-content {
+    border: 2px solid var(--color-border-default);
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+}
+
+.bge-victory-header-economic {
+    background: linear-gradient(135deg, #a67c00 0%, #ffd700 100%);
+    color: #1a1000;
+}
+
+.bge-victory-header-time {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border-default);
+}
+
+.bge-victory-header-admin {
+    background: #5a0000;
+    color: #ffcccc;
+}
+
+.bge-victory-winner-card {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 215, 0, 0.03) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: 0 0 24px rgba(255, 215, 0, 0.15);
+}
+
+.bge-victory-progress-panel {
+    background: var(--color-bg-elevated);
+    border-left: 4px solid #ffd700;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.bge-victory-progress-bar {
+    background: linear-gradient(90deg, #a67c00 0%, #ffd700 100%);
+}
