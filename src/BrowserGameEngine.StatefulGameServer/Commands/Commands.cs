@@ -18,6 +18,7 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record LeaveAllianceCommand(PlayerId PlayerId) : ICommand;
 	public record KickMemberCommand(PlayerId PlayerId, PlayerId MemberPlayerId) : ICommand;
 	public record VoteLeaderCommand(PlayerId PlayerId, PlayerId VoteePlayerId) : ICommand;
+	public record RetractVoteCommand(PlayerId PlayerId) : ICommand;
 	public record SetAlliancePasswordCommand(PlayerId PlayerId, string NewPassword) : ICommand;
 	public record SetAllianceMessageCommand(PlayerId PlayerId, string Message) : ICommand;
 	public record PostAllianceChatCommand(PlayerId PlayerId, AllianceId AllianceId, string Body) : ICommand;

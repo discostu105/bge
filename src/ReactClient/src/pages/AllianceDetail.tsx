@@ -18,6 +18,7 @@ import type {
 	AllianceWarViewModel,
 	AllianceViewModel,
 	PublicPlayerViewModel,
+	PlayerProfileViewModel,
 	PaginatedResponse,
 } from '@/api/types'
 import { cn, relativeTime } from '@/lib/utils'
@@ -44,9 +45,6 @@ export function AllianceDetail() {
 	const [chatBody, setChatBody] = useState('')
 	const chatEndRef = useRef<HTMLDivElement>(null)
 
-	// Vote state
-	const [votePlayerId, setVotePlayerId] = useState('')
-
 	const { data: detail, isLoading, error: detailError, refetch: refetchDetail } = useQuery<AllianceDetailViewModel>({
 		queryKey: ['alliance-detail', allianceId],
 		queryFn: () => apiClient.get(`/api/alliances/${allianceId}`).then((r) => r.data),
@@ -59,8 +57,16 @@ export function AllianceDetail() {
 		refetchInterval: 10_000,
 	})
 
+	const { data: profile } = useQuery<PlayerProfileViewModel>({
+		queryKey: ['player-profile-alliance'],
+		queryFn: () => apiClient.get('/api/playerprofile').then((r) => r.data),
+	})
+
 	const isMember = myStatus?.allianceId === allianceId && myStatus?.isMember && !myStatus?.isPending
 	const isLeader = myStatus?.allianceId === allianceId && myStatus?.isLeader
+	const myPlayerId = profile?.playerId ?? null
+	const myMember = detail?.members.find((m) => m.playerId === myPlayerId)
+	const myVotedFor = myMember?.votedForPlayerId ?? null
 
 	const { data: posts } = useQuery<AllianceChatPostViewModel[]>({
 		queryKey: ['alliance-chat', allianceId],
@@ -137,6 +143,13 @@ export function AllianceDetail() {
 		mutationFn: (voteePlayerId: string) =>
 			apiClient.post(`/api/alliances/${allianceId}/leader-vote`, { voteePlayerId }),
 		onSuccess: () => { setSuccess('Vote cast!'); invalidateAll() },
+		onError: handleError,
+	})
+
+	const retractVoteMut = useMutation({
+		mutationFn: () =>
+			apiClient.delete(`/api/alliances/${allianceId}/leader-vote`),
+		onSuccess: () => { setSuccess('Vote retracted.'); invalidateAll() },
 		onError: handleError,
 	})
 
@@ -256,33 +269,14 @@ export function AllianceDetail() {
 			<div className="rounded-lg border bg-card">
 				<div className="border-b px-4 py-3 flex items-center justify-between">
 					<strong className="text-sm">Members ({confirmedMembers.length})</strong>
-					{isMember && (
-						<div className="flex items-center gap-2">
-							{/* Vote for leader */}
-							<select
-								value={votePlayerId}
-								onChange={(e) => setVotePlayerId(e.target.value)}
-								className="rounded border bg-input px-2 py-1 text-xs"
-							>
-								<option value="">Vote for leader…</option>
-								{confirmedMembers.map((m) => (
-									<option key={m.playerId} value={m.playerId}>{m.playerName}</option>
-								))}
-							</select>
-							<button
-								onClick={() => {
-									if (votePlayerId) {
-										setError(null); setSuccess(null)
-										voteMut.mutate(votePlayerId)
-									}
-								}}
-								disabled={!votePlayerId || voteMut.isPending}
-								className="rounded bg-secondary px-2 py-1 text-xs hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
-							>
-								<VoteIcon className="h-3 w-3" />
-								Vote
-							</button>
-						</div>
+					{isMember && myVotedFor && (
+						<button
+							onClick={() => { setError(null); setSuccess(null); retractVoteMut.mutate() }}
+							disabled={retractVoteMut.isPending}
+							className="rounded border border-muted-foreground px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-50"
+						>
+							Retract Vote
+						</button>
 					)}
 				</div>
 				<div className="overflow-x-auto">
@@ -292,21 +286,37 @@ export function AllianceDetail() {
 								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Player</th>
 								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Votes</th>
 								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Joined</th>
-								{isLeader && <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>}
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
 							</tr>
 						</thead>
 						<tbody>
-							{confirmedMembers.map((m) => (
-								<tr key={m.playerId} className="border-b border-border">
-									<td className="py-2 px-3 font-medium flex items-center gap-1.5">
-										{m.isLeader && <CrownIcon className="h-3.5 w-3.5 text-warning-foreground" />}
-										{m.playerName}
-									</td>
-									<td className="py-2 px-3">{m.voteCount}</td>
-									<td className="py-2 px-3 text-xs text-muted-foreground">{relativeTime(m.joinedAt)}</td>
-									{isLeader && (
-										<td className="py-2 px-3">
-											{!m.isLeader && (
+							{confirmedMembers.map((m) => {
+								const isMyVote = myVotedFor === m.playerId
+								return (
+									<tr key={m.playerId} className="border-b border-border">
+										<td className="py-2 px-3 font-medium flex items-center gap-1.5">
+											{m.isLeader && <CrownIcon className="h-3.5 w-3.5 text-warning-foreground" />}
+											{m.playerName}
+										</td>
+										<td className="py-2 px-3">{m.voteCount}</td>
+										<td className="py-2 px-3 text-xs text-muted-foreground">{relativeTime(m.joinedAt)}</td>
+										<td className="py-2 px-3 flex items-center gap-2">
+											{isMember && (
+												<button
+													onClick={() => { setError(null); setSuccess(null); voteMut.mutate(m.playerId) }}
+													disabled={voteMut.isPending || isMyVote}
+													className={cn(
+														'rounded px-2 py-0.5 text-xs flex items-center gap-1 disabled:opacity-50',
+														isMyVote
+															? 'bg-primary text-primary-foreground'
+															: 'border border-primary text-primary hover:bg-primary/10'
+													)}
+												>
+													<VoteIcon className="h-3 w-3" />
+													{isMyVote ? 'Voted' : 'Vote'}
+												</button>
+											)}
+											{isLeader && !m.isLeader && (
 												<button
 													onClick={() => { setError(null); kickMemberMut.mutate(m.playerId) }}
 													className="text-xs text-destructive hover:underline"
@@ -315,9 +325,9 @@ export function AllianceDetail() {
 												</button>
 											)}
 										</td>
-									)}
-								</tr>
-							))}
+									</tr>
+								)
+							})}
 						</tbody>
 					</table>
 				</div>

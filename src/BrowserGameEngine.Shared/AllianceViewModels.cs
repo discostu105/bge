@@ -9,6 +9,7 @@ namespace BrowserGameEngine.Shared {
 		public DateTime JoinedAt { get; set; }
 		public int VoteCount { get; set; }
 		public bool IsLeader { get; set; }
+		public string? VotedForPlayerId { get; set; }
 	}
 
 	public class AllianceViewModel {

@@ -9,6 +9,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public bool IsPending { get; set; }
 		public DateTime JoinedAt { get; set; }
 		public int VoteCount { get; set; }
+		public PlayerId? VotedForPlayerId { get; set; }
 	}
 
 	internal class AlliancePost {
@@ -46,7 +47,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				PlayerId: member.PlayerId,
 				IsPending: member.IsPending,
 				JoinedAt: member.JoinedAt,
-				VoteCount: member.VoteCount
+				VoteCount: member.VoteCount,
+				VotedForPlayerId: member.VotedForPlayerId
 			);
 		}
 
@@ -55,7 +57,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				PlayerId = member.PlayerId,
 				IsPending = member.IsPending,
 				JoinedAt = member.JoinedAt,
-				VoteCount = member.VoteCount
+				VoteCount = member.VoteCount,
+				VotedForPlayerId = member.VotedForPlayerId
 			};
 		}
 

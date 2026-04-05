@@ -108,7 +108,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				player.AllianceId = null;
 				if (!alliance.Members.Any()) {
 					world.Alliances.Remove(alliance.AllianceId);
-				} else if (alliance.LeaderId == command.PlayerId) {
+				} else {
 					RecalculateLeader(alliance);
 				}
 			}
@@ -125,6 +125,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				alliance.Members.Remove(member);
 				var kickedPlayer = world.GetPlayer(command.MemberPlayerId);
 				kickedPlayer.AllianceId = null;
+				RecalculateLeader(alliance);
 			}
 		}
 
@@ -137,7 +138,19 @@ namespace BrowserGameEngine.StatefulGameServer {
 				if (voterMember == null) throw new NotAllianceMemberException();
 				var voteeMember = alliance.Members.FirstOrDefault(m => m.PlayerId == command.VoteePlayerId && !m.IsPending);
 				if (voteeMember == null) throw new NotAllianceMemberException();
-				voteeMember.VoteCount++;
+				voterMember.VotedForPlayerId = command.VoteePlayerId;
+				RecalculateLeader(alliance);
+			}
+		}
+
+		public void RetractVote(RetractVoteCommand command) {
+			lock (_lock) {
+				var player = world.GetPlayer(command.PlayerId);
+				if (player.AllianceId == null) throw new NotAllianceMemberException();
+				var alliance = world.GetAlliance(player.AllianceId);
+				var voterMember = alliance.Members.FirstOrDefault(m => m.PlayerId == command.PlayerId && !m.IsPending);
+				if (voterMember == null) throw new NotAllianceMemberException();
+				voterMember.VotedForPlayerId = null;
 				RecalculateLeader(alliance);
 			}
 		}
@@ -165,13 +178,26 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private static void RecalculateLeader(Alliance alliance) {
 			var acceptedMembers = alliance.Members.Where(m => !m.IsPending).ToList();
 			if (!acceptedMembers.Any()) return;
-			var currentLeaderMember = acceptedMembers.FirstOrDefault(m => m.PlayerId == alliance.LeaderId);
+
+			// Clean up dangling votes (voted-for player is no longer an accepted member)
+			var acceptedPlayerIds = acceptedMembers.Select(m => m.PlayerId).ToHashSet();
+			foreach (var member in acceptedMembers) {
+				if (member.VotedForPlayerId != null && !acceptedPlayerIds.Contains(member.VotedForPlayerId)) {
+					member.VotedForPlayerId = null;
+				}
+			}
+
+			// Derive vote counts from VotedForPlayerId
+			foreach (var member in acceptedMembers) {
+				member.VoteCount = acceptedMembers.Count(m => m.VotedForPlayerId == member.PlayerId);
+			}
+
 			var topVoteCount = acceptedMembers.Max(m => m.VoteCount);
 			if (topVoteCount == 0) {
 				// No votes cast — current leader stays if still present
-				if (currentLeaderMember != null) return;
-				// Otherwise pick first accepted member
-				alliance.LeaderId = acceptedMembers.First().PlayerId;
+				if (acceptedMembers.Any(m => m.PlayerId == alliance.LeaderId)) return;
+				// Otherwise pick longest-tenured accepted member
+				alliance.LeaderId = acceptedMembers.OrderBy(m => m.JoinedAt).First().PlayerId;
 				return;
 			}
 			var topVoted = acceptedMembers.Where(m => m.VoteCount == topVoteCount).ToList();
