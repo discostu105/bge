@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { TrophyIcon, SwordsIcon, StarIcon } from 'lucide-react'
+import { TrophyIcon, SwordsIcon, StarIcon, ChevronRightIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { ProfileViewModel } from '@/api/types'
+import type { ProfileViewModel, PlayerAchievementsViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -10,6 +10,11 @@ export function PlayerProfile() {
   const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ['profile'],
     queryFn: () => apiClient.get<ProfileViewModel>('/api/profile').then((r) => r.data),
+  })
+
+  const { data: achievementsData } = useQuery<PlayerAchievementsViewModel>({
+    queryKey: ['achievements'],
+    queryFn: () => apiClient.get('/api/player-management/me/achievements').then(r => r.data),
   })
 
   if (isLoading) return <PageLoader message="Loading profile..." />
@@ -127,6 +132,49 @@ export function PlayerProfile() {
           </div>
         </div>
       )}
+
+      {/* Achievement badges */}
+      {(() => {
+        const badges = achievementsData?.achievements ?? []
+        if (badges.length === 0) return null
+        const shown = badges.slice(0, 4)
+        return (
+          <div className="rounded-lg border bg-card p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <strong className="text-sm flex items-center gap-1.5">
+                <TrophyIcon className="h-4 w-4 text-yellow-500" />
+                Recent Achievements
+              </strong>
+              <Link
+                to="/achievements"
+                className="text-xs text-primary hover:underline flex items-center gap-0.5"
+              >
+                View all <ChevronRightIcon className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {shown.map((a, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 rounded-full border bg-secondary/20 px-3 py-1.5"
+                  title={`${a.achievementLabel} — ${a.gameName}`}
+                >
+                  <span className="text-lg leading-none">{a.achievementIcon}</span>
+                  <span className="text-xs font-medium">{a.achievementLabel}</span>
+                </div>
+              ))}
+              {badges.length > 4 && (
+                <Link
+                  to="/achievements"
+                  className="flex items-center rounded-full border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  +{badges.length - 4} more
+                </Link>
+              )}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

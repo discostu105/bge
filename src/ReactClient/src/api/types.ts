@@ -711,6 +711,35 @@ export interface AchievementsViewModel {
   achievements: AchievementViewModel[]
 }
 
+// Milestone achievements (progress-based, unlockable)
+
+export type MilestoneCategory = 'combat' | 'economy' | 'diplomacy' | 'exploration'
+export type MilestoneTier = 'bronze' | 'silver' | 'gold' | 'legendary'
+
+export interface MilestoneAchievementViewModel {
+  id: string
+  name: string
+  description: string
+  category: MilestoneCategory
+  icon: string
+  isUnlocked: boolean
+  unlockedAt: string | null
+  currentProgress: number
+  targetProgress: number
+  tier: MilestoneTier
+}
+
+export interface MilestoneAchievementsSummaryViewModel {
+  totalAchievements: number
+  unlockedCount: number
+  unlockedByCategory: Record<string, number>
+}
+
+export interface MilestoneAchievementsViewModel {
+  achievements: MilestoneAchievementViewModel[]
+  summary: MilestoneAchievementsSummaryViewModel
+}
+
 // Player game-completion achievements (api/player-management/me/achievements)
 
 export interface PlayerAchievementViewModel {
