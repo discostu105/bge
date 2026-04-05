@@ -56,6 +56,34 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			});
 		}
 
+		/// <summary>Returns the current game's leaderboard ranked by score.</summary>
+		/// <param name="gameId">The game identifier (used for routing; server uses current player's game context).</param>
+		[HttpGet]
+		[Route("api/games/{gameId}/leaderboard")]
+		[ProducesResponseType(typeof(IEnumerable<LeaderboardEntryViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<IEnumerable<LeaderboardEntryViewModel>> GetLeaderboard(string gameId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var players = playerRepository.GetAll()
+				.Select(p => (
+					player: p,
+					score: scoreRepository.GetScore(p.PlayerId),
+					name: p.UserId != null ? userRepository.GetDisplayNameByUserId(p.UserId) ?? p.Name : p.Name
+				))
+				.OrderByDescending(x => x.score)
+				.ToList();
+
+			return players
+				.Select((x, idx) => new LeaderboardEntryViewModel(
+					Rank: idx + 1,
+					PlayerId: x.player.PlayerId.Id,
+					PlayerName: x.name,
+					Score: x.score,
+					IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId
+				))
+				.ToList();
+		}
+
 		/// <summary>Returns the in-game profile for a specific player by player ID.</summary>
 		/// <param name="playerId">The player ID to look up.</param>
 		[HttpGet("{playerId}")]

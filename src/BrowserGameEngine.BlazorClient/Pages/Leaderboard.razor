@@ -1,0 +1,90 @@
+@page "/games/{GameId}/leaderboard"
+@using BrowserGameEngine.Shared
+@inject HttpClient Http
+@implements IDisposable
+
+<PageTitle>Leaderboard — Age of Agents</PageTitle>
+
+<h1>Leaderboard</h1>
+
+@if (error != null) {
+	<div class="alert alert-warning">@error</div>
+}
+
+@if (entries == null) {
+	<p><em>Loading...</em></p>
+} else {
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<span class="text-muted small">Auto-refreshes every 60 seconds</span>
+		<button class="btn btn-sm btn-outline-secondary" @onclick="LoadData" disabled="@loading">
+			@(loading ? "Refreshing…" : "Refresh")
+		</button>
+	</div>
+
+	<div class="table-responsive">
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>Rank</th>
+					<th>Player</th>
+					<th>Score</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var e in entries) {
+					<tr class="@(e.IsCurrentPlayer ? "table-primary fw-bold" : "")">
+						<td><strong>#@e.Rank</strong></td>
+						<td>
+							<a href="games/@GameId/player/@e.PlayerId">@e.PlayerName</a>
+							@if (e.IsCurrentPlayer) {
+								<span class="badge bg-primary ms-2">You</span>
+							}
+						</td>
+						<td>@e.Score.ToString("N0")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+@code {
+	[Parameter]
+	public string? GameId { get; set; }
+
+	private List<LeaderboardEntryViewModel>? entries;
+	private string? error;
+	private bool loading;
+	private CancellationTokenSource? _cts;
+
+	protected override async Task OnInitializedAsync() {
+		await LoadData();
+		_cts = new CancellationTokenSource();
+		_ = RunRefreshLoop(_cts.Token);
+	}
+
+	private async Task RunRefreshLoop(CancellationToken ct) {
+		using var timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+		while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) {
+			await InvokeAsync(LoadData);
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task LoadData() {
+		loading = true;
+		try {
+			entries = await Http.GetFromJsonAsync<List<LeaderboardEntryViewModel>>($"api/games/{GameId}/leaderboard") ?? new();
+			error = null;
+		} catch (Exception ex) {
+			error = ex.Message;
+		} finally {
+			loading = false;
+		}
+	}
+
+	public void Dispose() {
+		_cts?.Cancel();
+		_cts?.Dispose();
+	}
+}
