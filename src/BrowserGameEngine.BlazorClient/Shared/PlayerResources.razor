@@ -86,7 +86,7 @@
 
     private string CountdownClass(DateTime nextTickAt) {
         var remaining = nextTickAt - DateTime.UtcNow;
-        return remaining.TotalSeconds < 60 ? "countdown-urgent" : "";
+        return remaining.TotalSeconds < 5 ? "countdown-urgent" : "";
     }
 
     public void Dispose() {
