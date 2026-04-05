@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
-	[Route("api/players")]
+	[Route("api/player-management")]
 	public class PlayerManagementController : ControllerBase {
 		private readonly ILogger<PlayerManagementController> logger;
 		private readonly CurrentUserContext currentUserContext;

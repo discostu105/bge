@@ -10,14 +10,14 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		[Fact]
 		public async Task GetMyPlayers_Unauthenticated_Returns401() {
 			var client = CreateClient();
-			var response = await client.GetAsync("/api/players");
+			var response = await client.GetAsync("/api/player-management");
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
 		[Fact]
 		public async Task GetMyPlayers_NewUser_ReturnsEmptyList() {
 			var client = CreateClient("user-pm-new-1");
-			var response = await client.GetAsync("/api/players");
+			var response = await client.GetAsync("/api/player-management");
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 			var vm = await DeserializeAsync<PlayerListViewModel>(response);
 			Assert.NotNull(vm);
@@ -30,7 +30,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			await CreatePlayerAsync(userId, "PMTestPlayer1");
 
 			var client = CreateClient(userId);
-			var response = await client.GetAsync("/api/players");
+			var response = await client.GetAsync("/api/player-management");
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 			var vm = await DeserializeAsync<PlayerListViewModel>(response);
 			Assert.NotNull(vm);
@@ -41,7 +41,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		[Fact]
 		public async Task GenerateApiKey_Unauthenticated_Returns401() {
 			var client = CreateClient();
-			var response = await client.PostAsync("/api/players/some-player-id/apikey", null);
+			var response = await client.PostAsync("/api/player-management/some-player-id/apikey", null);
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
@@ -51,7 +51,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			var playerId = await CreatePlayerAsync(userId, "APIKeyPlayer1");
 
 			var client = CreateClient(userId);
-			var response = await client.PostAsync($"/api/players/{playerId}/apikey", null);
+			var response = await client.PostAsync($"/api/player-management/{playerId}/apikey", null);
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 			var vm = await DeserializeAsync<ApiKeyViewModel>(response);
 			Assert.NotNull(vm);
@@ -61,7 +61,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		[Fact]
 		public async Task DeletePlayer_Unauthenticated_Returns401() {
 			var client = CreateClient();
-			var response = await client.DeleteAsync("/api/players/some-player-id");
+			var response = await client.DeleteAsync("/api/player-management/some-player-id");
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
@@ -73,11 +73,11 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			await CreatePlayerAsync(userId, "DeleteTestPlayer1");
 
 			var client = CreateClient(userId);
-			var listResp = await client.GetAsync("/api/players");
+			var listResp = await client.GetAsync("/api/player-management");
 			var vm = await DeserializeAsync<PlayerListViewModel>(listResp);
 			var playerId = vm!.Players[0].PlayerId;
 
-			var response = await client.DeleteAsync($"/api/players/{playerId}");
+			var response = await client.DeleteAsync($"/api/player-management/{playerId}");
 			Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
 		}
 	}

@@ -107,7 +107,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
       {statusError && !status && <ApiError message="Failed to load diplomacy status." onRetry={() => void refetchStatus()} />}
 
       {/* Incoming proposals */}
-      {(status?.pendingIncoming.length ?? 0) > 0 && (
+      {(status?.pendingIncoming?.length ?? 0) > 0 && (
         <div className="rounded-lg border border-warning/50 bg-warning/10">
           <div className="border-b border-warning/50 bg-warning/20 px-4 py-3">
             <strong className="text-sm text-warning-foreground">
@@ -227,7 +227,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
       </div>
 
       {/* Sent proposals */}
-      {(status?.pendingSent.length ?? 0) > 0 && (
+      {(status?.pendingSent?.length ?? 0) > 0 && (
         <div className="rounded-lg border bg-card">
           <div className="border-b px-4 py-3">
             <strong className="text-sm">Sent Proposals (awaiting response)</strong>

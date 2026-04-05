@@ -254,7 +254,7 @@ export function Spies({ gameId }: SpiesProps) {
             Refresh
           </button>
         </div>
-        {!missions ? (
+        {!missions || !Array.isArray(missions) ? (
           <div className="p-4 text-muted-foreground text-sm">Loading...</div>
         ) : missions.length === 0 ? (
           <div className="p-4 text-muted-foreground text-sm">No active missions.</div>

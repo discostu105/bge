@@ -153,8 +153,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		/// <summary>Dispatches an offensive spy mission against a target player.</summary>
-		[HttpPost]
-		[Route("api/spy/send")]
+		[HttpPost("send")]
 		[ProducesResponseType(typeof(SendSpyMissionResponse), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -179,8 +178,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		/// <summary>Returns all outgoing spy missions for the current player, most recent first.</summary>
-		[HttpGet]
-		[Route("api/spy/missions")]
+		[HttpGet("missions")]
 		[ProducesResponseType(typeof(IEnumerable<SpyMissionViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<IEnumerable<SpyMissionViewModel>> Missions() {
