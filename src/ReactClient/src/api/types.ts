@@ -640,6 +640,12 @@ export interface MessageInboxViewModel {
   messages: MessageViewModel[]
 }
 
+export interface MessageThreadViewModel {
+  withPlayerId: string
+  withPlayerName: string
+  messages: MessageViewModel[]
+}
+
 export interface SendMessageViewModel {
   recipientId: string
   subject: string
