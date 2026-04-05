@@ -60,8 +60,9 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-muted-foreground">💎 Mineral Workers</label>
+          <label htmlFor="mineralWorkers" className="text-xs text-muted-foreground">💎 Mineral Workers</label>
           <input
+            id="mineralWorkers"
             type="number"
             min={0}
             max={data.totalWorkers}
@@ -71,8 +72,9 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
           />
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">⚗️ Gas Workers</label>
+          <label htmlFor="gasWorkers" className="text-xs text-muted-foreground">⚗️ Gas Workers</label>
           <input
+            id="gasWorkers"
             type="number"
             min={0}
             max={data.totalWorkers}

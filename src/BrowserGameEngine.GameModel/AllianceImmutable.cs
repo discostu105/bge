@@ -19,6 +19,8 @@ namespace BrowserGameEngine.GameModel {
 		IList<AllianceMemberImmutable> Members,
 		string? Message = null,
 		IList<AlliancePostImmutable>? Posts = null,
-		IList<AllianceInviteImmutable>? Invites = null
+		IList<AllianceInviteImmutable>? Invites = null,
+		AllianceElectionImmutable? ActiveElection = null,
+		IList<AllianceElectionImmutable>? ElectionHistory = null
 	);
 }

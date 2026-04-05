@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '@/api/client'
-import type { GameDetailViewModel, JoinGameRequest } from '@/api/types'
+import type { GameDetailViewModel, JoinGameRequest, RaceListViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -19,6 +19,7 @@ export function JoinGame() {
   const { gameId } = useParams<{ gameId: string }>()
   const navigate = useNavigate()
   const [playerName, setPlayerName] = useState('')
+  const [playerType, setPlayerType] = useState('terran')
   const [joinError, setJoinError] = useState<string | null>(null)
   const [alreadyJoined, setAlreadyJoined] = useState(false)
 
@@ -26,6 +27,11 @@ export function JoinGame() {
     queryKey: ['game', gameId],
     queryFn: () => apiClient.get(`/api/games/${gameId}`).then((r) => r.data),
     enabled: !!gameId,
+  })
+
+  const { data: racesData } = useQuery<RaceListViewModel>({
+    queryKey: ['races'],
+    queryFn: () => apiClient.get('/api/games/races').then((r) => r.data),
   })
 
   const joinMutation = useMutation({
@@ -51,12 +57,18 @@ export function JoinGame() {
       return
     }
     setJoinError(null)
-    joinMutation.mutate({ playerName: playerName.trim() })
+    joinMutation.mutate({ playerName: playerName.trim(), playerType })
   }
 
   if (isLoading) return <PageLoader message="Loading game..." />
   if (loadError) return <ApiError message="Failed to load game." onRetry={() => void refetch()} />
   if (!game) return <ApiError message="Game not found." />
+
+  const races = racesData?.races ?? [
+    { id: 'terran', name: 'Terraner' },
+    { id: 'protoss', name: 'Protoss' },
+    { id: 'zerg', name: 'Zerg' },
+  ]
 
   return (
     <div className="space-y-4">
@@ -93,6 +105,26 @@ export function JoinGame() {
               placeholder="Enter your name"
               maxLength={32}
             />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Race</label>
+            <div className="grid grid-cols-3 gap-2">
+              {races.map((race) => (
+                <button
+                  key={race.id}
+                  className={`rounded border px-3 py-2 text-sm font-medium transition-colors ${
+                    playerType === race.id
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:bg-muted/30'
+                  }`}
+                  onClick={() => setPlayerType(race.id)}
+                  type="button"
+                >
+                  {race.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button

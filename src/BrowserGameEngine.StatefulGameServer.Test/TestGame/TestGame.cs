@@ -26,6 +26,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public AllianceInviteRepositoryWrite AllianceInviteRepositoryWrite { get; }
 		public AllianceWarRepository AllianceWarRepository { get; }
 		public AllianceWarRepositoryWrite AllianceWarRepositoryWrite { get; }
+		public AllianceElectionRepository AllianceElectionRepository { get; }
+		public AllianceElectionRepositoryWrite AllianceElectionRepositoryWrite { get; }
 		public PlayerRepository PlayerRepository { get; }
 		public PlayerRepositoryWrite PlayerRepositoryWrite { get; }
 		public ResourceRepository ResourceRepository { get; }
@@ -48,6 +50,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public SpyRepositoryWrite SpyRepositoryWrite { get; }
 		public SpyMissionRepository SpyMissionRepository { get; }
 		public SpyMissionRepositoryWrite SpyMissionRepositoryWrite { get; }
+		public ResourceHistoryRepository ResourceHistoryRepository { get; }
+		public ResourceHistoryRepositoryWrite ResourceHistoryRepositoryWrite { get; }
 		public TestWorldStateFactory WorldStateFactory { get; }
 		public GameTickModuleRegistry GameTickModuleRegistry { get; }
 		public GameTickEngine TickEngine { get; }
@@ -70,6 +74,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			AllianceInviteRepositoryWrite = new AllianceInviteRepositoryWrite(Accessor, AllianceInviteRepository);
 			AllianceWarRepository = new AllianceWarRepository(Accessor);
 			AllianceWarRepositoryWrite = new AllianceWarRepositoryWrite(Accessor);
+			AllianceElectionRepository = new AllianceElectionRepository(Accessor);
+			AllianceElectionRepositoryWrite = new AllianceElectionRepositoryWrite(Accessor, AllianceElectionRepository, AllianceRepository);
 			PlayerRepository = new PlayerRepository(Accessor, ScoreRepository, AllianceRepository);
 			PlayerRepositoryWrite = new PlayerRepositoryWrite(Accessor, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(Accessor, GameDef);
@@ -92,10 +98,13 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			SpyRepositoryWrite = new SpyRepositoryWrite(Accessor, SpyRepository, ResourceRepositoryWrite, TechRepository, GameDef, TimeProvider.System);
 			SpyMissionRepository = new SpyMissionRepository(Accessor);
 			SpyMissionRepositoryWrite = new SpyMissionRepositoryWrite(Accessor, ResourceRepositoryWrite, ResourceRepository, TechRepository, PlayerRepository, NullNotificationService.Instance, TimeProvider.System, GameDef);
+			ResourceHistoryRepository = new ResourceHistoryRepository(Accessor);
+			ResourceHistoryRepositoryWrite = new ResourceHistoryRepositoryWrite(Accessor);
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
 			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger(), TechRepository));
+			services.AddSingleton<IGameTickModule>(new ResourceHistoryModule(ResourceRepository, ResourceHistoryRepositoryWrite, Accessor));
 			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
 			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), Accessor, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System, NullGameEventPublisher.Instance);
 		}

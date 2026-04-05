@@ -23,7 +23,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime StartTime,
 		DateTime EndTime,
 		string TickDuration,
-		string? DiscordWebhookUrl = null
+		string? DiscordWebhookUrl = null,
+		int MaxPlayers = 0
 	);
 
 	public record UpdateGameRequest(

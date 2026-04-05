@@ -43,6 +43,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<AllianceInviteRepositoryWrite>();
 			services.AddSingleton<AllianceWarRepository>();
 			services.AddSingleton<AllianceWarRepositoryWrite>();
+			services.AddSingleton<AllianceElectionRepository>();
+			services.AddSingleton<AllianceElectionRepositoryWrite>();
 			services.AddSingleton<ChatRepositoryWrite>();
 			services.AddSingleton<AllianceScoreRepository>();
 			services.AddSingleton<AssetRepository>();
@@ -68,6 +70,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<TechRepositoryWrite>();
 			services.AddSingleton<TradeRepository>();
 			services.AddSingleton<TradeRepositoryWrite>();
+			services.AddSingleton<ResourceHistoryRepository>();
+			services.AddSingleton<ResourceHistoryRepositoryWrite>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
@@ -77,7 +81,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, UpgradeTimer>();
 			services.AddSingleton<IGameTickModule, TechResearchTimerModule>();
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
+			services.AddSingleton<IGameTickModule, ResourceHistoryModule>();
 			services.AddSingleton<IGameTickModule, SpyMissionModule>();
+			services.AddSingleton<IGameTickModule, ElectionTickModule>();
 			services.AddSingleton<IGameTickModule, VictoryProgressNotificationModule>();
 			services.AddSingleton<IGameTickModule, VictoryConditionModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();

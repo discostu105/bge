@@ -27,6 +27,7 @@ namespace BrowserGameEngine.GameModel {
 		IList<SpyAttemptLog>? SpyAttemptLogs = null,
 		IList<GameNotification>? Notifications = null,
 		IList<SpyMissionImmutable>? SpyMissions = null,
-		bool TutorialCompleted = false
+		bool TutorialCompleted = false,
+		IList<ResourceSnapshot>? ResourceHistory = null
 	);
 }

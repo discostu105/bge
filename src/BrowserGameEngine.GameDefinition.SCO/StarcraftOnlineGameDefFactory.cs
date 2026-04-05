@@ -36,6 +36,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						{ "constraint-resource", "land" },
 					}.ToFrozenDictionary()),
 
+					new GameTickModuleDef("resource-history:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("techresearch:1", new Dictionary<string, string> { }.ToFrozenDictionary()),

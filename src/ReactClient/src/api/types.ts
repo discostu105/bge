@@ -99,6 +99,19 @@ export interface PlayerResourcesViewModel {
   colonizationCostPerLand: number
 }
 
+// Resource History
+
+export interface ResourceSnapshotViewModel {
+  tick: number
+  minerals: number
+  gas: number
+  land: number
+}
+
+export interface ResourceHistoryViewModel {
+  snapshots: ResourceSnapshotViewModel[]
+}
+
 // Worker Assignment
 
 export interface WorkerAssignmentViewModel {
@@ -275,6 +288,7 @@ export interface GameSummaryViewModel {
   isPlayerEnrolled: boolean
   victoryConditionType: string | null
   discordWebhookUrl: string | null
+  createdByUserId: string | null
 }
 
 export interface GameListViewModel {
@@ -311,6 +325,7 @@ export interface GameResultsViewModel {
 
 export interface JoinGameRequest {
   playerName: string
+  playerType?: string
 }
 
 export interface JoinGameViewModel {
@@ -324,6 +339,7 @@ export interface CreateGameRequest {
   endTime: string
   tickDuration: string
   discordWebhookUrl: string | null
+  maxPlayers: number
 }
 
 // Players / Profile
@@ -446,6 +462,28 @@ export interface AllianceInviteViewModel {
   allianceName: string
   inviterPlayerName: string
   expiresAt: string
+}
+
+export interface ElectionCandidateViewModel {
+  playerId: string
+  playerName: string
+  nominatedAt: string
+  voteCount: number
+}
+
+export interface AllianceElectionViewModel {
+  electionId: string
+  allianceId: string
+  status: string
+  startedByPlayerName: string
+  startedAt: string
+  nominationEndsAt: string
+  votingEndsAt: string
+  candidates: ElectionCandidateViewModel[]
+  myVote: string | null
+  winnerId: string | null
+  winnerName: string | null
+  completedAt: string | null
 }
 
 export interface AllianceWarViewModel {
@@ -823,16 +861,28 @@ export interface UnitDefinitionsViewModel {
 export interface GameLobbyViewModel {
   gameId: string
   gameName: string
-  players: LobbyPlayerViewModel[]
-  startTime: string | null
   status: string
+  maxPlayers: number
+  startTime: string | null
+  endTime: string | null
+  players: LobbyPlayerViewModel[]
+  canJoin: boolean
 }
 
 export interface LobbyPlayerViewModel {
   playerId: string
   playerName: string
   playerType: string
-  isReady: boolean
+  joined: string
+}
+
+export interface RaceViewModel {
+  id: string
+  name: string
+}
+
+export interface RaceListViewModel {
+  races: RaceViewModel[]
 }
 
 // Tick info
