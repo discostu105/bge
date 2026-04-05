@@ -12,6 +12,8 @@ namespace BrowserGameEngine.GameDefinition {
 		public int Attack { get; init; }
 		public int Defense { get; init; }
 		public int Hitpoints { get; init; }
+		/// <summary>Shield points (absorbed before hitpoints in combat). Primarily a Protoss mechanic.</summary>
+		public int Shields { get; init; }
 		public int Speed { get; init; }
 		public bool IsMobile { get; init; } = true;
 		public List<AssetDefId> Prerequisites { get; init; } = new List<AssetDefId>();

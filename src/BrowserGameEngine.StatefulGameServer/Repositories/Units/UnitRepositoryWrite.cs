@@ -291,7 +291,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					Count = x.Count,
 					Attack = unitDef.Attack + attackBonus + techAttackBonus,
 					Defense = unitDef.Defense + defenseBonus + techDefenseBonus,
-					Hitpoints = unitDef.Hitpoints,
+					Hitpoints = unitDef.Hitpoints + unitDef.Shields,
 				};
 			});
 		}

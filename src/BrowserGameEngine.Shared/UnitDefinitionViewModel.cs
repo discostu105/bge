@@ -13,6 +13,7 @@ namespace BrowserGameEngine.Shared {
 		public int Attack { get; set; }
 		public int Defense { get; set; }
 		public int Hitpoints { get; set; }
+		public int Shields { get; set; }
 		public int Speed { get; set; }
 		public bool IsMobile { get; set; }
 		public required List<string> Prerequisites { get; set; }
@@ -27,6 +28,7 @@ namespace BrowserGameEngine.Shared {
 				Attack = unitDefinition.Attack,
 				Defense = unitDefinition.Defense,
 				Hitpoints = unitDefinition.Hitpoints,
+				Shields = unitDefinition.Shields,
 				Speed = unitDefinition.Speed,
 				IsMobile = unitDefinition.IsMobile,
 				Prerequisites = unitDefinition.Prerequisites.Select(x => x.Id).ToList(),
