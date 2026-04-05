@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,6 +20,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly IGameNotificationService notificationService;
 		private readonly IPlayerNotificationService playerNotificationService;
 		private readonly UserRepositoryWrite userRepositoryWrite;
+		private readonly IGameEventPublisher eventPublisher;
 		private readonly TimeProvider timeProvider;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
@@ -30,6 +32,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			IGameNotificationService notificationService,
 			IPlayerNotificationService playerNotificationService,
 			UserRepositoryWrite userRepositoryWrite,
+			IGameEventPublisher eventPublisher,
 			TimeProvider timeProvider,
 			ILogger<GameLifecycleEngine> logger
 		) {
@@ -40,6 +43,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.notificationService = notificationService;
 			this.playerNotificationService = playerNotificationService;
 			this.userRepositoryWrite = userRepositoryWrite;
+			this.eventPublisher = eventPublisher;
 			this.timeProvider = timeProvider;
 			this.logger = logger;
 		}
@@ -168,6 +172,14 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 					playerNotificationService.Push(player.UserId, $"Game \"{record.Name}\" has ended. Check results!", NotificationKind.GameEvent);
 				}
 			}
+
+			// Broadcast game-over event to all connected clients
+			eventPublisher.PublishToGame(GameEventTypes.GameFinalized, new {
+				gameId = record.GameId.Id,
+				winnerId = winnerId?.Id,
+				winnerName,
+				victoryConditionType
+			});
 
 			// Remove instance from registry to free memory
 			gameRegistry.Remove(record.GameId);

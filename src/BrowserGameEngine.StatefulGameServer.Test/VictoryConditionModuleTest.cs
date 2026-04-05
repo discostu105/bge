@@ -42,6 +42,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new GameRegistryNs.NullGameNotificationService(),
 				new InMemoryPlayerNotificationService(NullGameEventPublisher.Instance),
 				userRepositoryWrite,
+				NullGameEventPublisher.Instance,
 				TimeProvider.System,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);

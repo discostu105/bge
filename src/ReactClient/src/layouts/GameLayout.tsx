@@ -1,5 +1,5 @@
-import { Suspense, useState, useCallback, useEffect } from 'react'
-import { Outlet, NavLink, useParams, Navigate, useLocation } from 'react-router'
+import { Suspense, useState, useCallback, useEffect, useRef } from 'react'
+import { Outlet, NavLink, useParams, Navigate, useLocation, useNavigate } from 'react-router'
 import { GamepadIcon, LogOutIcon, MenuIcon, XIcon, WifiIcon, WifiOffIcon } from 'lucide-react'
 import { CurrentGameProvider, useCurrentGame } from '@/contexts/CurrentGameContext'
 import { NavMenu } from '@/components/NavMenu'
@@ -62,6 +62,52 @@ function TimeRemainingBanner({ endTime }: { endTime: string }) {
   )
 }
 
+interface GameFinalizedPayload {
+  gameId: string
+  winnerId: string | null
+  winnerName: string | null
+  victoryConditionType: string | null
+}
+
+function GameOverOverlay({ payload, gameId }: { payload: GameFinalizedPayload; gameId: string }) {
+  const navigate = useNavigate()
+  const [countdown, setCountdown] = useState(8)
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      navigate(`/games/${gameId}/results`)
+      return
+    }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown, navigate, gameId])
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-500">
+      <div className="text-center space-y-4 p-8">
+        <div className="text-6xl">🏆</div>
+        <h2 className="text-3xl font-bold text-white">
+          {payload.winnerName ? `${payload.winnerName} Wins!` : 'Game Over!'}
+        </h2>
+        {payload.victoryConditionType && (
+          <span className={`inline-block text-sm font-bold px-4 py-1.5 rounded ${vcBadgeCss(payload.victoryConditionType)}`}>
+            {vcText(payload.victoryConditionType)}
+          </span>
+        )}
+        <p className="text-sm text-gray-300">
+          Redirecting to results in {countdown}s...
+        </p>
+        <button
+          onClick={() => navigate(`/games/${gameId}/results`)}
+          className="mt-2 rounded bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          View Results Now
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function SidebarContent({ currentGame }: { currentGame: { name: string } | null }) {
   return (
     <>
@@ -97,9 +143,11 @@ function SidebarContent({ currentGame }: { currentGame: { name: string } | null 
 function GameLayoutInner() {
   const { gameId, currentGame } = useCurrentGame()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [gameFinalizedPayload, setGameFinalizedPayload] = useState<GameFinalizedPayload | null>(null)
   const location = useLocation()
   const signalR = useSignalR('/gamehub')
   const { toasts, addToast, dismiss } = useNotificationToasts()
+  const gameFinalizedHandlerRef = useRef<((...args: unknown[]) => void) | null>(null)
 
   const onRealTimeNotification = useCallback(
     (n: { type: string; title: string; body?: string; createdAt: string }) => {
@@ -107,6 +155,22 @@ function GameLayoutInner() {
     },
     [addToast]
   )
+
+  // Listen for GameFinalized event
+  useEffect(() => {
+    if (!signalR) return
+    const handler = (...args: unknown[]) => {
+      const payload = args[0] as GameFinalizedPayload
+      if (payload?.gameId === gameId) {
+        setGameFinalizedPayload(payload)
+      }
+    }
+    gameFinalizedHandlerRef.current = handler
+    signalR.on('GameFinalized', handler)
+    return () => {
+      signalR.off('GameFinalized', handler)
+    }
+  }, [signalR, gameId])
 
   // Close mobile sidebar on navigation
   useEffect(() => {
@@ -200,6 +264,11 @@ function GameLayoutInner() {
 
       {/* First-time player tutorial */}
       <TutorialOverlay />
+
+      {/* Game-over overlay */}
+      {gameFinalizedPayload && (
+        <GameOverOverlay payload={gameFinalizedPayload} gameId={gameId} />
+      )}
     </div>
   )
 }
