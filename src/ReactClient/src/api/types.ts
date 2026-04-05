@@ -399,6 +399,7 @@ export interface AllianceMemberViewModel {
   joinedAt: string
   voteCount: number
   isLeader: boolean
+  votedForPlayerId?: string | null
 }
 
 export interface AllianceViewModel {

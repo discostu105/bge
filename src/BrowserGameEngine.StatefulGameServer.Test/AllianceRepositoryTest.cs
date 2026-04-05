@@ -94,18 +94,37 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
 			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
 			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
-			// Vote for Player2 to have more votes
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player3, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player3));
+			// Two members vote for Player2
 			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
-			// Now Player2 has 1 vote, Player1 becomes leader by vote count? Let's just leave and check a leader is assigned
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player2));
+			// Player1 (leader by creation) leaves — Player2 should become leader (most votes)
 			game.AllianceRepositoryWrite.LeaveAlliance(new LeaveAllianceCommand(Player1));
 
 			var alliance = game.AllianceRepository.Get(allianceId);
 			Assert.NotNull(alliance);
-			Assert.NotEqual(Player1, alliance.LeaderId);
+			Assert.Equal(Player2, alliance.LeaderId);
 		}
 
 		[Fact]
 		public void VoteLeader_ChangesLeaderWhenVoteeOvertakes() {
+			var game = new TestGame(playerCount: 3);
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player3, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player3));
+			// Two votes for Player2 vs zero for Player1
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player2));
+
+			var alliance = game.AllianceRepository.Get(allianceId)!;
+			Assert.Equal(Player2, alliance.LeaderId);
+		}
+
+		[Fact]
+		public void VoteLeader_SetsVotedForPlayerId() {
 			var game = new TestGame(playerCount: 2);
 			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
 			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
@@ -113,7 +132,105 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
 
 			var alliance = game.AllianceRepository.Get(allianceId)!;
-			Assert.Equal(Player2, alliance.LeaderId);
+			var voter = alliance.Members.Single(m => m.PlayerId == Player1);
+			Assert.Equal(Player2, voter.VotedForPlayerId);
+		}
+
+		[Fact]
+		public void VoteLeader_ChangeVote_UpdatesLeader() {
+			var game = new TestGame(playerCount: 3);
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player3, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player3));
+
+			// Player2 and Player3 vote for Player2
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player2, Player2));
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player2));
+			Assert.Equal(Player2, game.AllianceRepository.Get(allianceId)!.LeaderId);
+
+			// Player3 changes vote to Player3 — now tied 1:1, incumbent Player2 stays
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player3));
+			Assert.Equal(Player2, game.AllianceRepository.Get(allianceId)!.LeaderId);
+
+			// Player1 also votes for Player3 — now Player3 has 2 votes, Player2 has 1
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player3));
+			Assert.Equal(Player3, game.AllianceRepository.Get(allianceId)!.LeaderId);
+		}
+
+		[Fact]
+		public void VoteLeader_SameVoteTwice_NoChange() {
+			var game = new TestGame(playerCount: 2);
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
+
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
+
+			var alliance = game.AllianceRepository.Get(allianceId)!;
+			var votee = alliance.Members.Single(m => m.PlayerId == Player2);
+			Assert.Equal(1, votee.VoteCount);
+		}
+
+		[Fact]
+		public void RetractVote_ClearsVoteAndRecalculates() {
+			var game = new TestGame(playerCount: 3);
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player3, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player3));
+
+			// Vote for Player2
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player2));
+			Assert.Equal(Player2, game.AllianceRepository.Get(allianceId)!.LeaderId);
+
+			// Retract one vote — Player2 still has 1 vote from Player3
+			game.AllianceRepositoryWrite.RetractVote(new RetractVoteCommand(Player1));
+			var alliance = game.AllianceRepository.Get(allianceId)!;
+			var voter = alliance.Members.Single(m => m.PlayerId == Player1);
+			Assert.Null(voter.VotedForPlayerId);
+			Assert.Equal(Player2, alliance.LeaderId); // Still leader with 1 vote
+		}
+
+		[Fact]
+		public void VoteLeader_TiedVotes_IncumbentStays() {
+			var game = new TestGame(playerCount: 3);
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player3, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player3));
+
+			// Player2 votes for Player1 (incumbent), Player3 votes for Player2 — tied 1:1
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player2, Player1));
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player2));
+
+			var alliance = game.AllianceRepository.Get(allianceId)!;
+			// Incumbent Player1 stays as leader in a tie
+			Assert.Equal(Player1, alliance.LeaderId);
+		}
+
+		[Fact]
+		public void LeaveAlliance_VoterLeaves_VoteCountUpdated() {
+			var game = new TestGame(playerCount: 3);
+			var allianceId = game.AllianceRepositoryWrite.CreateAlliance(new CreateAllianceCommand(Player1, "TestAlliance", "secret"));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player2, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player2));
+			game.AllianceRepositoryWrite.JoinAlliance(new JoinAllianceCommand(Player3, allianceId, "secret"));
+			game.AllianceRepositoryWrite.AcceptMember(new AcceptMemberCommand(Player1, Player3));
+
+			// Player3 votes for Player2
+			game.AllianceRepositoryWrite.VoteLeader(new VoteLeaderCommand(Player3, Player2));
+			Assert.Equal(1, game.AllianceRepository.Get(allianceId)!.Members.Single(m => m.PlayerId == Player2).VoteCount);
+
+			// Player3 leaves — Player2 should have 0 votes now
+			game.AllianceRepositoryWrite.LeaveAlliance(new LeaveAllianceCommand(Player3));
+			var alliance = game.AllianceRepository.Get(allianceId)!;
+			Assert.Equal(0, alliance.Members.Single(m => m.PlayerId == Player2).VoteCount);
 		}
 
 		[Fact]

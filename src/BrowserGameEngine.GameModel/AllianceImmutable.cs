@@ -6,7 +6,8 @@ namespace BrowserGameEngine.GameModel {
 		PlayerId PlayerId,
 		bool IsPending,
 		DateTime JoinedAt,
-		int VoteCount
+		int VoteCount,
+		PlayerId? VotedForPlayerId = null
 	);
 
 	public record AllianceImmutable(

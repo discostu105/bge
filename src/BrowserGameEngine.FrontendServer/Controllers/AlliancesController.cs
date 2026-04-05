@@ -112,7 +112,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 						IsPending = m.IsPending,
 						JoinedAt = m.JoinedAt,
 						VoteCount = m.VoteCount,
-						IsLeader = m.PlayerId == alliance.LeaderId
+						IsLeader = m.PlayerId == alliance.LeaderId,
+						VotedForPlayerId = m.VotedForPlayerId?.Id
 					};
 				}).ToList()
 			});
@@ -233,6 +234,18 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			try {
 				allianceRepositoryWrite.VoteLeader(
 					new VoteLeaderCommand(currentUserContext.PlayerId!, PlayerIdFactory.Create(request.VoteePlayerId)));
+				return Ok();
+			} catch (NotAllianceMemberException e) {
+				return BadRequest(e.Message);
+			}
+		}
+
+		[HttpDelete("{id}/leader-vote")]
+		public ActionResult RetractVote(string id) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			try {
+				allianceRepositoryWrite.RetractVote(
+					new RetractVoteCommand(currentUserContext.PlayerId!));
 				return Ok();
 			} catch (NotAllianceMemberException e) {
 				return BadRequest(e.Message);
