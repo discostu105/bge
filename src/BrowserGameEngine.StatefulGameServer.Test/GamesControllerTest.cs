@@ -154,18 +154,16 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var okResult = Assert.IsType<OkObjectResult>(result.Result);
 			var detail = Assert.IsType<GameDetailViewModel>(okResult.Value);
 			Assert.Equal("Updated Name", detail.Name);
-			Assert.Equal("https://new.hook", detail.DiscordWebhookUrl);
 			Assert.Equal(newEnd.ToUniversalTime(), detail.EndTime);
 
 			// Verify GlobalState was mutated
 			var updated = globalState.GetGames()[0];
 			Assert.Equal("Updated Name", updated.Name);
-			Assert.Equal("https://new.hook", updated.DiscordWebhookUrl);
 		}
 
 		[Fact]
-		public void Update_NullCreatorUserId_AllowsAnyAuthenticatedUser() {
-			// Legacy games created before CreatedByUserId was tracked have null — any authenticated user can edit
+		public void Update_NullCreatorUserId_DeniesEdit() {
+			// Games with null CreatedByUserId cannot be edited by anyone (security fix)
 			var globalState = new GlobalState();
 			var record = MakeRecord("game5", createdByUserId: null);
 			globalState.AddGame(record);
@@ -178,7 +176,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var result = controller.Update("game5", request);
 
-			Assert.IsType<OkObjectResult>(result.Result);
+			var statusResult = Assert.IsType<ObjectResult>(result.Result);
+			Assert.Equal(403, statusResult.StatusCode);
 		}
 	}
 }

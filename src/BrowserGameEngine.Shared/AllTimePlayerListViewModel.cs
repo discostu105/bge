@@ -1,6 +1,5 @@
 namespace BrowserGameEngine.Shared {
 	public record AllTimePlayerEntryViewModel(
-		string UserId,
 		string DisplayName,
 		int TotalGames,
 		int TotalWins,

@@ -60,6 +60,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			if (request.OfferedAmount <= 0 || request.WantedAmount <= 0)
 				return BadRequest("Amounts must be positive.");
+			if (request.OfferedAmount > 1_000_000 || request.WantedAmount > 1_000_000)
+				return BadRequest("Amounts must be 1,000,000 or less.");
 			if (string.IsNullOrEmpty(request.OfferedResourceId) || string.IsNullOrEmpty(request.WantedResourceId))
 				return BadRequest("Resource IDs are required.");
 

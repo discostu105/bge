@@ -13,7 +13,6 @@ namespace BrowserGameEngine.Shared {
 		string? WinnerId,
 		string? WinnerName = null,
 		DateTime? ActualEndTime = null,
-		string? DiscordWebhookUrl = null,
 		string? VictoryConditionType = null,
 		string? VictoryConditionLabel = null
 	);

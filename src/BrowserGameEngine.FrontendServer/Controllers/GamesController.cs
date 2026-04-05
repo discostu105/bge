@@ -102,7 +102,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
 				ActualEndTime: record.ActualEndTime,
-				DiscordWebhookUrl: record.DiscordWebhookUrl,
 				VictoryConditionType: record.VictoryConditionType,
 				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
 			));
@@ -112,6 +111,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		/// <param name="request">Game creation parameters.</param>
 		/// <returns>Summary of the newly created game.</returns>
 		[HttpPost]
+		[Authorize(Policy = "Admin")]
 		[ProducesResponseType(typeof(GameSummaryViewModel), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -182,7 +182,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
 
-			if (record.CreatedByUserId != null && record.CreatedByUserId != currentUserContext.UserId)
+			if (record.CreatedByUserId == null || record.CreatedByUserId != currentUserContext.UserId)
 				return StatusCode(403, "Only the game creator can edit this game.");
 
 			if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest("Name is required.");
@@ -212,7 +212,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerId: updated.WinnerId?.Id,
 				WinnerName: ResolveWinnerName(updated),
 				ActualEndTime: updated.ActualEndTime,
-				DiscordWebhookUrl: updated.DiscordWebhookUrl,
 				VictoryConditionType: updated.VictoryConditionType,
 				VictoryConditionLabel: GetVictoryConditionLabel(updated.VictoryConditionType)
 			));
@@ -230,6 +229,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult Join(string gameId, [FromBody] JoinGameRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(request.PlayerName)) return BadRequest("Player name is required");
+			if (request.PlayerName.Length > 50) return BadRequest("Player name must be 50 characters or fewer.");
 
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
@@ -264,7 +264,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
 
-			if (record.CreatedByUserId != null && record.CreatedByUserId != currentUserContext.UserId)
+			if (record.CreatedByUserId == null || record.CreatedByUserId != currentUserContext.UserId)
 				return StatusCode(403, "Only the game creator can finalize this game.");
 
 			if (record.Status != GameStatus.Active)
@@ -347,7 +347,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				CanJoin: record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active,
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
-				DiscordWebhookUrl: record.DiscordWebhookUrl,
 				IsPlayerEnrolled: isPlayerEnrolled,
 				VictoryConditionType: record.VictoryConditionType
 			);

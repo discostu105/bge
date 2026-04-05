@@ -54,7 +54,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (recipientId == currentUserContext.PlayerId) return BadRequest("Cannot send a message to yourself.");
 			if (!playerRepository.Exists(recipientId)) return BadRequest("Recipient player not found.");
 			if (string.IsNullOrWhiteSpace(model.Subject)) return BadRequest("Subject is required.");
+			if (model.Subject.Length > 200) return BadRequest("Subject must be 200 characters or fewer.");
 			if (string.IsNullOrWhiteSpace(model.Body)) return BadRequest("Body is required.");
+			if (model.Body.Length > 5000) return BadRequest("Body must be 5000 characters or fewer.");
 			messageRepositoryWrite.Send(new SendMessageCommand(
 				SenderId: currentUserContext.PlayerId!,
 				RecipientId: recipientId,
@@ -127,6 +129,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (original == null) return BadRequest("Message not found.");
 			if (original.SenderId == null) return BadRequest("Cannot reply to system messages.");
 			if (string.IsNullOrWhiteSpace(model.Body)) return BadRequest("Body is required.");
+			if (model.Body.Length > 5000) return BadRequest("Body must be 5000 characters or fewer.");
 			messageRepositoryWrite.Send(new SendMessageCommand(
 				SenderId: currentUserContext.PlayerId!,
 				RecipientId: original.SenderId,

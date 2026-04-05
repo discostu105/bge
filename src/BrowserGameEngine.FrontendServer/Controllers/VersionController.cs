@@ -1,9 +1,11 @@
 using BrowserGameEngine.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
+	[AllowAnonymous]
 	[Route("api/version")]
 	public class VersionController : ControllerBase {
 		private static readonly string CommitHash =

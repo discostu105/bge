@@ -256,7 +256,6 @@ export interface GameDetailViewModel {
   winnerId: string | null
   winnerName: string | null
   actualEndTime: string | null
-  discordWebhookUrl: string | null
   victoryConditionType: string | null
   victoryConditionLabel: string | null
 }
@@ -273,7 +272,6 @@ export interface GameSummaryViewModel {
   canJoin: boolean
   winnerId: string | null
   winnerName: string | null
-  discordWebhookUrl: string | null
   isPlayerEnrolled: boolean
   victoryConditionType: string | null
 }
@@ -343,7 +341,6 @@ export interface PublicPlayerViewModel {
   playerName: string | null
   score: number
   protectionTicksRemaining: number
-  userId: string | null
   userDisplayName: string | null
   isAgent: boolean
   lastOnline: string | null
@@ -763,7 +760,6 @@ export interface UpdateGameRequest {
 // Player List (all-time)
 
 export interface AllTimePlayerEntryViewModel {
-  userId: string
   displayName: string
   totalGames: number
   totalWins: number

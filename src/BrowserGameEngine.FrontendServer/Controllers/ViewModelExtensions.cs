@@ -18,7 +18,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				PlayerName = player.Name,
 				Score = scoreRepository.GetScore(player.PlayerId),
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
-				UserId = player.UserId,
 				UserDisplayName = player.UserId != null ? userRepository.GetDisplayNameByUserId(player.UserId) : null,
 				IsAgent = player.ApiKeyHash != null,
 				LastOnline = player.LastOnline,

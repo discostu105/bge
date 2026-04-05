@@ -71,7 +71,8 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddRateLimiter(options => {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context => {
         var apiKeyHash = context.Items["ApiKeyHash"] as string;
-        var partitionKey = apiKeyHash ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var partitionKey = apiKeyHash ?? userId ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions {
             PermitLimit = 600,
             Window = TimeSpan.FromMinutes(1),
@@ -82,12 +83,22 @@ builder.Services.AddRateLimiter(options => {
     options.RejectionStatusCode = 429;
 });
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy => policy.RequireAssertion(context => {
+        var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return false;
+        var bgeOpts = builder.Configuration.GetSection(BgeOptions.Position).Get<BgeOptions>();
+        if (bgeOpts?.DevAuth == true) return true;
+        return bgeOpts?.AdminUserIds?.Contains(userId) == true;
+    }));
+
 builder.Services.AddAuthentication(options => {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.RequireAuthenticatedSignIn = true;
 })
     .AddCookie(options => {
         options.Cookie.Name = "BGE.AuthCookie";
+        options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
@@ -109,7 +120,7 @@ if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(git
     builder.Services.AddAuthentication().AddGitHub(options => {
         options.ClientId = githubClientId;
         options.ClientSecret = githubClientSecret;
-        options.SaveTokens = true;
+        options.SaveTokens = false;
         options.CorrelationCookie.SameSite = SameSiteMode.Lax;
         options.CorrelationCookie.SecurePolicy = builder.Environment.IsDevelopment()
             ? CookieSecurePolicy.SameAsRequest
@@ -157,10 +168,13 @@ app.UseForwardedHeaders(forwardedHeadersOptions);
 
 if (app.Environment.IsDevelopment()) {
     app.UseDeveloperExceptionPage();
-    var urls = app.Configuration["ASPNETCORE_URLS"] ?? string.Empty;
-    if (urls.Contains("https://", StringComparison.OrdinalIgnoreCase)) {
-        app.UseHttpsRedirection();
-    }
+} else {
+    app.UseHsts();
+}
+
+var aspnetCoreUrls = app.Configuration["ASPNETCORE_URLS"] ?? string.Empty;
+if (aspnetCoreUrls.Contains("https://", StringComparison.OrdinalIgnoreCase) || !app.Environment.IsDevelopment()) {
+    app.UseHttpsRedirection();
 }
 app.UseExceptionHandler("/Error");
 app.MapOpenApi();

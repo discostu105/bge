@@ -8,7 +8,6 @@ using BrowserGameEngine.StatefulGameServer.GameTicks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,12 +18,11 @@ using System.Threading.Tasks;
 namespace BrowserGameEngine.FrontendServer.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = "Admin")]
 [Route("api/admin")]
 public class AdminController : ControllerBase
 {
 	private readonly ILogger<AdminController> logger;
-	private readonly IOptions<BgeOptions> options;
 	private readonly PlayerRepository playerRepository;
 	private readonly PlayerRepositoryWrite playerRepositoryWrite;
 	private readonly ResourceRepository resourceRepository;
@@ -43,7 +41,6 @@ public class AdminController : ControllerBase
 
 	public AdminController(
 		ILogger<AdminController> logger,
-		IOptions<BgeOptions> options,
 		PlayerRepository playerRepository,
 		PlayerRepositoryWrite playerRepositoryWrite,
 		ResourceRepository resourceRepository,
@@ -62,7 +59,6 @@ public class AdminController : ControllerBase
 	)
 	{
 		this.logger = logger;
-		this.options = options;
 		this.playerRepository = playerRepository;
 		this.playerRepositoryWrite = playerRepositoryWrite;
 		this.resourceRepository = resourceRepository;
@@ -88,7 +84,7 @@ public class AdminController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult SetResources([FromBody] SetResourcesRequest request)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var playerId = PlayerIdFactory.Create(request.PlayerId);
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		var resourceDefId = Id.ResDef(request.ResourceDefId);
@@ -104,7 +100,7 @@ public class AdminController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult GrantBuilding([FromBody] GrantBuildingRequest request)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var playerId = PlayerIdFactory.Create(request.PlayerId);
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		var assetDefId = Id.AssetDef(request.AssetDefId);
@@ -120,7 +116,7 @@ public class AdminController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult GrantUnits([FromBody] GrantUnitsRequest request)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var playerId = PlayerIdFactory.Create(request.PlayerId);
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		var unitDefId = Id.UnitDef(request.UnitDefId);
@@ -135,7 +131,7 @@ public class AdminController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult ResetPlayer([FromBody] ResetPlayerRequest request)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var playerId = PlayerIdFactory.Create(request.PlayerId);
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		actionQueueRepository.RemoveAllPlayerActions(playerId);
@@ -151,7 +147,7 @@ public class AdminController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult ForceTick([FromQuery] int count = 1)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		if (count < 1 || count > 1000) return BadRequest("count must be between 1 and 1000.");
 		gameTickEngine.IncrementWorldTick(count);
 		gameTickEngine.CheckAllTicks();
@@ -161,7 +157,7 @@ public class AdminController : ControllerBase
 	[HttpGet("world-state")]
 	public ActionResult WorldState()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var json = Encoding.UTF8.GetString(serializer.Serialize(worldState.ToImmutable()));
 		return Content(json, "application/json");
 	}
@@ -169,7 +165,7 @@ public class AdminController : ControllerBase
 	[HttpGet("players")]
 	public ActionResult<IEnumerable<string>> ListPlayers()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		return Ok(playerRepository.GetAll().Select(p => p.PlayerId.Id));
 	}
 
@@ -178,7 +174,7 @@ public class AdminController : ControllerBase
 	[HttpPost("save-snapshot")]
 	public async Task<ActionResult> SaveSnapshot([FromQuery] string name)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		if (!IsValidSnapshotName(name)) return BadRequest("Invalid snapshot name. Use letters, digits, hyphens, and underscores only.");
 		await storage.Store($"snapshots/{name}.json", serializer.Serialize(worldState.ToImmutable()));
 		return Ok();
@@ -187,7 +183,7 @@ public class AdminController : ControllerBase
 	[HttpPost("load-snapshot")]
 	public async Task<ActionResult> LoadSnapshot([FromQuery] string name)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		if (!IsValidSnapshotName(name)) return BadRequest("Invalid snapshot name. Use letters, digits, hyphens, and underscores only.");
 		var blobName = $"snapshots/{name}.json";
 		if (!storage.Exists(blobName)) return NotFound($"Snapshot '{name}' not found.");
@@ -204,7 +200,7 @@ public class AdminController : ControllerBase
 	[HttpGet("snapshots")]
 	public ActionResult<IEnumerable<string>> ListSnapshots()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var names = storage.List("snapshots")
 			.Select(n => Path.GetFileNameWithoutExtension(n.Substring("snapshots/".Length)));
 		return Ok(names);
@@ -213,7 +209,7 @@ public class AdminController : ControllerBase
 	[HttpDelete("snapshot")]
 	public async Task<ActionResult> DeleteSnapshot([FromQuery] string name)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		if (!IsValidSnapshotName(name)) return BadRequest("Invalid snapshot name. Use letters, digits, hyphens, and underscores only.");
 		var blobName = $"snapshots/{name}.json";
 		if (!storage.Exists(blobName)) return NotFound($"Snapshot '{name}' not found.");
@@ -229,7 +225,7 @@ public class AdminController : ControllerBase
 	[HttpPost("set-tick-duration")]
 	public ActionResult SetTickDuration([FromQuery] int seconds)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		if (seconds < 1 || seconds > 86400) return BadRequest("seconds must be between 1 and 86400.");
 		gameTickEngine.SetTickDuration(TimeSpan.FromSeconds(seconds));
 		return Ok(new { seconds, message = $"Tick duration set to {seconds}s (was {gameDef.TickDuration.TotalSeconds}s default)." });
@@ -238,7 +234,7 @@ public class AdminController : ControllerBase
 	[HttpPost("pause-ticks")]
 	public ActionResult PauseTicks()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		gameTickEngine.PauseTicks();
 		return Ok(new { paused = true });
 	}
@@ -246,7 +242,7 @@ public class AdminController : ControllerBase
 	[HttpPost("resume-ticks")]
 	public ActionResult ResumeTicks()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		gameTickEngine.ResumeTicks();
 		return Ok(new { paused = false, effectiveTickDurationSeconds = gameTickEngine.EffectiveTickDuration.TotalSeconds });
 	}
@@ -256,7 +252,7 @@ public class AdminController : ControllerBase
 	[HttpGet("action-log")]
 	public ActionResult<IEnumerable<ActionLogEntry>> GetActionLog()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		return Ok(actionLogger.GetRecentEntries());
 	}
 
@@ -265,7 +261,7 @@ public class AdminController : ControllerBase
 	[HttpGet("players/{playerId}")]
 	public ActionResult GetPlayerDetail(string playerId)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var pid = PlayerIdFactory.Create(playerId);
 		if (!playerRepository.Exists(pid)) return NotFound($"Player '{playerId}' not found.");
 		var player = playerRepository.Get(pid);
@@ -295,7 +291,7 @@ public class AdminController : ControllerBase
 	[HttpGet("players-detail")]
 	public ActionResult GetPlayersDetail()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var players = playerRepository.GetAll().Select(p => new {
 			playerId = p.PlayerId.Id,
 			name = p.Name,
@@ -314,7 +310,7 @@ public class AdminController : ControllerBase
 	[HttpPost("ban-player")]
 	public ActionResult BanPlayer([FromBody] BanPlayerRequest request)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var playerId = PlayerIdFactory.Create(request.PlayerId);
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		playerRepositoryWrite.BanPlayer(playerId);
@@ -325,7 +321,7 @@ public class AdminController : ControllerBase
 	[HttpPost("unban-player")]
 	public ActionResult UnbanPlayer([FromBody] UnbanPlayerRequest request)
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var playerId = PlayerIdFactory.Create(request.PlayerId);
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		playerRepositoryWrite.UnbanPlayer(playerId);
@@ -338,7 +334,7 @@ public class AdminController : ControllerBase
 	[HttpGet("live-stats")]
 	public ActionResult GetLiveStats()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var players = playerRepository.GetAll().ToList();
 		var totalResources = new Dictionary<string, decimal>();
 		foreach (var resDef in gameDef.Resources) {
@@ -364,7 +360,7 @@ public class AdminController : ControllerBase
 	[HttpGet("tick-status")]
 	public ActionResult GetTickStatus()
 	{
-		if (!options.Value.DevAuth) return NotFound();
+
 		var snapshot = worldState.ToImmutable();
 		return Ok(new {
 			currentTick = snapshot.GameTickState.CurrentGameTick.Tick,

@@ -35,6 +35,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult Colonize([FromQuery] int amount) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (amount <= 0) return BadRequest("Amount must be positive.");
+			if (amount > 100000) return BadRequest("Amount must be 100,000 or less.");
 			try {
 				colonizeRepositoryWrite.Colonize(new ColonizeCommand(currentUserContext.PlayerId!, amount));
 				return Ok();
