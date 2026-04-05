@@ -354,6 +354,7 @@ export interface AllianceViewModel {
   message: string | null
   memberCount: number
   created: string
+  isAtWar: boolean
 }
 
 export interface AllianceDetailViewModel {
@@ -383,6 +384,74 @@ export interface AllianceRankingEntryViewModel {
 
 export interface AllianceRankingViewModel {
   entries: AllianceRankingEntryViewModel[]
+}
+
+export interface AllianceInviteViewModel {
+  inviteId: string
+  allianceId: string
+  allianceName: string
+  inviterPlayerName: string
+  expiresAt: string
+}
+
+export interface AllianceWarViewModel {
+  warId: string
+  attackerAllianceId: string
+  attackerAllianceName: string
+  defenderAllianceId: string
+  defenderAllianceName: string
+  status: string
+  declaredAt: string
+  proposerAllianceId: string | null
+}
+
+export interface AllianceChatPostViewModel {
+  postId: string
+  authorPlayerId: string
+  authorName: string
+  body: string
+  createdAt: string
+}
+
+export interface CreateAllianceRequest {
+  allianceName: string
+  password: string
+}
+
+export interface JoinAllianceRequest {
+  password: string
+}
+
+export interface VoteLeaderRequest {
+  voteePlayerId: string
+}
+
+export interface SetAlliancePasswordRequest {
+  newPassword: string
+}
+
+export interface SetAllianceMessageRequest {
+  message: string
+}
+
+export interface PostAllianceChatRequest {
+  body: string
+}
+
+export interface InvitePlayerRequest {
+  targetPlayerId: string
+}
+
+export interface DeclareWarRequest {
+  targetAllianceId: string
+}
+
+export interface AcceptInviteRequest {
+  inviteId: string
+}
+
+export interface PeaceRequest {
+  warId: string
 }
 
 // Diplomacy
