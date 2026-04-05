@@ -23,7 +23,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			var playerId = await CreatePlayerAsync(userId, "RegistrationHero");
 
 			var client = CreateClient(userId);
-			var response = await client.GetAsync("/api/players");
+			var response = await client.GetAsync("/api/player-management");
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
 			var vm = await DeserializeAsync<PlayerListViewModel>(response);
@@ -37,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		public async Task PlayerRegistration_EmptyName_ReturnsBadRequest() {
 			var client = CreateClient("e2e-reg-emptyname-1");
 			var request = new CreatePlayerForUserViewModel { PlayerName = "" };
-			var response = await client.PostAsJsonAsync("/api/players", request, JsonOptions);
+			var response = await client.PostAsJsonAsync("/api/player-management", request, JsonOptions);
 			Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 		}
 
@@ -45,7 +45,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		public async Task PlayerRegistration_Unauthenticated_Returns401() {
 			var client = CreateClient();
 			var request = new CreatePlayerForUserViewModel { PlayerName = "ShouldNotWork" };
-			var response = await client.PostAsJsonAsync("/api/players", request, JsonOptions);
+			var response = await client.PostAsJsonAsync("/api/player-management", request, JsonOptions);
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
