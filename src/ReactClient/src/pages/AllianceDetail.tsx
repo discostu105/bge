@@ -46,8 +46,6 @@ export function AllianceDetail() {
 	// Vote state
 	const [votePlayerId, setVotePlayerId] = useState('')
 
-	if (!allianceId) return null
-
 	const { data: detail, isLoading, error: detailError, refetch: refetchDetail } = useQuery<AllianceDetailViewModel>({
 		queryKey: ['alliance-detail', allianceId],
 		queryFn: () => apiClient.get(`/api/alliances/${allianceId}`).then((r) => r.data),
@@ -185,6 +183,7 @@ export function AllianceDetail() {
 		onError: handleError,
 	})
 
+	if (!allianceId) return null
 	if (isLoading) return <PageLoader message="Loading alliance..." />
 	if (detailError) return <ApiError message="Failed to load alliance." onRetry={() => void refetchDetail()} />
 	if (!detail) return <div className="text-destructive text-sm p-4">Alliance not found.</div>
