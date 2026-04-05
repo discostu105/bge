@@ -46,7 +46,7 @@ export function SpyReports({ gameId }: SpyReportsProps) {
                   <tr key={a.id} className="border-b border-border">
                     <td className="py-2 px-3 font-medium">{a.attackerName}</td>
                     <td className="py-2 px-3">
-                      <span className="rounded bg-yellow-700/50 px-1.5 py-0.5 text-xs text-yellow-200">
+                      <span className="rounded bg-warning/50 px-1.5 py-0.5 text-xs text-warning-foreground">
                         {a.actionType}
                       </span>
                     </td>

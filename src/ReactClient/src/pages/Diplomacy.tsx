@@ -101,22 +101,22 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
       <h1 className="text-2xl font-bold">Diplomacy</h1>
 
       {error && <div className="text-destructive text-sm">{error}</div>}
-      {success && <div className="text-green-400 text-sm">{success}</div>}
+      {success && <div className="text-success-foreground text-sm">{success}</div>}
 
       {statusLoading && <PageLoader message="Loading diplomacy..." />}
       {statusError && !status && <ApiError message="Failed to load diplomacy status." onRetry={() => void refetchStatus()} />}
 
       {/* Incoming proposals */}
       {(status?.pendingIncoming?.length ?? 0) > 0 && (
-        <div className="rounded-lg border border-yellow-700 bg-yellow-900/10">
-          <div className="border-b border-yellow-700 bg-yellow-900/20 px-4 py-3">
-            <strong className="text-sm text-yellow-200">
+        <div className="rounded-lg border border-warning/50 bg-warning/10">
+          <div className="border-b border-warning/50 bg-warning/20 px-4 py-3">
+            <strong className="text-sm text-warning-foreground">
               Incoming Proposals ({status!.pendingIncoming.length})
             </strong>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-yellow-700/50">
+              <thead className="border-b border-warning/30">
                 <tr>
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">From</th>
                   <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
@@ -140,7 +140,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
                             respondMutation.mutate({ proposalId: p.proposalId, accept: true })
                             invalidateAll()
                           }}
-                          className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90"
+                          className="rounded bg-success px-2 py-0.5 text-xs text-white hover:opacity-90"
                         >
                           Accept
                         </button>

@@ -47,9 +47,9 @@ function statusLabel(status: string): string {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'in_transit': return 'bg-yellow-700/50 text-yellow-200'
-    case 'completed': return 'bg-green-800/50 text-green-300'
-    case 'intercepted': return 'bg-red-800/50 text-red-300'
+    case 'in_transit': return 'bg-warning/50 text-warning-foreground'
+    case 'completed': return 'bg-success/50 text-success-foreground'
+    case 'intercepted': return 'bg-danger/50 text-danger-foreground'
     default: return 'bg-secondary text-secondary-foreground'
   }
 }
@@ -230,7 +230,7 @@ export function Spies({ gameId }: SpiesProps) {
             </p>
 
             {sendError && <div className="text-destructive text-sm mb-2">{sendError}</div>}
-            {sendSuccess && <div className="text-green-400 text-sm mb-2">{sendSuccess}</div>}
+            {sendSuccess && <div className="text-success-foreground text-sm mb-2">{sendSuccess}</div>}
 
             <button
               onClick={() => sendMutation.mutate()}
