@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { AllTimePlayerListViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function PlayersList() {
-  const { data, isLoading } = useQuery<AllTimePlayerListViewModel>({
+  const { data, isLoading, error, refetch } = useQuery<AllTimePlayerListViewModel>({
     queryKey: ['players-list'],
     queryFn: () => apiClient.get<AllTimePlayerListViewModel>('/api/players/all').then((r) => r.data),
     refetchInterval: 30_000,
@@ -17,7 +19,9 @@ export function PlayersList() {
       <h1 className="text-xl font-bold">All-Time Players</h1>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Loading...</p>
+        <PageLoader message="Loading players..." />
+      ) : error ? (
+        <ApiError message="Failed to load players." onRetry={() => void refetch()} />
       ) : players.length === 0 ? (
         <p className="text-muted-foreground text-sm">No players yet.</p>
       ) : (

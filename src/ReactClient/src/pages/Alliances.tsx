@@ -12,6 +12,8 @@ import type {
 	JoinAllianceRequest,
 } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface AlliancesProps {
 	gameId: string
@@ -37,7 +39,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 		refetchInterval: 10_000,
 	})
 
-	const { data: alliances } = useQuery<AllianceViewModel[]>({
+	const { data: alliances, isLoading: alliancesLoading, error: alliancesError, refetch: refetchAlliances } = useQuery<AllianceViewModel[]>({
 		queryKey: ['alliances', gameId],
 		queryFn: () => apiClient.get('/api/alliances').then((r) => r.data),
 		refetchInterval: 10_000,
@@ -137,6 +139,9 @@ export function Alliances({ gameId }: AlliancesProps) {
 
 			{error && <div className="text-destructive text-sm">{error}</div>}
 			{success && <div className="text-green-400 text-sm">{success}</div>}
+
+			{alliancesLoading && <PageLoader message="Loading alliances..." />}
+			{alliancesError && !alliances && <ApiError message="Failed to load alliances." onRetry={() => void refetchAlliances()} />}
 
 			{/* Current Alliance Status */}
 			{myStatus?.isMember && (

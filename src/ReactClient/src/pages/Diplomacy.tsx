@@ -10,6 +10,8 @@ import type {
   ProposeResourceAgreementRequest,
   RespondToProposalRequest,
 } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface DiplomacyProps {
   gameId: string
@@ -40,7 +42,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
   const [mineralsPerTick, setMineralsPerTick] = useState(0)
   const [gasPerTick, setGasPerTick] = useState(0)
 
-  const { data: status, refetch: refetchStatus } = useQuery<DiplomacyStatusViewModel>({
+  const { data: status, isLoading: statusLoading, error: statusError, refetch: refetchStatus } = useQuery<DiplomacyStatusViewModel>({
     queryKey: ['diplomacy', gameId],
     queryFn: () => apiClient.get('/api/diplomacy/status').then((r) => r.data),
     refetchInterval: 10_000,
@@ -100,6 +102,9 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
 
       {error && <div className="text-destructive text-sm">{error}</div>}
       {success && <div className="text-green-400 text-sm">{success}</div>}
+
+      {statusLoading && <PageLoader message="Loading diplomacy..." />}
+      {statusError && !status && <ApiError message="Failed to load diplomacy status." onRetry={() => void refetchStatus()} />}
 
       {/* Incoming proposals */}
       {(status?.pendingIncoming.length ?? 0) > 0 && (

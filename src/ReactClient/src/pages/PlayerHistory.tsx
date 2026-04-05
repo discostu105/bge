@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { PlayerHistoryViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 function formatDuration(startIso: string, endIso: string): string {
   const ms = new Date(endIso).getTime() - new Date(startIso).getTime()
@@ -23,29 +25,13 @@ function rankBadgeClass(rank: number, players: number): string {
 }
 
 export function PlayerHistory() {
-  const { data, isLoading, error } = useQuery<PlayerHistoryViewModel>({
+  const { data, isLoading, error, refetch } = useQuery<PlayerHistoryViewModel>({
     queryKey: ['player-history'],
     queryFn: () => apiClient.get('/api/history').then((r) => r.data),
   })
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2 p-6">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <span className="text-muted-foreground">Loading history...</span>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-          Failed to load history.
-        </div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageLoader message="Loading history..." />
+  if (error) return <ApiError message="Failed to load history." onRetry={() => void refetch()} />
 
   if (!data || data.totalGames === 0) {
     return (

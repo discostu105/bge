@@ -4,6 +4,8 @@ import { Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { PublicPlayerViewModel } from '@/api/types'
 import { cn } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface PlayerRankingProps {
   gameId: string
@@ -14,7 +16,7 @@ type Filter = 'all' | 'human' | 'agent'
 export function PlayerRanking({ gameId }: PlayerRankingProps) {
   const [filter, setFilter] = useState<Filter>('all')
 
-  const { data: players, isLoading } = useQuery({
+  const { data: players, isLoading, error, refetch } = useQuery({
     queryKey: ['ranking', gameId],
     queryFn: () =>
       apiClient.get<PublicPlayerViewModel[]>('/api/playerranking').then((r) => r.data),
@@ -54,7 +56,9 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Loading…</p>
+        <PageLoader message="Loading ranking..." />
+      ) : error ? (
+        <ApiError message="Failed to load ranking." onRetry={() => void refetch()} />
       ) : (
         <div className="rounded-lg border overflow-hidden">
           <table className="w-full text-sm">

@@ -4,19 +4,22 @@ import { UserIcon, TrophyIcon, StarIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { PlayerCrossGameStatsViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 export function PublicProfile() {
   const { userId } = useParams<{ userId: string }>()
 
-  const { data: stats, isLoading, error } = useQuery<PlayerCrossGameStatsViewModel>({
+  const { data: stats, isLoading, error, refetch } = useQuery<PlayerCrossGameStatsViewModel>({
     queryKey: ['public-profile', userId],
     queryFn: () =>
       apiClient.get(`/api/players/${encodeURIComponent(userId ?? '')}/profile`).then((r) => r.data),
     enabled: !!userId,
   })
 
-  if (isLoading) return <p className="text-muted-foreground text-sm p-4">Loading profile…</p>
-  if (error || !stats) {
+  if (isLoading) return <PageLoader message="Loading profile..." />
+  if (error) return <ApiError message="Failed to load player profile." onRetry={() => void refetch()} />
+  if (!stats) {
     return (
       <div className="max-w-lg p-4">
         <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">

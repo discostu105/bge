@@ -4,6 +4,8 @@ import { useNavigate, useParams, Link } from 'react-router'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { SelectEnemyViewModel, SpyReportViewModel } from '@/api/types'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface SelectEnemyProps {
   gameId: string
@@ -16,7 +18,7 @@ export function SelectEnemy({ gameId }: SelectEnemyProps) {
   const [error, setError] = useState<string | null>(null)
   const [spyReport, setSpyReport] = useState<SpyReportViewModel | null>(null)
 
-  const { data: model } = useQuery<SelectEnemyViewModel>({
+  const { data: model, isLoading: queryLoading, error: queryError, refetch } = useQuery<SelectEnemyViewModel>({
     queryKey: ['attackableplayers', gameId],
     queryFn: () => apiClient.get<SelectEnemyViewModel>('/api/battle/attackableplayers').then((r) => r.data),
   })
@@ -61,9 +63,11 @@ export function SelectEnemy({ gameId }: SelectEnemyProps) {
 
       {error && <div className="text-destructive text-sm">{error}</div>}
 
-      {!model ? (
-        <div className="text-muted-foreground">Loading...</div>
-      ) : (
+      {queryLoading ? (
+        <PageLoader message="Loading players..." />
+      ) : queryError ? (
+        <ApiError message="Failed to load attackable players." onRetry={() => void refetch()} />
+      ) : !model ? null : (
         <>
           <div className="space-y-4 max-w-sm">
             <div>

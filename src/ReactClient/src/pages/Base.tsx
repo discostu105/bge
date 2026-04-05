@@ -15,6 +15,8 @@ import { BuildUnitsForm } from '@/components/BuildUnitsForm'
 import { WorkerAssignment } from '@/components/WorkerAssignment'
 import { CostBadge } from '@/components/CostBadge'
 import { relativeTime } from '@/lib/utils'
+import { PageLoader } from '@/components/PageLoader'
+import { ApiError } from '@/components/ApiError'
 
 interface BaseProps {
   gameId: string
@@ -104,7 +106,7 @@ export function Base({ gameId }: BaseProps) {
   const [colonizeAmount, setColonizeAmount] = useState(1)
   const [colonizeError, setColonizeError] = useState<string | null>(null)
 
-  const { data: assetsData } = useQuery<AssetsViewModel>({
+  const { data: assetsData, isLoading: assetsLoading, error: assetsError, refetch: refetchAssets } = useQuery<AssetsViewModel>({
     queryKey: ['assets', gameId],
     queryFn: () => apiClient.get('/api/assets').then((r) => r.data),
     refetchInterval: 30_000,
@@ -270,9 +272,11 @@ export function Base({ gameId }: BaseProps) {
 
       {/* Assets */}
       {lastError && <div className="text-destructive text-sm">{lastError}</div>}
-      {!assetsData ? (
-        <div className="text-muted-foreground">Loading assets...</div>
-      ) : (
+      {assetsLoading ? (
+        <PageLoader message="Loading assets..." />
+      ) : assetsError && !assetsData ? (
+        <ApiError message="Failed to load assets." onRetry={() => void refetchAssets()} />
+      ) : assetsData ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {assetsData.assets.map((asset) => (
             <AssetCard
