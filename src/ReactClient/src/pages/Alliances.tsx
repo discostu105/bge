@@ -138,7 +138,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 			</div>
 
 			{error && <div className="text-destructive text-sm">{error}</div>}
-			{success && <div className="text-green-400 text-sm">{success}</div>}
+			{success && <div className="text-success-foreground text-sm">{success}</div>}
 
 			{alliancesLoading && <PageLoader message="Loading alliances..." />}
 			{alliancesError && !alliances && <ApiError message="Failed to load alliances." onRetry={() => void refetchAlliances()} />}
@@ -156,12 +156,12 @@ export function Alliances({ gameId }: AlliancesProps) {
 								{myStatus.allianceName}
 							</Link>
 							{myStatus.isPending && (
-								<span className="ml-2 rounded bg-yellow-700/30 px-2 py-0.5 text-xs text-yellow-300">
+								<span className="ml-2 rounded bg-warning/30 px-2 py-0.5 text-xs text-warning-foreground">
 									Pending Approval
 								</span>
 							)}
 							{myStatus.isLeader && (
-								<span className="ml-2 rounded bg-amber-700/30 px-2 py-0.5 text-xs text-amber-300">
+								<span className="ml-2 rounded bg-warning/30 px-2 py-0.5 text-xs text-warning-foreground">
 									Leader
 								</span>
 							)}
@@ -179,13 +179,13 @@ export function Alliances({ gameId }: AlliancesProps) {
 
 			{/* Pending Invites */}
 			{(invites?.length ?? 0) > 0 && !inAlliance && (
-				<div className="rounded-lg border border-yellow-700 bg-yellow-900/10">
-					<div className="border-b border-yellow-700 bg-yellow-900/20 px-4 py-3">
-						<strong className="text-sm text-yellow-200">
+				<div className="rounded-lg border border-warning/50 bg-warning/10">
+					<div className="border-b border-warning/50 bg-warning/20 px-4 py-3">
+						<strong className="text-sm text-warning-foreground">
 							Pending Invites ({invites!.length})
 						</strong>
 					</div>
-					<div className="divide-y divide-yellow-700/30">
+					<div className="divide-y divide-warning/30">
 						{invites!.map((inv) => (
 							<div key={inv.inviteId} className="flex items-center justify-between px-4 py-3">
 								<div>
@@ -203,7 +203,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 											setError(null); setSuccess(null)
 											acceptInviteMutation.mutate({ allianceId: inv.allianceId, inviteId: inv.inviteId })
 										}}
-										className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90"
+										className="rounded bg-success px-2 py-0.5 text-xs text-white hover:opacity-90"
 									>
 										Accept
 									</button>
@@ -311,7 +311,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 										</td>
 										<td className="py-2 px-3">
 											{a.isAtWar && (
-												<span className="inline-flex items-center gap-1 rounded bg-red-700/30 px-2 py-0.5 text-xs text-red-300">
+												<span className="inline-flex items-center gap-1 rounded bg-danger/30 px-2 py-0.5 text-xs text-danger-foreground">
 													<SwordsIcon className="h-3 w-3" />
 													At War
 												</span>
