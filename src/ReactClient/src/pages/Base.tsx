@@ -16,6 +16,7 @@ import { WorkerAssignment } from '@/components/WorkerAssignment'
 import { CostBadge } from '@/components/CostBadge'
 import { VictoryProgressBar } from '@/components/VictoryProgressBar'
 import { relativeTime } from '@/lib/utils'
+import { ResourceHistoryChart } from '@/components/ResourceHistoryChart'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -296,6 +297,8 @@ export function Base({ gameId }: BaseProps) {
       ) : null}
 
       <BuildQueue gameId={gameId} />
+
+      <ResourceHistoryChart gameId={gameId} />
 
       {/* Recent Activity */}
       <div className="rounded-lg border bg-card">
