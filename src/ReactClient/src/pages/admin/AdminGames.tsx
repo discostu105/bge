@@ -108,6 +108,7 @@ export function AdminGames() {
       endTime: toUtcIso(createEndTime),
       tickDuration: createTickDuration,
       discordWebhookUrl: null,
+      maxPlayers: 0,
     })
   }
 
