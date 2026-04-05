@@ -32,16 +32,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.playerRepository = playerRepository;
 		}
 
-		/// <summary>Returns all messages in the current player's inbox.</summary>
+		/// <summary>Returns the current player's inbox messages. Supports optional pagination via page/pageSize query params.</summary>
 		[HttpGet("inbox")]
-		[ProducesResponseType(typeof(MessageInboxViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PaginatedResponse<MessageViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<MessageInboxViewModel> Inbox() {
+		public ActionResult<PaginatedResponse<MessageViewModel>> Inbox([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var messages = messageRepository.GetMessages(currentUserContext.PlayerId!)
-				.Select(m => ToViewModel(m))
-				.ToList();
-			return new MessageInboxViewModel { Messages = messages };
+				.Select(m => ToViewModel(m));
+			return PaginatedResponse<MessageViewModel>.Create(messages, page, pageSize);
 		}
 
 		/// <summary>Sends a message to another player.</summary>
@@ -79,16 +78,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok();
 		}
 
-		/// <summary>Returns all messages sent by the current player.</summary>
+		/// <summary>Returns all messages sent by the current player. Supports optional pagination via page/pageSize query params.</summary>
 		[HttpGet("sent")]
-		[ProducesResponseType(typeof(MessageInboxViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(PaginatedResponse<MessageViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<MessageInboxViewModel> Sent() {
+		public ActionResult<PaginatedResponse<MessageViewModel>> Sent([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var messages = messageRepository.GetSentMessages(currentUserContext.PlayerId!)
-				.Select(m => ToViewModel(m))
-				.ToList();
-			return new MessageInboxViewModel { Messages = messages };
+				.Select(m => ToViewModel(m));
+			return PaginatedResponse<MessageViewModel>.Create(messages, page, pageSize);
 		}
 
 		/// <summary>Returns the message thread between the current player and another player.</summary>

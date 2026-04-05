@@ -29,7 +29,7 @@ namespace BrowserGameEngine.FrontendServer {
 			if (Interlocked.CompareExchange(ref isactive, 1, 0) != 0) return;
 			try {
 				var count = Interlocked.Increment(ref executionCount);
-				logger.LogInformation("GameTickTimer #{Count}", count);
+				var sw = System.Diagnostics.Stopwatch.StartNew();
 				foreach (var instance in gameRegistry.GetAllInstances()) {
 					var sw = Stopwatch.StartNew();
 					try {
@@ -43,6 +43,8 @@ namespace BrowserGameEngine.FrontendServer {
 							instance.Record.GameId.Id, sw.ElapsedMilliseconds, instance.PlayerCount);
 					}
 				}
+				sw.Stop();
+				logger.LogInformation("GameTick #{Count} completed in {ElapsedMs}ms", count, sw.ElapsedMilliseconds);
 			} finally {
 				Interlocked.Exchange(ref isactive, 0);
 			}

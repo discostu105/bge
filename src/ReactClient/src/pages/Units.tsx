@@ -225,11 +225,11 @@ export function Units({ gameId }: UnitsProps) {
                 <table className="w-full text-sm">
                   <thead className="border-b">
                     <tr>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
-                      <th className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Location</th>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
+                      <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Location</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -268,10 +268,10 @@ export function Units({ gameId }: UnitsProps) {
                 <table className="w-full text-sm">
                   <thead className="border-b">
                     <tr>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
-                      <th className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
-                      <th className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
+                      <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>

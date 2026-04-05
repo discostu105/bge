@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
@@ -47,9 +47,9 @@ function statusLabel(status: string): string {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'in_transit': return 'bg-yellow-700/50 text-yellow-200'
-    case 'completed': return 'bg-green-800/50 text-green-300'
-    case 'intercepted': return 'bg-red-800/50 text-red-300'
+    case 'in_transit': return 'bg-warning/50 text-warning-foreground'
+    case 'completed': return 'bg-success/50 text-success-foreground'
+    case 'intercepted': return 'bg-danger/50 text-danger-foreground'
     default: return 'bg-secondary text-secondary-foreground'
   }
 }
@@ -60,13 +60,33 @@ interface SpyMissionDetailModalProps {
 }
 
 function SpyMissionDetailModal({ mission, onClose }: SpyMissionDetailModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    dialogRef.current?.focus()
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="rounded-lg border bg-card p-6 w-full max-w-md shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="spy-mission-title"
+        tabIndex={-1}
+        className="rounded-lg border bg-card p-6 w-full max-w-md shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Mission Details</h3>
+          <h3 id="spy-mission-title" className="font-semibold">Mission Details</h3>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="text-muted-foreground hover:text-foreground text-xl leading-none"
           >
             ×
@@ -230,7 +250,7 @@ export function Spies({ gameId }: SpiesProps) {
             </p>
 
             {sendError && <div className="text-destructive text-sm mb-2">{sendError}</div>}
-            {sendSuccess && <div className="text-green-400 text-sm mb-2">{sendSuccess}</div>}
+            {sendSuccess && <div className="text-success-foreground text-sm mb-2">{sendSuccess}</div>}
 
             <button
               onClick={() => sendMutation.mutate()}
@@ -254,7 +274,7 @@ export function Spies({ gameId }: SpiesProps) {
             Refresh
           </button>
         </div>
-        {!missions ? (
+        {!missions || !Array.isArray(missions) ? (
           <div className="p-4 text-muted-foreground text-sm">Loading...</div>
         ) : missions.length === 0 ? (
           <div className="p-4 text-muted-foreground text-sm">No active missions.</div>
@@ -263,12 +283,12 @@ export function Spies({ gameId }: SpiesProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Target</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Mission</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Launched</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Resolved</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Target</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Mission</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Launched</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Resolved</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>

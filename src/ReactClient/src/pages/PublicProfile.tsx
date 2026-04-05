@@ -80,11 +80,11 @@ export function PublicProfile() {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Game</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Result</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Rank</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Score</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Ended</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Game</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Result</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rank</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Score</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Ended</th>
                 </tr>
               </thead>
               <tbody>

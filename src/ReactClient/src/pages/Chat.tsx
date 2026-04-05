@@ -9,7 +9,7 @@ interface ChatProps {
   gameId: string
 }
 
-export function Chat({ gameId }: ChatProps) {
+export function ChatPanel({ gameId }: ChatProps) {
   const [body, setBody] = useState('')
   const [lastMessageId, setLastMessageId] = useState<string | null>(null)
   const [allMessages, setAllMessages] = useState<ChatMessagesViewModel['messages']>([])
@@ -74,9 +74,7 @@ export function Chat({ gameId }: ChatProps) {
   }
 
   return (
-    <div className="max-w-2xl space-y-3">
-      <h1 className="text-xl font-bold">Game Chat</h1>
-
+    <div className="space-y-3">
       {error && (
         <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
@@ -91,6 +89,7 @@ export function Chat({ gameId }: ChatProps) {
             'placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring'
           )}
           placeholder="Type a message…"
+          aria-label="Chat message"
           maxLength={500}
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -111,7 +110,7 @@ export function Chat({ gameId }: ChatProps) {
       <p className="text-xs text-muted-foreground">{body.length} / 500</p>
 
       {/* Chat window */}
-      <div className="h-[420px] overflow-y-auto rounded-lg border bg-card p-2 space-y-1.5">
+      <div className="h-[min(420px,60vh)] overflow-y-auto rounded-lg border bg-card p-2 space-y-1.5" role="log" aria-label="Chat messages">
         {allMessages.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm mt-8">No messages yet. Start the conversation!</p>
         ) : (
@@ -129,6 +128,15 @@ export function Chat({ gameId }: ChatProps) {
         )}
         <div ref={chatEndRef} />
       </div>
+    </div>
+  )
+}
+
+export function Chat({ gameId }: ChatProps) {
+  return (
+    <div className="max-w-2xl space-y-3">
+      <h1 className="text-xl font-bold">Game Chat</h1>
+      <ChatPanel gameId={gameId} />
     </div>
   )
 }

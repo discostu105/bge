@@ -1,4 +1,5 @@
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
 using System;
 using Xunit;
@@ -8,7 +9,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void PostMessage_ValidPlayer_MessageStored() {
 			var game = new TestGame();
-			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System, NullGameEventPublisher.Instance);
 
 			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Hello world"));
 
@@ -21,7 +22,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void PostMessage_RingBuffer_KeepsLast200() {
 			var game = new TestGame();
-			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System, NullGameEventPublisher.Instance);
 
 			for (int i = 0; i < 205; i++) {
 				chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, $"Message {i}"));
@@ -36,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetMessagesAfter_ReturnsOnlyNewMessages() {
 			var game = new TestGame();
-			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System, NullGameEventPublisher.Instance);
 
 			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "First"));
 			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Second"));
@@ -54,7 +55,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetMessagesAfter_EvictedId_FallsBackToFullReload() {
 			var game = new TestGame();
-			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System);
+			var chatRepo = new ChatRepositoryWrite(game.Accessor, TimeProvider.System, NullGameEventPublisher.Instance);
 
 			chatRepo.PostMessage(new PostChatMessageCommand(game.Player1, "Hello"));
 

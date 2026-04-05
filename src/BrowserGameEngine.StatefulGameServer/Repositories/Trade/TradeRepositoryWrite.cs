@@ -1,5 +1,6 @@
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using System;
@@ -11,6 +12,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly TimeProvider timeProvider;
 		private readonly INotificationService notificationService;
+		private readonly IGameEventPublisher eventPublisher;
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 
@@ -18,12 +20,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			IWorldStateAccessor worldStateAccessor,
 			TimeProvider timeProvider,
 			INotificationService notificationService,
+			IGameEventPublisher eventPublisher,
 			ResourceRepository resourceRepository,
 			ResourceRepositoryWrite resourceRepositoryWrite
 		) {
 			this.worldStateAccessor = worldStateAccessor;
 			this.timeProvider = timeProvider;
 			this.notificationService = notificationService;
+			this.eventPublisher = eventPublisher;
 			this.resourceRepository = resourceRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 		}
@@ -87,6 +91,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 				}
 
 				offer.Status = TradeOfferStatus.Accepted;
+
+				var fillPayload = new {
+					offeredResource = offer.OfferedResourceId.Id,
+					offeredAmount = offer.OfferedAmount,
+					wantedResource = offer.WantedResourceId.Id,
+					wantedAmount = offer.WantedAmount
+				};
+				eventPublisher.PublishToPlayer(offer.FromPlayerId, GameEventTypes.MarketOrderFilled, fillPayload);
+				eventPublisher.PublishToPlayer(command.AcceptingPlayerId, GameEventTypes.MarketOrderFilled, fillPayload);
+
 				return true;
 			}
 		}

@@ -1,8 +1,11 @@
 using Amazon.S3;
 using BrowserGameEngine.FrontendServer;
+using BrowserGameEngine.FrontendServer.Events;
+using BrowserGameEngine.FrontendServer.Hubs;
 using Microsoft.AspNetCore.DataProtection;
 using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.FrontendServer.Services;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameDefinition.SCO;
 using BrowserGameEngine.GameModel;
@@ -23,12 +26,15 @@ using Serilog.Events;
 using System.Linq;
 using System.Threading.RateLimiting;
 
+var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
+    .WriteTo.Console(isProduction
+        ? new Serilog.Formatting.Json.JsonFormatter()
+        : new Serilog.Formatting.Display.MessageTemplateTextFormatter("[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"))
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +58,9 @@ builder.Services.AddLogging();
 builder.Services.AddHealthChecks()
     .AddCheck<BlobStorageHealthCheck>("blob-storage");
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<PlayerConnectionTracker>();
+builder.Services.AddSingleton<IGameEventPublisher, SignalRGameEventPublisher>();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -183,6 +192,7 @@ IDisposable collector = DotNetRuntimeStatsBuilder
     .StartCollecting();
 
 app.UseAuthentication();
+app.UseMiddleware<RequestDurationMiddleware>();
 app.UseMiddleware<BearerTokenMiddleware>();
 app.UseRateLimiter();
 app.UseMiddleware<CurrentUserMiddleware>();
@@ -206,6 +216,7 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
 app.MapDefaultControllerRoute();
 app.MapRazorPages();
 app.MapControllers();
+app.MapHub<GameHub>("/hubs/game");
 app.MapMetrics();
 app.MapFallbackToFile("index.html", new StaticFileOptions {
 	OnPrepareResponse = ctx => {

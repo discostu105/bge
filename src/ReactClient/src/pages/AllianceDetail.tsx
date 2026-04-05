@@ -18,6 +18,7 @@ import type {
 	AllianceWarViewModel,
 	AllianceViewModel,
 	PublicPlayerViewModel,
+	PaginatedResponse,
 } from '@/api/types'
 import { cn, relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
@@ -80,11 +81,12 @@ export function AllianceDetail() {
 		enabled: !!isLeader && showDeclareWar,
 	})
 
-	const { data: allPlayers } = useQuery<PublicPlayerViewModel[]>({
+	const { data: allPlayersResp } = useQuery<PaginatedResponse<PublicPlayerViewModel>>({
 		queryKey: ['players-for-invite'],
-		queryFn: () => apiClient.get('/api/playerranking').then((r) => r.data),
+		queryFn: () => apiClient.get('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
 		enabled: !!isLeader && showInvite,
 	})
+	const allPlayers = allPlayersResp?.items
 
 	// Scroll chat on new posts
 	useEffect(() => {
@@ -208,7 +210,7 @@ export function AllianceDetail() {
 			</div>
 
 			{error && <div className="text-destructive text-sm">{error}</div>}
-			{success && <div className="text-green-400 text-sm">{success}</div>}
+			{success && <div className="text-success-foreground text-sm">{success}</div>}
 
 			{/* Alliance Message */}
 			<div className="rounded-lg border bg-card p-4">
@@ -287,17 +289,17 @@ export function AllianceDetail() {
 					<table className="w-full text-sm">
 						<thead className="border-b">
 							<tr>
-								<th className="py-2 px-3 text-left font-medium text-muted-foreground">Player</th>
-								<th className="py-2 px-3 text-left font-medium text-muted-foreground">Votes</th>
-								<th className="py-2 px-3 text-left font-medium text-muted-foreground">Joined</th>
-								{isLeader && <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>}
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Player</th>
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Votes</th>
+								<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Joined</th>
+								{isLeader && <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>}
 							</tr>
 						</thead>
 						<tbody>
 							{confirmedMembers.map((m) => (
 								<tr key={m.playerId} className="border-b border-border">
 									<td className="py-2 px-3 font-medium flex items-center gap-1.5">
-										{m.isLeader && <CrownIcon className="h-3.5 w-3.5 text-amber-400" />}
+										{m.isLeader && <CrownIcon className="h-3.5 w-3.5 text-warning-foreground" />}
 										{m.playerName}
 									</td>
 									<td className="py-2 px-3">{m.voteCount}</td>
@@ -323,20 +325,20 @@ export function AllianceDetail() {
 
 			{/* Pending Members (leader only) */}
 			{isLeader && pendingMembers.length > 0 && (
-				<div className="rounded-lg border border-yellow-700 bg-yellow-900/10">
-					<div className="border-b border-yellow-700 bg-yellow-900/20 px-4 py-3">
-						<strong className="text-sm text-yellow-200">
+				<div className="rounded-lg border border-warning/50 bg-warning/10">
+					<div className="border-b border-warning/50 bg-warning/20 px-4 py-3">
+						<strong className="text-sm text-warning-foreground">
 							Pending Members ({pendingMembers.length})
 						</strong>
 					</div>
-					<div className="divide-y divide-yellow-700/30">
+					<div className="divide-y divide-warning/30">
 						{pendingMembers.map((m) => (
 							<div key={m.playerId} className="flex items-center justify-between px-4 py-2">
 								<span className="font-medium text-sm">{m.playerName}</span>
 								<div className="flex gap-2">
 									<button
 										onClick={() => { setError(null); acceptMemberMut.mutate(m.playerId) }}
-										className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90"
+										className="rounded bg-success px-2 py-0.5 text-xs text-white hover:opacity-90"
 									>
 										Accept
 									</button>
@@ -362,6 +364,7 @@ export function AllianceDetail() {
 					<div className="p-4 flex flex-wrap gap-2">
 						<button
 							onClick={() => { setShowInvite(!showInvite); setShowDeclareWar(false); setEditPassword(false) }}
+							aria-pressed={showInvite}
 							className={cn(
 								'rounded px-3 py-1.5 text-xs flex items-center gap-1',
 								showInvite ? 'bg-primary text-primary-foreground' : 'border border-primary text-primary'
@@ -372,9 +375,10 @@ export function AllianceDetail() {
 						</button>
 						<button
 							onClick={() => { setShowDeclareWar(!showDeclareWar); setShowInvite(false); setEditPassword(false) }}
+							aria-pressed={showDeclareWar}
 							className={cn(
 								'rounded px-3 py-1.5 text-xs flex items-center gap-1',
-								showDeclareWar ? 'bg-red-600 text-white' : 'border border-red-600 text-red-400'
+								showDeclareWar ? 'bg-danger text-white' : 'border border-danger text-danger-foreground'
 							)}
 						>
 							<SwordsIcon className="h-3.5 w-3.5" />
@@ -382,6 +386,7 @@ export function AllianceDetail() {
 						</button>
 						<button
 							onClick={() => { setEditPassword(!editPassword); setShowInvite(false); setShowDeclareWar(false) }}
+							aria-pressed={editPassword}
 							className={cn(
 								'rounded px-3 py-1.5 text-xs',
 								editPassword ? 'bg-secondary text-secondary-foreground' : 'border text-muted-foreground hover:text-foreground'
@@ -448,7 +453,7 @@ export function AllianceDetail() {
 									if (warTargetId) { setError(null); declareWarMut.mutate(warTargetId) }
 								}}
 								disabled={!warTargetId || declareWarMut.isPending}
-								className="rounded bg-red-600 px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
+								className="rounded bg-danger px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
 							>
 								{declareWarMut.isPending ? 'Declaring…' : 'Declare War'}
 							</button>
@@ -481,14 +486,14 @@ export function AllianceDetail() {
 
 			{/* Wars */}
 			{(wars?.length ?? 0) > 0 && (
-				<div className="rounded-lg border border-red-700/50 bg-red-900/10">
-					<div className="border-b border-red-700/50 bg-red-900/20 px-4 py-3">
-						<strong className="text-sm text-red-200 flex items-center gap-1.5">
+				<div className="rounded-lg border border-danger/50 bg-danger/10">
+					<div className="border-b border-danger/50 bg-danger/20 px-4 py-3">
+						<strong className="text-sm text-danger-foreground flex items-center gap-1.5">
 							<SwordsIcon className="h-4 w-4" />
 							Active Wars ({wars!.length})
 						</strong>
 					</div>
-					<div className="divide-y divide-red-700/30">
+					<div className="divide-y divide-danger/30">
 						{wars!.map((w) => {
 							const isAttacker = w.attackerAllianceId === allianceId
 							const opponent = isAttacker ? w.defenderAllianceName : w.attackerAllianceName
@@ -500,7 +505,7 @@ export function AllianceDetail() {
 											declared {relativeTime(w.declaredAt)}
 										</span>
 										{w.status === 'PeaceProposed' && (
-											<span className="ml-2 rounded bg-yellow-700/30 px-2 py-0.5 text-xs text-yellow-300">
+											<span className="ml-2 rounded bg-warning/30 px-2 py-0.5 text-xs text-warning-foreground">
 												Peace Proposed
 											</span>
 										)}
@@ -509,7 +514,7 @@ export function AllianceDetail() {
 										<button
 											onClick={() => { setError(null); peaceMut.mutate(w.warId) }}
 											disabled={peaceMut.isPending}
-											className="rounded border border-green-600 px-2 py-0.5 text-xs text-green-400 hover:bg-green-600/10"
+											className="rounded border border-success px-2 py-0.5 text-xs text-success-foreground hover:bg-success/10"
 										>
 											Propose Peace
 										</button>
@@ -518,7 +523,7 @@ export function AllianceDetail() {
 										<button
 											onClick={() => { setError(null); peaceMut.mutate(w.warId) }}
 											disabled={peaceMut.isPending}
-											className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90"
+											className="rounded bg-success px-2 py-0.5 text-xs text-white hover:opacity-90"
 										>
 											Accept Peace
 										</button>

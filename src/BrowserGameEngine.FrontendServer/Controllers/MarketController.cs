@@ -12,7 +12,7 @@ using System.Linq;
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
 	[Authorize]
-	[Route("api/[controller]/{action?}/{id?}")]
+	[Route("api/[controller]")]
 	public class MarketController : ControllerBase {
 		private readonly ILogger<MarketController> logger;
 		private readonly CurrentUserContext currentUserContext;
@@ -35,16 +35,21 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		[HttpGet]
-		public ActionResult<MarketViewModel> Get() {
+		public ActionResult<MarketViewModel> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 
-			var orders = marketRepository.GetOpenOrders();
+			var allOrders = marketRepository.GetOpenOrders().Select(o => ToViewModel(o));
+			var paginatedOrders = PaginatedResponse<MarketOrderViewModel>.Create(allOrders, page, pageSize);
 			var viewModel = new MarketViewModel {
-				OpenOrders = orders.Select(o => ToViewModel(o)).ToList(),
+				OpenOrders = paginatedOrders.Items,
 				CurrentPlayerId = currentUserContext.PlayerId!.Id,
 				ResourceOptions = gameDef.Resources
 					.Select(r => new ResourceOptionViewModel { Id = r.Id.Id, Name = r.Name })
-					.ToList()
+					.ToList(),
+				TotalCount = paginatedOrders.TotalCount,
+				Page = paginatedOrders.Page,
+				PageSize = paginatedOrders.PageSize,
+				TotalPages = paginatedOrders.TotalPages
 			};
 			return viewModel;
 		}

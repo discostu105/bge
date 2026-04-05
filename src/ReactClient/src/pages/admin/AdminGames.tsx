@@ -138,7 +138,7 @@ export function AdminGames() {
       return (
         <div className="p-6 max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-4">Game Admin</h1>
-          <div className="rounded border border-yellow-500/50 bg-yellow-500/10 p-4 text-yellow-400">
+          <div className="rounded border border-warning/50 bg-warning/10 p-4 text-warning-foreground">
             You are not authorized to view the admin panel.
           </div>
         </div>
@@ -203,7 +203,7 @@ export function AdminGames() {
             />
           </div>
           {createError && <p className="text-destructive text-sm">{createError}</p>}
-          {createSuccess && <p className="text-green-500 text-sm">{createSuccess}</p>}
+          {createSuccess && <p className="text-success-foreground text-sm">{createSuccess}</p>}
           <button
             type="submit"
             disabled={createMutation.isPending}
@@ -230,12 +230,12 @@ export function AdminGames() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                <th className="px-3 py-2 text-left font-medium">Name</th>
-                <th className="px-3 py-2 text-left font-medium">Status</th>
-                <th className="px-3 py-2 text-right font-medium">Players</th>
-                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">Start</th>
-                <th className="px-3 py-2 text-left font-medium hidden md:table-cell">End</th>
-                <th className="px-3 py-2 text-right font-medium">Actions</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Name</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Status</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Players</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium hidden md:table-cell">Start</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium hidden md:table-cell">End</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -247,9 +247,9 @@ export function AdminGames() {
                       <span
                         className={`text-xs px-2 py-0.5 rounded font-bold ${
                           game.status === 'Active'
-                            ? 'bg-green-700 text-white'
+                            ? 'bg-success text-success-foreground'
                             : game.status === 'Upcoming'
-                            ? 'bg-blue-700 text-white'
+                            ? 'bg-warning text-warning-foreground'
                             : 'bg-secondary text-secondary-foreground'
                         }`}
                       >
@@ -322,7 +322,7 @@ export function AdminGames() {
                             />
                           </div>
                           {editError && <p className="text-destructive text-sm">{editError}</p>}
-                          {editSuccess && <p className="text-green-500 text-sm">{editSuccess}</p>}
+                          {editSuccess && <p className="text-success-foreground text-sm">{editSuccess}</p>}
                           <div className="flex gap-2">
                             <button
                               onClick={handleSaveEdit}

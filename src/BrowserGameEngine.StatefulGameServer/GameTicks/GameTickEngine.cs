@@ -1,4 +1,5 @@
 ﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.Extensions.Logging;
 using System;
@@ -25,6 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 		private readonly GameTickModuleRegistry gameTickModuleRegistry;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly TimeProvider timeProvider;
+		private readonly IGameEventPublisher eventPublisher;
 
 		private readonly Lock _tickLock = new();
 		private volatile bool isPaused = false;
@@ -36,6 +38,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 				, GameTickModuleRegistry gameTickModuleRegistry
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, TimeProvider timeProvider
+				, IGameEventPublisher eventPublisher
 			) {
 			this.logger = logger;
 			this.worldStateAccessor = worldStateAccessor;
@@ -43,6 +46,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 			this.gameTickModuleRegistry = gameTickModuleRegistry;
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.timeProvider = timeProvider;
+			this.eventPublisher = eventPublisher;
 		}
 
 		public void CheckAllTicks() {
@@ -124,7 +128,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks {
 					worldState.GameTickState.LastUpdate += duration;
 					logger.LogDebug("Incremented World Tick to #{CurrentTick}. LastUpdate: {LastUpdate}", worldState.GameTickState.CurrentGameTick.Tick, worldState.GameTickState.LastUpdate);
 				}
-				return worldState.GameTickState.CurrentGameTick;
+				var completedTick = worldState.GameTickState.CurrentGameTick;
+				eventPublisher.PublishToGame(GameEventTypes.GameTickCompleted, new {
+					tick = completedTick.Tick,
+					timestamp = timeProvider.GetUtcNow().UtcDateTime
+				});
+				return completedTick;
 			}
 		}
 

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router'
+import { useParams, Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
@@ -41,7 +41,7 @@ export function GameSummary() {
       </p>
 
       {winner && (
-        <div className="flex items-center gap-4 rounded-lg border border-yellow-700 bg-yellow-900/20 p-4">
+        <div className="flex items-center gap-4 rounded-lg border border-warning/50 bg-warning/10 p-4">
           <span className="text-4xl">🏆</span>
           <div>
             <div className="font-bold text-lg">{winner.playerName} wins!</div>
@@ -58,9 +58,9 @@ export function GameSummary() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="py-2 pr-4">Rank</th>
-                <th className="py-2 pr-4">Player</th>
-                <th className="py-2">Score</th>
+                <th scope="col" className="py-2 pr-4">Rank</th>
+                <th scope="col" className="py-2 pr-4">Player</th>
+                <th scope="col" className="py-2">Score</th>
               </tr>
             </thead>
             <tbody>
@@ -82,15 +82,15 @@ export function GameSummary() {
       </div>
 
       <div className="flex gap-3 flex-wrap">
-        <a href="/games" className="text-sm px-4 py-2 rounded bg-green-700 text-white hover:bg-green-600">
-          🎮 Join Next Game
-        </a>
-        <a href="/games" className="text-sm px-4 py-2 rounded border border-border hover:bg-muted">
-          ← Back to Games List
-        </a>
-        <a href={`/games/${gameId}/results`} className="text-sm px-4 py-2 rounded border border-border hover:bg-muted">
+        <Link to="/games" className="text-sm px-4 py-2 rounded bg-success text-success-foreground hover:opacity-90">
+          Join Next Game
+        </Link>
+        <Link to="/games" className="text-sm px-4 py-2 rounded border border-border hover:bg-muted">
+          Back to Games List
+        </Link>
+        <Link to={`/games/${gameId}/results`} className="text-sm px-4 py-2 rounded border border-border hover:bg-muted">
           Detailed Results
-        </a>
+        </Link>
       </div>
     </div>
   )

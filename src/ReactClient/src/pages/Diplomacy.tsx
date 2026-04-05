@@ -9,6 +9,7 @@ import type {
   ProposeNapRequest,
   ProposeResourceAgreementRequest,
   RespondToProposalRequest,
+  PaginatedResponse,
 } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -48,11 +49,12 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
     refetchInterval: 10_000,
   })
 
-  const { data: players } = useQuery<PublicPlayerViewModel[]>({
+  const { data: playersResp } = useQuery<PaginatedResponse<PublicPlayerViewModel>>({
     queryKey: ['playerranking', gameId],
-    queryFn: () => apiClient.get('/api/playerranking').then((r) => r.data),
+    queryFn: () => apiClient.get('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
     refetchInterval: 30_000,
   })
+  const players = playersResp?.items
 
   const respondMutation = useMutation({
     mutationFn: ({ proposalId, accept }: { proposalId: string; accept: boolean }) => {
@@ -101,28 +103,28 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
       <h1 className="text-2xl font-bold">Diplomacy</h1>
 
       {error && <div className="text-destructive text-sm">{error}</div>}
-      {success && <div className="text-green-400 text-sm">{success}</div>}
+      {success && <div className="text-success-foreground text-sm">{success}</div>}
 
       {statusLoading && <PageLoader message="Loading diplomacy..." />}
       {statusError && !status && <ApiError message="Failed to load diplomacy status." onRetry={() => void refetchStatus()} />}
 
       {/* Incoming proposals */}
-      {(status?.pendingIncoming.length ?? 0) > 0 && (
-        <div className="rounded-lg border border-yellow-700 bg-yellow-900/10">
-          <div className="border-b border-yellow-700 bg-yellow-900/20 px-4 py-3">
-            <strong className="text-sm text-yellow-200">
+      {(status?.pendingIncoming?.length ?? 0) > 0 && (
+        <div className="rounded-lg border border-warning/50 bg-warning/10">
+          <div className="border-b border-warning/50 bg-warning/20 px-4 py-3">
+            <strong className="text-sm text-warning-foreground">
               Incoming Proposals ({status!.pendingIncoming.length})
             </strong>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-yellow-700/50">
+              <thead className="border-b border-warning/30">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">From</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">From</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody>
@@ -140,7 +142,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
                             respondMutation.mutate({ proposalId: p.proposalId, accept: true })
                             invalidateAll()
                           }}
-                          className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90"
+                          className="rounded bg-success px-2 py-0.5 text-xs text-white hover:opacity-90"
                         >
                           Accept
                         </button>
@@ -176,8 +178,8 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,10 +207,10 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Minerals/tick</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Gas/tick</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Partner</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Minerals/tick</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Gas/tick</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Ticks Remaining</th>
                 </tr>
               </thead>
               <tbody>
@@ -227,7 +229,7 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
       </div>
 
       {/* Sent proposals */}
-      {(status?.pendingSent.length ?? 0) > 0 && (
+      {(status?.pendingSent?.length ?? 0) > 0 && (
         <div className="rounded-lg border bg-card">
           <div className="border-b px-4 py-3">
             <strong className="text-sm">Sent Proposals (awaiting response)</strong>
@@ -236,11 +238,11 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">To</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
-                  <th className="py-2 px-3 text-left font-medium text-muted-foreground">Proposed</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">To</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Type</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Terms</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Duration</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Proposed</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,12 +270,14 @@ export function Diplomacy({ gameId }: DiplomacyProps) {
           <div className="flex gap-2">
             <button
               onClick={() => { setProposeMode('nap'); setError(null); setSuccess(null) }}
+              aria-pressed={proposeMode === 'nap'}
               className={`rounded px-3 py-1 text-xs ${proposeMode === 'nap' ? 'bg-primary text-primary-foreground' : 'border border-primary text-primary'}`}
             >
               Non-Aggression Pact
             </button>
             <button
               onClick={() => { setProposeMode('resource'); setError(null); setSuccess(null) }}
+              aria-pressed={proposeMode === 'resource'}
               className={`rounded px-3 py-1 text-xs ${proposeMode === 'resource' ? 'bg-primary text-primary-foreground' : 'border border-primary text-primary'}`}
             >
               Resource Agreement
