@@ -56,14 +56,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			});
 		}
 
-		/// <summary>Returns the current game's leaderboard ranked by score. Accepts an optional sort parameter (score).</summary>
+		/// <summary>Returns the current game's leaderboard ranked by score.</summary>
 		/// <param name="gameId">The game identifier (used for routing; server uses current player's game context).</param>
-		/// <param name="sort">Sort field. Currently only "score" is supported (default).</param>
 		[HttpGet]
 		[Route("api/games/{gameId}/leaderboard")]
 		[ProducesResponseType(typeof(IEnumerable<LeaderboardEntryViewModel>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<IEnumerable<LeaderboardEntryViewModel>> GetLeaderboard(string gameId, [FromQuery] string sort = "score") {
+		public ActionResult<IEnumerable<LeaderboardEntryViewModel>> GetLeaderboard(string gameId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var players = playerRepository.GetAll()
 				.Select(p => (

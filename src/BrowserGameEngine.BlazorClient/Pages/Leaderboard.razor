@@ -78,8 +78,9 @@
 			error = null;
 		} catch (Exception ex) {
 			error = ex.Message;
+		} finally {
+			loading = false;
 		}
-		loading = false;
 	}
 
 	public void Dispose() {
