@@ -14,8 +14,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.currentUserContext = currentUserContext;
 		}
 
-		[HttpGet]
-		[Route("api/diplomacy/status")]
+		[HttpGet("status")]
 		[ProducesResponseType(typeof(DiplomacyStatusViewModel), StatusCodes.Status200OK)]
 		public ActionResult<DiplomacyStatusViewModel> Status() {
 			if (!currentUserContext.IsValid) return Unauthorized();

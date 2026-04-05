@@ -31,13 +31,13 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 
 		/// <summary>
 		/// Creates a player in the default game for the given userId.
-		/// Uses POST /api/players which only requires UserId (not an existing player).
+		/// Uses POST /api/player-management which only requires UserId (not an existing player).
 		/// Returns the created PlayerId string.
 		/// </summary>
 		protected async Task<string> CreatePlayerAsync(string userId, string playerName) {
 			var client = CreateClient(userId);
 			var request = new CreatePlayerForUserViewModel { PlayerName = playerName };
-			var response = await client.PostAsJsonAsync("/api/players", request, JsonOptions);
+			var response = await client.PostAsJsonAsync("/api/player-management", request, JsonOptions);
 			response.EnsureSuccessStatusCode();
 			var vm = await DeserializeAsync<PlayerSummaryViewModel>(response);
 			return vm!.PlayerId;

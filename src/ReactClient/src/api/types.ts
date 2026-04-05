@@ -707,7 +707,7 @@ export interface AchievementsViewModel {
   achievements: AchievementViewModel[]
 }
 
-// Player game-completion achievements (api/players/me/achievements)
+// Player game-completion achievements (api/player-management/me/achievements)
 
 export interface PlayerAchievementViewModel {
   achievementType: string

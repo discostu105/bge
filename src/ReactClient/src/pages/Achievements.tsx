@@ -8,7 +8,7 @@ import { ApiError } from '@/components/ApiError'
 export function Achievements() {
   const { data, isLoading, error, refetch } = useQuery<PlayerAchievementsViewModel>({
     queryKey: ['achievements'],
-    queryFn: () => apiClient.get('/api/players/me/achievements').then((r) => r.data),
+    queryFn: () => apiClient.get('/api/player-management/me/achievements').then((r) => r.data),
   })
 
   const formatDate = (d: string) =>
