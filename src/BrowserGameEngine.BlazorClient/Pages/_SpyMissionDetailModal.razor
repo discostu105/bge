@@ -1,0 +1,109 @@
+@using BrowserGameEngine.Shared
+
+@if (_mission != null && _visible) {
+	<div class="modal d-block" tabindex="-1" role="dialog" style="background:rgba(0,0,0,0.5)">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Mission Report: @_mission.TargetPlayerName</h5>
+					<button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<h6>Mission Summary</h6>
+							<table class="table table-sm">
+								<tbody>
+									<tr><th>Target</th><td>@_mission.TargetPlayerName</td></tr>
+									<tr><th>Type</th><td>@MissionTypeLabel(_mission.MissionType)</td></tr>
+									<tr><th>Launched</th><td>@_mission.LaunchedAt.ToLocalTime().ToString("g")</td></tr>
+									@if (_mission.ResolvedAt.HasValue) {
+										<tr><th>Resolved</th><td>@_mission.ResolvedAt.Value.ToLocalTime().ToString("g")</td></tr>
+									}
+									<tr>
+										<th>Status</th>
+										<td><span class="badge @StatusBadgeClass(_mission.Status)">@StatusLabel(_mission.Status)</span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						@if (_mission.Result != null) {
+							<div class="col-md-6">
+								<h6>Outcome</h6>
+								@if (_mission.Result.Intercepted) {
+									<div class="alert alert-danger py-2 mb-2">
+										<strong>Intercepted!</strong>
+										@if (!string.IsNullOrEmpty(_mission.Result.DetectionInfo)) {
+											<div class="mt-1 small">@_mission.Result.DetectionInfo</div>
+										}
+									</div>
+								} else if (_mission.Result.Success) {
+									<div class="alert alert-success py-2 mb-2">
+										<strong>Mission Succeeded</strong>
+									</div>
+									@if (_mission.MissionType == "steal_resources" && (_mission.Result.StolenMinerals.HasValue || _mission.Result.StolenGas.HasValue)) {
+										<table class="table table-sm">
+											<thead><tr><th>Resource</th><th>Stolen</th></tr></thead>
+											<tbody>
+												@if (_mission.Result.StolenMinerals.HasValue && _mission.Result.StolenMinerals > 0) {
+													<tr><td>Minerals</td><td>@((int)_mission.Result.StolenMinerals.Value)</td></tr>
+												}
+												@if (_mission.Result.StolenGas.HasValue && _mission.Result.StolenGas > 0) {
+													<tr><td>Gas</td><td>@((int)_mission.Result.StolenGas.Value)</td></tr>
+												}
+											</tbody>
+										</table>
+									}
+								} else {
+									<div class="alert alert-warning py-2 mb-2">
+										<strong>Mission Failed</strong>
+									</div>
+								}
+							</div>
+						}
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" @onclick="Close">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	private SpyMissionViewModel? _mission;
+	private bool _visible;
+
+	public void Show(SpyMissionViewModel mission) {
+		_mission = mission;
+		_visible = true;
+		StateHasChanged();
+	}
+
+	private void Close() {
+		_visible = false;
+		StateHasChanged();
+	}
+
+	private static string MissionTypeLabel(string type) => type switch {
+		"intelligence" => "Gather Intelligence",
+		"sabotage" => "Sabotage",
+		"steal_resources" => "Steal Resources",
+		_ => type
+	};
+
+	private static string StatusLabel(string status) => status switch {
+		"in_transit" => "In Transit",
+		"completed" => "Completed",
+		"intercepted" => "Intercepted",
+		_ => status
+	};
+
+	private static string StatusBadgeClass(string status) => status switch {
+		"in_transit" => "bg-warning text-dark",
+		"completed" => "bg-success",
+		"intercepted" => "bg-danger",
+		_ => "bg-secondary"
+	};
+}
