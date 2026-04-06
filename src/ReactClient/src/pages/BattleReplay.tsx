@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams, Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { BattleReportDetailViewModel, UnitCountViewModel } from '@/api/types'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonLine } from '@/components/Skeleton'
 
 interface BattleReplayProps {
   gameId: string
@@ -51,7 +51,40 @@ export function BattleReplay({ gameId }: BattleReplayProps) {
     enabled: !!reportId,
   })
 
-  if (isLoading) return <PageLoader message="Loading battle report..." />
+  if (isLoading) return (
+    <div className="max-w-3xl space-y-6 animate-pulse" aria-hidden="true">
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <SkeletonLine className="h-6 w-36" />
+          <div className="h-6 w-16 rounded bg-muted" />
+        </div>
+        <SkeletonLine className="h-3.5 w-40" />
+        <SkeletonLine className="h-3.5 w-64" />
+      </div>
+      <div className="rounded-lg border p-4 space-y-3">
+        <SkeletonLine className="h-4 w-28" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <SkeletonLine className="h-3 w-32" />
+            <SkeletonLine className="h-3 w-full" />
+          </div>
+          <div className="space-y-2">
+            <SkeletonLine className="h-3 w-32" />
+            <SkeletonLine className="h-3 w-full" />
+          </div>
+        </div>
+      </div>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="rounded-lg border p-3 space-y-2">
+          <div className="h-5 w-16 rounded bg-muted" />
+          <div className="grid grid-cols-2 gap-4">
+            <SkeletonLine className="h-3 w-full" />
+            <SkeletonLine className="h-3 w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
   if (error) return <ApiError message="Battle report not found." onRetry={() => void refetch()} />
   if (!report) return null
 

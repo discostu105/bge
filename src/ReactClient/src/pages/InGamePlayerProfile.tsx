@@ -3,8 +3,8 @@ import { useParams, Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { InGamePlayerProfileViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 
 interface InGamePlayerProfileProps {
   gameId: string
@@ -22,7 +22,26 @@ export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
     enabled: !!playerId,
   })
 
-  if (isLoading) return <PageLoader message="Loading player..." />
+  if (isLoading) return (
+    <div className="max-w-md space-y-4" aria-hidden="true">
+      <SkeletonLine className="h-4 w-20" />
+      <div className="rounded-lg border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-4 animate-pulse">
+          <div className="h-14 w-14 rounded-full bg-muted" />
+          <div className="space-y-2">
+            <div className="h-5 w-32 rounded bg-muted" />
+            <div className="h-3.5 w-24 rounded bg-muted" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    </div>
+  )
   if (error) return <ApiError message="Failed to load player profile." onRetry={() => void refetch()} />
   if (!player) return <p className="text-destructive text-sm">Player not found.</p>
 

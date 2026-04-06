@@ -3,8 +3,8 @@ import { Link } from 'react-router'
 import { TrophyIcon, SwordsIcon, StarIcon, ChevronRightIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { ProfileViewModel, PlayerAchievementsViewModel, PlayerHistoryViewModel } from '@/api/types'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { relativeTime } from '@/lib/utils'
 
 function outcomeLabel(isWin: boolean, gameStatus: string): { label: string; className: string } {
@@ -31,7 +31,29 @@ export function PlayerProfile() {
     queryFn: () => apiClient.get('/api/history').then(r => r.data),
   })
 
-  if (isLoading) return <PageLoader message="Loading profile..." />
+  if (isLoading) return (
+    <div className="max-w-lg space-y-5" aria-hidden="true">
+      <SkeletonLine className="h-6 w-40" />
+      <div className="rounded-lg border bg-card p-6 space-y-5">
+        <div className="flex items-center gap-4 animate-pulse">
+          <div className="h-16 w-16 rounded-full bg-muted" />
+          <div className="space-y-2">
+            <div className="h-5 w-32 rounded bg-muted" />
+            <div className="h-3.5 w-24 rounded bg-muted" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    </div>
+  )
   if (error) return <ApiError message="Failed to load profile." onRetry={() => void refetch()} />
   if (!profile) return <p className="text-destructive text-sm">Failed to load profile.</p>
 
