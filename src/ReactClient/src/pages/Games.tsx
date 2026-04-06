@@ -38,7 +38,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
             </Link>
           )}
           <Link
-            to={`/games/${game.gameId}/ranking`}
+            to={`/games/${game.gameId}/live`}
             className="text-sm px-3 py-1 rounded border border-border hover:bg-muted"
           >
             Spectate

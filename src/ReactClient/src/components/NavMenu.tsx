@@ -16,6 +16,7 @@ import {
   BookOpenIcon,
   HistoryIcon,
   HelpCircleIcon,
+  RadioIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
@@ -79,6 +80,7 @@ export function NavMenu() {
         <NavItem to={g('operations')} icon={CrosshairIcon} label="Operations" />
 
         <SectionLabel>Info</SectionLabel>
+        <NavItem to={g('live')} icon={RadioIcon} label="Live View" />
         <NavItem to={g('unitdefinitions')} icon={BookOpenIcon} label="Unit Types" />
         <NavItem to={g('ranking')} icon={BarChart2Icon} label="Ranking" />
         <NavItem to={g('help')} icon={HelpCircleIcon} label="Help" />
