@@ -101,7 +101,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				GamesPlayed = gamesPlayed,
 				Wins = wins,
 				BestRank = bestRank,
-				CurrentGameId = currentGameId
+				CurrentGameId = currentGameId,
+				JoinedAt = currentUserContext.UserId != null
+					? globalState.GetUserCreated(currentUserContext.UserId)
+					: null
 			};
 		}
 	}

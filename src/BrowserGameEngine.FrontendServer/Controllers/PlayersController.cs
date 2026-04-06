@@ -75,7 +75,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					GameEndTime: rec?.ActualEndTime ?? rec?.EndTime ?? System.DateTime.MinValue,
 					FinalRank: a.FinalRank,
 					FinalScore: a.FinalScore,
-					IsWinner: a.FinalRank == 1
+					IsWinner: a.FinalRank == 1,
+					GameDefType: a.GameDefType
 				);
 			}).ToArray();
 
@@ -86,7 +87,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TotalWins: entries.Count(e => e.IsWinner),
 				BestRank: entries.Min(e => e.FinalRank),
 				TotalScore: entries.Sum(e => e.FinalScore),
-				Games: entries
+				Games: entries,
+				JoinedAt: globalState.GetUserCreated(userId),
+				TotalResourcesGathered: null
 			));
 		}
 

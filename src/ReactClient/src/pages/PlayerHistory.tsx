@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { PlayerHistoryViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
@@ -56,6 +57,7 @@ export function PlayerHistory() {
               <th scope="col" className="px-3 py-2 text-left font-medium">Rank</th>
               <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
               <th scope="col" className="px-3 py-2 text-right font-medium hidden sm:table-cell">Players</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium hidden sm:table-cell"></th>
             </tr>
           </thead>
           <tbody>
@@ -93,6 +95,14 @@ export function PlayerHistory() {
                 </td>
                 <td className="px-3 py-2 text-right text-muted-foreground hidden sm:table-cell">
                   {entry.playersInGame}
+                </td>
+                <td className="px-3 py-2 text-right hidden sm:table-cell">
+                  <Link
+                    to={`/replays/${entry.gameId}`}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Replay
+                  </Link>
                 </td>
               </tr>
             ))}

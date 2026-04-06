@@ -21,6 +21,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return user?.DisplayName;
 		}
 
+		public System.DateTime? GetUserCreated(string userId) {
+			var user = Users.Values.FirstOrDefault(u => u.UserId == userId);
+			return user?.Created;
+		}
+
 		public IReadOnlyList<GameRecordImmutable> GetGames() {
 			lock (_gamesLock) return _games.ToList();
 		}

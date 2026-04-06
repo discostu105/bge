@@ -2,9 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { TrophyIcon, SwordsIcon, StarIcon, ChevronRightIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { ProfileViewModel, PlayerAchievementsViewModel } from '@/api/types'
+import type { ProfileViewModel, PlayerAchievementsViewModel, PlayerHistoryViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { relativeTime } from '@/lib/utils'
+
+function outcomeLabel(isWin: boolean, gameStatus: string): { label: string; className: string } {
+  if (isWin) return { label: 'Win', className: 'bg-green-700/30 text-green-300' }
+  if (gameStatus.toLowerCase() === 'active' || gameStatus.toLowerCase() === 'running') {
+    return { label: 'DNF', className: 'bg-secondary/40 text-muted-foreground' }
+  }
+  return { label: 'Loss', className: 'bg-red-900/30 text-red-300' }
+}
 
 export function PlayerProfile() {
   const { data: profile, isLoading, error, refetch } = useQuery({
@@ -17,18 +26,29 @@ export function PlayerProfile() {
     queryFn: () => apiClient.get('/api/player-management/me/achievements').then(r => r.data),
   })
 
+  const { data: historyData } = useQuery<PlayerHistoryViewModel>({
+    queryKey: ['player-history'],
+    queryFn: () => apiClient.get('/api/history').then(r => r.data),
+  })
+
   if (isLoading) return <PageLoader message="Loading profile..." />
   if (error) return <ApiError message="Failed to load profile." onRetry={() => void refetch()} />
   if (!profile) return <p className="text-destructive text-sm">Failed to load profile.</p>
 
   const displayName = profile.displayName ?? profile.playerName ?? 'Unknown'
+  const losses = profile.gamesPlayed - profile.wins
+  const winRate = profile.gamesPlayed > 0 ? (profile.wins / profile.gamesPlayed) * 100 : 0
+  const historyGames = historyData?.games ?? []
+  const avgScore = historyGames.length > 0
+    ? historyGames.reduce((sum, g) => sum + g.finalScore, 0) / historyGames.length
+    : 0
 
   return (
-    <div className="max-w-lg space-y-5">
+    <div className="max-w-2xl space-y-5">
       <h1 className="text-xl font-bold">My Profile</h1>
 
       <div className="rounded-lg border bg-card p-6 space-y-5">
-        {/* Avatar + name */}
+        {/* Avatar + name + join date */}
         <div className="flex items-center gap-4">
           {profile.avatarUrl ? (
             <img
@@ -45,6 +65,11 @@ export function PlayerProfile() {
             <div className="font-bold text-lg">{displayName}</div>
             {profile.playerName && profile.displayName && profile.playerName !== profile.displayName && (
               <div className="text-sm text-muted-foreground">Playing as {profile.playerName}</div>
+            )}
+            {profile.joinedAt && (
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Member since {relativeTime(profile.joinedAt)}
+              </div>
             )}
           </div>
         </div>
@@ -102,14 +127,14 @@ export function PlayerProfile() {
         )}
       </div>
 
-      {/* Career stats */}
+      {/* Career stats — 6 cells */}
       {profile.gamesPlayed > 0 && (
         <div className="rounded-lg border bg-card p-5 space-y-3">
           <strong className="text-sm flex items-center gap-1.5">
             <TrophyIcon className="h-4 w-4 text-primary" />
             Career Stats
           </strong>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="rounded border bg-secondary/20 p-3 text-center">
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Games</div>
               <div className="text-xl font-bold">{profile.gamesPlayed}</div>
@@ -117,6 +142,18 @@ export function PlayerProfile() {
             <div className="rounded border bg-secondary/20 p-3 text-center">
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Wins</div>
               <div className="text-xl font-bold text-green-400">{profile.wins}</div>
+            </div>
+            <div className="rounded border bg-secondary/20 p-3 text-center">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Losses</div>
+              <div className="text-xl font-bold text-red-400">{losses}</div>
+            </div>
+            <div className="rounded border bg-secondary/20 p-3 text-center">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Win Rate</div>
+              <div className="text-xl font-bold">{winRate.toFixed(0)}%</div>
+            </div>
+            <div className="rounded border bg-secondary/20 p-3 text-center">
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Avg Score</div>
+              <div className="text-xl font-bold">{avgScore > 0 ? Math.floor(avgScore).toLocaleString() : '—'}</div>
             </div>
             <div className="rounded border bg-secondary/20 p-3 text-center">
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Best Rank</div>
@@ -175,6 +212,51 @@ export function PlayerProfile() {
           </div>
         )
       })()}
+
+      {/* Game history — last 20 games */}
+      {historyGames.length > 0 && (
+        <div className="rounded-lg border bg-card">
+          <div className="border-b px-4 py-3">
+            <strong className="text-sm">Recent Games</strong>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" aria-label="Game history">
+              <thead className="border-b">
+                <tr>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Game</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Type</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rank</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Outcome</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Replay</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyGames.slice(0, 20).map((g) => {
+                  const outcome = outcomeLabel(g.isWin, '')
+                  return (
+                    <tr key={g.gameId} className="border-b border-border last:border-0">
+                      <td className="py-2 px-3 font-medium">{g.gameName}</td>
+                      <td className="py-2 px-3 text-xs text-muted-foreground hidden sm:table-cell">{g.gameDefType || '—'}</td>
+                      <td className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap">
+                        {relativeTime(g.finishedAt)}
+                      </td>
+                      <td className="py-2 px-3 font-mono">#{g.finalRank}</td>
+                      <td className="py-2 px-3">
+                        <span className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${outcome.className}`}>
+                          {g.isWin && <StarIcon className="h-3 w-3" />}
+                          {outcome.label}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 text-muted-foreground hidden sm:table-cell">—</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
