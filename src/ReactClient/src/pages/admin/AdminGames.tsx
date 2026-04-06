@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
-import type { GameListViewModel, GameSummaryViewModel, CreateGameRequest, UpdateGameRequest } from '@/api/types'
+import type { GameListViewModel, GameSummaryViewModel, CreateGameRequest, UpdateGameRequest, GameSettingsRequest } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { AdminNav } from './AdminNav'
@@ -32,6 +32,14 @@ export function AdminGames() {
   const [createEndTime, setCreateEndTime] = useState(toDatetimeLocal(new Date(Date.now() + 7 * 86400000).toISOString()))
   const [createError, setCreateError] = useState<string | null>(null)
   const [createSuccess, setCreateSuccess] = useState<string | null>(null)
+
+  const [createStartingLand, setCreateStartingLand] = useState<number | undefined>(undefined)
+  const [createStartingMinerals, setCreateStartingMinerals] = useState<number | undefined>(undefined)
+  const [createStartingGas, setCreateStartingGas] = useState<number | undefined>(undefined)
+  const [createProtectionTicks, setCreateProtectionTicks] = useState<number | undefined>(undefined)
+  const [createVictoryThreshold, setCreateVictoryThreshold] = useState<number | undefined>(undefined)
+  const [createVictoryConditionType, setCreateVictoryConditionType] = useState('EconomicThreshold')
+  const [createMaxPlayers, setCreateMaxPlayers] = useState<number | undefined>(undefined)
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
@@ -101,6 +109,21 @@ export function AdminGames() {
     e.preventDefault()
     setCreateError(null)
     setCreateSuccess(null)
+    const hasAdvanced = createStartingLand !== undefined || createStartingMinerals !== undefined
+      || createStartingGas !== undefined || createProtectionTicks !== undefined
+      || createVictoryThreshold !== undefined || createMaxPlayers !== undefined
+      || createVictoryConditionType !== 'EconomicThreshold'
+    const settings: GameSettingsRequest | null = hasAdvanced
+      ? {
+          startingLand: createStartingLand ?? null,
+          startingMinerals: createStartingMinerals ?? null,
+          startingGas: createStartingGas ?? null,
+          protectionTicks: createProtectionTicks ?? null,
+          victoryThreshold: createVictoryThreshold ?? null,
+          victoryConditionType: createVictoryConditionType,
+          maxPlayers: createMaxPlayers ?? null,
+        }
+      : null
     createMutation.mutate({
       name: createName,
       gameDefType: 'sco',
@@ -109,6 +132,7 @@ export function AdminGames() {
       tickDuration: createTickDuration,
       discordWebhookUrl: null,
       maxPlayers: 0,
+      settings,
     })
   }
 
@@ -205,6 +229,73 @@ export function AdminGames() {
               required
             />
           </div>
+          <details className="rounded border border-border">
+            <summary className="px-3 py-2 text-sm font-medium cursor-pointer hover:bg-muted/30 select-none">
+              Advanced Settings
+            </summary>
+            <div className="grid grid-cols-2 gap-3 p-3 border-t border-border">
+              <div>
+                <label className="block text-sm font-medium mb-1">Starting Land</label>
+                <input type="number" min={0} placeholder="50 (default)"
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createStartingLand ?? ''}
+                  onChange={(e) => setCreateStartingLand(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Starting Minerals</label>
+                <input type="number" min={0} placeholder="5000 (default)"
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createStartingMinerals ?? ''}
+                  onChange={(e) => setCreateStartingMinerals(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Starting Gas</label>
+                <input type="number" min={0} placeholder="3000 (default)"
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createStartingGas ?? ''}
+                  onChange={(e) => setCreateStartingGas(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Protection Ticks</label>
+                <input type="number" min={0} placeholder="480 (default)"
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createProtectionTicks ?? ''}
+                  onChange={(e) => setCreateProtectionTicks(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Victory Threshold</label>
+                <input type="number" min={1} placeholder="500000 (default)"
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createVictoryThreshold ?? ''}
+                  onChange={(e) => setCreateVictoryThreshold(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Max Players (0=unlimited)</label>
+                <input type="number" min={0} placeholder="0 = unlimited"
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createMaxPlayers ?? ''}
+                  onChange={(e) => setCreateMaxPlayers(e.target.value ? Number(e.target.value) : undefined)}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">Victory Condition</label>
+                <select
+                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+                  value={createVictoryConditionType}
+                  onChange={(e) => setCreateVictoryConditionType(e.target.value)}
+                >
+                  <option value="EconomicThreshold">Economic Threshold (default)</option>
+                  <option value="TimeExpired">Time Expired</option>
+                  <option value="AdminFinalized">Admin Finalized</option>
+                </select>
+              </div>
+            </div>
+          </details>
           {createError && <p className="text-destructive text-sm">{createError}</p>}
           {createSuccess && <p className="text-success-foreground text-sm">{createSuccess}</p>}
           <button

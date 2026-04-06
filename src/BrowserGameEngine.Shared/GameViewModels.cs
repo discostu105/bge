@@ -17,6 +17,26 @@ namespace BrowserGameEngine.Shared {
 		string? VictoryConditionLabel = null
 	);
 
+	public record GameSettingsRequest(
+		int? StartingLand = null,
+		int? StartingMinerals = null,
+		int? StartingGas = null,
+		int? ProtectionTicks = null,
+		int? VictoryThreshold = null,
+		string? VictoryConditionType = null,
+		int? MaxPlayers = null
+	);
+
+	public record GameSettingsViewModel(
+		int StartingLand,
+		int StartingMinerals,
+		int StartingGas,
+		int ProtectionTicks,
+		int VictoryThreshold,
+		string VictoryConditionType,
+		int MaxPlayers
+	);
+
 	public record CreateGameRequest(
 		string Name,
 		string GameDefType,
@@ -24,7 +44,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		string TickDuration,
 		string? DiscordWebhookUrl = null,
-		int MaxPlayers = 0
+		int MaxPlayers = 0,
+		GameSettingsRequest? Settings = null
 	);
 
 	public record UpdateGameRequest(

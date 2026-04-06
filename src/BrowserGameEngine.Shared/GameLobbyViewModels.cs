@@ -32,7 +32,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime? StartTime,
 		DateTime? EndTime,
 		List<LobbyPlayerViewModel> Players,
-		bool CanJoin = false
+		bool CanJoin = false,
+		GameSettingsViewModel? Settings = null
 	);
 
 	public record LobbyPlayerViewModel(
