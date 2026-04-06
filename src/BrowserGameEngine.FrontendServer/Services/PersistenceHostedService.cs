@@ -1,14 +1,7 @@
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
-using BrowserGameEngine.GameModel;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace BrowserGameEngine.FrontendServer {
 	public class PersistenceHostedService : IHostedService, IDisposable {
@@ -17,15 +10,15 @@ namespace BrowserGameEngine.FrontendServer {
 		private Timer? timer;
 		private readonly ILogger<PersistenceHostedService> logger;
 		private readonly PersistenceService persistenceService;
-		private readonly WorldState worldState;
+		private readonly GameRegistry gameRegistry;
 
 		public PersistenceHostedService(ILogger<PersistenceHostedService> logger
 				, PersistenceService persistenceService
-				, WorldState worldState
+				, GameRegistry gameRegistry
 			) {
 			this.logger = logger;
 			this.persistenceService = persistenceService;
-			this.worldState = worldState;
+			this.gameRegistry = gameRegistry;
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken) {
@@ -36,7 +29,7 @@ namespace BrowserGameEngine.FrontendServer {
 		private void DoWork(object? state) {
 			if (Interlocked.CompareExchange(ref isactive, 1, 0) != 0) return;
 			try {
-				StoreGameState().GetAwaiter().GetResult();
+				StoreAllGameStates().GetAwaiter().GetResult();
 			} catch (Exception ex) {
 				logger.LogError(ex, "Failed to store game state");
 			} finally {
@@ -44,16 +37,23 @@ namespace BrowserGameEngine.FrontendServer {
 			}
 		}
 
-		private async Task StoreGameState() {
+		private async Task StoreAllGameStates() {
 			var sw = Stopwatch.StartNew();
 			var count = Interlocked.Increment(ref executionCount);
-			await persistenceService.StoreWorldSate(worldState.ToImmutable());
-			logger.LogInformation("Storing gamestate #{Count} took {Elapsed}", count, sw.Elapsed);
+			foreach (var instance in gameRegistry.GetAllInstances()) {
+				var gameId = instance.Record.GameId;
+				try {
+					await persistenceService.StoreGameState(gameId, instance.WorldState.ToImmutable());
+				} catch (Exception ex) {
+					logger.LogError(ex, "Failed to store game state for {GameId}", gameId.Id);
+				}
+			}
+			logger.LogInformation("Storing gamestate #{Count} ({GameCount} games) took {Elapsed}", count, gameRegistry.GetAllInstances().Count, sw.Elapsed);
 		}
 
 		public async Task StopAsync(CancellationToken cancellationToken) {
 			// store state on shutdown
-			await StoreGameState();
+			await StoreAllGameStates();
 		}
 
 		public void Dispose() {
