@@ -5,7 +5,8 @@ namespace BrowserGameEngine.Shared {
 		AttackReceived,
 		SpyAttempted,
 		AllianceRequest,
-		MessageReceived
+		MessageReceived,
+		MilestoneUnlocked
 	}
 
 	public class GameNotificationViewModel {

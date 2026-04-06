@@ -178,6 +178,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 					if (!eval.IsUnlocked && eval.CurrentProgress >= eval.Definition.TargetProgress) {
 						milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
 						playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
+						eventPublisher.PublishToPlayer(player.PlayerId, GameEventTypes.MilestoneUnlocked, new {
+							milestoneId = eval.Definition.Id,
+							name = eval.Definition.Name,
+							icon = eval.Definition.Icon
+						});
 					}
 				}
 			}
