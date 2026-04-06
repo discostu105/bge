@@ -34,19 +34,6 @@ class TestLoadBotManagerConfig:
         assert cfg.bots[0].name == "bot-easy"
         assert cfg.bots[1].name == "bot-hard"
 
-    def test_strategy_overrides_loaded(self, tmp_path):
-        cfg_file = tmp_path / "bot_manager.yaml"
-        cfg_file.write_text(textwrap.dedent("""\
-            bots:
-              - name: bot-a
-                api_key: key
-                game_id: game
-                strategy_overrides:
-                  attack_unit_threshold: 12
-        """))
-        cfg = load_bot_manager_config(cfg_file)
-        assert cfg.bots[0].strategy_overrides == {"attack_unit_threshold": 12}
-
     def test_explicit_missing_path_raises_file_not_found(self):
         with pytest.raises(FileNotFoundError):
             load_bot_manager_config("/nonexistent/bot_manager.yaml")

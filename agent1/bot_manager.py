@@ -16,9 +16,12 @@ import os
 import signal
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from ._yaml import load_yaml as _load_yaml
 
 _DEFAULT_CONFIG_PATH = Path("config/bot_manager.yaml")
 
@@ -32,7 +35,6 @@ class BotSlot:
     game_id: str
     difficulty: str = "medium"
     strategy: str = "balanced"
-    strategy_overrides: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -70,7 +72,6 @@ def load_bot_manager_config(config_path: str | Path | None = None) -> BotManager
             game_id=b["game_id"],
             difficulty=b.get("difficulty", "medium"),
             strategy=b.get("strategy", "balanced"),
-            strategy_overrides=dict(b.get("strategy_overrides") or {}),
         )
         for b in raw.get("bots", [])
     ]
@@ -80,18 +81,6 @@ def load_bot_manager_config(config_path: str | Path | None = None) -> BotManager
         config_path=raw.get("config_path"),
         bots=bots,
     )
-
-
-def _load_yaml(path: Path) -> dict[str, Any]:
-    try:
-        import yaml  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "PyYAML is required for YAML config loading. "
-            "Install it with: pip install pyyaml"
-        ) from exc
-    with open(path, encoding="utf-8") as fh:
-        return yaml.safe_load(fh) or {}
 
 
 def _build_env(bot: BotSlot, base_url: str) -> dict[str, str]:
@@ -149,6 +138,7 @@ def run(config_path: str | Path | None = None) -> None:
                     file=sys.stderr,
                 )
                 processes.remove(proc)
+        time.sleep(1)
 
 
 if __name__ == "__main__":

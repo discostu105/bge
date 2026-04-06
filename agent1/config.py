@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from ._yaml import load_yaml as _load_yaml
 from .strategy.difficulty import DifficultyProfile, PROFILES
 
 _DEFAULT_CONFIG_PATH = Path("config/config.yaml")
@@ -110,13 +111,3 @@ def load_config(config_path: str | Path | None = None) -> AgentConfig:
     )
 
 
-def _load_yaml(path: Path) -> dict[str, Any]:
-    try:
-        import yaml  # type: ignore[import]
-    except ImportError as exc:
-        raise ImportError(
-            "PyYAML is required for YAML config loading. "
-            "Install it with: pip install pyyaml"
-        ) from exc
-    with open(path, encoding="utf-8") as fh:
-        return yaml.safe_load(fh) or {}

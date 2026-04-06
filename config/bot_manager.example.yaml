@@ -15,5 +15,3 @@ bots:
     api_key: "bge_k_PLACEHOLDER"
     game_id: "round-1"
     difficulty: "hard"
-    strategy_overrides:
-      attack_unit_threshold: 12
