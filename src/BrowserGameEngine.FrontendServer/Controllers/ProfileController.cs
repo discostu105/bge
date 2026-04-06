@@ -51,7 +51,13 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(typeof(ProfileViewModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<ProfileViewModel> Get() {
-			if (!currentUserContext.IsValid) return Unauthorized();
+			if (!currentUserContext.IsValid) {
+				// Authenticated but no player yet — return a minimal profile
+				return Ok(new ProfileViewModel {
+					HasPlayer = false,
+					DisplayName = currentUserContext.GithubId,
+				});
+			}
 
 			var playerId = currentUserContext.PlayerId!;
 			var player = playerRepository.Get(playerId);

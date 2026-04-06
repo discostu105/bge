@@ -96,14 +96,14 @@ test.describe('Attack flow', () => {
 		const enemySelect = page.locator('select')
 		await enemySelect.selectOption({ value: defenderPlayerId })
 
-		await page.getByRole('button', { name: /send/i }).click()
+		await page.getByRole('button', { name: 'Send Troops' }).click()
 
 		// Should navigate to EnemyBase
 		await expect(page).toHaveURL(
 			new RegExp(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`),
 			{ timeout: 10_000 }
 		)
-		await expect(page.getByRole('heading', { name: /enemy base/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible()
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 
@@ -125,7 +125,7 @@ test.describe('Attack flow', () => {
 
 		// Navigate to EnemyBase and click Attack
 		await page.goto(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`)
-		await expect(page.getByRole('heading', { name: /enemy base/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible()
 
 		// Our units are en-route — the page shows "Attacking units"
 		await expect(page.getByText(/attacking/i)).toBeVisible({ timeout: 10_000 })

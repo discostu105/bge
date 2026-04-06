@@ -37,7 +37,7 @@ async function createFreshDefender(browser: import('@playwright/test').Browser):
 	const context = await browser.newContext()
 	const page = await context.newPage()
 	const res = await page.request.post(`${baseURL}/signindev`, {
-		form: { playerid: freshUserId, returnUrl: '/' },
+		form: { playerid: freshUserId, returnUrl: '/', protectionTicks: '0' },
 	})
 	expect([200, 302]).toContain(res.status())
 	await context.close()
@@ -66,7 +66,7 @@ test.describe('Battle report detail page', () => {
 
 		// Trigger the attack
 		await page.goto(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`)
-		await expect(page.getByRole('heading', { name: /enemy base/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible()
 		await expect(page.getByText(/attacking/i)).toBeVisible({ timeout: 10_000 })
 		await page.getByRole('button', { name: /^attack$/i }).click()
 		await expect(page.getByRole('heading', { name: 'Battle Result' })).toBeVisible({ timeout: 10_000 })

@@ -23,21 +23,23 @@ test.describe('Player profile page', () => {
 			page.getByText(/score/i)
 				.or(page.getByText(/rank/i))
 				.or(page.getByText(/not currently in a game/i))
+				.first()
 		).toBeVisible()
 	})
 
-	test('own profile page shows "not in a game" when player has no active game', async ({ page }) => {
-		// The shared e2e-test-admin user may or may not be in a game.
-		// We create a fresh user who definitely has no active game.
+	test('own profile page shows "not in a game" when player has no active game', async ({ page, browser }) => {
 		const freshUserId = `e2e-profile-${Date.now()}`
-		await page.request.post(`${baseURL}/signindev`, {
+		const freshContext = await browser.newContext()
+		const freshPage = await freshContext.newPage()
+		await freshPage.request.post(`${baseURL}/signindev`, {
 			form: { playerid: freshUserId, returnUrl: '/' },
 		})
-		await page.goto('/profile')
-		await expect(page.getByRole('heading', { name: 'My Profile' })).toBeVisible()
+		await freshPage.goto('/profile')
+		await expect(freshPage.getByRole('heading', { name: 'My Profile' })).toBeVisible()
 
 		// Fresh user has no active game — the "not in a game" message or Browse games link appears
-		await expect(page.getByText(/not currently in a game/i).or(page.getByRole('link', { name: /browse games/i }))).toBeVisible()
+		await expect(freshPage.getByText(/not currently in a game/i).or(freshPage.getByRole('link', { name: /browse games/i }))).toBeVisible()
+		await freshContext.close()
 	})
 
 	test('public profile page renders for a known user', async ({ page }) => {
@@ -52,8 +54,10 @@ test.describe('Player profile page', () => {
 		// Should render the public profile (not a 404 or error)
 		await expect(page.getByText(/something went wrong/i)).not.toBeVisible({ timeout: 5_000 })
 
-		// The page should show some profile content
-		await expect(page.locator('main, [role="main"], .max-w-lg, .max-w-2xl').first()).toBeVisible()
+		// The page should show some profile content (even if empty history)
+		await expect(
+			page.locator('.max-w-2xl').first()
+		).toBeVisible()
 	})
 
 	test('public profile page shows not-found state for unknown user', async ({ page }) => {
