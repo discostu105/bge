@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using BrowserGameEngine.StatefulGameServer;
@@ -7,6 +8,7 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 	/// <summary>
 	/// Middleware that authenticates API requests using a Bearer token in the format bge_k_...
 	/// Resolves the token to a Player and stores the PlayerId in HttpContext.Items for CurrentUserMiddleware.
+	/// Also sets HttpContext.User so that [Authorize] passes.
 	/// Must run after UseAuthentication() but before CurrentUserMiddleware.
 	/// </summary>
 	public class BearerTokenMiddleware {
@@ -27,6 +29,11 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 					var player = userRepository.GetPlayerByApiKeyHash(hash);
 					if (player != null) {
 						context.Items["BearerPlayerId"] = player.PlayerId.Id;
+						var claims = new[] {
+							new Claim(ClaimTypes.NameIdentifier, player.PlayerId.Id),
+							new Claim(ClaimTypes.AuthenticationMethod, "ApiKey"),
+						};
+						context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "ApiKey"));
 					}
 				}
 			}
