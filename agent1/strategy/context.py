@@ -16,6 +16,9 @@ class StrategyContext:
     # Difficulty setting for this session
     difficulty_profile: DifficultyProfile = field(default_factory=lambda: MEDIUM)
 
+    # Fine-grained per-bot overrides from AgentConfig.strategy_overrides
+    overrides: dict = field(default_factory=dict)
+
     @property
     def land_ratio(self) -> float:
         """Fraction of maximum land that is occupied (0.0–1.0)."""

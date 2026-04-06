@@ -1,13 +1,13 @@
-"""Agent1 entry point — reads config and runs a single strategy tick (stub)."""
+"""Agent1 entry point — loads config and runs a single strategy tick (stub)."""
 from __future__ import annotations
 import argparse
-from .config import AgentConfig
+from .config import load_config
 from .strategy.context import StrategyContext
 from .strategy.military import should_attack
 from .strategy.resources import worker_target, should_expand
 
 
-def run_tick(cfg: AgentConfig, ctx: StrategyContext) -> dict[str, object]:
+def run_tick(ctx: StrategyContext) -> dict[str, object]:
     """Execute one decision tick and return a dict of recommended actions."""
     return {
         "attack": should_attack(ctx, enemy_units=0),
@@ -18,12 +18,15 @@ def run_tick(cfg: AgentConfig, ctx: StrategyContext) -> dict[str, object]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Agent1 bot")
-    parser.add_argument("--difficulty", default="medium", help="Difficulty level")
+    parser.add_argument("config_path", nargs="?", default=None, help="Path to YAML config file")
     args = parser.parse_args()
 
-    cfg = AgentConfig(difficulty=args.difficulty)
-    ctx = StrategyContext(difficulty_profile=cfg.difficulty_profile)
-    print(run_tick(cfg, ctx))
+    cfg = load_config(args.config_path)
+    ctx = StrategyContext(
+        difficulty_profile=cfg.difficulty_profile,
+        overrides=cfg.strategy_overrides,
+    )
+    print(run_tick(ctx))
 
 
 if __name__ == "__main__":
