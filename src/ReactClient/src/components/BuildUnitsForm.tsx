@@ -63,7 +63,7 @@ export function BuildUnitsForm({ availableUnits, gameId, onQueueChanged }: Build
         <select
           value={unitDefId}
           onChange={(e) => setUnitDefId(e.target.value)}
-          className="rounded border bg-input px-2 py-1 text-sm"
+          className="w-full sm:w-auto rounded border bg-input px-2 py-1 text-sm"
         >
           {availableUnits.map((u) => (
             <option key={u.id} value={u.id}>

@@ -117,7 +117,7 @@ export function BattleReplay({ gameId }: BattleReplayProps) {
       {/* Initial Forces */}
       <div className="rounded-lg border p-4 space-y-3">
         <h2 className="font-semibold text-sm">Initial Forces</h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-xs text-muted-foreground mb-1">Attacker (Strength: {report.totalAttackerStrengthBefore})</div>
             <UnitList units={report.attackerUnitsInitial} />
@@ -140,7 +140,7 @@ export function BattleReplay({ gameId }: BattleReplayProps) {
                   Round {round.roundNumber}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground">Attacker</div>
                   {round.attackerCasualties.length > 0 && (
