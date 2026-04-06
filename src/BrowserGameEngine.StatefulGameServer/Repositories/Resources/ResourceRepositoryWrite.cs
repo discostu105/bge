@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -9,7 +9,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ResourceRepository resourceRepository;
@@ -24,69 +23,57 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.gameDef = gameDef;
 		}
 
-		private IDictionary<ResourceDefId, decimal> Res(PlayerId playerId) => world.GetPlayer(playerId).State.Resources;
-
 		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) => DeductCost(playerId, Cost.FromSingle(resourceDefId, value));
 		public void DeductCost(PlayerId playerId, Cost cost) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
-				lock (state.StateLock) {
-					if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
-					foreach (var res in cost.Resources) {
-						DeductResourceUnchecked(playerId, res.Key, res.Value);
-					}
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
+				foreach (var res in cost.Resources) {
+					DeductResourceUnchecked(state, res.Key, res.Value);
 				}
 			}
 		}
 
-		private void DeductResourceUnchecked(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
+		private void DeductResourceUnchecked(PlayerState state, ResourceDefId resourceDefId, decimal value) {
 			if (value < 0) throw new InvalidGameDefException("Resource cost cannot be negative.");
-			if (!Res(playerId).ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value));
-
-			// deduct cost
-			Res(playerId)[resourceDefId] -= value;
+			if (!state.Resources.ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value));
+			state.Resources[resourceDefId] -= value;
 		}
 
 		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
-				lock (state.StateLock) {
-					var playerRes = state.Resources;
-					if (!playerRes.ContainsKey(resourceDefId)) {
-						playerRes.Add(resourceDefId, value);
-					} else {
-						playerRes[resourceDefId] += value;
-					}
-					return playerRes[resourceDefId];
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				if (!state.Resources.ContainsKey(resourceDefId)) {
+					state.Resources.Add(resourceDefId, value);
+				} else {
+					state.Resources[resourceDefId] += value;
 				}
+				return state.Resources[resourceDefId];
 			}
 		}
 
 		public void TradeResource(TradeResourceCommand cmd) {
-			lock (_lock) {
-				var tradeableResources = gameDef.Resources
-					.Where(r => r.Id != gameDef.ScoreResource)
-					.Select(r => r.Id)
-					.ToList();
+			var tradeableResources = gameDef.Resources
+				.Where(r => r.Id != gameDef.ScoreResource)
+				.Select(r => r.Id)
+				.ToList();
 
-				if (!tradeableResources.Contains(cmd.FromResource))
-					throw new InvalidOperationException($"Resource '{cmd.FromResource.Id}' is not tradeable.");
+			if (!tradeableResources.Contains(cmd.FromResource))
+				throw new InvalidOperationException($"Resource '{cmd.FromResource.Id}' is not tradeable.");
 
-				// NOTE: assumes exactly 2 tradeable resources; correct for SCO but would break if the game def ever adds a third
-				var toResource = tradeableResources.First(r => r != cmd.FromResource);
-				var cost = Cost.FromSingle(cmd.FromResource, 2m * cmd.Amount);
+			// NOTE: assumes exactly 2 tradeable resources; correct for SCO but would break if the game def ever adds a third
+			var toResource = tradeableResources.First(r => r != cmd.FromResource);
+			var cost = Cost.FromSingle(cmd.FromResource, 2m * cmd.Amount);
 
-				var state = world.GetPlayer(cmd.PlayerId).State;
-				lock (state.StateLock) {
-					if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost);
+			var state = world.GetPlayer(cmd.PlayerId).State;
+			lock (state.StateLock) {
+				if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost);
 
-					DeductResourceUnchecked(cmd.PlayerId, cmd.FromResource, 2m * cmd.Amount);
-					var playerRes = state.Resources;
-					if (!playerRes.ContainsKey(toResource)) {
-						playerRes.Add(toResource, cmd.Amount);
-					} else {
-						playerRes[toResource] += cmd.Amount;
-					}
+				DeductResourceUnchecked(state, cmd.FromResource, 2m * cmd.Amount);
+				if (!state.Resources.ContainsKey(toResource)) {
+					state.Resources.Add(toResource, cmd.Amount);
+				} else {
+					state.Resources[toResource] += cmd.Amount;
 				}
 			}
 		}

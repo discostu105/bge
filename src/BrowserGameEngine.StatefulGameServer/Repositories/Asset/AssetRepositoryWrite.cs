@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -9,7 +9,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class AssetRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly ILogger<AssetRepositoryWrite> logger;
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
@@ -36,13 +35,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.gameDef = gameDef;
 		}
 
-		private ISet<Asset> Assets(PlayerId playerId) => world.GetPlayer(playerId).State.Assets;
-
 		/// <summary>
 		/// Building assets takes a number of gameticks until finished.
 		/// </summary>
 		public void BuildAsset(BuildAssetCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				var assetDef = gameDef.GetAssetDef(command.AssetDefId);
 				if (assetDef == null) throw new AssetNotFoundException(command.AssetDefId);
 				if (assetRepository.HasAsset(command.PlayerId, assetDef.Id)) throw new AssetAlreadyBuiltException(assetDef.Id);
@@ -71,7 +69,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void GrantBuilding(PlayerId playerId, AssetDefId assetDefId) {
-			lock (_lock) {
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
 				actionQueueRepository.RemoveActions(
 					playerId,
 					AssetBuildActionConstants.Name,
@@ -84,7 +83,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ExecuteGameActions(PlayerId playerId) {
-			lock (_lock) {
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
 				var actions = actionQueueRepository.GetAndRemoveDueActions(playerId, AssetBuildActionConstants.Name, world.GameTickState.CurrentGameTick);
 				foreach(var action in actions) {
 					AddAsset(action.PlayerId, Id.AssetDef(action.Properties[AssetBuildActionConstants.AssetDefId]));

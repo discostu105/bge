@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class MessageRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly TimeProvider timeProvider;
@@ -21,38 +20,34 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		// Used by BattleReportGenerator for system messages (no sender)
 		public void SendMessage(PlayerId recipientId, string subject, string body) {
-			lock (_lock) {
-				var state = world.GetPlayer(recipientId).State;
-				lock (state.StateLock) {
-					state.Messages.Add(new Message {
-						Id = MessageIdFactory.NewMessageId(),
-						RecipientId = recipientId,
-						Subject = subject,
-						Body = body,
-						CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-						IsRead = false,
-						SenderId = null
-					});
-				}
+			var state = world.GetPlayer(recipientId).State;
+			lock (state.StateLock) {
+				state.Messages.Add(new Message {
+					Id = MessageIdFactory.NewMessageId(),
+					RecipientId = recipientId,
+					Subject = subject,
+					Body = body,
+					CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+					IsRead = false,
+					SenderId = null
+				});
 			}
 		}
 
 		// Used for player-to-player messages
 		public MessageId Send(SendMessageCommand command) {
 			var id = MessageIdFactory.NewMessageId();
-			lock (_lock) {
-				var state = world.GetPlayer(command.RecipientId).State;
-				lock (state.StateLock) {
-					state.Messages.Add(new Message {
-						Id = id,
-						RecipientId = command.RecipientId,
-						SenderId = command.SenderId,
-						Subject = command.Subject,
-						Body = command.Body,
-						CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-						IsRead = false
-					});
-				}
+			var state = world.GetPlayer(command.RecipientId).State;
+			lock (state.StateLock) {
+				state.Messages.Add(new Message {
+					Id = id,
+					RecipientId = command.RecipientId,
+					SenderId = command.SenderId,
+					Subject = command.Subject,
+					Body = command.Body,
+					CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+					IsRead = false
+				});
 			}
 			notificationService.Notify(command.RecipientId, GameNotificationType.MessageReceived,
 				$"New message: {command.Subject}");
@@ -60,9 +55,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void MarkRead(MarkMessageReadCommand command) {
-			lock (_lock) {
-				var message = world.GetPlayer(command.PlayerId).State.Messages
-					.Find(m => m.Id.Equals(command.MessageId));
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
+				var message = state.Messages.Find(m => m.Id.Equals(command.MessageId));
 				if (message != null) message.IsRead = true;
 			}
 		}

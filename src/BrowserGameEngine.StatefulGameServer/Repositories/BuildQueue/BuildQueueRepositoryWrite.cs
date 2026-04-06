@@ -10,7 +10,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class BuildQueueRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly ILogger<BuildQueueRepositoryWrite> logger;
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
@@ -43,39 +42,34 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.gameDef = gameDef;
 		}
 
-		private List<BuildQueueEntry> Queue(PlayerId playerId) => world.GetPlayer(playerId).State.BuildQueue;
-
 		public void AddToQueue(AddToQueueCommand command) {
-			lock (_lock) {
-				var state = world.GetPlayer(command.PlayerId).State;
-				lock (state.StateLock) {
-					var priority = buildQueueRepository.GetNextPriority(command.PlayerId);
-					state.BuildQueue.Add(new BuildQueueEntry {
-						Id = Guid.NewGuid(),
-						Type = command.Type,
-						DefId = command.DefId,
-						Count = command.Count,
-						Priority = priority
-					});
-				}
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
+				var priority = buildQueueRepository.GetNextPriority(command.PlayerId);
+				state.BuildQueue.Add(new BuildQueueEntry {
+					Id = Guid.NewGuid(),
+					Type = command.Type,
+					DefId = command.DefId,
+					Count = command.Count,
+					Priority = priority
+				});
 			}
 		}
 
 		public void RemoveFromQueue(RemoveFromQueueCommand command) {
-			lock (_lock) {
-				var state = world.GetPlayer(command.PlayerId).State;
-				lock (state.StateLock) {
-					var entry = state.BuildQueue.SingleOrDefault(x => x.Id == command.EntryId);
-					if (entry != null) {
-						state.BuildQueue.Remove(entry);
-					}
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
+				var entry = state.BuildQueue.SingleOrDefault(x => x.Id == command.EntryId);
+				if (entry != null) {
+					state.BuildQueue.Remove(entry);
 				}
 			}
 		}
 
 		public void ReorderQueue(ReorderQueueCommand command) {
-			lock (_lock) {
-				var entry = Queue(command.PlayerId).SingleOrDefault(x => x.Id == command.EntryId);
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
+				var entry = state.BuildQueue.SingleOrDefault(x => x.Id == command.EntryId);
 				if (entry == null) return;
 				entry.Priority = command.NewPriority;
 			}
@@ -86,24 +80,22 @@ namespace BrowserGameEngine.StatefulGameServer {
 		/// are met the entry is executed and dequeued. If not met, the entry stays.
 		/// </summary>
 		public void TryExecuteAndDequeueFirst(PlayerId playerId) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
-				lock (state.StateLock) {
-					var front = state.BuildQueue.OrderBy(x => x.Priority).FirstOrDefault();
-					if (front == null) return;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				var front = state.BuildQueue.OrderBy(x => x.Priority).FirstOrDefault();
+				if (front == null) return;
 
-					bool executed = false;
-					if (front.Type == BuildQueueEntryConstants.TypeAsset) {
-						executed = TryExecuteAsset(playerId, front);
-					} else if (front.Type == BuildQueueEntryConstants.TypeUnit) {
-						executed = TryExecuteUnit(playerId, front);
-					}
+				bool executed = false;
+				if (front.Type == BuildQueueEntryConstants.TypeAsset) {
+					executed = TryExecuteAsset(playerId, front);
+				} else if (front.Type == BuildQueueEntryConstants.TypeUnit) {
+					executed = TryExecuteUnit(playerId, front);
+				}
 
-					if (executed) {
-						state.BuildQueue.Remove(front);
-						logger.LogDebug("Build queue: executed and dequeued entry {EntryId} ({Type} {DefId}) for player {PlayerId}",
-							front.Id, front.Type, front.DefId, playerId);
-					}
+				if (executed) {
+					state.BuildQueue.Remove(front);
+					logger.LogDebug("Build queue: executed and dequeued entry {EntryId} ({Type} {DefId}) for player {PlayerId}",
+						front.Id, front.Type, front.DefId, playerId);
 				}
 			}
 		}

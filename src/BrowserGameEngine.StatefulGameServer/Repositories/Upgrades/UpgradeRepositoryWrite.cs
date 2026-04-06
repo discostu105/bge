@@ -11,7 +11,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private const int MaxUpgradeLevel = 3;
 		private const int ResearchTimerTicks = 10;
 
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ResourceRepository resourceRepository;
@@ -35,9 +34,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public Cost GetUpgradeCost(int nextLevel) => UpgradeCosts[nextLevel - 1];
 
 		public void ResearchUpgrade(ResearchUpgradeCommand command) {
-			lock (_lock) {
-				var state = world.GetPlayer(command.PlayerId).State;
-
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				if (state.UpgradeBeingResearched != UpgradeType.None) {
 					throw new UpgradeResearchInProgressException(state.UpgradeBeingResearched);
 				}
@@ -62,8 +60,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ProcessResearchTimer(PlayerId playerId) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
 				if (state.UpgradeBeingResearched == UpgradeType.None || state.UpgradeResearchTimer <= 0) {
 					return;
 				}
