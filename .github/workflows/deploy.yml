@@ -91,8 +91,9 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
-          docker build --build-arg COMMIT_SHA=$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f BrowserGameEngine.FrontendServer/Dockerfile .
+          docker build --build-arg COMMIT_SHA=$IMAGE_TAG --build-arg VITE_SENTRY_DSN="$SENTRY_DSN" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f BrowserGameEngine.FrontendServer/Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 

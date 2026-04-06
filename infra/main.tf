@@ -46,6 +46,11 @@ variable "github_client_secret" {
   sensitive = true
 }
 
+variable "sentry_dsn" {
+  description = "Sentry DSN for backend error tracking (leave empty to disable)"
+  default     = ""
+}
+
 variable "alarm_email" {
   description = "Email address to receive CloudWatch alarm notifications (leave empty to skip subscription)"
   default     = ""
@@ -373,6 +378,7 @@ resource "aws_ecs_task_definition" "app" {
       { name = "ASPNETCORE_ENVIRONMENT", value = "Production" },
       { name = "Bge__DevAuth", value = "false" },
       { name = "Bge__S3BucketName", value = aws_s3_bucket.game_state.id },
+      { name = "Sentry__Dsn", value = var.sentry_dsn },
     ]
 
     secrets = [
