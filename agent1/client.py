@@ -70,3 +70,8 @@ class BgeClient:
 	def build_asset(self, asset_def_id: str) -> None:
 		"""POST /api/assets/build — construct an asset."""
 		self._post(f"/api/assets/build?assetDefId={asset_def_id}")
+
+	def get_game_detail(self, game_id: str) -> dict:
+		"""GET /api/games/{gameId} → GameDetailViewModel (status, winnerId, …)."""
+		gid = urllib.parse.quote(game_id, safe="")
+		return self._get(f"/api/games/{gid}")
