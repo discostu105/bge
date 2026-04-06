@@ -19,9 +19,12 @@ import {
   RadioIcon,
   LineChartIcon,
   UserIcon,
+  StoreIcon,
+  CoinsIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
+import { CurrencyBadge } from '@/components/CurrencyBadge'
 
 function NavItem({
   to,
@@ -103,6 +106,17 @@ export function NavMenu() {
           <NavItem to="/profile" icon={UserIcon} label="Profile" />
           <NavItem to="/achievements" icon={TrophyIcon} label="Achievements" />
         </ul>
+      </div>
+
+      <div className="mt-4 px-3">
+        <ul className="space-y-0.5">
+          <SectionLabel>Economy</SectionLabel>
+          <NavItem to="/shop" icon={StoreIcon} label="Shop" />
+          <NavItem to="/economy" icon={CoinsIcon} label="My Economy" />
+        </ul>
+        <div className="mt-2 px-2">
+          <CurrencyBadge />
+        </div>
       </div>
     </nav>
   )

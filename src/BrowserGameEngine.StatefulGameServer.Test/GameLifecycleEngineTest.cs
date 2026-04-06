@@ -111,6 +111,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(gameRegistry.GlobalState, gameRegistry),
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(gameRegistry.GlobalState),
 				tournamentEngine,
+				new GameRegistryNs.CurrencyService(gameRegistry.GlobalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
@@ -264,6 +265,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(globalState, registry),
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(globalState),
 				tournamentEngine2,
+				new GameRegistryNs.CurrencyService(globalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 

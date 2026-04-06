@@ -59,8 +59,10 @@ builder.Services.AddHostedService<GameTickTimerService>();
 builder.Services.AddHostedService<PersistenceHostedService>();
 builder.Services.AddHostedService<GlobalPersistenceHostedService>();
 builder.Services.AddHostedService<GameLifecycleService>();
+builder.Services.AddHostedService<BrowserGameEngine.FrontendServer.HostedServices.GlobalEconomyCleanupService>();
 
 builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptions.Position));
+builder.Services.Configure<BrowserGameEngine.GameDefinition.ShopConfig>(builder.Configuration.GetSection("Shop"));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<BrowserGameEngine.StatefulGameServer.GameRegistry.IGameNotificationService, BrowserGameEngine.FrontendServer.Services.DiscordWebhookNotificationService>();
 builder.Services.AddControllersWithViews();
