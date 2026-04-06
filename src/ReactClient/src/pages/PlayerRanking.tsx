@@ -4,9 +4,9 @@ import { Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { PublicPlayerViewModel, PaginatedResponse } from '@/api/types'
 import { cn } from '@/lib/utils'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { EmptyState } from '@/components/EmptyState'
+import { SkeletonRow } from '@/components/Skeleton'
 import { UsersIcon } from 'lucide-react'
 
 const VICTORY_THRESHOLD = 500_000
@@ -67,9 +67,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
         {filterBtn('agent', 'Agent')}
       </div>
 
-      {isLoading ? (
-        <PageLoader message="Loading ranking..." />
-      ) : error ? (
+      {error ? (
         <ApiError message="Failed to load ranking." onRetry={() => void refetch()} />
       ) : (
         <div className="rounded-lg border overflow-hidden">
@@ -88,6 +86,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
               </tr>
             </thead>
             <tbody className="divide-y">
+              {isLoading && Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} cols={9} />)}
               {!isLoading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={9}>
