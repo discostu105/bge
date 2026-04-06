@@ -114,8 +114,11 @@ test.describe('Attack flow', () => {
 		// Build a unit and send it to the defender's base via API
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=1`, { data: {} })
 		const unitsRes = await page.request.get(`${baseURL}/api/units`)
-		const units = await unitsRes.json() as { units: Array<{ unitId: string }> }
-		const unitId = units.units[0].unitId
+		const units = await unitsRes.json() as { units: Array<{ unitId: string; positionPlayerId: string | null }> }
+		// Pick a unit that is at home (positionPlayerId is null) — previously sent units may still be en-route
+		const homeUnit = units.units.find(u => !u.positionPlayerId)
+		expect(homeUnit).toBeTruthy()
+		const unitId = homeUnit!.unitId
 
 		const sendRes = await page.request.post(
 			`${baseURL}/api/battle/sendunits?unitId=${encodeURIComponent(unitId)}&enemyPlayerId=${encodeURIComponent(defenderPlayerId)}`,

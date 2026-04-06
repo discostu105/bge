@@ -100,8 +100,9 @@ test.describe('Create player', () => {
 		// Use a fresh browser context (no admin storageState) so the new user's
 		// auth cookie is the only one present — avoids cookie conflicts with the
 		// shared admin session that the page fixture carries by default.
+		// Pass baseURL so relative navigation (page.goto('/...')) works correctly.
 		const freshUserId = `e2e-newuser-${Date.now()}`
-		const context = await browser.newContext()
+		const context = await browser.newContext({ baseURL })
 		const page = await context.newPage()
 
 		// Sign in as a fresh user who has no player profile yet.
