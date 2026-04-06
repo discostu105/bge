@@ -4,8 +4,38 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
+	public class UserCurrencyState {
+		public string UserId { get; init; } = "";
+		public decimal Balance { get; private set; }
+		public List<CurrencyTransactionImmutable> Transactions { get; } = new();
+		private readonly object _lock = new();
+
+		public void Credit(CurrencyTransactionImmutable tx) {
+			lock (_lock) {
+				Transactions.Add(tx);
+				Balance += tx.Amount;
+			}
+		}
+
+		public bool TryDebit(CurrencyTransactionImmutable tx) {
+			lock (_lock) {
+				if (Balance + tx.Amount < 0) return false;
+				Transactions.Add(tx);
+				Balance += tx.Amount;
+				return true;
+			}
+		}
+
+		public UserCurrencyImmutable ToImmutable() {
+			lock (_lock) {
+				return new UserCurrencyImmutable(UserId, Balance, Transactions.ToList());
+			}
+		}
+	}
+
 	public class GlobalState {
 		internal ConcurrentDictionary<string, User> Users { get; set; } = new();
+		internal ConcurrentDictionary<string, UserCurrencyState> CurrencyLedger { get; set; } = new();
 
 		private readonly object _gamesLock = new();
 		private List<GameRecordImmutable> _games = new();
@@ -18,6 +48,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		private readonly object _tournamentsLock = new();
 		private List<TournamentImmutable> _tournaments = new();
+
+		private readonly object _ownedItemsLock = new();
+		private List<ItemOwnershipImmutable> _ownedItems = new();
+
+		private readonly object _currencyTradeOffersLock = new();
+		private List<CurrencyTradeOfferImmutable> _currencyTradeOffers = new();
 
 		public string? GetUserDisplayName(string userId) {
 			var user = Users.Values.FirstOrDefault(u => u.UserId == userId);
@@ -116,6 +152,37 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public void SetTournaments(IEnumerable<TournamentImmutable> tournaments) {
 			lock (_tournamentsLock) _tournaments = tournaments.ToList();
 		}
+
+		public IReadOnlyList<ItemOwnershipImmutable> GetOwnedItems() {
+			lock (_ownedItemsLock) return _ownedItems.ToList();
+		}
+
+		public void AddOwnedItem(ItemOwnershipImmutable item) {
+			lock (_ownedItemsLock) _ownedItems.Add(item);
+		}
+
+		public void SetOwnedItems(IEnumerable<ItemOwnershipImmutable> items) {
+			lock (_ownedItemsLock) _ownedItems = items.ToList();
+		}
+
+		public IReadOnlyList<CurrencyTradeOfferImmutable> GetCurrencyTradeOffers() {
+			lock (_currencyTradeOffersLock) return _currencyTradeOffers.ToList();
+		}
+
+		public void AddCurrencyTradeOffer(CurrencyTradeOfferImmutable offer) {
+			lock (_currencyTradeOffersLock) _currencyTradeOffers.Add(offer);
+		}
+
+		public void UpdateCurrencyTradeOffer(CurrencyTradeOfferImmutable old, CurrencyTradeOfferImmutable updated) {
+			lock (_currencyTradeOffersLock) {
+				var idx = _currencyTradeOffers.IndexOf(old);
+				if (idx >= 0) _currencyTradeOffers[idx] = updated;
+			}
+		}
+
+		public void SetCurrencyTradeOffers(IEnumerable<CurrencyTradeOfferImmutable> offers) {
+			lock (_currencyTradeOffersLock) _currencyTradeOffers = offers.ToList();
+		}
 	}
 
 	public static class GlobalStateExtensions {
@@ -125,7 +192,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Games: globalState.GetGames().ToList(),
 				Achievements: globalState.GetAchievements().ToList(),
 				Milestones: globalState.GetAllMilestones().ToList(),
-				Tournaments: globalState.GetTournaments().ToList()
+				Tournaments: globalState.GetTournaments().ToList(),
+				CurrencyLedger: globalState.CurrencyLedger.Values.Select(s => s.ToImmutable()).ToList(),
+				OwnedItems: globalState.GetOwnedItems().ToList(),
+				CurrencyTradeOffers: globalState.GetCurrencyTradeOffers().ToList()
 			);
 		}
 
@@ -138,6 +208,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			state.SetAchievements(globalStateImmutable.Achievements);
 			state.SetMilestones(globalStateImmutable.Milestones ?? Enumerable.Empty<UserMilestoneImmutable>());
 			state.SetTournaments(globalStateImmutable.Tournaments ?? Enumerable.Empty<TournamentImmutable>());
+			state.SetOwnedItems(globalStateImmutable.OwnedItems ?? Enumerable.Empty<ItemOwnershipImmutable>());
+			state.SetCurrencyTradeOffers(globalStateImmutable.CurrencyTradeOffers ?? Enumerable.Empty<CurrencyTradeOfferImmutable>());
+			foreach (var userCurrency in globalStateImmutable.CurrencyLedger ?? Enumerable.Empty<UserCurrencyImmutable>()) {
+				var currencyState = new UserCurrencyState { UserId = userCurrency.UserId };
+				foreach (var tx in userCurrency.Transactions) {
+					currencyState.Credit(tx);
+				}
+				state.CurrencyLedger[userCurrency.UserId] = currencyState;
+			}
 			return state;
 		}
 	}

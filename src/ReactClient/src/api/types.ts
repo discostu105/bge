@@ -1154,3 +1154,71 @@ export interface SpectatorSnapshotViewModel {
   topPlayers: SpectatorPlayerEntryViewModel[]
   tick: number
 }
+
+// Economy & Shop types
+
+export interface CurrencyBalanceViewModel {
+  balance: number
+  currencyName: string
+}
+
+export interface CurrencyTransactionViewModel {
+  transactionId: string
+  amount: number
+  type: string
+  description: string
+  createdAt: string
+  relatedEntityId: string | null
+}
+
+export interface TransactionHistoryViewModel {
+  balance: number
+  totalCount: number
+  transactions: CurrencyTransactionViewModel[]
+}
+
+export interface ShopItemViewModel {
+  itemId: string
+  name: string
+  description: string
+  category: string
+  price: number
+  isOwned: boolean
+}
+
+export interface ShopViewModel {
+  items: ShopItemViewModel[]
+}
+
+export interface PurchaseItemRequest {
+  itemId: string
+  idempotencyKey: string
+}
+
+export interface OwnedItemViewModel {
+  ownershipId: string
+  itemId: string
+  name: string
+  description: string
+  purchasedAt: string
+}
+
+export interface CurrencyTradeOfferViewModel {
+  offerId: string
+  fromUserId: string
+  fromDisplayName: string | null
+  offeredAmount: number
+  wantedItemId: string | null
+  wantedItemName: string | null
+  wantedCurrencyAmount: number | null
+  createdAt: string
+  status: string
+}
+
+export interface CreateCurrencyTradeOfferRequest {
+  toUserId: string
+  offeredAmount: number
+  wantedItemId: string | null
+  wantedCurrencyAmount: number | null
+}
+

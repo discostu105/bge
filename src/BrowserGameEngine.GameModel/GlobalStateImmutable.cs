@@ -6,6 +6,9 @@ namespace BrowserGameEngine.GameModel {
 		IList<GameRecordImmutable> Games,
 		IList<PlayerAchievementImmutable> Achievements,
 		IList<UserMilestoneImmutable>? Milestones = null,
-		IList<TournamentImmutable>? Tournaments = null
+		IList<TournamentImmutable>? Tournaments = null,
+		IList<UserCurrencyImmutable>? CurrencyLedger = null,
+		IList<ItemOwnershipImmutable>? OwnedItems = null,
+		IList<CurrencyTradeOfferImmutable>? CurrencyTradeOffers = null
 	);
 }

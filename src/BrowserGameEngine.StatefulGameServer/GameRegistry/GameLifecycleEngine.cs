@@ -26,6 +26,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly MilestoneRepository milestoneRepository;
 		private readonly MilestoneRepositoryWrite milestoneRepositoryWrite;
 		private readonly TournamentEngine tournamentEngine;
+		private readonly CurrencyService currencyService;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -41,6 +42,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			MilestoneRepository milestoneRepository,
 			MilestoneRepositoryWrite milestoneRepositoryWrite,
 			TournamentEngine tournamentEngine,
+			CurrencyService currencyService,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -55,6 +57,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.milestoneRepository = milestoneRepository;
 			this.milestoneRepositoryWrite = milestoneRepositoryWrite;
 			this.tournamentEngine = tournamentEngine;
+			this.currencyService = currencyService;
 			this.logger = logger;
 		}
 
@@ -161,6 +164,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 						GameDefType: record.GameDefType,
 						FinishedAt: utcNow
 					));
+					try {
+						currencyService.AwardGameReward(player.UserId, i + 1, score);
+					} catch (Exception ex) {
+						logger.LogError(ex, "Failed to award currency to user {UserId} for game {GameId}", player.UserId, record.GameId.Id);
+					}
 				}
 			}
 
