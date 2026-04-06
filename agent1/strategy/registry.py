@@ -1,6 +1,7 @@
 """Strategy registry — maps strategy names to strategy instances."""
 from __future__ import annotations
 
+from .alliance_module import AllianceStrategyModule
 from .balanced import BalancedStrategy
 
 _REGISTRY: dict[str, type] = {
@@ -19,3 +20,8 @@ def load_strategy(name: str) -> object:
 			f"Unknown strategy {name!r}. Available strategies: {sorted(_REGISTRY)}"
 		)
 	return _REGISTRY[name]()
+
+
+def load_alliance_module() -> AllianceStrategyModule:
+	"""Return a fresh ``AllianceStrategyModule`` instance."""
+	return AllianceStrategyModule()
