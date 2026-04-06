@@ -110,7 +110,8 @@ test.describe('Create player', () => {
 			form: { playerid: freshUserId, returnUrl: '/', createPlayer: 'false' },
 		})
 
-		await page.goto(`${baseURL}/createplayer`)
+		await page.goto('/createplayer')
+		await page.waitForLoadState('networkidle')
 		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible({ timeout: 10_000 })
 		await expect(page.getByLabel('Commander name')).toBeVisible({ timeout: 10_000 })
 

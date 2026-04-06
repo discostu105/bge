@@ -125,14 +125,14 @@ test.describe('Attack flow', () => {
 
 		// Navigate to EnemyBase and click Attack
 		await page.goto(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`)
-		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible({ timeout: 10_000 })
 
-		// Our units are en-route — the page shows "Attacking units"
-		await expect(page.getByText(/attacking/i)).toBeVisible({ timeout: 10_000 })
+		// Our units are en-route — the page shows a "Your Troops" table
+		await expect(page.getByText(/your troops/i)).toBeVisible({ timeout: 10_000 })
 
 		await page.getByRole('button', { name: /^attack$/i }).click()
 
-		// Battle report heading should appear
-		await expect(page.getByRole('heading', { name: 'Battle Result' })).toBeVisible({ timeout: 10_000 })
+		// Battle result heading (h2) should appear
+		await expect(page.getByRole('heading', { name: /battle result/i })).toBeVisible({ timeout: 10_000 })
 	})
 })

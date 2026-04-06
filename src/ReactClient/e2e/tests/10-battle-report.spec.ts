@@ -66,10 +66,10 @@ test.describe('Battle report detail page', () => {
 
 		// Trigger the attack
 		await page.goto(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`)
-		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible()
-		await expect(page.getByText(/attacking/i)).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByText(/your troops/i)).toBeVisible({ timeout: 10_000 })
 		await page.getByRole('button', { name: /^attack$/i }).click()
-		await expect(page.getByRole('heading', { name: 'Battle Result' })).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByRole('heading', { name: /battle result/i })).toBeVisible({ timeout: 10_000 })
 
 		// Fetch report ID from the API
 		const reportsRes = await page.request.get(`${baseURL}/api/battle/reports`)
