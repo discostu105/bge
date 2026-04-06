@@ -5,9 +5,13 @@ import argparse
 import logging
 import time
 from collections import deque
+from typing import Optional
 
+from .analytics.decision_logger import DecisionLogger
+from .analytics.outcome_tracker import OutcomeTracker
 from .client import BgeClient
 from .config import AgentConfig, load_config
+from .server import start_server
 from .state.tracker import GameStateTracker
 from .strategy.base import StrategyContext
 from .strategy.dispatcher import ActionDispatcher
@@ -22,18 +26,28 @@ def run(config: AgentConfig) -> None:
 	``nextTickAt`` value changes (indicating a new game tick has been
 	processed), state is fetched and ``DecisionEngine.run_tick`` is called
 	exactly once.  Errors are caught and logged; the loop never crashes.
+
+	Phase 4A additions:
+	- ``DecisionLogger`` records each dispatched action to ``decisions.jsonl``.
+	- ``OutcomeTracker`` records resource/unit deltas after each tick to
+	  ``outcomes.jsonl``.
 	"""
 	logging.basicConfig(level=getattr(logging, config.log_level.upper(), logging.INFO))
 	logger = logging.getLogger(__name__)
 
 	client = BgeClient(config.base_url, config.api_key)
 	tracker = GameStateTracker()
-	dispatcher = ActionDispatcher(client)
+	decision_logger = DecisionLogger()
+	outcome_tracker = OutcomeTracker()
+	dispatcher = ActionDispatcher(client, decision_logger=decision_logger)
 	strategy = load_strategy(config.strategy)
 	engine = DecisionEngine(strategy, dispatcher)
 	history: deque = deque(maxlen=20)
 
+	start_server(decision_logger, outcome_tracker)
+
 	last_next_tick_at: str = ""
+	prev_tracker: Optional[GameStateTracker] = None
 
 	logger.info(
 		"Agent1 started — base_url=%s difficulty=%s strategy=%s poll=%ds",
@@ -56,7 +70,19 @@ def run(config: AgentConfig) -> None:
 				units = client.get_units()
 				attackable = client.get_attackable_players()
 
+				prev_tracker = GameStateTracker(
+					minerals=tracker.minerals,
+					gas=tracker.gas,
+					units=tracker.units,
+					land=tracker.land,
+					max_land=tracker.max_land,
+					unit_list=list(tracker.unit_list),
+					attackable_players=list(tracker.attackable_players),
+				) if last_next_tick_at else None
+
 				tracker.update(tick_info, resources, units, attackable)
+
+				dispatcher.current_tick = current_tick
 
 				ctx = StrategyContext(
 					state=tracker,
@@ -65,6 +91,7 @@ def run(config: AgentConfig) -> None:
 					history=history,
 				)
 				engine.run_tick(ctx)
+				outcome_tracker.record(prev_tracker, tracker, current_tick)
 				history.append(tracker)
 
 				logger.debug(
