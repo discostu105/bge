@@ -273,7 +273,9 @@ function GameLayoutInner() {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-3 sm:p-4">
           <Suspense fallback={<PageLoader />}>
-            <Outlet />
+            <div key={location.pathname} className="page-enter">
+              <Outlet />
+            </div>
           </Suspense>
         </main>
       </div>
