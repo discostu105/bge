@@ -17,14 +17,13 @@ namespace BrowserGameEngine.Shared {
 		bool IsPlayerEnrolled = false,
 		string? VictoryConditionType = null,
 		string? DiscordWebhookUrl = null,
-		string? CreatedByUserId = null
+		string? CreatedByUserId = null,
+		string? TournamentId = null
 	);
 
 	public record GameListViewModel(List<GameSummaryViewModel> Games);
 
 	public record JoinGameRequest(string PlayerName, string? PlayerType = null);
-
-	public record JoinGameViewModel(string PlayerId);
 
 	public record GameLobbyViewModel(
 		string GameId,
@@ -34,7 +33,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime? StartTime,
 		DateTime? EndTime,
 		List<LobbyPlayerViewModel> Players,
-		bool CanJoin = false
+		bool CanJoin = false,
+		GameSettingsViewModel? Settings = null
 	);
 
 	public record LobbyPlayerViewModel(

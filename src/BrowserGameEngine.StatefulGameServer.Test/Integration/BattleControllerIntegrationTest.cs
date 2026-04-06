@@ -1,5 +1,8 @@
+using System;
 using System.Net;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using BrowserGameEngine.Shared;
 using Xunit;
 
 namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
@@ -68,6 +71,44 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			// No units sent → attack fails with BadRequest
 			var response = await client.PostAsync($"/api/battle/attack?enemyPlayerId={defenderPlayerId}", null);
 			Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+		}
+
+		[Fact]
+		public async Task Reports_Unauthenticated_Returns401() {
+			var client = CreateClient();
+			var response = await client.GetAsync("/api/battle/reports");
+			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		}
+
+		[Fact]
+		public async Task Reports_Authenticated_ReturnsOk() {
+			var userId = "user-battle-reports-1";
+			await CreatePlayerAsync(userId, "ReportsPlayer1");
+
+			var client = CreateClient(userId);
+			var response = await client.GetAsync("/api/battle/reports");
+			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+			var reports = await DeserializeAsync<BattleReportSummaryViewModel[]>(response);
+			Assert.NotNull(reports);
+			Assert.Empty(reports!);
+		}
+
+		[Fact]
+		public async Task Report_Unauthenticated_Returns401() {
+			var client = CreateClient();
+			var response = await client.GetAsync($"/api/battle/report?reportId={Guid.NewGuid()}");
+			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		}
+
+		[Fact]
+		public async Task Report_NonExistentReport_Returns404() {
+			var userId = "user-battle-report-1";
+			await CreatePlayerAsync(userId, "ReportPlayer1");
+
+			var client = CreateClient(userId);
+			var response = await client.GetAsync($"/api/battle/report?reportId={Guid.NewGuid()}");
+			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 		}
 	}
 }

@@ -60,18 +60,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
-		/// <summary>Returns initial data for the player creation form, pre-filled from the authenticated user's display name.</summary>
-		[HttpGet]
-		[Route("init")]
-		[ProducesResponseType(typeof(CreatePlayerViewModel), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<CreatePlayerViewModel> Init() {
-			if (currentUserContext.UserId == null) return Unauthorized();
-			return new CreatePlayerViewModel {
-				PlayerName = User.Identity?.Name
-			};
-		}
-
 		/// <summary>Returns whether the authenticated user already has a player registered in the current game.</summary>
 		[HttpGet]
 		[Route("exists")]
@@ -125,21 +113,5 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return Ok();
 		}
 
-		[HttpPost]
-		[Route("switch")]
-		public ActionResult SwitchPlayer(SwitchPlayerViewModel model) {
-			if (currentUserContext.UserId == null) return Unauthorized();
-			var pid = PlayerIdFactory.Create(model.PlayerId);
-			var players = userRepository.GetPlayersForUser(currentUserContext.UserId).ToList();
-			if (!players.Any(p => p.PlayerId == pid)) return Forbid();
-
-			Response.Cookies.Append("BGE.SelectedPlayer", model.PlayerId, new Microsoft.AspNetCore.Http.CookieOptions {
-				HttpOnly = true,
-				Secure = true,
-				SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax,
-				MaxAge = TimeSpan.FromDays(30)
-			});
-			return Ok();
-		}
 	}
 }

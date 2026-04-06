@@ -1,7 +1,8 @@
 import { Suspense, useState, useCallback, useEffect, useRef } from 'react'
 import { Outlet, NavLink, useParams, Navigate, useLocation, useNavigate } from 'react-router'
-import { GamepadIcon, LogOutIcon, MenuIcon, XIcon, WifiIcon, WifiOffIcon } from 'lucide-react'
+import { GamepadIcon, LogOutIcon, MenuIcon, XIcon, WifiIcon, WifiOffIcon, SunIcon, MoonIcon } from 'lucide-react'
 import { CurrentGameProvider, useCurrentGame } from '@/contexts/CurrentGameContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { NavMenu } from '@/components/NavMenu'
 import { PlayerResources } from '@/components/PlayerResources'
 import { NotificationBell } from '@/components/NotificationBell'
@@ -140,6 +141,23 @@ function SidebarContent({ currentGame }: { currentGame: { name: string } | null 
   )
 }
 
+function ThemeToggleButton() {
+  const { theme, toggleTheme } = useTheme()
+  return (
+    <button
+      onClick={toggleTheme}
+      className="p-1.5 rounded hover:bg-secondary"
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {theme === 'dark' ? (
+        <SunIcon className="h-4 w-4" aria-hidden="true" />
+      ) : (
+        <MoonIcon className="h-4 w-4" aria-hidden="true" />
+      )}
+    </button>
+  )
+}
+
 function GameLayoutInner() {
   const { gameId, currentGame } = useCurrentGame()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -240,6 +258,7 @@ function GameLayoutInner() {
               )}
             </span>
             <NotificationBell signalR={signalR} onRealTimeNotification={onRealTimeNotification} />
+            <ThemeToggleButton />
           </div>
         </header>
 

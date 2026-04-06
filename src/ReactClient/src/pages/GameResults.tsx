@@ -1,20 +1,11 @@
-import { useParams } from 'react-router'
+import { useParams, Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { vcEmoji, vcBadgeCss, vcText } from '@/lib/victory'
-
-function formatDuration(ms: number): string {
-  const totalSec = Math.floor(ms / 1000)
-  const days = Math.floor(totalSec / 86400)
-  const hours = Math.floor((totalSec % 86400) / 3600)
-  const mins = Math.floor((totalSec % 3600) / 60)
-  if (days >= 1) return `${days}d ${hours}h`
-  if (hours >= 1) return `${hours}h ${mins}m`
-  return `${mins}m`
-}
+import { formatDuration } from '@/lib/formatters'
 
 export function GameResults() {
   const { gameId } = useParams<{ gameId: string }>()
@@ -38,6 +29,17 @@ export function GameResults() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{model.name} — Results</h1>
+
+      {model.tournamentId && (
+        <div>
+          <Link
+            to={`/tournaments/${model.tournamentId}`}
+            className="text-sm text-primary underline"
+          >
+            View Tournament Results: {model.tournamentId}
+          </Link>
+        </div>
+      )}
 
       {model.victoryConditionType && (
         <div className="flex items-center gap-2">

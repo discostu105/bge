@@ -1,0 +1,17 @@
+base_url: "https://ageofagents.net"
+
+# Path to a shared agent config file.  Each bot subprocess receives this path
+# as a positional argument, but env vars (BGE_API_KEY, BGE_GAME_ID, etc.) take
+# priority over any values in the file.
+config_path: "config/config.yaml"
+
+bots:
+  - name: "bot-easy"
+    api_key: "bge_k_PLACEHOLDER"
+    game_id: "round-1"
+    difficulty: "easy"
+
+  - name: "bot-hard"
+    api_key: "bge_k_PLACEHOLDER"
+    game_id: "round-1"
+    difficulty: "hard"

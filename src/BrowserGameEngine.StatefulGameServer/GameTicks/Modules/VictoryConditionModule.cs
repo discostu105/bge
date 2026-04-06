@@ -17,7 +17,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private readonly object _checkLock = new();
 
 		private string _type = VictoryConditionTypes.EconomicThreshold;
-		private decimal _threshold = 500_000;
+		private decimal? _thresholdOverride = null;
 
 		public VictoryConditionModule(
 			IWorldStateAccessor worldStateAccessor,
@@ -32,14 +32,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 
 		public void SetProperty(string name, string value) {
 			if (name == "type") _type = value;
-			else if (name == "threshold" && decimal.TryParse(value, out var t)) _threshold = t;
+			else if (name == "threshold" && decimal.TryParse(value, out var t)) _thresholdOverride = t;
 		}
 
 		public void CalculateTick(PlayerId playerId) {
 			if (_type != VictoryConditionTypes.EconomicThreshold) return;
 
 			var score = GetScore(playerId);
-			if (score < _threshold) return;
+			var threshold = _thresholdOverride ?? (decimal)worldStateAccessor.WorldState.GameSettings.VictoryThreshold;
+			if (score < threshold) return;
 
 			var gameId = worldStateAccessor.WorldState.GameId;
 			var gameRecord = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId.Id);

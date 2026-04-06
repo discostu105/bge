@@ -43,6 +43,10 @@ const AdminStats = lazy(() => import('@/pages/admin/AdminStats').then(m => ({ de
 const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ default: m.PlayersList })))
 const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
 const Help = lazy(() => import('@/pages/Help').then(m => ({ default: m.Help })))
+const BattleReplay = lazy(() => import('@/pages/BattleReplay').then(m => ({ default: m.BattleReplay })))
+const GameLiveView = lazy(() => import('@/pages/GameLiveView').then(m => ({ default: m.GameLiveView })))
+const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ default: m.PlayerStats })))
+const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m => ({ default: m.TournamentResults })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -128,10 +132,20 @@ function TradePage() {
   if (!gameId) return null
   return <Trade gameId={gameId} />
 }
+function BattleReplayPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <BattleReplay gameId={gameId} />
+}
 function AlliancesPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Alliances gameId={gameId} />
+}
+function GameLiveViewPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <GameLiveView gameId={gameId} />
 }
 
 const router = createBrowserRouter([
@@ -166,6 +180,8 @@ const router = createBrowserRouter([
           { path: 'help', element: <Help /> },
           { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
           { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
+          { path: 'battles/:reportId', element: <BattleReplayPage /> },
+          { path: 'live', element: <GameLiveViewPage /> },
           { path: 'join', element: <JoinGame /> },
           { path: 'summary', element: <GameSummary /> },
           { path: 'results', element: <GameResults /> },
@@ -190,6 +206,8 @@ const router = createBrowserRouter([
       { path: '/alliances/:allianceId', element: <AllianceDetail /> },
       { path: '/achievements', element: <Achievements /> },
       { path: '/history', element: <PlayerHistory /> },
+      { path: '/stats', element: <PlayerStats /> },
+      { path: '/tournaments/:tournamentId', element: <TournamentResults /> },
       { path: '/admin/games', element: <AdminGames /> },
       { path: '/admin/players', element: <AdminPlayers /> },
       { path: '/admin/ticks', element: <AdminTickControl /> },

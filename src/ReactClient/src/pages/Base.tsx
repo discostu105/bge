@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
@@ -16,7 +16,9 @@ import { WorkerAssignment } from '@/components/WorkerAssignment'
 import { CostBadge } from '@/components/CostBadge'
 import { VictoryProgressBar } from '@/components/VictoryProgressBar'
 import { relativeTime } from '@/lib/utils'
-import { ResourceHistoryChart } from '@/components/ResourceHistoryChart'
+const ResourceHistoryChart = lazy(() =>
+	import('@/components/ResourceHistoryChart').then(m => ({ default: m.ResourceHistoryChart }))
+)
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -298,7 +300,9 @@ export function Base({ gameId }: BaseProps) {
 
       <BuildQueue gameId={gameId} />
 
-      <ResourceHistoryChart gameId={gameId} />
+      <Suspense fallback={<div>Loading chart...</div>}>
+        <ResourceHistoryChart gameId={gameId} />
+      </Suspense>
 
       {/* Recent Activity */}
       <div className="rounded-lg border bg-card">

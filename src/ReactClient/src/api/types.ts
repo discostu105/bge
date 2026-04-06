@@ -86,11 +86,6 @@ export interface AddToQueueRequest {
   count: number
 }
 
-export interface ReorderQueueRequest {
-  entryId: string
-  newPriority: number
-}
-
 // Resources
 
 export interface PlayerResourcesViewModel {
@@ -271,6 +266,7 @@ export interface GameDetailViewModel {
   actualEndTime: string | null
   victoryConditionType: string | null
   victoryConditionLabel: string | null
+  tournamentId: string | null
 }
 
 export interface GameSummaryViewModel {
@@ -289,18 +285,11 @@ export interface GameSummaryViewModel {
   victoryConditionType: string | null
   discordWebhookUrl: string | null
   createdByUserId: string | null
+  tournamentId: string | null
 }
 
 export interface GameListViewModel {
   games: GameSummaryViewModel[]
-}
-
-export interface MyGameViewModel {
-  gameId: string
-  gameName: string
-  gameStatus: string
-  playerId: string
-  playerName: string
 }
 
 export interface GameResultEntryViewModel {
@@ -321,6 +310,7 @@ export interface GameResultsViewModel {
   currentPlayerId: string | null
   victoryConditionType: string | null
   victoryConditionLabel: string | null
+  tournamentId: string | null
 }
 
 export interface JoinGameRequest {
@@ -328,8 +318,24 @@ export interface JoinGameRequest {
   playerType?: string
 }
 
-export interface JoinGameViewModel {
-  playerId: string
+export interface GameSettingsViewModel {
+  startingLand: number
+  startingMinerals: number
+  startingGas: number
+  protectionTicks: number
+  victoryThreshold: number
+  victoryConditionType: string
+  maxPlayers: number
+}
+
+export interface GameSettingsRequest {
+  startingLand?: number | null
+  startingMinerals?: number | null
+  startingGas?: number | null
+  protectionTicks?: number | null
+  victoryThreshold?: number | null
+  victoryConditionType?: string | null
+  maxPlayers?: number | null
 }
 
 export interface CreateGameRequest {
@@ -340,6 +346,23 @@ export interface CreateGameRequest {
   tickDuration: string
   discordWebhookUrl: string | null
   maxPlayers: number
+  settings?: GameSettingsRequest | null
+  tournamentId?: string | null
+}
+
+export interface TournamentPlayerResultViewModel {
+  rank: number
+  userId: string | null
+  playerName: string
+  gamesPlayed: number
+  wins: number
+  totalScore: number
+}
+
+export interface TournamentResultsViewModel {
+  tournamentId: string
+  totalGames: number
+  rankings: TournamentPlayerResultViewModel[]
 }
 
 // Players / Profile
@@ -394,10 +417,6 @@ export interface PlayerRankingEntryViewModel {
   score: number
 }
 
-export interface PlayerRankingViewModel {
-  entries: PlayerRankingEntryViewModel[]
-}
-
 export interface LeaderboardEntryViewModel {
   rank: number
   playerId: string
@@ -450,10 +469,6 @@ export interface AllianceRankingEntryViewModel {
   allianceName: string
   memberCount: number
   totalScore: number
-}
-
-export interface AllianceRankingViewModel {
-  entries: AllianceRankingEntryViewModel[]
 }
 
 export interface AllianceInviteViewModel {
@@ -515,36 +530,8 @@ export interface JoinAllianceRequest {
   password: string
 }
 
-export interface VoteLeaderRequest {
-  voteePlayerId: string
-}
-
-export interface SetAlliancePasswordRequest {
-  newPassword: string
-}
-
-export interface SetAllianceMessageRequest {
-  message: string
-}
-
 export interface PostAllianceChatRequest {
   body: string
-}
-
-export interface InvitePlayerRequest {
-  targetPlayerId: string
-}
-
-export interface DeclareWarRequest {
-  targetAllianceId: string
-}
-
-export interface AcceptInviteRequest {
-  inviteId: string
-}
-
-export interface PeaceRequest {
-  warId: string
 }
 
 // Diplomacy
@@ -688,6 +675,48 @@ export interface SelectEnemyViewModel {
   attackablePlayers: PublicPlayerViewModel[]
 }
 
+// Battle Reports
+
+export interface UnitCountViewModel {
+  unitName: string
+  count: number
+}
+
+export interface BattleRoundViewModel {
+  roundNumber: number
+  attackerUnitsRemaining: UnitCountViewModel[]
+  defenderUnitsRemaining: UnitCountViewModel[]
+  attackerCasualties: UnitCountViewModel[]
+  defenderCasualties: UnitCountViewModel[]
+}
+
+export interface BattleReportSummaryViewModel {
+  id: string
+  opponentName: string
+  outcome: string
+  createdAt: string
+}
+
+export interface BattleReportDetailViewModel {
+  id: string
+  attackerId: string
+  attackerName: string
+  defenderId: string
+  defenderName: string
+  attackerRace: string
+  defenderRace: string
+  outcome: string
+  totalAttackerStrengthBefore: number
+  totalDefenderStrengthBefore: number
+  attackerUnitsInitial: UnitCountViewModel[]
+  defenderUnitsInitial: UnitCountViewModel[]
+  rounds: BattleRoundViewModel[]
+  landTransferred: number
+  workersCaptured: number
+  resourcesStolen: Record<string, number>
+  createdAt: string
+}
+
 // Chat
 
 export interface ChatMessageViewModel {
@@ -821,6 +850,31 @@ export interface PlayerHistoryViewModel {
   games: PlayerGameHistoryEntryViewModel[]
 }
 
+// Player Stats (api/stats)
+
+export interface PlayerStatsGameEntry {
+  gameId: string
+  gameName: string
+  endTime: string
+  finalRank: number
+  playersInGame: number
+  finalScore: number
+  isWin: boolean
+  durationMs: number | null
+}
+
+export interface PlayerStatsViewModel {
+  totalGamesPlayed: number
+  totalWins: number
+  winRate: number
+  bestRank: number
+  avgFinalRank: number
+  totalScore: number
+  avgScorePerGame: number
+  avgGameDurationMs: number | null
+  games: PlayerStatsGameEntry[]
+}
+
 // Update Game Request
 
 export interface UpdateGameRequest {
@@ -833,6 +887,7 @@ export interface UpdateGameRequest {
 
 export interface AllTimePlayerEntryViewModel {
   displayName: string
+  userId: string
   totalGames: number
   totalWins: number
   bestRank: number
@@ -850,12 +905,6 @@ export interface CreatePlayerRequest {
   playerType: string
 }
 
-// Unit Definitions
-
-export interface UnitDefinitionsViewModel {
-  unitDefinitions: UnitDefinitionViewModel[]
-}
-
 // Lobby
 
 export interface GameLobbyViewModel {
@@ -867,6 +916,7 @@ export interface GameLobbyViewModel {
   endTime: string | null
   players: LobbyPlayerViewModel[]
   canJoin: boolean
+  settings?: GameSettingsViewModel | null
 }
 
 export interface LobbyPlayerViewModel {
@@ -883,27 +933,6 @@ export interface RaceViewModel {
 
 export interface RaceListViewModel {
   races: RaceViewModel[]
-}
-
-// Tick info
-
-export interface TickInfoViewModel {
-  currentTick: number
-  tickDuration: string
-  lastTickAt: string
-}
-
-// Version
-
-export interface VersionInfoViewModel {
-  version: string
-  commitHash: string | null
-}
-
-// User Preferences
-
-export interface UserPreferencesViewModel {
-  theme: string
 }
 
 // Profile

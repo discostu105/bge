@@ -65,8 +65,9 @@ test('create alliance via UI and see it in the list', async ({ browser }) => {
 	// Success confirmation
 	await expect(page.getByText('Alliance created!')).toBeVisible({ timeout: 5_000 })
 
-	// Alliance should appear in the All Alliances table
-	await expect(page.getByRole('link', { name: allianceName })).toBeVisible({ timeout: 5_000 })
+	// Alliance should appear in the All Alliances table (scope to table to avoid matching
+	// the "Your Alliance" header link which also uses the same name after joining)
+	await expect(page.locator('table').getByRole('link', { name: allianceName })).toBeVisible({ timeout: 5_000 })
 
 	await context.close()
 })
@@ -149,7 +150,9 @@ test('leader invites player and invitee accepts invite via UI', async ({ browser
 
 	// "Pending Invites" section should appear
 	await expect(inviteePage.getByText('Pending Invites')).toBeVisible({ timeout: 10_000 })
-	await expect(inviteePage.getByText(allianceName)).toBeVisible()
+	// Scope to the pending invites section to avoid strict-mode violation from the
+	// same name appearing in the All Alliances table link below.
+	await expect(inviteePage.locator('span.font-medium', { hasText: allianceName })).toBeVisible()
 
 	// Accept the invite — on the Alliances page only "Accept" (invite accept) and "Decline" are visible,
 	// no "Accept Peace" buttons, so exact: true is safe here

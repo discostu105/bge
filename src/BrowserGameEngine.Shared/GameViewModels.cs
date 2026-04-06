@@ -14,7 +14,28 @@ namespace BrowserGameEngine.Shared {
 		string? WinnerName = null,
 		DateTime? ActualEndTime = null,
 		string? VictoryConditionType = null,
-		string? VictoryConditionLabel = null
+		string? VictoryConditionLabel = null,
+		string? TournamentId = null
+	);
+
+	public record GameSettingsRequest(
+		int? StartingLand = null,
+		int? StartingMinerals = null,
+		int? StartingGas = null,
+		int? ProtectionTicks = null,
+		int? VictoryThreshold = null,
+		string? VictoryConditionType = null,
+		int? MaxPlayers = null
+	);
+
+	public record GameSettingsViewModel(
+		int StartingLand,
+		int StartingMinerals,
+		int StartingGas,
+		int ProtectionTicks,
+		int VictoryThreshold,
+		string VictoryConditionType,
+		int MaxPlayers
 	);
 
 	public record CreateGameRequest(
@@ -24,7 +45,9 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		string TickDuration,
 		string? DiscordWebhookUrl = null,
-		int MaxPlayers = 0
+		int MaxPlayers = 0,
+		GameSettingsRequest? Settings = null,
+		string? TournamentId = null
 	);
 
 	public record UpdateGameRequest(
@@ -50,7 +73,8 @@ namespace BrowserGameEngine.Shared {
 		List<GameResultEntryViewModel> Standings,
 		string? CurrentPlayerId = null,
 		string? VictoryConditionType = null,
-		string? VictoryConditionLabel = null
+		string? VictoryConditionLabel = null,
+		string? TournamentId = null
 	);
 
 	/// <summary>A game the current user is actively playing in, with their player info.</summary>

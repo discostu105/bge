@@ -39,9 +39,10 @@ async function createFreshDefender(browser: import('@playwright/test').Browser):
 	const freshUserId = `e2e-defender-${Date.now()}`
 	const context = await browser.newContext()
 	const page = await context.newPage()
-	// signindev creates the user and immediately registers them as a player in the default game
+	// signindev creates the user and immediately registers them as a player in the default game.
+	// protectionTicks=0 so the defender is immediately attackable (no new-player protection).
 	const res = await page.request.post(`${baseURL}/signindev`, {
-		form: { playerid: freshUserId, returnUrl: '/' },
+		form: { playerid: freshUserId, returnUrl: '/', protectionTicks: '0' },
 	})
 	// A 200 redirect means the signin succeeded
 	expect([200, 302]).toContain(res.status())
@@ -95,7 +96,7 @@ test.describe('Attack flow', () => {
 		const enemySelect = page.locator('select')
 		await enemySelect.selectOption({ value: defenderPlayerId })
 
-		await page.getByRole('button', { name: /send/i }).click()
+		await page.getByRole('button', { name: 'Send Troops' }).click()
 
 		// Should navigate to EnemyBase
 		await expect(page).toHaveURL(

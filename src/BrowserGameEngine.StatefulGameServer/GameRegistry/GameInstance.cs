@@ -18,6 +18,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			WorldState = worldState;
 			WorldStateAccessor = new SingletonWorldStateAccessor(worldState);
 			GameDef = gameDef;
+			worldState.GameSettings = record.Settings ?? GameSettings.Default;
 		}
 
 		public int PlayerCount => WorldState.Players.Count;

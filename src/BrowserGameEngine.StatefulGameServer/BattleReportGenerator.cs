@@ -1,6 +1,8 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.Notifications;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,22 +11,28 @@ namespace BrowserGameEngine.StatefulGameServer {
 	public class BattleReportGenerator {
 		private readonly PlayerRepository playerRepository;
 		private readonly MessageRepositoryWrite messageRepositoryWrite;
+		private readonly BattleReportRepositoryWrite battleReportRepositoryWrite;
 		private readonly GameDef gameDef;
 		private readonly IPlayerNotificationService playerNotificationService;
 		private readonly INotificationService notificationService;
+		private readonly TimeProvider timeProvider;
 
 		public BattleReportGenerator(
 			PlayerRepository playerRepository,
 			MessageRepositoryWrite messageRepositoryWrite,
+			BattleReportRepositoryWrite battleReportRepositoryWrite,
 			GameDef gameDef,
 			IPlayerNotificationService playerNotificationService,
-			INotificationService notificationService
+			INotificationService notificationService,
+			TimeProvider timeProvider
 		) {
 			this.playerRepository = playerRepository;
 			this.messageRepositoryWrite = messageRepositoryWrite;
+			this.battleReportRepositoryWrite = battleReportRepositoryWrite;
 			this.gameDef = gameDef;
 			this.playerNotificationService = playerNotificationService;
 			this.notificationService = notificationService;
+			this.timeProvider = timeProvider;
 		}
 
 		public void GenerateReports(BattleResult battleResult) {
@@ -44,6 +52,54 @@ namespace BrowserGameEngine.StatefulGameServer {
 				.GroupBy(x => x.Key.Id)
 				.ToDictionary(g => g.Key, g => g.Sum(x => x.Value));
 
+			// Persist structured battle report
+			var reportId = Guid.NewGuid();
+			var initialAttackerUnits = battleResult.BtlResult.Rounds.Count > 0
+				? battleResult.BtlResult.Rounds[0].AttackerUnitsRemaining
+					.Concat(battleResult.BtlResult.Rounds[0].AttackerCasualties)
+					.GroupBy(u => u.UnitDefId)
+					.Select(g => new UnitCount(g.Key, g.Sum(x => x.Count)))
+					.ToList()
+				: battleResult.BtlResult.AttackingUnitsSurvived
+					.Concat(battleResult.BtlResult.AttackingUnitsDestroyed)
+					.GroupBy(u => u.UnitDefId)
+					.Select(g => new UnitCount(g.Key, g.Sum(x => x.Count)))
+					.ToList();
+			var initialDefenderUnits = battleResult.BtlResult.Rounds.Count > 0
+				? battleResult.BtlResult.Rounds[0].DefenderUnitsRemaining
+					.Concat(battleResult.BtlResult.Rounds[0].DefenderCasualties)
+					.GroupBy(u => u.UnitDefId)
+					.Select(g => new UnitCount(g.Key, g.Sum(x => x.Count)))
+					.ToList()
+				: battleResult.BtlResult.DefendingUnitsSurvived
+					.Concat(battleResult.BtlResult.DefendingUnitsDestroyed)
+					.GroupBy(u => u.UnitDefId)
+					.Select(g => new UnitCount(g.Key, g.Sum(x => x.Count)))
+					.ToList();
+
+			var report = new BattleReport {
+				Id = reportId,
+				AttackerId = battleResult.Attacker,
+				DefenderId = battleResult.Defender,
+				AttackerName = attacker.Name,
+				DefenderName = defender.Name,
+				AttackerRace = attackerRace,
+				DefenderRace = defenderRace,
+				Outcome = outcome,
+				TotalAttackerStrengthBefore = battleResult.BtlResult.TotalAttackerStrengthBefore,
+				TotalDefenderStrengthBefore = battleResult.BtlResult.TotalDefenderStrengthBefore,
+				AttackerUnitsInitial = initialAttackerUnits,
+				DefenderUnitsInitial = initialDefenderUnits,
+				Rounds = new List<BattleRoundSnapshotImmutable>(battleResult.BtlResult.Rounds),
+				LandTransferred = (int)battleResult.BtlResult.LandTransferred,
+				WorkersCaptured = battleResult.BtlResult.WorkersCaptured,
+				ResourcesStolen = resourcesStolen,
+				CreatedAt = timeProvider.GetUtcNow().UtcDateTime
+			};
+
+			battleReportRepositoryWrite.AddBattleReport(battleResult.Attacker, report);
+			battleReportRepositoryWrite.AddBattleReport(battleResult.Defender, report);
+
 			string body = BuildBody(
 				attacker.Name, attackerRace,
 				defender.Name, defenderRace,
@@ -52,7 +108,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				battleResult.BtlResult.WorkersCaptured,
 				resourcesStolen,
 				battleResult.BtlResult.AttackingUnitsDestroyed,
-				battleResult.BtlResult.DefendingUnitsDestroyed
+				battleResult.BtlResult.DefendingUnitsDestroyed,
+				reportId
 			);
 
 			messageRepositoryWrite.SendMessage(
@@ -93,7 +150,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			int workersCaptured,
 			Dictionary<string, decimal> resourcesStolen,
 			List<UnitCount> attackerLosses,
-			List<UnitCount> defenderLosses
+			List<UnitCount> defenderLosses,
+			Guid reportId
 		) {
 			bool attackerWon = outcome == "Attacker won";
 			bool draw = outcome == "Draw";
@@ -129,6 +187,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 				}
 				sb.AppendLine("  </div>");
 			}
+			sb.AppendLine($"  <p><a href=\"/battles/{reportId}\">View detailed battle replay</a></p>");
 			sb.AppendLine("</div>");
 			return sb.ToString();
 		}

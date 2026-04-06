@@ -39,6 +39,17 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
+var sentryDsn = builder.Configuration["Sentry:Dsn"];
+if (!string.IsNullOrWhiteSpace(sentryDsn)) {
+    builder.WebHost.UseSentry(options => {
+        options.Dsn = sentryDsn;
+        options.Environment = builder.Environment.EnvironmentName;
+        options.TracesSampleRate = 0.1;
+        options.SendDefaultPii = false;
+    });
+    Log.Information("Sentry error tracking enabled.");
+}
+
 builder.Host.UseSerilog();
 
 /*
