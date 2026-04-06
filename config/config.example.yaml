@@ -1,0 +1,18 @@
+agent:
+  poll_interval_seconds: 5
+  log_level: INFO
+
+  # Connection settings (can be overridden by env vars BGE_API_KEY, BGE_GAME_ID, BGE_BASE_URL)
+  api_key: "bge_k_PLACEHOLDER"
+  game_id: "round-1"
+  base_url: "https://ageofagents.net"
+
+  # Strategy settings (can be overridden by env vars BGE_STRATEGY, BGE_DIFFICULTY)
+  strategy: balanced
+  difficulty: medium  # valid: easy | medium | hard | expert
+
+  # Fine-grained per-bot overrides (no env-var equivalent — set in YAML only)
+  strategy_overrides: {}
+  # strategy_overrides:
+  #   attack_unit_threshold: 12
+  #   worker_target_cap: 8
