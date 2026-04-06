@@ -16,10 +16,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void AddBattleReport(PlayerId playerId, BattleReport report) {
 			lock (_lock) {
-				var reports = world.GetPlayer(playerId).State.BattleReports;
-				reports.Add(report);
-				while (reports.Count > MaxReportsPerPlayer) {
-					reports.RemoveAt(0);
+				var state = world.GetPlayer(playerId).State;
+				lock (state.StateLock) {
+					state.BattleReports.Add(report);
+					while (state.BattleReports.Count > MaxReportsPerPlayer) {
+						state.BattleReports.RemoveAt(0);
+					}
 				}
 			}
 		}

@@ -74,20 +74,22 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public void ResetPlayer(PlayerId playerId) {
 			lock (_lock) {
 				var state = world.GetPlayer(playerId).State;
-				state.Resources = new Dictionary<ResourceDefId, decimal> {
-					{ Id.ResDef("land"), 50 },
-					{ Id.ResDef("minerals"), 5000 },
-					{ Id.ResDef("gas"), 3000 }
-				};
-				state.Assets = new HashSet<Asset> {
-					new Asset {
-						AssetDefId = Id.AssetDef("commandcenter"),
-						Level = 1
-					}
-				};
-				state.Units = new List<Unit>();
-				state.CurrentGameTick = world.GameTickState.CurrentGameTick;
-				state.LastGameTickUpdate = timeProvider.GetLocalNow().DateTime;
+				lock (state.StateLock) {
+					state.Resources = new Dictionary<ResourceDefId, decimal> {
+						{ Id.ResDef("land"), 50 },
+						{ Id.ResDef("minerals"), 5000 },
+						{ Id.ResDef("gas"), 3000 }
+					};
+					state.Assets = new HashSet<Asset> {
+						new Asset {
+							AssetDefId = Id.AssetDef("commandcenter"),
+							Level = 1
+						}
+					};
+					state.Units = new List<Unit>();
+					state.CurrentGameTick = world.GameTickState.CurrentGameTick;
+					state.LastGameTickUpdate = timeProvider.GetLocalNow().DateTime;
+				}
 			}
 		}
 

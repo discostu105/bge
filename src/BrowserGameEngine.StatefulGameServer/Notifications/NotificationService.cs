@@ -28,8 +28,11 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 				CreatedAt: DateTime.UtcNow,
 				ReadAt: null
 			);
+			var state = world.GetPlayer(playerId).State;
 			lock (_lock) {
-				world.GetPlayer(playerId).State.Notifications.Add(notification);
+				lock (state.StateLock) {
+					state.Notifications.Add(notification);
+				}
 			}
 			eventPublisher.PublishToPlayer(playerId, GameEventTypes.ReceiveNotification, new {
 				type = type.ToString(),
@@ -42,9 +45,11 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 		public void MarkRead(PlayerId playerId, Guid notificationId) {
 			lock (_lock) {
 				var state = world.GetPlayer(playerId).State;
-				var idx = state.Notifications.FindIndex(n => n.Id == notificationId);
-				if (idx >= 0) {
-					state.Notifications[idx] = state.Notifications[idx] with { ReadAt = DateTime.UtcNow };
+				lock (state.StateLock) {
+					var idx = state.Notifications.FindIndex(n => n.Id == notificationId);
+					if (idx >= 0) {
+						state.Notifications[idx] = state.Notifications[idx] with { ReadAt = DateTime.UtcNow };
+					}
 				}
 			}
 		}
@@ -52,10 +57,12 @@ namespace BrowserGameEngine.StatefulGameServer.Notifications {
 		public void MarkAllRead(PlayerId playerId) {
 			lock (_lock) {
 				var state = world.GetPlayer(playerId).State;
-				var now = DateTime.UtcNow;
-				for (int i = 0; i < state.Notifications.Count; i++) {
-					if (!state.Notifications[i].IsRead) {
-						state.Notifications[i] = state.Notifications[i] with { ReadAt = now };
+				lock (state.StateLock) {
+					var now = DateTime.UtcNow;
+					for (int i = 0; i < state.Notifications.Count; i++) {
+						if (!state.Notifications[i].IsRead) {
+							state.Notifications[i] = state.Notifications[i] with { ReadAt = now };
+						}
 					}
 				}
 			}

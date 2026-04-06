@@ -22,15 +22,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 		// Used by BattleReportGenerator for system messages (no sender)
 		public void SendMessage(PlayerId recipientId, string subject, string body) {
 			lock (_lock) {
-				world.GetPlayer(recipientId).State.Messages.Add(new Message {
-					Id = MessageIdFactory.NewMessageId(),
-					RecipientId = recipientId,
-					Subject = subject,
-					Body = body,
-					CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-					IsRead = false,
-					SenderId = null
-				});
+				var state = world.GetPlayer(recipientId).State;
+				lock (state.StateLock) {
+					state.Messages.Add(new Message {
+						Id = MessageIdFactory.NewMessageId(),
+						RecipientId = recipientId,
+						Subject = subject,
+						Body = body,
+						CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+						IsRead = false,
+						SenderId = null
+					});
+				}
 			}
 		}
 
@@ -38,15 +41,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public MessageId Send(SendMessageCommand command) {
 			var id = MessageIdFactory.NewMessageId();
 			lock (_lock) {
-				world.GetPlayer(command.RecipientId).State.Messages.Add(new Message {
-					Id = id,
-					RecipientId = command.RecipientId,
-					SenderId = command.SenderId,
-					Subject = command.Subject,
-					Body = command.Body,
-					CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-					IsRead = false
-				});
+				var state = world.GetPlayer(command.RecipientId).State;
+				lock (state.StateLock) {
+					state.Messages.Add(new Message {
+						Id = id,
+						RecipientId = command.RecipientId,
+						SenderId = command.SenderId,
+						Subject = command.Subject,
+						Body = command.Body,
+						CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+						IsRead = false
+					});
+				}
 			}
 			notificationService.Notify(command.RecipientId, GameNotificationType.MessageReceived,
 				$"New message: {command.Subject}");

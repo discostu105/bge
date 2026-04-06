@@ -53,11 +53,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private Unit? Unit(PlayerId playerId, UnitId unitId) => Units(playerId).SingleOrDefault(x => x.UnitId.Equals(unitId));
 
 		private void AddUnit(PlayerId playerId, UnitDefId unitDefId, int count) {
-			Units(playerId).Add(new Unit {
-				UnitId = Id.NewUnitId(),
-				UnitDefId = unitDefId,
-				Count = count
-			});
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.Units.Add(new Unit {
+					UnitId = Id.NewUnitId(),
+					UnitDefId = unitDefId,
+					Count = count
+				});
+			}
 		}
 
 		public void GrantUnits(PlayerId playerId, UnitDefId unitDefId, int count) {
@@ -209,11 +212,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private void RemoveUnitsOfType(PlayerId playerId, UnitDefId unitDefId) {
-			Units(playerId).RemoveAll(x => x.UnitDefId == unitDefId);
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.Units.RemoveAll(x => x.UnitDefId == unitDefId);
+			}
 		}
 
 		private void RemoveUnit(PlayerId playerId, UnitId unitId) {
-			Units(playerId).RemoveAll(x => x.UnitId == unitId);
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.Units.RemoveAll(x => x.UnitId == unitId);
+			}
 		}
 
 		private int TryRemoveUnitCount(PlayerId playerId, UnitId unitId, int count) {

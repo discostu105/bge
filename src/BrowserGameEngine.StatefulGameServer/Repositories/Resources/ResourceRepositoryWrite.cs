@@ -29,10 +29,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public void DeductCost(PlayerId playerId, ResourceDefId resourceDefId, decimal value) => DeductCost(playerId, Cost.FromSingle(resourceDefId, value));
 		public void DeductCost(PlayerId playerId, Cost cost) {
 			lock (_lock) {
-				if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
-				var playerRes = Res(playerId);
-				foreach (var res in cost.Resources) {
-					DeductResourceUnchecked(playerId, res.Key, res.Value);
+				var state = world.GetPlayer(playerId).State;
+				lock (state.StateLock) {
+					if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
+					foreach (var res in cost.Resources) {
+						DeductResourceUnchecked(playerId, res.Key, res.Value);
+					}
 				}
 			}
 		}
@@ -47,13 +49,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
 			lock (_lock) {
-				var playerRes = Res(playerId);
-				if (!playerRes.ContainsKey(resourceDefId)) {
-					playerRes.Add(resourceDefId, value);
-				} else {
-					playerRes[resourceDefId] += value;
+				var state = world.GetPlayer(playerId).State;
+				lock (state.StateLock) {
+					var playerRes = state.Resources;
+					if (!playerRes.ContainsKey(resourceDefId)) {
+						playerRes.Add(resourceDefId, value);
+					} else {
+						playerRes[resourceDefId] += value;
+					}
+					return playerRes[resourceDefId];
 				}
-				return playerRes[resourceDefId];
 			}
 		}
 
@@ -71,14 +76,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 				var toResource = tradeableResources.First(r => r != cmd.FromResource);
 				var cost = Cost.FromSingle(cmd.FromResource, 2m * cmd.Amount);
 
-				if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost);
+				var state = world.GetPlayer(cmd.PlayerId).State;
+				lock (state.StateLock) {
+					if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost);
 
-				DeductResourceUnchecked(cmd.PlayerId, cmd.FromResource, 2m * cmd.Amount);
-				var playerRes = Res(cmd.PlayerId);
-				if (!playerRes.ContainsKey(toResource)) {
-					playerRes.Add(toResource, cmd.Amount);
-				} else {
-					playerRes[toResource] += cmd.Amount;
+					DeductResourceUnchecked(cmd.PlayerId, cmd.FromResource, 2m * cmd.Amount);
+					var playerRes = state.Resources;
+					if (!playerRes.ContainsKey(toResource)) {
+						playerRes.Add(toResource, cmd.Amount);
+					} else {
+						playerRes[toResource] += cmd.Amount;
+					}
 				}
 			}
 		}

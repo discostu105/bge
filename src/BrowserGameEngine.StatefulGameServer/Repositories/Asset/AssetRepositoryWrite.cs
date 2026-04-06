@@ -61,10 +61,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private void AddAsset(PlayerId playerId, AssetDefId assetDefId) {
 			logger.LogDebug("Adding asset '{assetDefId}' to player '{playerId}'", assetDefId, playerId);
-			Assets(playerId).Add(new Asset {
-				AssetDefId = assetDefId,
-				Level = 1
-			});
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.Assets.Add(new Asset {
+					AssetDefId = assetDefId,
+					Level = 1
+				});
+			}
 		}
 
 		public void GrantBuilding(PlayerId playerId, AssetDefId assetDefId) {

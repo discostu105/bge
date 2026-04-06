@@ -67,7 +67,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 				state.TechResearchTimer--;
 				if (state.TechResearchTimer == 0) {
-					state.UnlockedTechs.Add(state.TechBeingResearched);
+					lock (state.StateLock) {
+						state.UnlockedTechs.Add(state.TechBeingResearched);
+					}
 					state.TechBeingResearched = null;
 				}
 			}

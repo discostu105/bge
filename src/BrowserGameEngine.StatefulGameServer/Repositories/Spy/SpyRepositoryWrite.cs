@@ -60,8 +60,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 				resourceRepositoryWrite.DeductCost(command.SpyingPlayerId, spyCost);
 
 				var now = timeProvider.GetUtcNow().UtcDateTime;
-				world.GetPlayer(command.SpyingPlayerId).State.SpyCooldowns[command.TargetPlayerId.ToString()] = now;
-
+				var spyState = world.GetPlayer(command.SpyingPlayerId).State;
+				lock (spyState.StateLock) {
+					spyState.SpyCooldowns[command.TargetPlayerId.ToString()] = now;
+				}
 
 				var targetState = world.GetPlayer(command.TargetPlayerId).State;
 				var rng = new Random();
@@ -86,13 +88,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 				var detectionProbability = techRepository.GetTotalEffectValue(command.TargetPlayerId, TechEffectType.CounterIntelDetection);
 				var detected = detectionProbability > 0 && (decimal)rng.NextDouble() < detectionProbability;
 
-				targetState.SpyAttemptLogs.Add(new SpyAttemptLog(
-					Id: Guid.NewGuid(),
-					AttackerPlayerId: command.SpyingPlayerId,
-					ActionType: "Spy",
-					Detected: detected,
-					Timestamp: now
-				));
+				lock (targetState.StateLock) {
+					targetState.SpyAttemptLogs.Add(new SpyAttemptLog(
+						Id: Guid.NewGuid(),
+						AttackerPlayerId: command.SpyingPlayerId,
+						ActionType: "Spy",
+						Detected: detected,
+						Timestamp: now
+					));
+				}
 
 				var result = new SpyResult(
 					TargetPlayerId: command.TargetPlayerId,
@@ -102,7 +106,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 					CooldownExpiresAt: now + SpyConstants.CooldownDuration
 				);
 
-				world.GetPlayer(command.SpyingPlayerId).State.LastSpyResults[command.TargetPlayerId.ToString()] = result;
+				lock (spyState.StateLock) {
+					spyState.LastSpyResults[command.TargetPlayerId.ToString()] = result;
+				}
 
 				return result;
 			}

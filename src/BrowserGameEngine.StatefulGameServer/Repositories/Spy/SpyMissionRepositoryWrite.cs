@@ -69,7 +69,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 					CreatedAt = now
 				};
 
-				world.GetPlayer(command.SpyingPlayerId).State.SpyMissions.Add(mission);
+				var spyState = world.GetPlayer(command.SpyingPlayerId).State;
+				lock (spyState.StateLock) {
+					spyState.SpyMissions.Add(mission);
+				}
 
 				return (mission.Id, estimatedResolveAt);
 			}
@@ -98,13 +101,15 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var detectionProbability = techRepository.GetTotalEffectValue(mission.TargetPlayerId, TechEffectType.CounterIntelDetection);
 			var intercepted = detectionProbability > 0 && (decimal)rng.NextDouble() < detectionProbability;
 
-			targetState.SpyAttemptLogs.Add(new SpyAttemptLog(
-				Id: Guid.NewGuid(),
-				AttackerPlayerId: spyingPlayerId,
-				ActionType: mission.MissionType.ToString(),
-				Detected: intercepted,
-				Timestamp: timeProvider.GetUtcNow().UtcDateTime
-			));
+			lock (targetState.StateLock) {
+				targetState.SpyAttemptLogs.Add(new SpyAttemptLog(
+					Id: Guid.NewGuid(),
+					AttackerPlayerId: spyingPlayerId,
+					ActionType: mission.MissionType.ToString(),
+					Detected: intercepted,
+					Timestamp: timeProvider.GetUtcNow().UtcDateTime
+				));
+			}
 
 			if (intercepted) {
 				mission.Status = SpyMissionStatus.Intercepted;
