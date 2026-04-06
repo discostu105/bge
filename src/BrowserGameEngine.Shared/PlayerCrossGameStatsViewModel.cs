@@ -21,6 +21,8 @@ namespace BrowserGameEngine.Shared {
 		decimal TotalScore,
 		PlayerCrossGameEntry[] Games,
 		DateTime? JoinedAt = null,
-		decimal? TotalResourcesGathered = null
+		decimal? TotalResourcesGathered = null,
+		long TotalXp = 0,
+		int Level = 1
 	);
 }

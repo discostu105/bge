@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
@@ -87,6 +88,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var wins = userAchievements.Count(a => a.FinalRank == 1);
 			var bestRank = gamesPlayed > 0 ? userAchievements.Min(a => a.FinalRank) : 0;
 
+			var totalXp = currentUserContext.UserId != null
+				? globalState.GetUserTotalXp(currentUserContext.UserId)
+				: 0;
+
 			return new ProfileViewModel {
 				PlayerName = player.Name,
 				DisplayName = user?.DisplayName,
@@ -104,7 +109,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				CurrentGameId = currentGameId,
 				JoinedAt = currentUserContext.UserId != null
 					? globalState.GetUserCreated(currentUserContext.UserId)
-					: null
+					: null,
+				TotalXp = totalXp,
+				Level = XpHelper.ComputeLevel(totalXp),
+				LevelProgress = XpHelper.LevelProgress(totalXp),
+				XpToNextLevel = XpHelper.XpToNextLevel(totalXp)
 			};
 		}
 	}

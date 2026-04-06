@@ -76,6 +76,20 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public void SetMilestones(IEnumerable<UserMilestoneImmutable> milestones) {
 			lock (_milestonesLock) _milestones = milestones.ToList();
 		}
+
+		public long GetUserTotalXp(string userId) {
+			Users.TryGetValue(userId, out var user);
+			return user?.TotalXp ?? 0;
+		}
+
+		public void AddXpToUser(string userId, long xp) {
+			if (xp <= 0) return;
+			// Silently skip if the user record doesn't exist (e.g. bot/guest players)
+			if (!Users.ContainsKey(userId)) return;
+			Users.AddOrUpdate(userId,
+				addValueFactory: _ => throw new System.InvalidOperationException($"User {userId} not found when awarding XP"),
+				updateValueFactory: (_, existing) => { existing.TotalXp += xp; return existing; });
+		}
 	}
 
 	public static class GlobalStateExtensions {

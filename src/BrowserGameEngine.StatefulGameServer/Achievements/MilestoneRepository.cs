@@ -93,6 +93,13 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 
 				"upgrade-first" => playerState == null ? 0 : Math.Min(playerState.UnlockedTechs.Count, def.TargetProgress),
 
+				"xp-rising-star" => (int)Math.Min(_globalState.GetUserTotalXp(userId), def.TargetProgress),
+				"xp-elite"       => (int)Math.Min(_globalState.GetUserTotalXp(userId), def.TargetProgress),
+				"xp-legend"      => (int)Math.Min(_globalState.GetUserTotalXp(userId), def.TargetProgress),
+
+				"level-10" => GetLevelProgress(userId, def.TargetProgress),
+				"level-25" => GetLevelProgress(userId, def.TargetProgress),
+
 				_ => 0
 			};
 		}
@@ -151,6 +158,13 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 					.Any(o => o.SellerPlayerId == playerId && o.Status == MarketOrderStatus.Filled)
 					? 1 : 0;
 			}
+		}
+
+		// Level progress returns 0 when a player has no XP yet (level 1 is the starting state, not earned progress)
+		private int GetLevelProgress(string userId, int targetLevel) {
+			var totalXp = _globalState.GetUserTotalXp(userId);
+			if (totalXp == 0) return 0;
+			return Math.Min(XpHelper.ComputeLevel(totalXp), targetLevel);
 		}
 	}
 }

@@ -9,7 +9,8 @@ namespace BrowserGameEngine.Shared {
 		int TournamentWins,
 		int GameWins,
 		int AchievementsUnlocked,
-		bool IsCurrentPlayer
+		bool IsCurrentPlayer,
+		int Level = 1
 	);
 
 	public record GlobalLeaderboardViewModel(

@@ -4,6 +4,7 @@ namespace BrowserGameEngine.Shared {
 		string PlayerId,
 		string PlayerName,
 		decimal Score,
-		bool IsCurrentPlayer
+		bool IsCurrentPlayer,
+		int Level = 1
 	);
 }

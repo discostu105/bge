@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { TrophyIcon, SwordsIcon, CoinsIcon, HandshakeIcon, CompassIcon, LockIcon } from 'lucide-react'
+import { TrophyIcon, SwordsIcon, CoinsIcon, HandshakeIcon, CompassIcon, LockIcon, ZapIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type {
 	PlayerAchievementsViewModel,
@@ -9,6 +9,7 @@ import type {
 	MilestoneAchievementViewModel,
 	MilestoneCategory,
 	MilestoneTier,
+	ProfileViewModel,
 } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -22,6 +23,7 @@ const CATEGORIES: { key: MilestoneCategory; label: string; icon: React.Component
 	{ key: 'economy', label: 'Economy', icon: CoinsIcon },
 	{ key: 'diplomacy', label: 'Diplomacy', icon: HandshakeIcon },
 	{ key: 'exploration', label: 'Exploration', icon: CompassIcon },
+	{ key: 'progression', label: 'Progression', icon: ZapIcon },
 ]
 
 const TIER_STYLES: Record<MilestoneTier, { ring: string; bg: string; label: string; glow: string }> = {
@@ -178,6 +180,11 @@ export function Achievements() {
 	})
 	const milestones = milestoneData?.achievements ?? []
 
+	const { data: profileData } = useQuery<ProfileViewModel>({
+		queryKey: ['profile'],
+		queryFn: () => apiClient.get('/api/profile').then(r => r.data),
+	})
+
 	if (isLoading) return <PageLoader message="Loading achievements..." />
 	if (error) return <ApiError message="Failed to load achievements." onRetry={() => void refetch()} />
 
@@ -207,6 +214,33 @@ export function Achievements() {
 
 			{/* Summary stats */}
 			<SummaryStats milestones={milestones} trophyCount={trophies.length} />
+
+			{/* XP / Level progress */}
+			{profileData && (
+				<div className="rounded-lg border bg-card p-4 mb-5">
+					<div className="flex items-center gap-2 mb-3">
+						<ZapIcon className="h-4 w-4 text-primary" />
+						<span className="font-semibold text-sm">XP &amp; Level</span>
+						<span className="ml-auto inline-flex items-center rounded-full bg-primary/20 px-3 py-0.5 text-sm font-bold text-primary border border-primary/30">
+							Lv {profileData.level}
+						</span>
+					</div>
+					<div className="space-y-1.5">
+						<div className="flex justify-between text-xs text-muted-foreground">
+							<span>Level {profileData.level}{profileData.level < 50 ? ` → ${profileData.level + 1}` : ' (Max)'}</span>
+							<span>{profileData.totalXp.toLocaleString()} XP total
+								{profileData.level < 50 && <> · {profileData.xpToNextLevel.toLocaleString()} to next</>}
+							</span>
+						</div>
+						<div className="h-3 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={profileData.levelProgress} aria-valuemin={0} aria-valuemax={100}>
+							<div
+								className="h-full rounded-full bg-primary transition-all"
+								style={{ width: `${profileData.level >= 50 ? 100 : profileData.levelProgress}%` }}
+							/>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Tab bar */}
 			<div className="flex gap-1 mb-5 border-b border-border">

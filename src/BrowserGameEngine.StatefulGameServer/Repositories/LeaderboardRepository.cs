@@ -1,4 +1,5 @@
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,8 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories {
 		double Score,
 		int TournamentWins,
 		int GameWins,
-		int AchievementsUnlocked
+		int AchievementsUnlocked,
+		int Level = 1
 	);
 
 	public record LeaderboardResult(
@@ -90,7 +92,8 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories {
 					var achievementsUnlocked = milestones.Count(m => m.UserId == userId);
 					var score = ComputeScore(tournamentWins, gameWins, achievementsUnlocked);
 					var displayName = globalState.GetUserDisplayName(userId) ?? list.First().PlayerName;
-					return (userId, displayName, score, tournamentWins, gameWins, achievementsUnlocked);
+					var totalXp = globalState.GetUserTotalXp(userId);
+					return (userId, displayName, score, tournamentWins, gameWins, achievementsUnlocked, totalXp);
 				})
 				.OrderByDescending(x => x.score)
 				.ThenBy(x => x.displayName)
@@ -101,7 +104,8 @@ namespace BrowserGameEngine.StatefulGameServer.Repositories {
 					Score: x.score,
 					TournamentWins: x.tournamentWins,
 					GameWins: x.gameWins,
-					AchievementsUnlocked: x.achievementsUnlocked
+					AchievementsUnlocked: x.achievementsUnlocked,
+					Level: XpHelper.ComputeLevel(x.totalXp)
 				));
 		}
 	}

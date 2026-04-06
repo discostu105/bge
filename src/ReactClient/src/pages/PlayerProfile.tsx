@@ -86,8 +86,13 @@ export function PlayerProfile() {
               {displayName[0]?.toUpperCase() ?? '?'}
             </div>
           )}
-          <div>
-            <div className="font-bold text-lg">{displayName}</div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-lg">{displayName}</span>
+              <span className="inline-flex items-center rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-bold text-primary border border-primary/30">
+                Lv {profile.level}
+              </span>
+            </div>
             {profile.playerName && profile.displayName && profile.playerName !== profile.displayName && (
               <div className="text-sm text-muted-foreground">Playing as {profile.playerName}</div>
             )}
@@ -96,6 +101,22 @@ export function PlayerProfile() {
                 Member since {relativeTime(profile.joinedAt)}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* XP progress bar */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="font-medium">Level {profile.level}{profile.level < 50 ? ` → ${profile.level + 1}` : ' (Max)'}</span>
+            <span>{profile.totalXp.toLocaleString()} XP total
+              {profile.level < 50 && <> · {profile.xpToNextLevel.toLocaleString()} to next level</>}
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={profile.levelProgress} aria-valuemin={0} aria-valuemax={100}>
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${profile.level >= 50 ? 100 : profile.levelProgress}%` }}
+            />
           </div>
         </div>
 

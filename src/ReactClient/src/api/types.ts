@@ -423,6 +423,7 @@ export interface LeaderboardEntryViewModel {
   playerName: string
   score: number
   isCurrentPlayer: boolean
+  level: number
 }
 
 // Alliance
@@ -782,7 +783,7 @@ export interface AchievementsViewModel {
 
 // Milestone achievements (progress-based, unlockable)
 
-export type MilestoneCategory = 'combat' | 'economy' | 'diplomacy' | 'exploration'
+export type MilestoneCategory = 'combat' | 'economy' | 'diplomacy' | 'exploration' | 'progression'
 export type MilestoneTier = 'bronze' | 'silver' | 'gold' | 'legendary'
 
 export interface MilestoneAchievementViewModel {
@@ -892,6 +893,8 @@ export interface AllTimePlayerEntryViewModel {
   totalWins: number
   bestRank: number
   totalScore: number
+  totalXp: number
+  level: number
 }
 
 export interface AllTimePlayerListViewModel {
@@ -953,6 +956,10 @@ export interface ProfileViewModel {
   bestRank: number
   currentGameId: string | null
   joinedAt?: string | null
+  totalXp: number
+  level: number
+  levelProgress: number
+  xpToNextLevel: number
 }
 
 // Public cross-game stats
@@ -978,6 +985,8 @@ export interface PlayerCrossGameStatsViewModel {
   games: PlayerCrossGameEntry[]
   joinedAt?: string | null
   totalResourcesGathered?: number | null
+  totalXp: number
+  level: number
 }
 
 // Public achievements (api/players/{userId}/achievements)
@@ -1006,6 +1015,7 @@ export interface GlobalLeaderboardEntryViewModel {
   gameWins: number
   achievementsUnlocked: number
   isCurrentPlayer: boolean
+  level: number
 }
 
 export interface GlobalLeaderboardViewModel {
