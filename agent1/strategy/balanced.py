@@ -38,15 +38,25 @@ class BalancedStrategy:
 			overrides=cfg.strategy_overrides,
 		)
 
-		# Attack decision: check each attackable enemy
-		for enemy in state.attackable_players:
+		# Attack decision: iterate enemies ordered by alliance score (highest first),
+		# skipping allied players (score 0.0).
+		scores = ctx.attack_target_scores
+		scored_enemies = sorted(
+			state.attackable_players,
+			key=lambda e: scores.get(e.get("playerId", ""), 1.0),
+			reverse=True,
+		)
+		for enemy in scored_enemies:
+			pid = enemy.get("playerId", "")
+			if scores.get(pid, 1.0) == 0.0:
+				# Allied player — never attack.
+				continue
 			enemy_units = int(enemy.get("approxHomeUnitCount") or 0)
 			if should_attack(legacy, enemy_units=enemy_units):
-				# Send the first available home unit group
 				home_units = [u for u in state.unit_list if not u.get("positionPlayerId") and u.get("count", 0) > 0]
 				if home_units:
 					unit = home_units[0]
-					dispatcher.attack(unit["unitId"], enemy["playerId"])
+					dispatcher.attack(unit["unitId"], pid)
 				break  # one attack per tick
 
 		# Worker / economy decision
