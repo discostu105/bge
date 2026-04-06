@@ -107,27 +107,15 @@ test.describe('Create player', () => {
 
 		// Sign in as a fresh user who has no player profile yet.
 		// createPlayer=false skips the automatic player creation so /createplayer works as intended.
-		// Submit a form via page.evaluate so the auth cookie is set directly on the browser context
-		// (page.request.post doesn't always share cookies with page navigation).
+		// First load any page so the browser context has the correct origin for cookies.
 		await page.goto(`${baseURL}/`)
-		await page.evaluate(
-			({ url, userId }) => {
-				const form = document.createElement('form')
-				form.method = 'POST'
-				form.action = url
-				for (const [k, v] of Object.entries({ playerid: userId, returnUrl: '/createplayer', createPlayer: 'false' })) {
-					const input = document.createElement('input')
-					input.type = 'hidden'
-					input.name = k
-					input.value = v
-					form.appendChild(input)
-				}
-				document.body.appendChild(form)
-				form.submit()
-			},
-			{ url: `${baseURL}/signindev`, userId: freshUserId }
-		)
-		await page.waitForURL('**/createplayer', { timeout: 15_000 })
+		await page.waitForLoadState('load')
+		// Sign in via API — this sets the auth cookie on the context.
+		await page.request.post(`${baseURL}/signindev`, {
+			form: { playerid: freshUserId, returnUrl: '/', createPlayer: 'false' },
+		})
+		// Navigate to /createplayer — use full URL to ensure the cookie domain matches.
+		await page.goto(`${baseURL}/createplayer`)
 		await page.waitForLoadState('networkidle')
 		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible({ timeout: 15_000 })
 		await expect(page.getByLabel('Commander name')).toBeVisible({ timeout: 10_000 })
