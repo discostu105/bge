@@ -184,5 +184,142 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var statusResult = Assert.IsType<ObjectResult>(result.Result);
 			Assert.Equal(403, statusResult.StatusCode);
 		}
+
+		private static CreateGameRequest MakeCreateRequest(GameSettingsRequest? settings = null) {
+			return new CreateGameRequest(
+				Name: "Test Game",
+				GameDefType: "sco",
+				StartTime: DateTime.UtcNow.AddMinutes(5),
+				EndTime: DateTime.UtcNow.AddDays(7),
+				TickDuration: "00:00:30",
+				Settings: settings
+			);
+		}
+
+		[Fact]
+		public void Create_WithNegativeStartingLand_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(StartingLand: -1));
+
+			var result = controller.Create(request);
+
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		}
+
+		[Fact]
+		public void Create_WithNegativeStartingMinerals_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(StartingMinerals: -1));
+
+			var result = controller.Create(request);
+
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		}
+
+		[Fact]
+		public void Create_WithNegativeStartingGas_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(StartingGas: -1));
+
+			var result = controller.Create(request);
+
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		}
+
+		[Fact]
+		public void Create_WithNegativeProtectionTicks_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(ProtectionTicks: -1));
+
+			var result = controller.Create(request);
+
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		}
+
+		[Fact]
+		public void Create_WithZeroVictoryThreshold_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(VictoryThreshold: 0));
+
+			var result = controller.Create(request);
+
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		}
+
+		[Fact]
+		public void Create_WithNegativeSettingsMaxPlayers_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(MaxPlayers: -1));
+
+			var result = controller.Create(request);
+
+			Assert.IsType<BadRequestObjectResult>(result.Result);
+		}
+
+		[Fact]
+		public void Create_WithInvalidVictoryConditionType_Returns400() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(new GameSettingsRequest(VictoryConditionType: "InvalidType"));
+
+			var result = controller.Create(request);
+
+			var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+			Assert.Contains("Unknown victory condition type", badRequest.Value!.ToString());
+		}
+
+		[Fact]
+		public void Create_WithValidSettings_CreatesGame() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var settings = new GameSettingsRequest(
+				StartingLand: 100,
+				StartingMinerals: 10000,
+				StartingGas: 6000,
+				ProtectionTicks: 120,
+				VictoryThreshold: 250000,
+				VictoryConditionType: "EconomicThreshold",
+				MaxPlayers: 10
+			);
+			var request = MakeCreateRequest(settings);
+
+			var result = controller.Create(request);
+
+			var created = Assert.IsType<CreatedAtActionResult>(result.Result);
+			var summary = Assert.IsType<GameSummaryViewModel>(created.Value);
+			Assert.NotNull(summary);
+			Assert.Equal("Test Game", summary.Name);
+		}
+
+		[Fact]
+		public void Create_WithNoSettings_CreatesGame() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var request = MakeCreateRequest(settings: null);
+
+			var result = controller.Create(request);
+
+			var created = Assert.IsType<CreatedAtActionResult>(result.Result);
+			var summary = Assert.IsType<GameSummaryViewModel>(created.Value);
+			Assert.NotNull(summary);
+		}
+
+		[Fact]
+		public void Create_WithTimeExpiredVictoryCondition_CreatesGame() {
+			var globalState = new GlobalState();
+			var controller = MakeController(globalState, userId: "alice");
+			var settings = new GameSettingsRequest(VictoryConditionType: "TimeExpired");
+			var request = MakeCreateRequest(settings);
+
+			var result = controller.Create(request);
+
+			Assert.IsType<CreatedAtActionResult>(result.Result);
+		}
 	}
 }
