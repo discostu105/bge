@@ -208,8 +208,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			var wsImm = worldStateFactory.CreateDevWorldState(0) with { GameId = gameId };
 			var ws = wsImm.ToMutable();
 			var instance = new GameInstance(record, ws, gameDef);
-			gameRegistry.Register(instance);
-			globalState.AddGame(record);
 
 			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
 			var p1Name = globalState.GetUserDisplayName(match.Player1UserId!) ?? match.Player1UserId!;
@@ -220,9 +218,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			playerRepoWrite.CreatePlayer(p1Id, match.Player1UserId, gameDef.PlayerTypes.First().Id.Id);
 			playerRepoWrite.CreatePlayer(p2Id, match.Player2UserId, gameDef.PlayerTypes.First().Id.Id);
 
-			// Set display names
+			// Set display names before registering — must happen before the tick engine can observe the instance
 			if (instance.WorldState.Players.TryGetValue(p1Id, out var p1)) p1.Name = p1Name;
 			if (instance.WorldState.Players.TryGetValue(p2Id, out var p2)) p2.Name = p2Name;
+
+			gameRegistry.Register(instance);
+			globalState.AddGame(record);
 
 			logger.LogInformation("Created tournament game {GameId} for match {MatchId}", gameId.Id, match.MatchId);
 			return gameId.Id;
