@@ -13,6 +13,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		private readonly object _achievementsLock = new();
 		private List<PlayerAchievementImmutable> _achievements = new();
 
+		private readonly object _milestonesLock = new();
+		private List<UserMilestoneImmutable> _milestones = new();
+
 		public string? GetUserDisplayName(string userId) {
 			var user = Users.Values.FirstOrDefault(u => u.UserId == userId);
 			return user?.DisplayName;
@@ -48,6 +51,26 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public void SetAchievements(IEnumerable<PlayerAchievementImmutable> achievements) {
 			lock (_achievementsLock) _achievements = achievements.ToList();
 		}
+
+		public IReadOnlyList<UserMilestoneImmutable> GetAllMilestones() {
+			lock (_milestonesLock) return _milestones.ToList();
+		}
+
+		public IReadOnlyList<UserMilestoneImmutable> GetMilestonesForUser(string userId) {
+			lock (_milestonesLock) return _milestones.Where(m => m.UserId == userId).ToList();
+		}
+
+		public bool HasMilestone(string userId, string milestoneId) {
+			lock (_milestonesLock) return _milestones.Any(m => m.UserId == userId && m.MilestoneId == milestoneId);
+		}
+
+		public void AddMilestone(UserMilestoneImmutable milestone) {
+			lock (_milestonesLock) _milestones.Add(milestone);
+		}
+
+		public void SetMilestones(IEnumerable<UserMilestoneImmutable> milestones) {
+			lock (_milestonesLock) _milestones = milestones.ToList();
+		}
 	}
 
 	public static class GlobalStateExtensions {
@@ -55,7 +78,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new GlobalStateImmutable(
 				Users: globalState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				Games: globalState.GetGames().ToList(),
-				Achievements: globalState.GetAchievements().ToList()
+				Achievements: globalState.GetAchievements().ToList(),
+				Milestones: globalState.GetAllMilestones().ToList()
 			);
 		}
 
@@ -66,6 +90,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			};
 			state.SetGames(globalStateImmutable.Games);
 			state.SetAchievements(globalStateImmutable.Achievements);
+			state.SetMilestones(globalStateImmutable.Milestones ?? Enumerable.Empty<UserMilestoneImmutable>());
 			return state;
 		}
 	}

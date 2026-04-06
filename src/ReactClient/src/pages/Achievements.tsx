@@ -5,6 +5,7 @@ import { TrophyIcon, SwordsIcon, CoinsIcon, HandshakeIcon, CompassIcon, LockIcon
 import apiClient from '@/api/client'
 import type {
 	PlayerAchievementsViewModel,
+	MilestoneAchievementsViewModel,
 	MilestoneAchievementViewModel,
 	MilestoneCategory,
 	MilestoneTier,
@@ -199,12 +200,11 @@ export function Achievements() {
 		queryFn: () => apiClient.get('/api/player-management/me/achievements').then(r => r.data),
 	})
 
-	// TODO: Replace mock data once backend endpoint exists
-	// const { data: milestoneData } = useQuery<MilestoneAchievementsViewModel>({
-	//   queryKey: ['milestone-achievements'],
-	//   queryFn: () => apiClient.get('/api/player-management/me/milestone-achievements').then(r => r.data),
-	// })
-	const milestones = MOCK_MILESTONES
+	const { data: milestoneData } = useQuery<MilestoneAchievementsViewModel>({
+		queryKey: ['milestone-achievements'],
+		queryFn: () => apiClient.get('/api/player-management/me/milestone-achievements').then(r => r.data),
+	})
+	const milestones = milestoneData?.achievements ?? []
 
 	if (isLoading) return <PageLoader message="Loading achievements..." />
 	if (error) return <ApiError message="Failed to load achievements." onRetry={() => void refetch()} />
