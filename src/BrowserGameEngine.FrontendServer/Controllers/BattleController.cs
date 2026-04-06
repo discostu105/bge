@@ -9,6 +9,7 @@ using BrowserGameEngine.StatefulGameServer;
 using Microsoft.AspNetCore.Authorization;
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.GameModel;
+using BattleReport = BrowserGameEngine.StatefulGameServer.GameModelInternal.BattleReport;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.GameDefinition;
 using System.Diagnostics;
@@ -29,6 +30,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly BattleReportGenerator battleReportGenerator;
 		private readonly OnlineStatusRepository onlineStatusRepository;
 		private readonly SpyRepositoryWrite spyRepositoryWrite;
+		private readonly BattleReportRepository battleReportRepository;
 
 		public BattleController(ILogger<BattleController> logger
 				, GameDef gameDef
@@ -41,6 +43,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, BattleReportGenerator battleReportGenerator
 				, OnlineStatusRepository onlineStatusRepository
 				, SpyRepositoryWrite spyRepositoryWrite
+				, BattleReportRepository battleReportRepository
 			) {
 			this.logger = logger;
 			this.gameDef = gameDef;
@@ -53,6 +56,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.battleReportGenerator = battleReportGenerator;
 			this.onlineStatusRepository = onlineStatusRepository;
 			this.spyRepositoryWrite = spyRepositoryWrite;
+			this.battleReportRepository = battleReportRepository;
 		}
 
 		/// <summary>Lists players that the current player can attack.</summary>
@@ -165,5 +169,87 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WorkersCaptured = result.BtlResult.WorkersCaptured,
 			};
 		}
+
+		/// <summary>Returns a detailed battle report with round-by-round replay data.</summary>
+		/// <param name="reportId">The battle report ID.</param>
+		[HttpGet]
+		[ProducesResponseType(typeof(BattleReportDetailViewModel), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public ActionResult<BattleReportDetailViewModel> Report([FromQuery] Guid reportId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var report = battleReportRepository.GetBattleReport(currentUserContext.PlayerId!, reportId);
+			if (report == null) return NotFound();
+			return MapToDetailViewModel(report);
+		}
+
+		/// <summary>Returns a summary list of the current player's battle reports.</summary>
+		[HttpGet]
+		[ProducesResponseType(typeof(List<BattleReportSummaryViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<List<BattleReportSummaryViewModel>> Reports() {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var reports = battleReportRepository.GetBattleReports(currentUserContext.PlayerId!);
+			bool isAttacker(BattleReport r) => r.AttackerId.Equals(currentUserContext.PlayerId);
+			return reports.Select(r => new BattleReportSummaryViewModel {
+				Id = r.Id.ToString(),
+				OpponentName = isAttacker(r) ? r.DefenderName : r.AttackerName,
+				Outcome = r.Outcome,
+				CreatedAt = r.CreatedAt.ToString("o")
+			}).OrderByDescending(r => r.CreatedAt).ToList();
+		}
+
+		private BattleReportDetailViewModel MapToDetailViewModel(BattleReport report) {
+			return new BattleReportDetailViewModel {
+				Id = report.Id.ToString(),
+				AttackerId = report.AttackerId.Id,
+				AttackerName = report.AttackerName,
+				DefenderId = report.DefenderId.Id,
+				DefenderName = report.DefenderName,
+				AttackerRace = report.AttackerRace,
+				DefenderRace = report.DefenderRace,
+				Outcome = report.Outcome,
+				TotalAttackerStrengthBefore = report.TotalAttackerStrengthBefore,
+				TotalDefenderStrengthBefore = report.TotalDefenderStrengthBefore,
+				AttackerUnitsInitial = report.AttackerUnitsInitial
+					.Select(uc => new UnitCountViewModel {
+						UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+						Count = uc.Count
+					}).ToList(),
+				DefenderUnitsInitial = report.DefenderUnitsInitial
+					.Select(uc => new UnitCountViewModel {
+						UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+						Count = uc.Count
+					}).ToList(),
+				Rounds = report.Rounds.Select(round => new BattleRoundViewModel {
+					RoundNumber = round.RoundNumber,
+					AttackerUnitsRemaining = round.AttackerUnitsRemaining
+						.Select(uc => new UnitCountViewModel {
+							UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+							Count = uc.Count
+						}).ToList(),
+					DefenderUnitsRemaining = round.DefenderUnitsRemaining
+						.Select(uc => new UnitCountViewModel {
+							UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+							Count = uc.Count
+						}).ToList(),
+					AttackerCasualties = round.AttackerCasualties
+						.Select(uc => new UnitCountViewModel {
+							UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+							Count = uc.Count
+						}).ToList(),
+					DefenderCasualties = round.DefenderCasualties
+						.Select(uc => new UnitCountViewModel {
+							UnitName = gameDef.GetUnitDef(uc.UnitDefId)?.Name ?? uc.UnitDefId.Id,
+							Count = uc.Count
+						}).ToList()
+				}).ToList(),
+				LandTransferred = report.LandTransferred,
+				WorkersCaptured = report.WorkersCaptured,
+				ResourcesStolen = new Dictionary<string, decimal>(report.ResourcesStolen),
+				CreatedAt = report.CreatedAt.ToString("o")
+			};
+		}
 	}
 }
+

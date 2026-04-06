@@ -93,10 +93,14 @@ test.describe('Resource management — worker assignment', () => {
 		await page.goto(`/games/${gameId}/base`)
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 
-		// Clear and set a new value for mineral workers
+		// Set a new value for mineral workers; wait for the assign API call to complete
+		// before reading back the state (onChange fires immediately on fill).
 		const mineralInput = page.getByLabel('💎 Mineral Workers')
+		const assignPromise = page.waitForResponse(
+			(r) => r.url().includes('/api/workers/assign') && r.request().method() === 'POST'
+		)
 		await mineralInput.fill('3')
-		await mineralInput.blur()
+		await assignPromise
 
 		// Verify no error boundary was hit
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()

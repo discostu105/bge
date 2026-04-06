@@ -1,5 +1,6 @@
 using BrowserGameEngine.Persistence;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
@@ -56,6 +57,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<MessageRepository>();
 			services.AddSingleton<MessageRepositoryWrite>();
 			services.AddSingleton<BattleReportGenerator>();
+			services.AddSingleton<BattleReportRepository>();
+			services.AddSingleton<BattleReportRepositoryWrite>();
 			services.AddSingleton<UpgradeRepository>();
 			services.AddSingleton<UpgradeRepositoryWrite>();
 			services.AddSingleton<BuildQueueRepository>();
@@ -72,6 +75,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<TradeRepositoryWrite>();
 			services.AddSingleton<ResourceHistoryRepository>();
 			services.AddSingleton<ResourceHistoryRepositoryWrite>();
+			services.AddSingleton<MilestoneRepository>();
+			services.AddSingleton<MilestoneRepositoryWrite>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();

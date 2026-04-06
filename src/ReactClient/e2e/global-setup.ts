@@ -25,7 +25,7 @@ export default async function globalSetup() {
 	// Use dev auth to sign in — no UI form required; POST directly to the endpoint.
 	// Bge__DevAuth=true is set in docker-compose so this endpoint is active.
 	await page.request.post(`${baseURL}/signindev`, {
-		form: { playerid: 'e2e-test-admin', returnUrl: '/' },
+		form: { playerid: 'e2e-test-admin', returnUrl: '/', protectionTicks: '0' },
 	})
 
 	// Dismiss the new-player tutorial overlay so it never blocks UI interactions

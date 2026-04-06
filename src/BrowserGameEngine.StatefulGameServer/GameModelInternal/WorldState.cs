@@ -11,6 +11,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	public class WorldState {
 		internal GameId GameId { get; set; } = new GameId("default");
 
+		internal GameSettings GameSettings { get; set; } = GameSettings.Default;
+
 		internal IDictionary<PlayerId, Player> Players { get; set; } = new ConcurrentDictionary<PlayerId, Player>();
 
 		internal IDictionary<AllianceId, Alliance> Alliances { get; set; } = new ConcurrentDictionary<AllianceId, Alliance>();

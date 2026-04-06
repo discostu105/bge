@@ -7,6 +7,15 @@ import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { useSignalR } from '@/hooks/useSignalR'
 
+function victoryLabel(type: string | null | undefined): string {
+  switch (type) {
+    case 'EconomicThreshold': return 'Economic Threshold'
+    case 'TimeExpired': return 'Time Expired'
+    case 'AdminFinalized': return 'Admin Finalized'
+    default: return type ?? 'Unknown'
+  }
+}
+
 function statusBadge(status: string): { css: string; label: string } {
   switch (status.toLowerCase()) {
     case 'upcoming': return { css: 'bg-warning text-warning-foreground', label: 'Upcoming' }
@@ -101,6 +110,30 @@ export function GameLobbyDetail() {
           </Link>
         )}
       </div>
+
+      {lobby.settings && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-muted-foreground">Game Rules</h2>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-muted-foreground font-medium">Starting Resources</dt>
+            <dd>
+              {lobby.settings.startingMinerals.toLocaleString()} Minerals
+              {' / '}{lobby.settings.startingGas.toLocaleString()} Gas
+              {' / '}{lobby.settings.startingLand} Land
+            </dd>
+            <dt className="text-muted-foreground font-medium">Victory Condition</dt>
+            <dd>
+              {victoryLabel(lobby.settings.victoryConditionType)}
+              {lobby.settings.victoryConditionType === 'EconomicThreshold' &&
+                ` — reach ${lobby.settings.victoryThreshold.toLocaleString()} pts`}
+            </dd>
+            <dt className="text-muted-foreground font-medium">Protection</dt>
+            <dd>{lobby.settings.protectionTicks} ticks after joining</dd>
+            <dt className="text-muted-foreground font-medium">Max Players</dt>
+            <dd>{lobby.settings.maxPlayers > 0 ? lobby.settings.maxPlayers : 'Unlimited'}</dd>
+          </dl>
+        </div>
+      )}
 
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">Players</h2>

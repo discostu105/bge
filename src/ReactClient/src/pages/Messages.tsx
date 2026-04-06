@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router'
 import { PenSquareIcon, InboxIcon, SendIcon, ReplyIcon, MessageSquareIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { MessageInboxViewModel, MessageViewModel, MessageThreadViewModel, SendMessageViewModel, PublicPlayerViewModel, PaginatedResponse } from '@/api/types'
@@ -91,6 +92,38 @@ function ComposeForm({
       </button>
     </div>
   )
+}
+
+function MessageBody({ body, isSystemMessage, gameId }: { body: string; isSystemMessage: boolean; gameId: string }) {
+  const navigate = useNavigate()
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement
+      const anchor = target.closest('a')
+      if (!anchor) return
+      const href = anchor.getAttribute('href')
+      if (href && href.startsWith('/battles/')) {
+        e.preventDefault()
+        const reportId = href.replace('/battles/', '')
+        void navigate(`/games/${gameId}/battles/${reportId}`)
+      }
+    },
+    [gameId, navigate],
+  )
+
+  // System messages (senderId is null) contain server-generated HTML that is safe
+  // to render — player names are HTML-encoded by BattleReportGenerator.
+  if (isSystemMessage) {
+    return (
+      <div
+        className="text-sm battle-report-message"
+        onClick={handleClick}
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
+    )
+  }
+  return <p className="text-sm whitespace-pre-wrap">{body}</p>
 }
 
 export function Messages({ gameId }: MessagesProps) {
@@ -283,13 +316,13 @@ export function Messages({ gameId }: MessagesProps) {
                           <span>{isMine ? 'You' : msg.senderName}</span>
                           <span>{relativeTime(msg.sentAt)}</span>
                         </div>
-                        <p className="whitespace-pre-wrap">{msg.body}</p>
+                        <MessageBody body={msg.body} isSystemMessage={msg.senderId === null} gameId={gameId} />
                       </li>
                     )
                   })}
                 </ul>
               ) : (
-                <p className="text-sm whitespace-pre-wrap">{selected.body}</p>
+                <MessageBody body={selected.body} isSystemMessage={selected.senderId === null} gameId={gameId} />
               )}
               {tab === 'inbox' && (
                 <button

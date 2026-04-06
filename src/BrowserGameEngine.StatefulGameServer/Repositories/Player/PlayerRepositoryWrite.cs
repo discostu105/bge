@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -96,9 +96,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			world.Players[playerId].LastOnline = time;
 		}
 
-		public void CreatePlayer(PlayerId playerId, string? userId = null, string playerType = "terran") {
+		public void CreatePlayer(PlayerId playerId, string? userId = null, string playerType = "terran", int? protectionTicks = null) {
 			lock (_lock) {
-				CreatePlayerInternal(playerId, userId, playerType);
+				CreatePlayerInternal(playerId, userId, playerType, protectionTicks);
 			}
 		}
 
@@ -117,8 +117,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
-		private void CreatePlayerInternal(PlayerId playerId, string? userId, string playerType) {
+		private void CreatePlayerInternal(PlayerId playerId, string? userId, string playerType, int? protectionTicks = null) {
 			if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
+			var settings = world.GameSettings;
 			world.Players[playerId] = new Player() {
 				Created = timeProvider.GetLocalNow().DateTime,
 				PlayerId = playerId,
@@ -129,9 +130,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 					LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
 					CurrentGameTick = world.GameTickState.CurrentGameTick,
 					Resources = new Dictionary<ResourceDefId, decimal> {
-						{ Id.ResDef("land"), 50 },
-						{ Id.ResDef("minerals"), 5000 },
-						{ Id.ResDef("gas"), 3000 }
+						{ Id.ResDef("land"), settings.StartingLand },
+						{ Id.ResDef("minerals"), settings.StartingMinerals },
+						{ Id.ResDef("gas"), settings.StartingGas }
 					},
 					Assets = new HashSet<Asset> {
 						new Asset {
@@ -139,7 +140,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 							Level = 1
 						},
 					},
-					ProtectionTicksRemaining = 480  // 4 hours at 30s/tick
+					ProtectionTicksRemaining = protectionTicks ?? settings.ProtectionTicks
 				}
 			};
 		}

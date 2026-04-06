@@ -27,6 +27,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly TimeProvider timeProvider;
 		private readonly GameLifecycleEngine gameLifecycleEngine;
 		private readonly IGameEventPublisher gameEventPublisher;
+		private readonly PlayerRepository playerRepository;
+		private readonly ScoreRepository scoreRepository;
+		private readonly UserRepository userRepository;
 
 		public GamesController(
 			ILogger<GamesController> logger,
@@ -37,7 +40,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			CurrentUserContext currentUserContext,
 			TimeProvider timeProvider,
 			GameLifecycleEngine gameLifecycleEngine,
-			IGameEventPublisher gameEventPublisher
+			IGameEventPublisher gameEventPublisher,
+			PlayerRepository playerRepository,
+			ScoreRepository scoreRepository,
+			UserRepository userRepository
 		) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
@@ -48,6 +54,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.timeProvider = timeProvider;
 			this.gameLifecycleEngine = gameLifecycleEngine;
 			this.gameEventPublisher = gameEventPublisher;
+			this.playerRepository = playerRepository;
+			this.scoreRepository = scoreRepository;
+			this.userRepository = userRepository;
 		}
 
 		/// <summary>Returns games where the authenticated user has an active player.</summary>
@@ -107,7 +116,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerName: winnerName,
 				ActualEndTime: record.ActualEndTime,
 				VictoryConditionType: record.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
+				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType),
+				TournamentId: record.TournamentId
 			));
 		}
 
@@ -128,7 +138,40 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 			if (request.MaxPlayers < 0) return BadRequest("MaxPlayers cannot be negative.");
 
+			GameSettings? gameSettings = null;
+			if (request.Settings != null) {
+				var s = request.Settings;
+				if (s.StartingLand < 0) return BadRequest("StartingLand cannot be negative.");
+				if (s.StartingMinerals < 0) return BadRequest("StartingMinerals cannot be negative.");
+				if (s.StartingGas < 0) return BadRequest("StartingGas cannot be negative.");
+				if (s.ProtectionTicks < 0) return BadRequest("ProtectionTicks cannot be negative.");
+				if (s.VictoryThreshold <= 0) return BadRequest("VictoryThreshold must be greater than zero.");
+				if (s.MaxPlayers < 0) return BadRequest("Settings.MaxPlayers cannot be negative.");
+				if (s.VictoryConditionType != null) {
+					var validTypes = new[] {
+						VictoryConditionTypes.EconomicThreshold,
+						VictoryConditionTypes.TimeExpired,
+						VictoryConditionTypes.AdminFinalized
+					};
+					if (!validTypes.Contains(s.VictoryConditionType)) {
+						return BadRequest($"Unknown victory condition type: {s.VictoryConditionType}. Valid types: EconomicThreshold, TimeExpired, AdminFinalized");
+					}
+				}
+				var defaults = GameSettings.Default;
+				gameSettings = new GameSettings(
+					StartingLand: s.StartingLand ?? defaults.StartingLand,
+					StartingMinerals: s.StartingMinerals ?? defaults.StartingMinerals,
+					StartingGas: s.StartingGas ?? defaults.StartingGas,
+					ProtectionTicks: s.ProtectionTicks ?? defaults.ProtectionTicks,
+					VictoryThreshold: s.VictoryThreshold ?? defaults.VictoryThreshold,
+					VictoryConditionType: s.VictoryConditionType ?? defaults.VictoryConditionType,
+					MaxPlayers: s.MaxPlayers ?? defaults.MaxPlayers
+				);
+			}
+
 			var gameId = new GameId(Guid.NewGuid().ToString("N")[..12]);
+			var tournamentId = request.TournamentId?.Trim();
+			if (tournamentId != null && tournamentId.Length == 0) return BadRequest("TournamentId cannot be empty or whitespace.");
 			var record = new GameRecordImmutable(
 				GameId: gameId,
 				Name: request.Name,
@@ -139,14 +182,16 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TickDuration: tickDuration,
 				DiscordWebhookUrl: request.DiscordWebhookUrl,
 				CreatedByUserId: currentUserContext.UserId,
-				MaxPlayers: request.MaxPlayers
+				MaxPlayers: request.MaxPlayers,
+				Settings: gameSettings,
+				TournamentId: tournamentId
 			);
 
 			// Create a fresh world state for the new game
 			var wsImm = worldStateFactory.CreateDevWorldState(0) with { GameId = gameId };
 			var ws = wsImm.ToMutable();
 
-			// Register the game instance
+			// Register the game instance (GameInstance applies record.Settings to WorldState)
 			var instance = new GameInstance(record, ws, gameDef);
 			gameRegistry.Register(instance);
 			globalState.AddGame(record);
@@ -154,27 +199,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			logger.LogInformation("Game {GameId} created: {Name}", gameId.Id, request.Name);
 
 			return CreatedAtAction(nameof(GetById), new { gameId = gameId.Id }, ToSummary(record));
-		}
-
-		[HttpPost("{gameId}/players")]
-		public ActionResult<JoinGameViewModel> JoinGame(string gameId) {
-			if (!currentUserContext.IsValid) return Unauthorized();
-			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
-			if (record == null) return NotFound();
-			if (record.Status != GameStatus.Upcoming && record.Status != GameStatus.Active)
-				return BadRequest("This game is not open for joining.");
-
-			var instance = gameRegistry.TryGetInstance(record.GameId);
-			if (instance == null) return NotFound();
-
-			var playerRepoWrite = new PlayerRepositoryWrite(instance.WorldStateAccessor, timeProvider);
-			try {
-				playerRepoWrite.CreatePlayer(currentUserContext.PlayerId!, currentUserContext.UserId);
-			} catch (PlayerAlreadyExistsException) {
-				return Conflict("You have already joined this game.");
-			}
-			logger.LogInformation("Player {PlayerId} joined game {GameId}", currentUserContext.PlayerId!.Id, gameId);
-			return Ok(new JoinGameViewModel(currentUserContext.PlayerId!.Id));
 		}
 
 		/// <summary>Updates game settings (name, end time, Discord webhook). Only the game creator may update.</summary>
@@ -293,6 +317,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			bool canJoin = (record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active)
 				&& (record.MaxPlayers == 0 || players.Count < record.MaxPlayers);
 
+			GameSettingsViewModel? settingsVm = null;
+			if (record.Settings != null) {
+				var s = record.Settings;
+				settingsVm = new GameSettingsViewModel(
+					StartingLand: s.StartingLand,
+					StartingMinerals: s.StartingMinerals,
+					StartingGas: s.StartingGas,
+					ProtectionTicks: s.ProtectionTicks,
+					VictoryThreshold: s.VictoryThreshold,
+					VictoryConditionType: s.VictoryConditionType,
+					MaxPlayers: s.MaxPlayers
+				);
+			}
+
 			return Ok(new GameLobbyViewModel(
 				GameId: record.GameId.Id,
 				GameName: record.Name,
@@ -301,7 +339,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
 				Players: players,
-				CanJoin: canJoin
+				CanJoin: canJoin,
+				Settings: settingsVm
 			));
 		}
 
@@ -383,8 +422,36 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Standings: standings,
 				CurrentPlayerId: currentPlayerId,
 				VictoryConditionType: record.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
+				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType),
+				TournamentId: record.TournamentId
 			));
+		}
+
+		/// <summary>Returns the current game's leaderboard ranked by score.</summary>
+		/// <param name="gameId">The game identifier (used for routing; server uses current player's game context).</param>
+		[HttpGet("{gameId}/leaderboard")]
+		[ProducesResponseType(typeof(IEnumerable<LeaderboardEntryViewModel>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<IEnumerable<LeaderboardEntryViewModel>> GetLeaderboard(string gameId) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			var players = playerRepository.GetAll()
+				.Select(p => (
+					player: p,
+					score: scoreRepository.GetScore(p.PlayerId),
+					name: p.UserId != null ? userRepository.GetDisplayNameByUserId(p.UserId) ?? p.Name : p.Name
+				))
+				.OrderByDescending(x => x.score)
+				.ToList();
+
+			return players
+				.Select((x, idx) => new LeaderboardEntryViewModel(
+					Rank: idx + 1,
+					PlayerId: x.player.PlayerId.Id,
+					PlayerName: x.name,
+					Score: x.score,
+					IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId
+				))
+				.ToList();
 		}
 
 		private string? ResolveWinnerName(GameRecordImmutable record) {
@@ -419,7 +486,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				IsPlayerEnrolled: isPlayerEnrolled,
 				VictoryConditionType: record.VictoryConditionType,
 				DiscordWebhookUrl: record.DiscordWebhookUrl,
-				CreatedByUserId: record.CreatedByUserId
+				CreatedByUserId: record.CreatedByUserId,
+				TournamentId: record.TournamentId
 			);
 		}
 

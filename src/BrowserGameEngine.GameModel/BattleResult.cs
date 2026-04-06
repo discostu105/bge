@@ -19,5 +19,6 @@ namespace BrowserGameEngine.GameModel {
 		public int WorkersCaptured { get; set; }
 		public int TotalAttackerStrengthBefore { get; set; }
 		public int TotalDefenderStrengthBefore { get; set; }
+		public List<BattleRoundSnapshotImmutable> Rounds { get; set; } = new();
 	}
 }

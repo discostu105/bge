@@ -21,12 +21,12 @@ async function createAndJoinGame(page: import('@playwright/test').Page): Promise
 	expect(res.ok()).toBeTruthy()
 	const game = await res.json()
 
-	// Join the game
-	const joinRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, {
-		data: {},
+	// Join the game — POST /api/games/:id/join replaced the old /players endpoint
+	const joinRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/join`, {
+		data: { playerName: 'E2E Chat Player', playerType: null },
 	})
-	// 200 or 409 (already enrolled) are both fine
-	expect([200, 201, 204, 409]).toContain(joinRes.status())
+	// 200 (joined) or 409 (already enrolled) are both fine
+	expect([200, 409]).toContain(joinRes.status())
 
 	return game.gameId
 }
