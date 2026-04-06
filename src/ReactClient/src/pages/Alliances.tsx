@@ -286,8 +286,8 @@ export function Alliances({ gameId }: AlliancesProps) {
 								<tr>
 									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Name</th>
 									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Members</th>
-									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
-									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Founded</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Status</th>
+									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Founded</th>
 									<th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
 								</tr>
 							</thead>
@@ -309,7 +309,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 												{a.memberCount}
 											</span>
 										</td>
-										<td className="py-2 px-3">
+										<td className="py-2 px-3 hidden sm:table-cell">
 											{a.isAtWar && (
 												<span className="inline-flex items-center gap-1 rounded bg-danger/30 px-2 py-0.5 text-xs text-danger-foreground">
 													<SwordsIcon className="h-3 w-3" />
@@ -317,7 +317,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 												</span>
 											)}
 										</td>
-										<td className="py-2 px-3 text-xs text-muted-foreground">
+										<td className="py-2 px-3 text-xs text-muted-foreground hidden sm:table-cell">
 											{relativeTime(a.created)}
 										</td>
 										<td className="py-2 px-3">

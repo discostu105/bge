@@ -82,7 +82,7 @@ function UnitRow({
     <tr className="border-b border-border">
       <td className="py-2 px-3 font-medium">{unit.definition?.name}</td>
       <td className="py-2 px-3 text-right tabular-nums">{unit.count.toLocaleString()}</td>
-      <td className="py-2 px-3 text-xs text-muted-foreground">
+      <td className="py-2 px-3 text-xs text-muted-foreground hidden sm:table-cell">
         ⚔️{unit.definition?.attack} 🛡️{unit.definition?.defense} ❤️{unit.definition?.hitpoints}
       </td>
       {unit.positionPlayerId && (
@@ -227,7 +227,7 @@ export function Units({ gameId }: UnitsProps) {
                     <tr>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
                       <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Stats</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Location</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
@@ -270,7 +270,7 @@ export function Units({ gameId }: UnitsProps) {
                     <tr>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
                       <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Stats</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
