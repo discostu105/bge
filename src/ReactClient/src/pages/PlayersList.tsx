@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { AllTimePlayerListViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
@@ -41,7 +42,9 @@ export function PlayersList() {
                 <tr key={p.displayName} className="hover:bg-secondary/20 transition-colors">
                   <td className="px-4 py-2 font-mono text-muted-foreground">#{i + 1}</td>
                   <td className="px-4 py-2 font-medium">
-                    {p.displayName}
+                    <Link to={`/profile/${encodeURIComponent(p.userId)}`} className="hover:underline text-primary">
+                      {p.displayName}
+                    </Link>
                   </td>
                   <td className="px-4 py-2 text-right font-mono">
                     {Math.floor(p.totalScore).toLocaleString()}

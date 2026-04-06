@@ -833,6 +833,7 @@ export interface UpdateGameRequest {
 
 export interface AllTimePlayerEntryViewModel {
   displayName: string
+  userId: string
   totalGames: number
   totalWins: number
   bestRank: number
