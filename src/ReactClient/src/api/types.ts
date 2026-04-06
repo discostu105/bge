@@ -315,6 +315,26 @@ export interface JoinGameRequest {
   playerType?: string
 }
 
+export interface GameSettingsViewModel {
+  startingLand: number
+  startingMinerals: number
+  startingGas: number
+  protectionTicks: number
+  victoryThreshold: number
+  victoryConditionType: string
+  maxPlayers: number
+}
+
+export interface GameSettingsRequest {
+  startingLand?: number | null
+  startingMinerals?: number | null
+  startingGas?: number | null
+  protectionTicks?: number | null
+  victoryThreshold?: number | null
+  victoryConditionType?: string | null
+  maxPlayers?: number | null
+}
+
 export interface CreateGameRequest {
   name: string
   gameDefType: string
@@ -323,6 +343,7 @@ export interface CreateGameRequest {
   tickDuration: string
   discordWebhookUrl: string | null
   maxPlayers: number
+  settings?: GameSettingsRequest | null
 }
 
 // Players / Profile
@@ -851,6 +872,7 @@ export interface GameLobbyViewModel {
   endTime: string | null
   players: LobbyPlayerViewModel[]
   canJoin: boolean
+  settings?: GameSettingsViewModel | null
 }
 
 export interface LobbyPlayerViewModel {

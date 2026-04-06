@@ -137,6 +137,37 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 			if (request.MaxPlayers < 0) return BadRequest("MaxPlayers cannot be negative.");
 
+			GameSettings? gameSettings = null;
+			if (request.Settings != null) {
+				var s = request.Settings;
+				if (s.StartingLand < 0) return BadRequest("StartingLand cannot be negative.");
+				if (s.StartingMinerals < 0) return BadRequest("StartingMinerals cannot be negative.");
+				if (s.StartingGas < 0) return BadRequest("StartingGas cannot be negative.");
+				if (s.ProtectionTicks < 0) return BadRequest("ProtectionTicks cannot be negative.");
+				if (s.VictoryThreshold <= 0) return BadRequest("VictoryThreshold must be greater than zero.");
+				if (s.MaxPlayers < 0) return BadRequest("Settings.MaxPlayers cannot be negative.");
+				if (s.VictoryConditionType != null) {
+					var validTypes = new[] {
+						VictoryConditionTypes.EconomicThreshold,
+						VictoryConditionTypes.TimeExpired,
+						VictoryConditionTypes.AdminFinalized
+					};
+					if (!validTypes.Contains(s.VictoryConditionType)) {
+						return BadRequest($"Unknown victory condition type: {s.VictoryConditionType}. Valid types: EconomicThreshold, TimeExpired, AdminFinalized");
+					}
+				}
+				var defaults = GameSettings.Default;
+				gameSettings = new GameSettings(
+					StartingLand: s.StartingLand ?? defaults.StartingLand,
+					StartingMinerals: s.StartingMinerals ?? defaults.StartingMinerals,
+					StartingGas: s.StartingGas ?? defaults.StartingGas,
+					ProtectionTicks: s.ProtectionTicks ?? defaults.ProtectionTicks,
+					VictoryThreshold: s.VictoryThreshold ?? defaults.VictoryThreshold,
+					VictoryConditionType: s.VictoryConditionType ?? defaults.VictoryConditionType,
+					MaxPlayers: s.MaxPlayers ?? defaults.MaxPlayers
+				);
+			}
+
 			var gameId = new GameId(Guid.NewGuid().ToString("N")[..12]);
 			var record = new GameRecordImmutable(
 				GameId: gameId,
@@ -148,14 +179,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TickDuration: tickDuration,
 				DiscordWebhookUrl: request.DiscordWebhookUrl,
 				CreatedByUserId: currentUserContext.UserId,
-				MaxPlayers: request.MaxPlayers
+				MaxPlayers: request.MaxPlayers,
+				Settings: gameSettings
 			);
 
 			// Create a fresh world state for the new game
 			var wsImm = worldStateFactory.CreateDevWorldState(0) with { GameId = gameId };
 			var ws = wsImm.ToMutable();
 
-			// Register the game instance
+			// Register the game instance (GameInstance applies record.Settings to WorldState)
 			var instance = new GameInstance(record, ws, gameDef);
 			gameRegistry.Register(instance);
 			globalState.AddGame(record);
@@ -281,6 +313,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			bool canJoin = (record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active)
 				&& (record.MaxPlayers == 0 || players.Count < record.MaxPlayers);
 
+			GameSettingsViewModel? settingsVm = null;
+			if (record.Settings != null) {
+				var s = record.Settings;
+				settingsVm = new GameSettingsViewModel(
+					StartingLand: s.StartingLand,
+					StartingMinerals: s.StartingMinerals,
+					StartingGas: s.StartingGas,
+					ProtectionTicks: s.ProtectionTicks,
+					VictoryThreshold: s.VictoryThreshold,
+					VictoryConditionType: s.VictoryConditionType,
+					MaxPlayers: s.MaxPlayers
+				);
+			}
+
 			return Ok(new GameLobbyViewModel(
 				GameId: record.GameId.Id,
 				GameName: record.Name,
@@ -289,7 +335,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				StartTime: record.StartTime,
 				EndTime: record.EndTime,
 				Players: players,
-				CanJoin: canJoin
+				CanJoin: canJoin,
+				Settings: settingsVm
 			));
 		}
 

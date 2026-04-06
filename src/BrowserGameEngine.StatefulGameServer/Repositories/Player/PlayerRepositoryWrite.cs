@@ -119,6 +119,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private void CreatePlayerInternal(PlayerId playerId, string? userId, string playerType) {
 			if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
+			var settings = world.GameSettings;
 			world.Players[playerId] = new Player() {
 				Created = timeProvider.GetLocalNow().DateTime,
 				PlayerId = playerId,
@@ -129,9 +130,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 					LastGameTickUpdate = timeProvider.GetLocalNow().DateTime,
 					CurrentGameTick = world.GameTickState.CurrentGameTick,
 					Resources = new Dictionary<ResourceDefId, decimal> {
-						{ Id.ResDef("land"), 50 },
-						{ Id.ResDef("minerals"), 5000 },
-						{ Id.ResDef("gas"), 3000 }
+						{ Id.ResDef("land"), settings.StartingLand },
+						{ Id.ResDef("minerals"), settings.StartingMinerals },
+						{ Id.ResDef("gas"), settings.StartingGas }
 					},
 					Assets = new HashSet<Asset> {
 						new Asset {
@@ -139,7 +140,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 							Level = 1
 						},
 					},
-					ProtectionTicksRemaining = 480  // 4 hours at 30s/tick
+					ProtectionTicksRemaining = settings.ProtectionTicks
 				}
 			};
 		}
