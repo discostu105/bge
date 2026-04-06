@@ -1,45 +1,59 @@
 import { Component, type ReactNode } from 'react'
 
 interface Props {
-  children: ReactNode
+	children: ReactNode
 }
 
 interface State {
-  hasError: boolean
-  error: Error | null
+	hasError: boolean
+	error: Error | null
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
+	constructor(props: Props) {
+		super(props)
+		this.state = { hasError: false, error: null }
+	}
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
-  }
+	static getDerivedStateFromError(error: Error): State {
+		return { hasError: true, error }
+	}
 
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="flex items-center justify-center min-h-64 p-6">
-          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 max-w-md text-center">
-            <div className="text-4xl mb-3">💥</div>
-            <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              An unexpected error occurred. Try refreshing the page.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground hover:opacity-90"
-            >
-              Refresh Page
-            </button>
-          </div>
-        </div>
-      )
-    }
+	resetBoundary = () => {
+		this.setState({ hasError: false, error: null })
+	}
 
-    return this.props.children
-  }
+	render() {
+		if (this.state.hasError) {
+			const isDev = import.meta.env.DEV
+			return (
+				<div role="alert" className="p-6">
+					<div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 max-w-md">
+						<div className="text-4xl mb-3">💥</div>
+						<h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
+						<p className="text-sm text-muted-foreground mb-4">
+							An unexpected error occurred on this page.
+						</p>
+						{isDev && this.state.error && (
+							<details className="mb-4 text-xs text-destructive font-mono">
+								<summary className="cursor-pointer mb-1">Error details</summary>
+								<pre className="whitespace-pre-wrap break-all bg-destructive/10 p-2 rounded">
+									{this.state.error.message}
+									{this.state.error.stack && '\n\n' + this.state.error.stack}
+								</pre>
+							</details>
+						)}
+						<button
+							onClick={this.resetBoundary}
+							className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground hover:opacity-90"
+						>
+							Try Again
+						</button>
+					</div>
+				</div>
+			)
+		}
+
+		return this.props.children
+	}
 }

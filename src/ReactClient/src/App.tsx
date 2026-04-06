@@ -1,12 +1,25 @@
-import { lazy } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, RouterProvider, useParams } from 'react-router'
 import { RootLayout } from '@/layouts/RootLayout'
 import { GameLayout } from '@/layouts/GameLayout'
 import { BareRouteRedirect } from '@/components/BareRouteRedirect'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { PageLoader } from '@/components/PageLoader'
 
 // Eagerly loaded — must render instantly
 import { SignIn } from '@/pages/SignIn'
 import { Index } from '@/pages/Index'
+
+// Wraps a lazy route element in ErrorBoundary + Suspense with a page-level loading fallback
+function RouteWithBoundary({ children }: { children: ReactNode }) {
+	return (
+		<ErrorBoundary>
+			<Suspense fallback={<PageLoader />}>
+				{children}
+			</Suspense>
+		</ErrorBoundary>
+	)
+}
 
 // Lazy-loaded pages — split into separate chunks
 const Base = lazy(() => import('@/pages/Base').then(m => ({ default: m.Base })))
@@ -151,73 +164,73 @@ function GameLiveViewPage() {
 }
 
 const router = createBrowserRouter([
-  {
-    element: <RootLayout />,
-    children: [
-      { path: '/signin', element: <SignIn /> },
+	{
+		element: <RootLayout />,
+		children: [
+			{ path: '/signin', element: <SignIn /> },
 
-      { path: '/', element: <Index /> },
-      { path: '/games', element: <Games /> },
+			{ path: '/', element: <Index /> },
+			{ path: '/games', element: <RouteWithBoundary><Games /></RouteWithBoundary> },
 
-      {
-        path: '/games/:gameId',
-        element: <GameLayout />,
-        children: [
-          { path: 'base', element: <BasePage /> },
-          { path: 'units', element: <UnitsPage /> },
-          { path: 'research', element: <ResearchPage /> },
-          { path: 'upgrades', element: <ResearchPage /> },
-          { path: 'market', element: <MarketPage /> },
-          { path: 'trade', element: <TradePage /> },
-          { path: 'chat', element: <ChatPage /> },
-          { path: 'messages', element: <MessagesPage /> },
-          { path: 'ranking', element: <PlayerRankingPage /> },
-          { path: 'alliances', element: <AlliancesPage /> },
-          { path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
-          { path: 'diplomacy', element: <DiplomacyPage /> },
-          { path: 'operations', element: <OperationsPage /> },
-          { path: 'spy', element: <SpyReportsPage /> },
-          { path: 'selectenemy/:unitId', element: <SelectEnemyPage /> },
-          { path: 'unitdefinitions', element: <UnitDefinitions /> },
-          { path: 'help', element: <Help /> },
-          { path: 'player/:playerId', element: <InGamePlayerProfilePage /> },
-          { path: 'enemybase/:enemyPlayerId', element: <EnemyBasePage /> },
-          { path: 'battles/:reportId', element: <BattleReplayPage /> },
-          { path: 'live', element: <GameLiveViewPage /> },
-          { path: 'join', element: <JoinGame /> },
-          { path: 'summary', element: <GameSummary /> },
-          { path: 'results', element: <GameResults /> },
-        ],
-      },
+			{
+				path: '/games/:gameId',
+				element: <GameLayout />,
+				children: [
+					{ path: 'base', element: <RouteWithBoundary><BasePage /></RouteWithBoundary> },
+					{ path: 'units', element: <RouteWithBoundary><UnitsPage /></RouteWithBoundary> },
+					{ path: 'research', element: <RouteWithBoundary><ResearchPage /></RouteWithBoundary> },
+					{ path: 'upgrades', element: <RouteWithBoundary><ResearchPage /></RouteWithBoundary> },
+					{ path: 'market', element: <RouteWithBoundary><MarketPage /></RouteWithBoundary> },
+					{ path: 'trade', element: <RouteWithBoundary><TradePage /></RouteWithBoundary> },
+					{ path: 'chat', element: <RouteWithBoundary><ChatPage /></RouteWithBoundary> },
+					{ path: 'messages', element: <RouteWithBoundary><MessagesPage /></RouteWithBoundary> },
+					{ path: 'ranking', element: <RouteWithBoundary><PlayerRankingPage /></RouteWithBoundary> },
+					{ path: 'alliances', element: <RouteWithBoundary><AlliancesPage /></RouteWithBoundary> },
+					{ path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
+					{ path: 'diplomacy', element: <RouteWithBoundary><DiplomacyPage /></RouteWithBoundary> },
+					{ path: 'operations', element: <RouteWithBoundary><OperationsPage /></RouteWithBoundary> },
+					{ path: 'spy', element: <RouteWithBoundary><SpyReportsPage /></RouteWithBoundary> },
+					{ path: 'selectenemy/:unitId', element: <RouteWithBoundary><SelectEnemyPage /></RouteWithBoundary> },
+					{ path: 'unitdefinitions', element: <RouteWithBoundary><UnitDefinitions /></RouteWithBoundary> },
+					{ path: 'help', element: <RouteWithBoundary><Help /></RouteWithBoundary> },
+					{ path: 'player/:playerId', element: <RouteWithBoundary><InGamePlayerProfilePage /></RouteWithBoundary> },
+					{ path: 'enemybase/:enemyPlayerId', element: <RouteWithBoundary><EnemyBasePage /></RouteWithBoundary> },
+					{ path: 'battles/:reportId', element: <RouteWithBoundary><BattleReplayPage /></RouteWithBoundary> },
+					{ path: 'live', element: <RouteWithBoundary><GameLiveViewPage /></RouteWithBoundary> },
+					{ path: 'join', element: <RouteWithBoundary><JoinGame /></RouteWithBoundary> },
+					{ path: 'summary', element: <RouteWithBoundary><GameSummary /></RouteWithBoundary> },
+					{ path: 'results', element: <RouteWithBoundary><GameResults /></RouteWithBoundary> },
+				],
+			},
 
-      // Bare routes — redirect to current game
-      { path: '/base', element: <BareRouteRedirect path="base" /> },
-      { path: '/units', element: <BareRouteRedirect path="units" /> },
-      { path: '/research', element: <BareRouteRedirect path="research" /> },
-      { path: '/market', element: <BareRouteRedirect path="market" /> },
-      { path: '/trade', element: <BareRouteRedirect path="trade" /> },
-      { path: '/spy', element: <BareRouteRedirect path="spy" /> },
-      { path: '/operations', element: <BareRouteRedirect path="operations" /> },
+			// Bare routes — redirect to current game
+			{ path: '/base', element: <BareRouteRedirect path="base" /> },
+			{ path: '/units', element: <BareRouteRedirect path="units" /> },
+			{ path: '/research', element: <BareRouteRedirect path="research" /> },
+			{ path: '/market', element: <BareRouteRedirect path="market" /> },
+			{ path: '/trade', element: <BareRouteRedirect path="trade" /> },
+			{ path: '/spy', element: <BareRouteRedirect path="spy" /> },
+			{ path: '/operations', element: <BareRouteRedirect path="operations" /> },
 
-      { path: '/createplayer', element: <CreatePlayer /> },
-      { path: '/lobby', element: <GameLobby /> },
-      { path: '/lobby/:gameId', element: <GameLobbyDetail /> },
-      { path: '/profile', element: <PlayerProfile /> },
-      { path: '/profile/:userId', element: <PublicProfile /> },
-      { path: '/players', element: <PlayersList /> },
-      { path: '/alliances/:allianceId', element: <AllianceDetail /> },
-      { path: '/achievements', element: <Achievements /> },
-      { path: '/history', element: <PlayerHistory /> },
-      { path: '/replays/:gameId', element: <ReplayViewer /> },
-      { path: '/stats', element: <PlayerStats /> },
-      { path: '/tournaments/:tournamentId', element: <TournamentResults /> },
-      { path: '/leaderboard', element: <Leaderboard /> },
-      { path: '/admin/games', element: <AdminGames /> },
-      { path: '/admin/players', element: <AdminPlayers /> },
-      { path: '/admin/ticks', element: <AdminTickControl /> },
-      { path: '/admin/stats', element: <AdminStats /> },
-    ],
-  },
+			{ path: '/createplayer', element: <RouteWithBoundary><CreatePlayer /></RouteWithBoundary> },
+			{ path: '/lobby', element: <RouteWithBoundary><GameLobby /></RouteWithBoundary> },
+			{ path: '/lobby/:gameId', element: <RouteWithBoundary><GameLobbyDetail /></RouteWithBoundary> },
+			{ path: '/profile', element: <RouteWithBoundary><PlayerProfile /></RouteWithBoundary> },
+			{ path: '/profile/:userId', element: <RouteWithBoundary><PublicProfile /></RouteWithBoundary> },
+			{ path: '/players', element: <RouteWithBoundary><PlayersList /></RouteWithBoundary> },
+			{ path: '/alliances/:allianceId', element: <RouteWithBoundary><AllianceDetail /></RouteWithBoundary> },
+			{ path: '/achievements', element: <RouteWithBoundary><Achievements /></RouteWithBoundary> },
+			{ path: '/history', element: <RouteWithBoundary><PlayerHistory /></RouteWithBoundary> },
+			{ path: '/replays/:gameId', element: <RouteWithBoundary><ReplayViewer /></RouteWithBoundary> },
+			{ path: '/stats', element: <RouteWithBoundary><PlayerStats /></RouteWithBoundary> },
+			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
+			{ path: '/leaderboard', element: <RouteWithBoundary><Leaderboard /></RouteWithBoundary> },
+			{ path: '/admin/games', element: <RouteWithBoundary><AdminGames /></RouteWithBoundary> },
+			{ path: '/admin/players', element: <RouteWithBoundary><AdminPlayers /></RouteWithBoundary> },
+			{ path: '/admin/ticks', element: <RouteWithBoundary><AdminTickControl /></RouteWithBoundary> },
+			{ path: '/admin/stats', element: <RouteWithBoundary><AdminStats /></RouteWithBoundary> },
+		],
+	},
 ])
 
 export default function App() {
