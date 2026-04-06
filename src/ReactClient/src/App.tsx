@@ -53,6 +53,9 @@ const AdminGames = lazy(() => import('@/pages/admin/AdminGames').then(m => ({ de
 const AdminPlayers = lazy(() => import('@/pages/admin/AdminPlayers').then(m => ({ default: m.AdminPlayers })))
 const AdminTickControl = lazy(() => import('@/pages/admin/AdminTickControl').then(m => ({ default: m.AdminTickControl })))
 const AdminStats = lazy(() => import('@/pages/admin/AdminStats').then(m => ({ default: m.AdminStats })))
+const AdminMetrics = lazy(() => import('@/pages/admin/AdminMetrics').then(m => ({ default: m.AdminMetrics })))
+const AdminAuditLog = lazy(() => import('@/pages/admin/AdminAuditLog').then(m => ({ default: m.AdminAuditLog })))
+const AdminReports = lazy(() => import('@/pages/admin/AdminReports').then(m => ({ default: m.AdminReports })))
 const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ default: m.PlayersList })))
 const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
 const Help = lazy(() => import('@/pages/Help').then(m => ({ default: m.Help })))
@@ -244,6 +247,9 @@ const router = createBrowserRouter([
 			{ path: '/admin/players', element: <RouteWithBoundary><AdminPlayers /></RouteWithBoundary> },
 			{ path: '/admin/ticks', element: <RouteWithBoundary><AdminTickControl /></RouteWithBoundary> },
 			{ path: '/admin/stats', element: <RouteWithBoundary><AdminStats /></RouteWithBoundary> },
+			{ path: '/admin/metrics', element: <RouteWithBoundary><AdminMetrics /></RouteWithBoundary> },
+			{ path: '/admin/audit', element: <RouteWithBoundary><AdminAuditLog /></RouteWithBoundary> },
+			{ path: '/admin/reports', element: <RouteWithBoundary><AdminReports /></RouteWithBoundary> },
 		],
 	},
 ])

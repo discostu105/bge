@@ -96,7 +96,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				IsOnline = onlineStatusRepository.IsOnline(pid),
 				LastOnline = player.LastOnline,
 				IsAgent = player.ApiKeyHash != null,
-				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining
+				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
+				UserId = player.UserId,
 			};
 		}
 

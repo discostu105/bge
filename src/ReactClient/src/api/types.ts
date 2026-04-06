@@ -474,6 +474,7 @@ export interface InGamePlayerProfileViewModel {
   lastOnline: string | null
   isAgent: boolean
   protectionTicksRemaining: number
+  userId: string | null
 }
 
 // Rankings

@@ -31,6 +31,7 @@ export function AdminPlayers() {
   const queryClient = useQueryClient()
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { data: players, isLoading, error, refetch } = useQuery<AdminPlayerEntry[]>({
     queryKey: ['admin-players'],
@@ -103,6 +104,16 @@ export function AdminPlayers() {
       <AdminNav />
       <h1 className="text-2xl font-bold mb-6">Player Moderation</h1>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search players by name..."
+          className="w-full max-w-sm border border-border rounded px-3 py-2 text-sm bg-background"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       {actionError && (
         <div className="rounded border border-destructive/50 bg-destructive/10 p-3 text-destructive text-sm mb-4">
           {actionError}
@@ -113,7 +124,13 @@ export function AdminPlayers() {
         <PageLoader message="Loading players..." />
       ) : !players || players.length === 0 ? (
         <p className="text-muted-foreground">No players found.</p>
-      ) : (
+      ) : (() => {
+        const filtered = players.filter(p =>
+          !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        return filtered.length === 0 ? (
+          <p className="text-muted-foreground">No players match your search.</p>
+        ) : (
         <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -128,7 +145,7 @@ export function AdminPlayers() {
               </tr>
             </thead>
             <tbody>
-              {players.map((player) => (
+              {filtered.map((player) => (
                 <>
                   <tr key={player.playerId} className="border-b border-border/50">
                     <td className="px-3 py-2 font-medium">{player.name}</td>
@@ -246,7 +263,8 @@ export function AdminPlayers() {
             </tbody>
           </table>
         </div>
-      )}
+        )
+      })()}
     </div>
   )
 }

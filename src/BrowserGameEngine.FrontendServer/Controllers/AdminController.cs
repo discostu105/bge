@@ -4,6 +4,7 @@ using BrowserGameEngine.Persistence;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.ActionFeed;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +39,10 @@ public class AdminController : ControllerBase
 	private readonly GameDef gameDef;
 	private readonly ScoreRepository scoreRepository;
 	private readonly MarketRepository marketRepository;
+	private readonly AdminAuditLog auditLog;
+	private readonly ReportStore reportStore;
+	private readonly GlobalState globalState;
+	private readonly CurrentUserContext currentUserContext;
 
 	public AdminController(
 		ILogger<AdminController> logger,
@@ -55,7 +60,11 @@ public class AdminController : ControllerBase
 		IActionLogger actionLogger,
 		GameDef gameDef,
 		ScoreRepository scoreRepository,
-		MarketRepository marketRepository
+		MarketRepository marketRepository,
+		AdminAuditLog auditLog,
+		ReportStore reportStore,
+		GlobalState globalState,
+		CurrentUserContext currentUserContext
 	)
 	{
 		this.logger = logger;
@@ -74,6 +83,10 @@ public class AdminController : ControllerBase
 		this.gameDef = gameDef;
 		this.scoreRepository = scoreRepository;
 		this.marketRepository = marketRepository;
+		this.auditLog = auditLog;
+		this.reportStore = reportStore;
+		this.globalState = globalState;
+		this.currentUserContext = currentUserContext;
 	}
 
 	// ── Existing cheat endpoints ──────────────────────────────────────────────
@@ -90,6 +103,8 @@ public class AdminController : ControllerBase
 		var resourceDefId = Id.ResDef(request.ResourceDefId);
 		var current = resourceRepository.GetAmount(playerId, resourceDefId);
 		resourceRepositoryWrite.AddResources(playerId, resourceDefId, request.Amount - current);
+		auditLog.Record("SetResources", currentUserContext.UserId,
+			$"Set {request.ResourceDefId}={request.Amount} for player {request.PlayerId}", request.PlayerId);
 		return Ok();
 	}
 
@@ -315,6 +330,7 @@ public class AdminController : ControllerBase
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		playerRepositoryWrite.BanPlayer(playerId);
 		logger.LogWarning("Player {PlayerId} banned via admin endpoint", request.PlayerId);
+		auditLog.Record("BanPlayer", currentUserContext.UserId, $"Banned player {request.PlayerId}", request.PlayerId);
 		return Ok(new { playerId = request.PlayerId, isBanned = true });
 	}
 
@@ -326,6 +342,7 @@ public class AdminController : ControllerBase
 		if (!playerRepository.Exists(playerId)) return NotFound($"Player '{request.PlayerId}' not found.");
 		playerRepositoryWrite.UnbanPlayer(playerId);
 		logger.LogInformation("Player {PlayerId} unbanned via admin endpoint", request.PlayerId);
+		auditLog.Record("UnbanPlayer", currentUserContext.UserId, $"Unbanned player {request.PlayerId}", request.PlayerId);
 		return Ok(new { playerId = request.PlayerId, isBanned = false });
 	}
 
@@ -343,6 +360,30 @@ public class AdminController : ControllerBase
 		var openOrders = marketRepository.GetOpenOrders();
 		var recentlyOnline = players.Count(p => p.LastOnline.HasValue && p.LastOnline.Value > DateTime.UtcNow.AddMinutes(-15));
 		var snapshot = worldState.ToImmutable();
+
+		// Extended metrics
+		var now = DateTime.UtcNow;
+		var dayAgo = now.AddDays(-1);
+		var allGames = globalState.GetGames().ToList();
+		var allAchievements = globalState.GetAchievements().ToList();
+		var achievementUnlocksToday = allAchievements.Count(a => a.FinishedAt >= dayAgo);
+		var runningGames = allGames.Count(g => g.Status == GameStatus.Active);
+
+		// Daily active users: unique user IDs who have a player active in the last 24h
+		var dailyActiveUsers = players
+			.Where(p => p.UserId != null && p.LastOnline.HasValue && p.LastOnline.Value >= dayAgo)
+			.Select(p => p.UserId!)
+			.Distinct()
+			.Count();
+
+		// Top achievements by game def type
+		var topAchievements = allAchievements
+			.GroupBy(a => a.GameDefType)
+			.Select(g => new { gameDefType = g.Key, count = g.Count() })
+			.OrderByDescending(x => x.count)
+			.Take(5)
+			.ToList();
+
 		return Ok(new {
 			totalPlayers = players.Count,
 			activePlayers = recentlyOnline,
@@ -352,6 +393,11 @@ public class AdminController : ControllerBase
 			currentTick = snapshot.GameTickState.CurrentGameTick.Tick,
 			isPaused = gameTickEngine.IsPaused,
 			effectiveTickDurationSeconds = gameTickEngine.EffectiveTickDuration.TotalSeconds,
+			dailyActiveUsers,
+			runningGames,
+			totalGames = allGames.Count,
+			achievementUnlocksToday,
+			topAchievements,
 		});
 	}
 
@@ -369,6 +415,56 @@ public class AdminController : ControllerBase
 			defaultTickDurationSeconds = gameDef.TickDuration.TotalSeconds,
 		});
 	}
+
+	// ── Audit Log ─────────────────────────────────────────────────────────────
+
+	[HttpGet("audit-log")]
+	public ActionResult GetAuditLog([FromQuery] int page = 0, [FromQuery] int pageSize = 20, [FromQuery] string actionType = "all")
+	{
+		if (pageSize < 1 || pageSize > 100) return BadRequest("pageSize must be between 1 and 100.");
+		var entries = auditLog.GetPage(page, pageSize, actionType);
+		var total = auditLog.GetTotal(actionType);
+		return Ok(new { entries, total, page, pageSize });
+	}
+
+	// ── Reports ───────────────────────────────────────────────────────────────
+
+	[HttpGet("reports")]
+	public ActionResult GetReports()
+	{
+		var reports = reportStore.GetAll().Select(r => new {
+			id = r.Id,
+			createdAt = r.CreatedAt,
+			reporterUserId = r.ReporterUserId,
+			targetUserId = r.TargetUserId,
+			reason = r.Reason,
+			details = r.Details,
+			status = r.Status.ToString(),
+			resolvedByUserId = r.ResolvedByUserId,
+			resolutionNote = r.ResolutionNote,
+			resolvedAt = r.ResolvedAt,
+		});
+		return Ok(reports);
+	}
+
+	[HttpPost("reports/{id}/action")]
+	public ActionResult ResolveReport(string id, [FromBody] ReportActionRequest request)
+	{
+		var report = reportStore.GetById(id);
+		if (report == null) return NotFound();
+		if (!Enum.TryParse<ReportStatus>(request.Action, true, out var newStatus))
+			return BadRequest($"Invalid action. Valid values: Resolved, Dismissed.");
+		var updated = report with {
+			Status = newStatus,
+			ResolvedByUserId = currentUserContext.UserId,
+			ResolutionNote = request.Note,
+			ResolvedAt = DateTime.UtcNow,
+		};
+		reportStore.Update(report, updated);
+		auditLog.Record("ReportAction", currentUserContext.UserId,
+			$"Report {id}: {newStatus} — {request.Note}", report.TargetUserId);
+		return Ok();
+	}
 }
 
 public record SetResourcesRequest(string PlayerId, string ResourceDefId, decimal Amount);
@@ -377,3 +473,4 @@ public record GrantUnitsRequest(string PlayerId, string UnitDefId, int Count);
 public record ResetPlayerRequest(string PlayerId);
 public record BanPlayerRequest(string PlayerId);
 public record UnbanPlayerRequest(string PlayerId);
+public record ReportActionRequest(string Action, string? Note);
