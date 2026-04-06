@@ -14,7 +14,8 @@ namespace BrowserGameEngine.Shared {
 		string? WinnerName = null,
 		DateTime? ActualEndTime = null,
 		string? VictoryConditionType = null,
-		string? VictoryConditionLabel = null
+		string? VictoryConditionLabel = null,
+		string? TournamentId = null
 	);
 
 	public record GameSettingsRequest(
@@ -45,7 +46,8 @@ namespace BrowserGameEngine.Shared {
 		string TickDuration,
 		string? DiscordWebhookUrl = null,
 		int MaxPlayers = 0,
-		GameSettingsRequest? Settings = null
+		GameSettingsRequest? Settings = null,
+		string? TournamentId = null
 	);
 
 	public record UpdateGameRequest(
@@ -71,7 +73,8 @@ namespace BrowserGameEngine.Shared {
 		List<GameResultEntryViewModel> Standings,
 		string? CurrentPlayerId = null,
 		string? VictoryConditionType = null,
-		string? VictoryConditionLabel = null
+		string? VictoryConditionLabel = null,
+		string? TournamentId = null
 	);
 
 	/// <summary>A game the current user is actively playing in, with their player info.</summary>

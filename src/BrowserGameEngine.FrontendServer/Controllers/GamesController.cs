@@ -116,7 +116,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerName: winnerName,
 				ActualEndTime: record.ActualEndTime,
 				VictoryConditionType: record.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
+				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType),
+				TournamentId: record.TournamentId
 			));
 		}
 
@@ -169,6 +170,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 
 			var gameId = new GameId(Guid.NewGuid().ToString("N")[..12]);
+			var tournamentId = request.TournamentId?.Trim();
+			if (tournamentId != null && tournamentId.Length == 0) return BadRequest("TournamentId cannot be empty or whitespace.");
 			var record = new GameRecordImmutable(
 				GameId: gameId,
 				Name: request.Name,
@@ -180,7 +183,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				DiscordWebhookUrl: request.DiscordWebhookUrl,
 				CreatedByUserId: currentUserContext.UserId,
 				MaxPlayers: request.MaxPlayers,
-				Settings: gameSettings
+				Settings: gameSettings,
+				TournamentId: tournamentId
 			);
 
 			// Create a fresh world state for the new game
@@ -418,7 +422,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Standings: standings,
 				CurrentPlayerId: currentPlayerId,
 				VictoryConditionType: record.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType)
+				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType),
+				TournamentId: record.TournamentId
 			));
 		}
 
@@ -481,7 +486,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				IsPlayerEnrolled: isPlayerEnrolled,
 				VictoryConditionType: record.VictoryConditionType,
 				DiscordWebhookUrl: record.DiscordWebhookUrl,
-				CreatedByUserId: record.CreatedByUserId
+				CreatedByUserId: record.CreatedByUserId,
+				TournamentId: record.TournamentId
 			);
 		}
 

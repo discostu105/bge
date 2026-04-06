@@ -1,4 +1,4 @@
-import { useParams } from 'react-router'
+import { useParams, Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
@@ -29,6 +29,17 @@ export function GameResults() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{model.name} — Results</h1>
+
+      {model.tournamentId && (
+        <div>
+          <Link
+            to={`/tournaments/${model.tournamentId}`}
+            className="text-sm text-primary underline"
+          >
+            View Tournament Results: {model.tournamentId}
+          </Link>
+        </div>
+      )}
 
       {model.victoryConditionType && (
         <div className="flex items-center gap-2">

@@ -40,6 +40,7 @@ export function AdminGames() {
   const [createVictoryThreshold, setCreateVictoryThreshold] = useState<number | undefined>(undefined)
   const [createVictoryConditionType, setCreateVictoryConditionType] = useState('EconomicThreshold')
   const [createMaxPlayers, setCreateMaxPlayers] = useState<number | undefined>(undefined)
+  const [createTournamentId, setCreateTournamentId] = useState('')
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
@@ -133,6 +134,7 @@ export function AdminGames() {
       discordWebhookUrl: null,
       maxPlayers: 0,
       settings,
+      tournamentId: createTournamentId.trim() || null,
     })
   }
 
@@ -296,6 +298,16 @@ export function AdminGames() {
               </div>
             </div>
           </details>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tournament ID (optional)</label>
+            <input
+              type="text"
+              className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
+              placeholder="e.g. tournament-abc123"
+              value={createTournamentId}
+              onChange={(e) => setCreateTournamentId(e.target.value)}
+            />
+          </div>
           {createError && <p className="text-destructive text-sm">{createError}</p>}
           {createSuccess && <p className="text-success-foreground text-sm">{createSuccess}</p>}
           <button

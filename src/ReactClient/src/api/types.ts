@@ -266,6 +266,7 @@ export interface GameDetailViewModel {
   actualEndTime: string | null
   victoryConditionType: string | null
   victoryConditionLabel: string | null
+  tournamentId: string | null
 }
 
 export interface GameSummaryViewModel {
@@ -284,6 +285,7 @@ export interface GameSummaryViewModel {
   victoryConditionType: string | null
   discordWebhookUrl: string | null
   createdByUserId: string | null
+  tournamentId: string | null
 }
 
 export interface GameListViewModel {
@@ -308,6 +310,7 @@ export interface GameResultsViewModel {
   currentPlayerId: string | null
   victoryConditionType: string | null
   victoryConditionLabel: string | null
+  tournamentId: string | null
 }
 
 export interface JoinGameRequest {
@@ -344,6 +347,22 @@ export interface CreateGameRequest {
   discordWebhookUrl: string | null
   maxPlayers: number
   settings?: GameSettingsRequest | null
+  tournamentId?: string | null
+}
+
+export interface TournamentPlayerResultViewModel {
+  rank: number
+  userId: string | null
+  playerName: string
+  gamesPlayed: number
+  wins: number
+  totalScore: number
+}
+
+export interface TournamentResultsViewModel {
+  tournamentId: string
+  totalGames: number
+  rankings: TournamentPlayerResultViewModel[]
 }
 
 // Players / Profile
