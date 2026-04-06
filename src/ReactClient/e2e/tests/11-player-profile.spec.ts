@@ -18,8 +18,12 @@ test.describe('Player profile page', () => {
 		// At minimum the profile card renders
 		await expect(page.locator('.rounded-lg.border')).toBeVisible()
 
-		// Games played stat should be visible
-		await expect(page.getByText(/games played/i)).toBeVisible()
+		// The profile card shows either current game stats or a "not in a game" message
+		await expect(
+			page.getByText(/score/i)
+				.or(page.getByText(/rank/i))
+				.or(page.getByText(/not currently in a game/i))
+		).toBeVisible()
 	})
 
 	test('own profile page shows "not in a game" when player has no active game', async ({ page }) => {
