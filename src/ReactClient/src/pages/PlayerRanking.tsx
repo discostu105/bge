@@ -6,6 +6,8 @@ import type { PublicPlayerViewModel, PaginatedResponse } from '@/api/types'
 import { cn } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { EmptyState } from '@/components/EmptyState'
+import { UsersIcon } from 'lucide-react'
 
 const VICTORY_THRESHOLD = 500_000
 
@@ -86,6 +88,18 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
               </tr>
             </thead>
             <tbody className="divide-y">
+              {!isLoading && filtered.length === 0 && (
+                <tr>
+                  <td colSpan={9}>
+                    <EmptyState
+                      icon={<UsersIcon />}
+                      title="No players yet"
+                      description="No players have joined this game yet."
+                      action={{ label: 'Browse games', to: '/games' }}
+                    />
+                  </td>
+                </tr>
+              )}
               {filtered.map((p, i) => (
                 <tr key={p.playerId} className={cn(
                   'transition-colors',

@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { BellIcon } from 'lucide-react'
+import { BellIcon, CheckCircleIcon } from 'lucide-react'
 import { useNotifications } from '@/hooks/useNotifications'
 import type { UseSignalRReturn } from '@/hooks/useSignalR'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/EmptyState'
 
 function notificationIcon(kind: string): string {
   switch (kind) {
@@ -71,7 +72,9 @@ export function NotificationBell({ signalR, onRealTimeNotification }: Notificati
           </div>
 
           {notifications.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-3 text-center">No recent notifications.</p>
+            <div className="py-2">
+              <EmptyState icon={<CheckCircleIcon />} title="All caught up!" />
+            </div>
           ) : (
             <ul>
               {notifications.slice(0, 15).map((n) => (

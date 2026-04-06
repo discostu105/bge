@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { HammerIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { BuildQueueViewModel } from '@/api/types'
+import { EmptyState } from '@/components/EmptyState'
 
 interface BuildQueueProps {
   gameId: string
@@ -31,7 +33,11 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
     return (
       <div className="rounded-lg border bg-card p-4">
         <h3 className="font-semibold mb-2">Build Queue</h3>
-        <p className="text-muted-foreground text-sm">Queue is empty.</p>
+        <EmptyState
+          icon={<HammerIcon />}
+          title="Queue is empty"
+          description="Queue buildings or units to start constructing."
+        />
       </div>
     )
   }
