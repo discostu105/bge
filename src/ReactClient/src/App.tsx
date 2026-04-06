@@ -45,6 +45,7 @@ const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade }
 const Help = lazy(() => import('@/pages/Help').then(m => ({ default: m.Help })))
 const BattleReplay = lazy(() => import('@/pages/BattleReplay').then(m => ({ default: m.BattleReplay })))
 const GameLiveView = lazy(() => import('@/pages/GameLiveView').then(m => ({ default: m.GameLiveView })))
+const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ default: m.PlayerStats })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -204,6 +205,7 @@ const router = createBrowserRouter([
       { path: '/alliances/:allianceId', element: <AllianceDetail /> },
       { path: '/achievements', element: <Achievements /> },
       { path: '/history', element: <PlayerHistory /> },
+      { path: '/stats', element: <PlayerStats /> },
       { path: '/admin/games', element: <AdminGames /> },
       { path: '/admin/players', element: <AdminPlayers /> },
       { path: '/admin/ticks', element: <AdminTickControl /> },

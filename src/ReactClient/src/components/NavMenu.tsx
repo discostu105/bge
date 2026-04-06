@@ -17,6 +17,8 @@ import {
   HistoryIcon,
   HelpCircleIcon,
   RadioIcon,
+  LineChartIcon,
+  UserIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
@@ -96,7 +98,9 @@ export function NavMenu() {
       <div className="mt-6 px-3">
         <ul className="space-y-0.5">
           <SectionLabel>Account</SectionLabel>
-          <NavItem to="/profile" icon={HistoryIcon} label="Profile" />
+          <NavItem to="/history" icon={HistoryIcon} label="History" />
+          <NavItem to="/stats" icon={LineChartIcon} label="My Stats" />
+          <NavItem to="/profile" icon={UserIcon} label="Profile" />
           <NavItem to="/achievements" icon={TrophyIcon} label="Achievements" />
         </ul>
       </div>
