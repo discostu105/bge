@@ -3,13 +3,15 @@
 Exposes control and observability endpoints for the running bot.
 Intended to be started in a daemon background thread from ``main.py``.
 
-Current endpoints (Phase 4B — Adaptive Difficulty):
-  GET  /difficulty/recommendation  — current advisor output
-  POST /difficulty/apply           — apply recommendation immediately
+Current endpoints:
 
-Phase 4A (Strategy Analytics & Replay) will add:
+Phase 4A (Strategy Analytics & Replay):
   GET  /replay?limit=N    — last N decision log records
   GET  /outcomes?limit=N  — last N outcome records
+
+Phase 4B (Adaptive Difficulty):
+  GET  /difficulty/recommendation  — current advisor output
+  POST /difficulty/apply           — apply recommendation immediately
 """
 from __future__ import annotations
 
@@ -21,15 +23,33 @@ from typing import TYPE_CHECKING
 from urllib.parse import parse_qs, urlparse
 
 if TYPE_CHECKING:
+	from agent1.analytics.decision_logger import DecisionLogger
+	from agent1.analytics.outcome_tracker import OutcomeTracker
 	from agent1.config import AgentConfig
 	from agent1.strategy.adaptive_difficulty import AdaptiveDifficultyAdvisor
 
 logger = logging.getLogger(__name__)
 
+_DEFAULT_LIMIT = 50
+_MAX_LIMIT = 1000
+
+
+def _parse_limit(query: str) -> int:
+	"""Parse ``limit`` from a query string, clamping to ``[1, _MAX_LIMIT]``."""
+	params = parse_qs(query)
+	raw = params.get("limit", [str(_DEFAULT_LIMIT)])[0]
+	try:
+		value = int(raw)
+	except ValueError:
+		value = _DEFAULT_LIMIT
+	return max(1, min(value, _MAX_LIMIT))
+
 
 class _Handler(BaseHTTPRequestHandler):
-	"""Request handler bound to a shared advisor and config at class level."""
+	"""Request handler bound to shared analytics and difficulty objects at class level."""
 
+	decision_logger: DecisionLogger
+	outcome_tracker: OutcomeTracker
 	advisor: AdaptiveDifficultyAdvisor
 	config: AgentConfig
 
@@ -46,7 +66,13 @@ class _Handler(BaseHTTPRequestHandler):
 
 	def do_GET(self) -> None:  # noqa: N802
 		parsed = urlparse(self.path)
-		if parsed.path == "/difficulty/recommendation":
+		if parsed.path == "/replay":
+			limit = _parse_limit(parsed.query)
+			self._send_json(self.decision_logger.tail(limit))
+		elif parsed.path == "/outcomes":
+			limit = _parse_limit(parsed.query)
+			self._send_json(self.outcome_tracker.tail(limit))
+		elif parsed.path == "/difficulty/recommendation":
 			self._handle_recommendation()
 		else:
 			self._send_json({"error": "not found"}, 404)
@@ -98,6 +124,8 @@ class _Handler(BaseHTTPRequestHandler):
 
 
 def start_server(
+	decision_logger: DecisionLogger,
+	outcome_tracker: OutcomeTracker,
 	advisor: AdaptiveDifficultyAdvisor,
 	config: AgentConfig,
 	host: str = "0.0.0.0",
@@ -106,6 +134,10 @@ def start_server(
 	"""Start the management HTTP server in a daemon thread.
 
 	Args:
+		decision_logger: The :class:`~agent1.analytics.decision_logger.DecisionLogger`
+			instance to expose via ``/replay``.
+		outcome_tracker: The :class:`~agent1.analytics.outcome_tracker.OutcomeTracker`
+			instance to expose via ``/outcomes``.
 		advisor: The :class:`AdaptiveDifficultyAdvisor` instance to expose.
 		config: The live :class:`AgentConfig` instance (mutated on apply).
 		host: Bind address.  Defaults to ``"0.0.0.0"``.
@@ -118,6 +150,8 @@ def start_server(
 	class _BoundHandler(_Handler):
 		pass
 
+	_BoundHandler.decision_logger = decision_logger
+	_BoundHandler.outcome_tracker = outcome_tracker
 	_BoundHandler.advisor = advisor
 	_BoundHandler.config = config
 

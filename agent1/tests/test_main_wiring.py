@@ -58,6 +58,8 @@ def _run_loop_for_n_polls(config: AgentConfig, tick_info_sequence: list[dict], m
 		patch("agent1.main.DecisionEngine", return_value=mock_engine),
 		patch("agent1.main.load_strategy"),
 		patch("agent1.main.ActionDispatcher"),
+		patch("agent1.main.DecisionLogger"),
+		patch("agent1.main.OutcomeTracker"),
 		patch("agent1.main.start_server"),
 		patch("agent1.main.time.sleep", side_effect=fake_sleep),
 	):

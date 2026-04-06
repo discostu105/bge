@@ -5,7 +5,10 @@ import argparse
 import logging
 import time
 from collections import deque
+from typing import Optional
 
+from .analytics.decision_logger import DecisionLogger
+from .analytics.outcome_tracker import OutcomeTracker
 from .client import BgeClient
 from .config import AgentConfig, load_config
 from .server import start_server
@@ -55,6 +58,11 @@ def run(config: AgentConfig) -> None:
 	processed), state is fetched and ``DecisionEngine.run_tick`` is called
 	exactly once.  Errors are caught and logged; the loop never crashes.
 
+	Phase 4A additions:
+	- ``DecisionLogger`` records each dispatched action to ``decisions.jsonl``.
+	- ``OutcomeTracker`` records resource/unit deltas after each tick to
+	  ``outcomes.jsonl``.
+
 	Phase 4B additions:
 	- Starts the HTTP management server (port 8081 by default).
 	- Checks game status each tick; when the game transitions to ``"Finished"``,
@@ -65,17 +73,20 @@ def run(config: AgentConfig) -> None:
 
 	client = BgeClient(config.base_url, config.api_key)
 	tracker = GameStateTracker()
+	decision_logger = DecisionLogger()
+	outcome_tracker = OutcomeTracker()
 	alliance_tracker = AllianceTracker()
-	dispatcher = ActionDispatcher(client)
+	dispatcher = ActionDispatcher(client, decision_logger=decision_logger)
 	strategy = load_strategy(config.strategy)
 	alliance_module = load_alliance_module()
 	engine = DecisionEngine(strategy, dispatcher, alliance_module=alliance_module)
 	history: deque = deque(maxlen=20)
 	advisor = AdaptiveDifficultyAdvisor()
 
-	start_server(advisor, config)
+	start_server(decision_logger, outcome_tracker, advisor, config)
 
 	last_next_tick_at: str = ""
+	prev_tracker: Optional[GameStateTracker] = None
 	last_game_status: str = ""
 
 	logger.info(
@@ -93,6 +104,7 @@ def run(config: AgentConfig) -> None:
 			next_tick_at: str = tick_info.get("nextTickAt", "")
 
 			if next_tick_at != last_next_tick_at:
+				is_first_tick = not last_next_tick_at
 				last_next_tick_at = next_tick_at
 				current_tick = hash(next_tick_at)
 
@@ -103,7 +115,19 @@ def run(config: AgentConfig) -> None:
 				units = client.get_units()
 				attackable = client.get_attackable_players()
 
+				prev_tracker = GameStateTracker(
+					minerals=tracker.minerals,
+					gas=tracker.gas,
+					units=tracker.units,
+					land=tracker.land,
+					max_land=tracker.max_land,
+					unit_list=list(tracker.unit_list),
+					attackable_players=list(tracker.attackable_players),
+				) if not is_first_tick else None
+
 				tracker.update(tick_info, resources, units, attackable)
+
+				dispatcher.current_tick = current_tick
 
 				ctx = StrategyContext(
 					state=tracker,
@@ -113,6 +137,7 @@ def run(config: AgentConfig) -> None:
 					alliance_tracker=alliance_tracker,
 				)
 				engine.run_tick(ctx)
+				outcome_tracker.record(prev_tracker, tracker, current_tick)
 				history.append(tracker)
 
 				logger.debug(
