@@ -72,6 +72,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<PlayerConnectionTracker>();
 builder.Services.AddSingleton<IGameEventPublisher, SignalRGameEventPublisher>();
+builder.Services.AddSingleton<ISpectatorEventPublisher, SignalRSpectatorEventPublisher>();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
@@ -242,6 +243,7 @@ app.MapDefaultControllerRoute();
 app.MapRazorPages();
 app.MapControllers();
 app.MapHub<GameHub>("/hubs/game");
+app.MapHub<SpectatorHub>("/hubs/spectator");
 app.MapMetrics();
 app.MapFallbackToFile("index.html", new StaticFileOptions {
 	OnPrepareResponse = ctx => {

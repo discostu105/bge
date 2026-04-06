@@ -62,6 +62,7 @@ const GameLiveView = lazy(() => import('@/pages/GameLiveView').then(m => ({ defa
 const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ default: m.PlayerStats })))
 const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m => ({ default: m.TournamentResults })))
 const Leaderboard = lazy(() => import('@/pages/Leaderboard').then(m => ({ default: m.Leaderboard })))
+const Spectator = lazy(() => import('@/pages/Spectator').then(m => ({ default: m.Spectator })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -162,6 +163,11 @@ function GameLiveViewPage() {
   if (!gameId) return null
   return <GameLiveView gameId={gameId} />
 }
+function SpectatorPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <Spectator gameId={gameId} />
+}
 
 const router = createBrowserRouter([
 	{
@@ -225,6 +231,7 @@ const router = createBrowserRouter([
 			{ path: '/stats', element: <RouteWithBoundary><PlayerStats /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
 			{ path: '/leaderboard', element: <RouteWithBoundary><Leaderboard /></RouteWithBoundary> },
+			{ path: '/games/:gameId/spectate', element: <RouteWithBoundary><SpectatorPage /></RouteWithBoundary> },
 			{ path: '/admin/games', element: <RouteWithBoundary><AdminGames /></RouteWithBoundary> },
 			{ path: '/admin/players', element: <RouteWithBoundary><AdminPlayers /></RouteWithBoundary> },
 			{ path: '/admin/ticks', element: <RouteWithBoundary><AdminTickControl /></RouteWithBoundary> },
