@@ -65,6 +65,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepositoryWrite,
 				NullGameEventPublisher.Instance,
 				TimeProvider.System,
+				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(game.GlobalState, registry),
+				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(game.GlobalState),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 

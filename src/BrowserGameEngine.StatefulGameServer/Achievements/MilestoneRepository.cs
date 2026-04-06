@@ -60,7 +60,7 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 			return value;
 		}
 
-		private static int ComputeProgress(
+		private int ComputeProgress(
 			MilestoneDefinition def,
 			IList<PlayerAchievementImmutable> achievements,
 			PlayerState? playerState,
@@ -72,11 +72,16 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 				"games-veteran"   => Math.Min(achievements.Count, def.TargetProgress),
 				"games-commander" => Math.Min(achievements.Count, def.TargetProgress),
 				"games-legend"    => Math.Min(achievements.Count, def.TargetProgress),
+				"games-100"       => Math.Min(achievements.Count, def.TargetProgress),
 
 				"win-first"    => Math.Min(achievements.Count(a => a.FinalRank == 1), def.TargetProgress),
 				"win-champion" => Math.Min(achievements.Count(a => a.FinalRank == 1), def.TargetProgress),
 				"win-legend"   => Math.Min(achievements.Count(a => a.FinalRank == 1), def.TargetProgress),
 				"top3-first"   => Math.Min(achievements.Count(a => a.FinalRank <= 3), def.TargetProgress),
+
+				"win-streak-5"      => Math.Min(GetCurrentWinStreak(achievements), def.TargetProgress),
+				"top3-leaderboard"  => GetLeaderboardRank(userId) <= 3 ? 1 : 0,
+				"difficulty-master" => HasWonLargeGame(achievements) ? 1 : 0,
 
 				"econ-minerals" => playerState == null ? 0 : Math.Min((int)GetResource(playerState, "minerals"), def.TargetProgress),
 				"econ-gas"      => playerState == null ? 0 : Math.Min((int)GetResource(playerState, "gas"),      def.TargetProgress),
@@ -90,6 +95,44 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 
 				_ => 0
 			};
+		}
+
+		private static int GetCurrentWinStreak(IList<PlayerAchievementImmutable> achievements) {
+			var sorted = achievements.OrderBy(a => a.FinishedAt).ToList();
+			int streak = 0;
+			for (int i = sorted.Count - 1; i >= 0; i--) {
+				if (sorted[i].FinalRank == 1) {
+					streak++;
+				} else {
+					break;
+				}
+			}
+			return streak;
+		}
+
+		private int GetLeaderboardRank(string userId) {
+			var allAchievements = _globalState.GetAchievements();
+			var rankedUsers = allAchievements
+				.GroupBy(a => a.UserId)
+				.Select(g => (UserId: g.Key, Wins: g.Count(a => a.FinalRank == 1)))
+				.OrderByDescending(x => x.Wins)
+				.ToList();
+			var idx = rankedUsers.FindIndex(x => x.UserId == userId);
+			return idx == -1 ? int.MaxValue : idx + 1;
+		}
+
+		private bool HasWonLargeGame(IList<PlayerAchievementImmutable> achievements) {
+			var winningGameIds = achievements
+				.Where(a => a.FinalRank == 1)
+				.Select(a => a.GameId.Id)
+				.ToHashSet();
+			if (winningGameIds.Count == 0) return false;
+			var allAchievements = _globalState.GetAchievements();
+			foreach (var gameId in winningGameIds) {
+				var playerCount = allAchievements.Count(a => a.GameId.Id == gameId);
+				if (playerCount >= 5) return true;
+			}
+			return false;
 		}
 
 		private static int GetAllianceProgress(GameInstance instance, string userId) {

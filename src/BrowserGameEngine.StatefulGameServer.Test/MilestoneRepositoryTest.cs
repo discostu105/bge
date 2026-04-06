@@ -527,13 +527,13 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		// ── MilestoneCatalogue completeness (verified via repository output) ─────
 
 		[Fact]
-		public void GetMilestonesForUser_Returns15Milestones() {
+		public void GetMilestonesForUser_Returns19Milestones() {
 			var globalState = new GlobalState();
 			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
 
 			var results = repo.GetMilestonesForUser(UserId);
 
-			Assert.Equal(15, results.Count);
+			Assert.Equal(19, results.Count);
 		}
 
 		[Fact]
@@ -564,12 +564,160 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				"games-first", "games-veteran", "games-commander", "games-legend",
 				"win-first", "win-champion", "win-legend", "top3-first",
 				"econ-minerals", "econ-gas", "econ-land-100", "econ-land-500",
-				"diplo-alliance", "market-first", "upgrade-first"
+				"diplo-alliance", "market-first", "upgrade-first",
+				"win-streak-5", "top3-leaderboard", "games-100", "difficulty-master"
 			};
 
 			var ids = repo.GetMilestonesForUser(UserId).Select(r => r.Definition.Id).ToHashSet();
 
 			Assert.All(expectedIds, id => Assert.Contains(id, ids));
+		}
+
+		// ── Phase 5A: new achievement types ─────────────────────────────────────
+
+		[Fact]
+		public void WinStreak_FiveConsecutiveWins_StreakIsAtTarget() {
+			var globalState = new GlobalState();
+			for (int i = 0; i < 5; i++) {
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: UserId, GameId: new GameId($"g{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow.AddMinutes(i)
+				));
+			}
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "win-streak-5");
+			Assert.Equal(5, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void WinStreak_LossBreaksStreak_ProgressResets() {
+			var globalState = new GlobalState();
+			// 3 wins, then a loss, then 2 wins → current streak is 2
+			for (int i = 0; i < 3; i++) {
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: UserId, GameId: new GameId($"win{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow.AddMinutes(i)
+				));
+			}
+			globalState.AddAchievement(new PlayerAchievementImmutable(
+				UserId: UserId, GameId: new GameId("loss"), PlayerId: Player1,
+				PlayerName: "p", FinalRank: 2, FinalScore: 50, GameDefType: "sco",
+				FinishedAt: DateTime.UtcNow.AddMinutes(3)
+			));
+			for (int i = 0; i < 2; i++) {
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: UserId, GameId: new GameId($"win2_{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow.AddMinutes(4 + i)
+				));
+			}
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "win-streak-5");
+			Assert.Equal(2, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void WinStreak_NoGames_ProgressIsZero() {
+			var globalState = new GlobalState();
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "win-streak-5");
+			Assert.Equal(0, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void Top3Leaderboard_UserIsTop3ByWins_ProgressIs1() {
+			var globalState = new GlobalState();
+			// User1 has 5 wins, User2 has 3 wins, UserId has 4 wins → UserId is rank 2
+			for (int i = 0; i < 5; i++)
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: "user-other1", GameId: new GameId($"o1g{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow
+				));
+			for (int i = 0; i < 4; i++)
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: UserId, GameId: new GameId($"ug{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow
+				));
+			for (int i = 0; i < 3; i++)
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: "user-other2", GameId: new GameId($"o2g{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow
+				));
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "top3-leaderboard");
+			Assert.Equal(1, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void Top3Leaderboard_UserIsRank4_ProgressIsZero() {
+			var globalState = new GlobalState();
+			// UserId has 1 win, 3 others have 5, 4, 3 wins respectively → UserId is rank 4
+			foreach (var (uid, wins) in new[] { ("u1", 5), ("u2", 4), ("u3", 3) }) {
+				for (int i = 0; i < wins; i++)
+					globalState.AddAchievement(new PlayerAchievementImmutable(
+						UserId: uid, GameId: new GameId($"{uid}g{i}"), PlayerId: Player1,
+						PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+						FinishedAt: DateTime.UtcNow
+					));
+			}
+			globalState.AddAchievement(new PlayerAchievementImmutable(
+				UserId: UserId, GameId: new GameId("mywin"), PlayerId: Player1,
+				PlayerName: "p", FinalRank: 1, FinalScore: 100, GameDefType: "sco",
+				FinishedAt: DateTime.UtcNow
+			));
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "top3-leaderboard");
+			Assert.Equal(0, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void Games100_ExactlyHundredGames_ProgressAtTarget() {
+			var globalState = new GlobalState();
+			for (int i = 0; i < 100; i++)
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: UserId, GameId: new GameId($"g{i}"), PlayerId: Player1,
+					PlayerName: "p", FinalRank: i % 3 + 1, FinalScore: 100, GameDefType: "sco",
+					FinishedAt: DateTime.UtcNow
+				));
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "games-100");
+			Assert.Equal(100, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void DifficultyMaster_WinGameWith5Players_ProgressIs1() {
+			var globalState = new GlobalState();
+			// 5 players all finish the same game; UserId wins
+			for (int i = 0; i < 5; i++) {
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: i == 0 ? UserId : $"other-{i}", GameId: new GameId("big-game"),
+					PlayerId: Player1, PlayerName: "p", FinalRank: i + 1, FinalScore: 100 - i * 10,
+					GameDefType: "sco", FinishedAt: DateTime.UtcNow
+				));
+			}
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "difficulty-master");
+			Assert.Equal(1, m.CurrentProgress);
+		}
+
+		[Fact]
+		public void DifficultyMaster_WinGameWith4Players_ProgressIsZero() {
+			var globalState = new GlobalState();
+			for (int i = 0; i < 4; i++) {
+				globalState.AddAchievement(new PlayerAchievementImmutable(
+					UserId: i == 0 ? UserId : $"other-{i}", GameId: new GameId("small-game"),
+					PlayerId: Player1, PlayerName: "p", FinalRank: i + 1, FinalScore: 100 - i * 10,
+					GameDefType: "sco", FinishedAt: DateTime.UtcNow
+				));
+			}
+			var repo = new MilestoneRepository(globalState, EmptyGameRegistry(globalState));
+			var m = repo.GetMilestonesForUser(UserId).Single(r => r.Definition.Id == "difficulty-master");
+			Assert.Equal(0, m.CurrentProgress);
 		}
 
 		// ── GlobalState milestone storage ────────────────────────────────────────

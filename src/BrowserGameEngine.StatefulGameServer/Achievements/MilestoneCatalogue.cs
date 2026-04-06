@@ -41,6 +41,12 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 
 			// Exploration — in-game (tech)
 			new("upgrade-first",  "Tech Pioneer",   "Research first tech upgrade",   "exploration", "🔬", "bronze",     1),
+
+			// Phase 5A achievement types — cross-game
+			new("win-streak-5",      "On a Roll",         "Win 5 games in a row",                       "combat",      "🔥", "silver",    5),
+			new("top3-leaderboard",  "Hall of Fame",      "Reach top 3 on the all-time leaderboard",    "combat",      "🏅", "gold",      1),
+			new("games-100",         "Century Commander", "Complete 100 games",                          "exploration", "💯", "legendary",100),
+			new("difficulty-master", "Dominator",         "Win a game with 5 or more players",          "combat",      "👑", "gold",      1),
 		};
 	}
 }
