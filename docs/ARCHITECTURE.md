@@ -30,8 +30,10 @@ Static, immutable game configuration: player types, resources, units, assets, co
 Immutable snapshot types representing per-game world state and cross-game global state: `WorldStateImmutable`, `PlayerImmutable`, `UnitImmutable`, `GlobalStateImmutable`, `GameRecordImmutable`, `PlayerAchievementImmutable`, etc. Used for serialization and as the persistence format.
 
 - `IWorldStateFactory` — creates initial world state for a new game
-- `GameRecordImmutable` — game metadata: `GameId`, `Name`, `GameDefType`, `Status` (`Upcoming | Active | Finished`), `StartTime`, `EndTime`, `TickDuration`, `WinnerId`
-- `GlobalStateImmutable` — cross-game container: users, game registry, achievements
+- `GameRecordImmutable` — game metadata: `GameId`, `Name`, `GameDefType`, `Status` (`Upcoming | Active | Finished`), `StartTime`, `EndTime`, `TickDuration`, `WinnerId`, `TournamentId` (nullable)
+- `GlobalStateImmutable` — cross-game container: users (with `TotalXp`), game registry, achievements, milestones, tournaments
+- `TournamentImmutable` — tournament record with bracket format (`RoundRobin | SingleElimination`), status, matches, and registrations
+- `UserMilestoneImmutable` — records a specific milestone unlocked by a user (global)
 
 ### 3. Game Definition SCO (`BrowserGameEngine.GameDefinition.SCO`)
 The StarCraft Online implementation. Implements `IGameDefFactory` and `IWorldStateFactory` with concrete game data (3 races, units, buildings, costs).
@@ -60,10 +62,11 @@ Core game logic. Owns mutable in-memory state split between `WorldState` (per-ga
 
 **Multi-game runtime objects:**
 
-- `GlobalState` — mutable in-memory mirror of `GlobalStateImmutable`. Holds `Users` (`ConcurrentDictionary`), `Games` (list of `GameRecordImmutable`), and `Achievements` (list of `PlayerAchievementImmutable`). Singleton.
+- `GlobalState` — mutable in-memory mirror of `GlobalStateImmutable`. Holds `Users` (`ConcurrentDictionary`), `Games` (list of `GameRecordImmutable`), `Achievements` (list of `PlayerAchievementImmutable`), `Milestones` (list of `UserMilestoneImmutable`), and `Tournaments` (list of `TournamentImmutable`). Singleton.
 - `GameInstance` — runtime container for one active or upcoming game: `GameRecordImmutable`, `WorldState`, `GameDef`, `GameTickEngine`, and `IWorldStateAccessor`.
 - `GameRegistry` — singleton. Holds `GlobalState` and a `ConcurrentDictionary<GameId, GameInstance>`. Provides `GetDefaultInstance()`, `TryGetInstance(gameId)`, `GetAllInstances()`. Populated at startup from persisted state.
-- `GameLifecycleEngine` — transitions games between statuses (`Upcoming → Active`, `Active → Finished`), writes `PlayerAchievement` records on finalization, and frees memory for finished games.
+- `GameLifecycleEngine` — transitions games between statuses (`Upcoming → Active`, `Active → Finished`), writes `PlayerAchievement` records on finalization, awards XP via `GlobalState.AddXpToUser`, processes tournament progression via `TournamentEngine.ProcessGameFinalized`, and frees memory for finished games.
+- `TournamentEngine` — manages bracket tournaments. On `ProcessGameFinalized`, advances the bracket (round-robin or single-elimination), auto-creates next-round games, and marks tournaments as complete. Invoked by `GameLifecycleEngine` after each game finalizes.
 
 **Internal model** (`GameModelInternal/`): Mutable counterparts to the immutable model — `WorldState`, `GlobalState`, `Player`, `PlayerState`, `Unit`. Converted via `ToImmutable()`/`ToMutable()` extensions.
 
@@ -94,6 +97,13 @@ public interface IWorldStateAccessor {
 | `OnlineStatusRepository` | — | Online/offline status by last-seen time |
 | `UserRepository` | `UserRepositoryWrite` | User accounts (global, via `GlobalState`) |
 | `ColonizeRepositoryWrite` | — | Land colonization |
+| `MilestoneRepository` | `MilestoneRepositoryWrite` | User lifetime milestone tracking (global, via `GlobalState`) |
+| `TournamentRepository` | `TournamentRepositoryWrite` | Tournament CRUD; write uses `lock` for thread-safe bracket updates (global, via `GlobalState`) |
+| `LeaderboardRepository` | — | All-time cross-game rankings with XP/level |
+
+**Player XP & progression** (`XpHelper`):
+- `XpHelper` — static helper with triangular level progression (levels 1–50). Awards XP on game end: 50 base + rank bonuses (200/100/50 for top 3) + 75 per newly unlocked milestone.
+- `UserImmutable.TotalXp` — cumulative XP stored on the user record in `GlobalState`. Level is computed from `TotalXp` via `XpHelper` and never persisted separately.
 
 **Game tick engine** (`GameTicks/`):
 - `GameTickEngine` — checks if ticks are due, advances world and per-player ticks. One instance per `GameInstance`.
@@ -135,9 +145,26 @@ ASP.NET Core host — the composition root. Wires everything together.
 - `MessagesController` — private messages and battle reports
 - `PlayerRankingController`, `AllianceRankingController`, `UnitDefinitionsController` — read-only
 - `GamesController` — list games, create game, get game details (`[AllowAnonymous]` for reads)
-- `LeaderboardController` — cross-game all-time rankings (`[AllowAnonymous]`)
+- `LeaderboardController` — cross-game all-time rankings with XP/level (`[AllowAnonymous]`)
 - `GameInfoController` — game metadata endpoint
 - `NotificationsController` — per-player in-app notifications: `GET /api/notifications`, `DELETE /api/notifications`
+- `TournamentController` — tournament list, create, detail, bracket, register/unregister, start
+- `AchievementsController` — player milestone/achievement reads
+- `PlayersController` — cross-game player stats (profile, XP, level)
+- `ProfileController` — authenticated user profile with XP progress bar data
+- `SpectatorController` — live game spectating endpoints
+- `ReplayController` — battle replay data
+- `ChatController` — in-game chat
+- `DiplomacyController` — diplomacy actions
+- `HistoryController` — historical game data
+- `MarketController` — market/trading endpoints
+- `ResearchController` — research tree
+- `SpyController` — espionage actions
+- `StatsController` — game statistics
+- `TradeController` — player-to-player trades
+- `ResourceHistoryController` — resource history queries
+- `UserPreferencesController` — user preferences
+- `VersionController` — server version info (`[AllowAnonymous]`)
 - `AdminController` — administrative operations (DevAuth-gated)
 
 **Hosted services** (background):
