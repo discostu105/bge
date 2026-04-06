@@ -213,6 +213,12 @@ const router = createBrowserRouter([
 					{ path: 'join', element: <RouteWithBoundary><JoinGame /></RouteWithBoundary> },
 					{ path: 'summary', element: <RouteWithBoundary><GameSummary /></RouteWithBoundary> },
 					{ path: 'results', element: <RouteWithBoundary><GameResults /></RouteWithBoundary> },
+
+					// Account pages (also available at top-level, but rendered inside game layout when accessed from nav)
+					{ path: 'history', element: <RouteWithBoundary><PlayerHistory /></RouteWithBoundary> },
+					{ path: 'stats', element: <RouteWithBoundary><PlayerStats /></RouteWithBoundary> },
+					{ path: 'profile', element: <RouteWithBoundary><PlayerProfile /></RouteWithBoundary> },
+					{ path: 'achievements', element: <RouteWithBoundary><Achievements /></RouteWithBoundary> },
 				],
 			},
 

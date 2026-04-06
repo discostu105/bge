@@ -970,6 +970,22 @@ export interface AllTimePlayerListViewModel {
   players: AllTimePlayerEntryViewModel[]
 }
 
+// Player Management
+
+export interface PlayerSummaryViewModel {
+  playerId: string
+  playerName: string
+  hasApiKey: boolean
+}
+
+export interface PlayerListViewModel {
+  players: PlayerSummaryViewModel[]
+}
+
+export interface ApiKeyViewModel {
+  apiKey: string
+}
+
 // Create Player
 
 export interface CreatePlayerRequest {
