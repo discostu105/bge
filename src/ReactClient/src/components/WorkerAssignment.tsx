@@ -41,7 +41,7 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
   return (
     <div className="rounded-lg border bg-card p-4">
       <h3 className="font-semibold mb-3">Worker Assignment</h3>
-      <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 text-sm mb-3">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary">{data.totalWorkers}</div>
           <div className="text-muted-foreground">Total</div>
