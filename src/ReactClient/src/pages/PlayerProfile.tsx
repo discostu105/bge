@@ -1,11 +1,120 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { TrophyIcon, SwordsIcon, StarIcon, ChevronRightIcon } from 'lucide-react'
+import { TrophyIcon, SwordsIcon, StarIcon, ChevronRightIcon, KeyIcon, CopyIcon, CheckIcon, Trash2Icon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { ProfileViewModel, PlayerAchievementsViewModel, PlayerHistoryViewModel } from '@/api/types'
+import type { ProfileViewModel, PlayerAchievementsViewModel, PlayerHistoryViewModel, PlayerListViewModel, ApiKeyViewModel } from '@/api/types'
 import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { relativeTime } from '@/lib/utils'
+
+function ApiKeySection() {
+  const queryClient = useQueryClient()
+  const [newKey, setNewKey] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const { data: playerList, isLoading } = useQuery({
+    queryKey: ['my-players'],
+    queryFn: () => apiClient.get<PlayerListViewModel>('/api/player-management').then(r => r.data),
+  })
+
+  const generateMutation = useMutation({
+    mutationFn: (playerId: string) =>
+      apiClient.post<ApiKeyViewModel>(`/api/player-management/${playerId}/apikey`).then(r => r.data),
+    onSuccess: (data) => {
+      setNewKey(data.apiKey)
+      void queryClient.invalidateQueries({ queryKey: ['my-players'] })
+    },
+  })
+
+  const revokeMutation = useMutation({
+    mutationFn: (playerId: string) =>
+      apiClient.delete(`/api/player-management/${playerId}/apikey`),
+    onSuccess: () => {
+      setNewKey(null)
+      void queryClient.invalidateQueries({ queryKey: ['my-players'] })
+    },
+  })
+
+  const handleCopy = async () => {
+    if (!newKey) return
+    await navigator.clipboard.writeText(newKey)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (isLoading) return null
+
+  const player = playerList?.players?.[0]
+  if (!player) return null
+
+  return (
+    <div className="rounded-lg border bg-card p-5 space-y-3">
+      <strong className="text-sm flex items-center gap-1.5">
+        <KeyIcon className="h-4 w-4 text-primary" />
+        Bot API Key
+      </strong>
+      <p className="text-xs text-muted-foreground">
+        Use an API key to control your player programmatically via the REST API.
+      </p>
+
+      {newKey && (
+        <div className="rounded border bg-secondary/30 p-3 space-y-2">
+          <div className="text-xs font-medium text-warning-foreground">
+            Copy this key now — it won't be shown again.
+          </div>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-xs bg-background rounded px-2 py-1.5 break-all select-all border">
+              {newKey}
+            </code>
+            <button
+              onClick={() => void handleCopy()}
+              className="shrink-0 p-1.5 rounded hover:bg-secondary"
+              aria-label="Copy API key"
+            >
+              {copied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        {player.hasApiKey ? (
+          <>
+            <span className="text-xs text-muted-foreground">Active key configured</span>
+            <button
+              onClick={() => generateMutation.mutate(player.playerId)}
+              disabled={generateMutation.isPending}
+              className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            >
+              {generateMutation.isPending ? 'Regenerating...' : 'Regenerate'}
+            </button>
+            <button
+              onClick={() => revokeMutation.mutate(player.playerId)}
+              disabled={revokeMutation.isPending}
+              className="rounded border border-destructive/50 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50 flex items-center gap-1"
+            >
+              <Trash2Icon className="h-3 w-3" />
+              {revokeMutation.isPending ? 'Revoking...' : 'Revoke'}
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => generateMutation.mutate(player.playerId)}
+            disabled={generateMutation.isPending}
+            className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          >
+            {generateMutation.isPending ? 'Generating...' : 'Generate API Key'}
+          </button>
+        )}
+      </div>
+
+      {(generateMutation.isError || revokeMutation.isError) && (
+        <p className="text-xs text-destructive">Something went wrong. Please try again.</p>
+      )}
+    </div>
+  )
+}
 
 function outcomeLabel(isWin: boolean, gameStatus: string): { label: string; className: string } {
   if (isWin) return { label: 'Win', className: 'bg-green-700/30 text-green-300' }
@@ -215,6 +324,9 @@ export function PlayerProfile() {
           </div>
         </div>
       )}
+
+      {/* API Key management */}
+      <ApiKeySection />
 
       {/* Achievement badges */}
       {(() => {
