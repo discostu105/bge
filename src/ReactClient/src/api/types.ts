@@ -831,6 +831,31 @@ export interface PlayerHistoryViewModel {
   games: PlayerGameHistoryEntryViewModel[]
 }
 
+// Player Stats (api/stats)
+
+export interface PlayerStatsGameEntry {
+  gameId: string
+  gameName: string
+  endTime: string
+  finalRank: number
+  playersInGame: number
+  finalScore: number
+  isWin: boolean
+  durationMs: number | null
+}
+
+export interface PlayerStatsViewModel {
+  totalGamesPlayed: number
+  totalWins: number
+  winRate: number
+  bestRank: number
+  avgFinalRank: number
+  totalScore: number
+  avgScorePerGame: number
+  avgGameDurationMs: number | null
+  games: PlayerStatsGameEntry[]
+}
+
 // Update Game Request
 
 export interface UpdateGameRequest {
