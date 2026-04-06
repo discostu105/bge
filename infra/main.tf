@@ -1051,6 +1051,178 @@ resource "aws_cloudwatch_metric_alarm" "route53_health" {
   }
 }
 
+# ============================================================
+# Agent1 Bot Infrastructure
+# ============================================================
+# Runs Agent1 Python bots in ECS Fargate. Each task is one bot
+# instance, configured via environment variables and SSM secrets.
+# desired_count defaults to 0 — scale up manually when needed.
+# ============================================================
+
+# --- ECR repository for Agent1 image ---
+
+resource "aws_ecr_repository" "agent1" {
+  name                 = "${var.app_name}-agent1"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+# --- SSM SecureString for Agent1 API key ---
+
+resource "aws_ssm_parameter" "agent1_api_key" {
+  name        = "/${var.app_name}/agent1-api-key"
+  type        = "SecureString"
+  value       = "PLACEHOLDER"
+  description = "BGE API key for Agent1 bots (update via SSM console or CLI before scaling up)"
+
+  lifecycle {
+    # Prevent Terraform from overwriting a real key that was set via SSM console/CLI.
+    ignore_changes = [value]
+  }
+}
+
+# --- IAM: execution role for Agent1 tasks ---
+
+resource "aws_iam_role" "agent1_task_execution" {
+  name = "${var.app_name}-agent1-task-execution"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+    }]
+  })
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "agent1_task_execution_base" {
+  role       = aws_iam_role.agent1_task_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_policy" "agent1_task_execution_ssm" {
+  name = "${var.app_name}-agent1-ssm-read"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:GetParameters", "ssm:GetParameter"]
+      Resource = [aws_ssm_parameter.agent1_api_key.arn]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "agent1_task_execution_ssm" {
+  role       = aws_iam_role.agent1_task_execution.name
+  policy_arn = aws_iam_policy.agent1_task_execution_ssm.arn
+}
+
+# --- CloudWatch Log Group for Agent1 ---
+
+resource "aws_cloudwatch_log_group" "agent1" {
+  name              = "/ecs/${var.app_name}-agent1"
+  retention_in_days = 14
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
+# --- ECS Task Definition for Agent1 ---
+
+resource "aws_ecs_task_definition" "agent1" {
+  family                   = "${var.app_name}-agent1"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.agent1_task_execution.arn
+
+  container_definitions = jsonencode([{
+    name      = "agent1"
+    image     = "${aws_ecr_repository.agent1.repository_url}:latest"
+    essential = true
+
+    environment = [
+      { name = "BGE_BASE_URL",    value = "https://ageofagents.net" },
+      { name = "BGE_DIFFICULTY",  value = "medium" },
+      { name = "BGE_STRATEGY",    value = "balanced" },
+      { name = "PYTHONUNBUFFERED", value = "1" },
+      # Override BGE_GAME_ID at the service or task level for each active game.
+      # Example: aws ecs run-task --overrides '{"containerOverrides":[{"name":"agent1","environment":[{"name":"BGE_GAME_ID","value":"round-1"}]}]}'
+      { name = "BGE_GAME_ID", value = "" },
+    ]
+
+    secrets = [
+      { name = "BGE_API_KEY", valueFrom = aws_ssm_parameter.agent1_api_key.arn },
+    ]
+
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.agent1.name
+        "awslogs-region"        = var.aws_region
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
+  }])
+}
+
+# --- ECS Service for Agent1 ---
+# desired_count = 0: bots are started manually when a game is active.
+# Scale up with: aws ecs update-service --cluster bge --service bge-agent1 --desired-count N
+
+resource "aws_ecs_service" "agent1" {
+  name            = "${var.app_name}-agent1"
+  cluster         = aws_ecs_cluster.app.id
+  task_definition = aws_ecs_task_definition.agent1.arn
+  desired_count   = 0
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = data.aws_subnets.default.ids
+    security_groups  = [aws_security_group.agent1.id]
+    assign_public_ip = true
+  }
+
+  lifecycle {
+    ignore_changes = [tags, tags_all, desired_count]
+  }
+}
+
+# --- Security Group for Agent1 ---
+# Bots make outbound HTTPS calls only; no inbound needed.
+
+resource "aws_security_group" "agent1" {
+  name        = "${var.app_name}-agent1"
+  description = "BGE Agent1 bot — outbound HTTPS only"
+  vpc_id      = data.aws_vpc.default.id
+
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS to BGE API"
+  }
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
+}
+
 # --- Outputs ---
 
 output "alb_dns_name" {
@@ -1059,6 +1231,10 @@ output "alb_dns_name" {
 
 output "ecr_repository_url" {
   value = aws_ecr_repository.app.repository_url
+}
+
+output "agent1_ecr_repository_url" {
+  value = aws_ecr_repository.agent1.repository_url
 }
 
 output "cloudwatch_dashboard_url" {
