@@ -5,6 +5,7 @@ namespace BrowserGameEngine.GameModel {
 		IDictionary<string, UserImmutable> Users,
 		IList<GameRecordImmutable> Games,
 		IList<PlayerAchievementImmutable> Achievements,
-		IList<UserMilestoneImmutable>? Milestones = null
+		IList<UserMilestoneImmutable>? Milestones = null,
+		IList<TournamentImmutable>? Tournaments = null
 	);
 }

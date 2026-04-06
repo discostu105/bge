@@ -88,6 +88,16 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var globalPersistenceService = new GlobalPersistenceService(storage, globalSerializer);
 			var defaultInstance = gameRegistry.GetDefaultInstance();
 			var userRepositoryWrite = new UserRepositoryWrite(gameRegistry.GlobalState, defaultInstance.WorldState, TimeProvider.System);
+			var tournamentRepositoryWrite = new BrowserGameEngine.StatefulGameServer.Repositories.Tournament.TournamentRepositoryWrite(gameRegistry.GlobalState);
+			var tournamentEngine = new GameRegistryNs.TournamentEngine(
+				gameRegistry.GlobalState,
+				gameRegistry,
+				new TestWorldStateFactory(),
+				TestGameDef,
+				TimeProvider.System,
+				tournamentRepositoryWrite,
+				NullLogger<GameRegistryNs.TournamentEngine>.Instance
+			);
 			return new GameRegistryNs.GameLifecycleEngine(
 				gameRegistry,
 				gameRegistry.GlobalState,
@@ -100,6 +110,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				TimeProvider.System,
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(gameRegistry.GlobalState, gameRegistry),
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(gameRegistry.GlobalState),
+				tournamentEngine,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
@@ -230,6 +241,16 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var persistenceService = new PersistenceService(storage, serializer);
 			var globalSerializer = new GlobalStateJsonSerializer();
 			var globalPersistenceService = new GlobalPersistenceService(storage, globalSerializer);
+			var tournamentRepositoryWrite2 = new BrowserGameEngine.StatefulGameServer.Repositories.Tournament.TournamentRepositoryWrite(globalState);
+			var tournamentEngine2 = new GameRegistryNs.TournamentEngine(
+				globalState,
+				registry,
+				new TestWorldStateFactory(),
+				TestGameDef,
+				TimeProvider.System,
+				tournamentRepositoryWrite2,
+				NullLogger<GameRegistryNs.TournamentEngine>.Instance
+			);
 			var engine = new GameRegistryNs.GameLifecycleEngine(
 				registry,
 				globalState,
@@ -242,6 +263,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				TimeProvider.System,
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(globalState, registry),
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(globalState),
+				tournamentEngine2,
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 

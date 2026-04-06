@@ -57,6 +57,11 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var persistenceService = new PersistenceService(storage, new GameStateJsonSerializer());
 			var globalPersistenceService = new GlobalPersistenceService(storage, new GlobalStateJsonSerializer());
 			var userRepositoryWrite = new UserRepositoryWrite(globalState, game.World, TimeProvider.System);
+			var tournamentRepositoryWrite = new BrowserGameEngine.StatefulGameServer.Repositories.Tournament.TournamentRepositoryWrite(globalState);
+			var tournamentEngine = new GameRegistry.TournamentEngine(
+				globalState, gameRegistry, game.WorldStateFactory, game.GameDef,
+				TimeProvider.System, tournamentRepositoryWrite,
+				NullLogger<GameRegistry.TournamentEngine>.Instance);
 			var lifecycleEngine = new GameRegistry.GameLifecycleEngine(
 				gameRegistry,
 				globalState,
@@ -69,6 +74,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				TimeProvider.System,
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(globalState, gameRegistry),
 				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(globalState),
+				tournamentEngine,
 				NullLogger<GameRegistry.GameLifecycleEngine>.Instance
 			);
 

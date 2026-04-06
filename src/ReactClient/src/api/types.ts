@@ -350,6 +350,74 @@ export interface CreateGameRequest {
   tournamentId?: string | null
 }
 
+export interface CreateTournamentRequest {
+  name: string
+  format: string
+  registrationDeadline: string
+  maxPlayers: number
+  gameDefType: string
+  tickDuration: string
+  matchDurationHours: number
+}
+
+export interface TournamentSummaryViewModel {
+  tournamentId: string
+  name: string
+  format: string
+  status: string
+  registrationDeadline: string
+  maxPlayers: number
+  registrationCount: number
+}
+
+export interface TournamentRegistrationViewModel {
+  userId: string
+  displayName: string
+  registeredAt: string
+}
+
+export interface PlayerRefViewModel {
+  userId: string
+  displayName: string
+}
+
+export interface MatchViewModel {
+  matchId: string
+  round: number
+  matchNumber: number
+  player1: PlayerRefViewModel | null
+  player2: PlayerRefViewModel | null
+  winnerId: string | null
+  gameId: string | null
+  status: string
+}
+
+export interface RoundViewModel {
+  round: number
+  matches: MatchViewModel[]
+}
+
+export interface TournamentBracketViewModel {
+  tournamentId: string
+  name: string
+  format: string
+  status: string
+  rounds: RoundViewModel[]
+}
+
+export interface TournamentDetailViewModel {
+  tournamentId: string
+  name: string
+  format: string
+  status: string
+  registrationDeadline: string
+  maxPlayers: number
+  registrations: TournamentRegistrationViewModel[]
+  isRegistered: boolean
+  isCreator: boolean
+  bracket: TournamentBracketViewModel | null
+}
+
 export interface TournamentPlayerResultViewModel {
   rank: number
   userId: string | null

@@ -61,6 +61,8 @@ const ReplayViewer = lazy(() => import('@/pages/ReplayViewer').then(m => ({ defa
 const GameLiveView = lazy(() => import('@/pages/GameLiveView').then(m => ({ default: m.GameLiveView })))
 const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ default: m.PlayerStats })))
 const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m => ({ default: m.TournamentResults })))
+const TournamentList = lazy(() => import('@/pages/TournamentList').then(m => ({ default: m.TournamentList })))
+const TournamentDetail = lazy(() => import('@/pages/TournamentDetail').then(m => ({ default: m.TournamentDetail })))
 const Leaderboard = lazy(() => import('@/pages/Leaderboard').then(m => ({ default: m.Leaderboard })))
 const Spectator = lazy(() => import('@/pages/Spectator').then(m => ({ default: m.Spectator })))
 
@@ -229,7 +231,9 @@ const router = createBrowserRouter([
 			{ path: '/history', element: <RouteWithBoundary><PlayerHistory /></RouteWithBoundary> },
 			{ path: '/replays/:gameId', element: <RouteWithBoundary><ReplayViewer /></RouteWithBoundary> },
 			{ path: '/stats', element: <RouteWithBoundary><PlayerStats /></RouteWithBoundary> },
-			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
+			{ path: '/tournaments', element: <RouteWithBoundary><TournamentList /></RouteWithBoundary> },
+			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentDetail /></RouteWithBoundary> },
+			{ path: '/tournaments/:tournamentId/results', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
 			{ path: '/leaderboard', element: <RouteWithBoundary><Leaderboard /></RouteWithBoundary> },
 			{ path: '/games/:gameId/spectate', element: <RouteWithBoundary><SpectatorPage /></RouteWithBoundary> },
 			{ path: '/admin/games', element: <RouteWithBoundary><AdminGames /></RouteWithBoundary> },
