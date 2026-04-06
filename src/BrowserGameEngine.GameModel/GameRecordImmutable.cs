@@ -19,6 +19,7 @@ namespace BrowserGameEngine.GameModel {
 		string? CreatedByUserId = null,
 		string? DiscordWebhookUrl = null,
 		int MaxPlayers = 0,
-		GameSettings? Settings = null
+		GameSettings? Settings = null,
+		string? TournamentId = null
 	);
 }
