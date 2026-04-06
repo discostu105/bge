@@ -27,7 +27,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ChangePlayerName(ChangePlayerNameCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				Players[command.PlayerId].Name = command.NewName;
 			}
 		}
@@ -37,24 +38,24 @@ namespace BrowserGameEngine.StatefulGameServer {
 				throw new ArgumentOutOfRangeException("Worker counts cannot be negative.");
 			if (command.MineralWorkers + command.GasWorkers > totalWorkers)
 				throw new ArgumentOutOfRangeException($"Cannot assign {command.MineralWorkers + command.GasWorkers} workers: only {totalWorkers} available.");
-			lock (_lock) {
-				var state = world.GetPlayer(command.PlayerId).State;
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				state.MineralWorkers = command.MineralWorkers;
 				state.GasWorkers = command.GasWorkers;
 			}
 		}
 
 		public void GrantEmergencyWorkers(PlayerId playerId) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
 				state.MineralWorkers = 1;
 				state.GasWorkers = 1;
 			}
 		}
 
 		public void CaptureWorkers(PlayerId playerId, int count) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
 				int mineralRemoved = Math.Min(count, state.MineralWorkers);
 				state.MineralWorkers -= mineralRemoved;
 				int remaining = count - mineralRemoved;
@@ -64,32 +65,30 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		internal GameTick IncrementTick(PlayerId playerId) {
-			lock (_lock) {
-				var player = world.GetPlayer(playerId);
-				player.State.CurrentGameTick = player.State.CurrentGameTick with { Tick = player.State.CurrentGameTick.Tick + 1 };
-				return player.State.CurrentGameTick;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.CurrentGameTick = state.CurrentGameTick with { Tick = state.CurrentGameTick.Tick + 1 };
+				return state.CurrentGameTick;
 			}
 		}
 
 		public void ResetPlayer(PlayerId playerId) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
-				lock (state.StateLock) {
-					state.Resources = new Dictionary<ResourceDefId, decimal> {
-						{ Id.ResDef("land"), 50 },
-						{ Id.ResDef("minerals"), 5000 },
-						{ Id.ResDef("gas"), 3000 }
-					};
-					state.Assets = new HashSet<Asset> {
-						new Asset {
-							AssetDefId = Id.AssetDef("commandcenter"),
-							Level = 1
-						}
-					};
-					state.Units = new List<Unit>();
-					state.CurrentGameTick = world.GameTickState.CurrentGameTick;
-					state.LastGameTickUpdate = timeProvider.GetLocalNow().DateTime;
-				}
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.Resources = new Dictionary<ResourceDefId, decimal> {
+					{ Id.ResDef("land"), 50 },
+					{ Id.ResDef("minerals"), 5000 },
+					{ Id.ResDef("gas"), 3000 }
+				};
+				state.Assets = new HashSet<Asset> {
+					new Asset {
+						AssetDefId = Id.AssetDef("commandcenter"),
+						Level = 1
+					}
+				};
+				state.Units = new List<Unit>();
+				state.CurrentGameTick = world.GameTickState.CurrentGameTick;
+				state.LastGameTickUpdate = timeProvider.GetLocalNow().DateTime;
 			}
 		}
 
@@ -148,21 +147,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void CompleteTutorial(PlayerId playerId) {
-			lock (_lock) {
-				world.GetPlayer(playerId).State.TutorialCompleted = true;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				state.TutorialCompleted = true;
 			}
 		}
 
 		public void BanPlayer(PlayerId playerId) {
-			lock (_lock) {
-				world.GetPlayer(playerId).IsBanned = true;
-			}
+			world.GetPlayer(playerId).IsBanned = true;
 		}
 
 		public void UnbanPlayer(PlayerId playerId) {
-			lock (_lock) {
-				world.GetPlayer(playerId).IsBanned = false;
-			}
+			world.GetPlayer(playerId).IsBanned = false;
 		}
 
 		public void DeletePlayer(PlayerId playerId) {

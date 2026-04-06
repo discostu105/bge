@@ -9,7 +9,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class SpyMissionRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
@@ -41,46 +40,44 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public (Guid MissionId, DateTime EstimatedResolveAt) SendMission(SpyMissionCommand command) {
-			lock (_lock) {
-				world.ValidatePlayer(command.SpyingPlayerId);
-				world.ValidatePlayer(command.TargetPlayerId);
+			world.ValidatePlayer(command.SpyingPlayerId);
+			world.ValidatePlayer(command.TargetPlayerId);
 
-				var ineligibility = playerRepository.GetIneligibilityReason(command.SpyingPlayerId, command.TargetPlayerId);
-				if (ineligibility is AttackIneligibilityReason.DefenderProtected or
-					AttackIneligibilityReason.AttackerProtected or
-					AttackIneligibilityReason.SameAlliance) {
-					throw new PlayerNotAttackableException(command.TargetPlayerId, ineligibility.Value);
-				}
-
-				var cost = GetMissionCost(command.MissionType);
-				resourceRepositoryWrite.DeductCost(command.SpyingPlayerId, cost);
-
-				var timerTicks = SpyMissionConstants.GetTimerTicks(command.MissionType);
-				var now = timeProvider.GetUtcNow().UtcDateTime;
-				var estimatedResolveAt = now + gameDef.TickDuration * timerTicks;
-
-				var mission = new SpyMission {
-					Id = Guid.NewGuid(),
-					TargetPlayerId = command.TargetPlayerId,
-					MissionType = command.MissionType,
-					Status = SpyMissionStatus.InTransit,
-					TimerTicks = timerTicks,
-					Result = null,
-					CreatedAt = now
-				};
-
-				var spyState = world.GetPlayer(command.SpyingPlayerId).State;
-				lock (spyState.StateLock) {
-					spyState.SpyMissions.Add(mission);
-				}
-
-				return (mission.Id, estimatedResolveAt);
+			var ineligibility = playerRepository.GetIneligibilityReason(command.SpyingPlayerId, command.TargetPlayerId);
+			if (ineligibility is AttackIneligibilityReason.DefenderProtected or
+				AttackIneligibilityReason.AttackerProtected or
+				AttackIneligibilityReason.SameAlliance) {
+				throw new PlayerNotAttackableException(command.TargetPlayerId, ineligibility.Value);
 			}
+
+			var cost = GetMissionCost(command.MissionType);
+			resourceRepositoryWrite.DeductCost(command.SpyingPlayerId, cost);
+
+			var timerTicks = SpyMissionConstants.GetTimerTicks(command.MissionType);
+			var now = timeProvider.GetUtcNow().UtcDateTime;
+			var estimatedResolveAt = now + gameDef.TickDuration * timerTicks;
+
+			var mission = new SpyMission {
+				Id = Guid.NewGuid(),
+				TargetPlayerId = command.TargetPlayerId,
+				MissionType = command.MissionType,
+				Status = SpyMissionStatus.InTransit,
+				TimerTicks = timerTicks,
+				Result = null,
+				CreatedAt = now
+			};
+
+			var spyState = world.GetPlayer(command.SpyingPlayerId).State;
+			lock (spyState.StateLock) {
+				spyState.SpyMissions.Add(mission);
+			}
+
+			return (mission.Id, estimatedResolveAt);
 		}
 
 		public void ProcessMissions(PlayerId spyingPlayerId) {
-			lock (_lock) {
-				var playerState = world.GetPlayer(spyingPlayerId).State;
+			var playerState = world.GetPlayer(spyingPlayerId).State;
+			lock (playerState.StateLock) {
 				var activeMissions = playerState.SpyMissions
 					.Where(m => m.Status == SpyMissionStatus.InTransit)
 					.ToList();

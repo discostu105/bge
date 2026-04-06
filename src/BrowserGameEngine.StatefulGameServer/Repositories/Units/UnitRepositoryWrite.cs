@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -10,7 +10,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UnitRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly ILogger<UnitRepositoryWrite> logger;
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
@@ -64,18 +63,17 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void GrantUnits(PlayerId playerId, UnitDefId unitDefId, int count) {
-			lock (_lock) {
-				var unitDef = gameDef.GetUnitDef(unitDefId);
-				if (unitDef == null) throw new UnitDefNotFoundException(unitDefId);
-				AddUnit(playerId, unitDefId, count);
-			}
+			var unitDef = gameDef.GetUnitDef(unitDefId);
+			if (unitDef == null) throw new UnitDefNotFoundException(unitDefId);
+			AddUnit(playerId, unitDefId, count);
 		}
 
 		/// <summary>
 		/// Building units happens immediately. Throws exceptions if prerequisites are not met.
 		/// </summary>
 		public void BuildUnit(BuildUnitCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				var unitDef = gameDef.GetUnitDef(command.UnitDefId);
 				if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
 				if (!unitRepository.PrerequisitesMet(command.PlayerId, unitDef)) throw new PrerequisitesNotMetException($"Prerequisites not met for unit '{command.UnitDefId}'.");
@@ -86,32 +84,35 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void MergeUnits(MergeAllUnitsCommand command) {
-			lock (_lock) {
-				var unitDefIds = Units(command.PlayerId).Select(x => x.UnitDefId).Distinct().ToArray();
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
+				var unitDefIds = state.Units.Select(x => x.UnitDefId).Distinct().ToArray();
 				foreach (var unitDefId in unitDefIds) {
-					MergeUnitsInternal(new MergeUnitsCommand(command.PlayerId, unitDefId));
+					MergeUnitsInternal(command.PlayerId, unitDefId);
 				}
 			}
 		}
 
 		public void MergeUnits(MergeUnitsCommand command) {
-			lock (_lock) {
-				MergeUnitsInternal(command);
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
+				MergeUnitsInternal(command.PlayerId, command.UnitDefId);
 			}
 		}
 
-		private void MergeUnitsInternal(MergeUnitsCommand command) {
-			var unitDef = gameDef.GetUnitDef(command.UnitDefId);
-			if (unitDef == null) throw new UnitDefNotFoundException(command.UnitDefId);
-			int totalCount = Units(command.PlayerId).Where(x => x.UnitDefId.Equals(command.UnitDefId) && x.IsHome()).Sum(x => x.Count);
+		private void MergeUnitsInternal(PlayerId playerId, UnitDefId unitDefId) {
+			var unitDef = gameDef.GetUnitDef(unitDefId);
+			if (unitDef == null) throw new UnitDefNotFoundException(unitDefId);
+			int totalCount = Units(playerId).Where(x => x.UnitDefId.Equals(unitDefId) && x.IsHome()).Sum(x => x.Count);
 			if (totalCount == 0) return;
 
-			RemoveUnitsOfType(command.PlayerId, command.UnitDefId);
-			AddUnit(command.PlayerId, command.UnitDefId, totalCount);
+			RemoveUnitsOfType(playerId, unitDefId);
+			AddUnit(playerId, unitDefId, totalCount);
 		}
 
 		public void SplitUnit(SplitUnitCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				var unit = Unit(command.PlayerId, command.UnitId);
 				if (unit == null) throw new UnitNotFoundException(command.UnitId);
 				if (!unit.IsHome()) throw new UnitNotHomeException(command.UnitId, "Cannot split unit.");
@@ -125,7 +126,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void SendUnit(SendUnitCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				var unit = Unit(command.PlayerId, command.UnitId);
 				if (unit == null) throw new UnitNotFoundException(command.UnitId);
 				if (!gameDef.GetUnitDef(unit.UnitDefId)!.IsMobile) throw new UnitImmobileException(command.UnitId);
@@ -139,9 +141,10 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ReturnUnitsHome(ReturnUnitsHomeCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				world.ValidatePlayer(command.EnemyPlayerId);
-				var units = Units(command.PlayerId).Where(x => x.Position == command.EnemyPlayerId);
+				var units = state.Units.Where(x => x.Position == command.EnemyPlayerId);
 				foreach (var unit in units) {
 					unit.Position = null;
 				}
@@ -149,8 +152,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		private void SetReturnTimers(PlayerId playerId, PlayerId enemyPlayerId) {
-			lock (_lock) {
-				var units = Units(playerId).Where(x => x.Position == enemyPlayerId).ToList();
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				var units = state.Units.Where(x => x.Position == enemyPlayerId).ToList();
 				foreach (var unit in units) {
 					unit.ReturnTimer = gameDef.GetUnitDef(unit.UnitDefId)!.Speed;
 				}
@@ -158,8 +162,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ProcessReturningUnits(PlayerId playerId) {
-			lock (_lock) {
-				var units = Units(playerId).Where(x => x.ReturnTimer > 0).ToList();
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				var units = state.Units.Where(x => x.ReturnTimer > 0).ToList();
 				foreach (var unit in units) {
 					unit.ReturnTimer--;
 					if (unit.ReturnTimer == 0) {

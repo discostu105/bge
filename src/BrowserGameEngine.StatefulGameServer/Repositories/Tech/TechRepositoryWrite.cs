@@ -6,7 +6,6 @@ using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class TechRepositoryWrite {
-		private readonly Lock _lock = new();
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly GameDef gameDef;
@@ -28,7 +27,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void StartResearch(ResearchTechCommand command) {
-			lock (_lock) {
+			var state = world.GetPlayer(command.PlayerId).State;
+			lock (state.StateLock) {
 				var techNodeDef = gameDef.GetTechNodeDef(command.TechNodeId);
 				if (techNodeDef == null) throw new System.Exception($"Tech node '{command.TechNodeId}' not found.");
 
@@ -52,24 +52,21 @@ namespace BrowserGameEngine.StatefulGameServer {
 				}
 
 				resourceRepositoryWrite.DeductCost(command.PlayerId, techNodeDef.Cost);
-				var state = world.GetPlayer(command.PlayerId).State;
 				state.TechBeingResearched = command.TechNodeId.Id;
 				state.TechResearchTimer = techNodeDef.ResearchTimeTicks;
 			}
 		}
 
 		public void ProcessResearchTimer(PlayerId playerId) {
-			lock (_lock) {
-				var state = world.GetPlayer(playerId).State;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
 				if (state.TechBeingResearched == null || state.TechResearchTimer <= 0) {
 					return;
 				}
 
 				state.TechResearchTimer--;
 				if (state.TechResearchTimer == 0) {
-					lock (state.StateLock) {
-						state.UnlockedTechs.Add(state.TechBeingResearched);
-					}
+					state.UnlockedTechs.Add(state.TechBeingResearched);
 					state.TechBeingResearched = null;
 				}
 			}
