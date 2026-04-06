@@ -76,7 +76,10 @@ export function PlayerProfile() {
             <img
               src={profile.avatarUrl}
               alt={displayName}
+              width="64"
+              height="64"
               className="h-16 w-16 rounded-full border-2 border-primary/50"
+              fetchPriority="high"
             />
           ) : (
             <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center text-2xl border-2 border-primary/50">
