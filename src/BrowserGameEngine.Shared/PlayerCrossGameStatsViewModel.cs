@@ -8,7 +8,8 @@ namespace BrowserGameEngine.Shared {
 		DateTime GameEndTime,
 		int FinalRank,
 		decimal FinalScore,
-		bool IsWinner
+		bool IsWinner,
+		string GameDefType = ""
 	);
 
 	public record PlayerCrossGameStatsViewModel(
@@ -18,6 +19,8 @@ namespace BrowserGameEngine.Shared {
 		int TotalWins,
 		int BestRank,
 		decimal TotalScore,
-		PlayerCrossGameEntry[] Games
+		PlayerCrossGameEntry[] Games,
+		DateTime? JoinedAt = null,
+		decimal? TotalResourcesGathered = null
 	);
 }

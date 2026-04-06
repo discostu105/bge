@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router'
 import { UserIcon, TrophyIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { PlayerCrossGameStatsViewModel } from '@/api/types'
+import type { PlayerCrossGameStatsViewModel, PublicPlayerAchievementsViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -23,6 +23,45 @@ function outcomeLabel(isWinner: boolean, gameStatus: string): { label: string; c
     return { label: 'DNF', className: 'bg-secondary/40 text-muted-foreground' }
   }
   return { label: 'Loss', className: 'bg-red-900/30 text-red-300' }
+}
+
+function PublicAchievementBadges({ userId }: { userId: string }) {
+  const { data } = useQuery<PublicPlayerAchievementsViewModel>({
+    queryKey: ['public-achievements', userId],
+    queryFn: () =>
+      apiClient.get(`/api/players/${encodeURIComponent(userId)}/achievements`).then(r => r.data),
+    retry: false,
+  })
+
+  const badges = data?.achievements ?? []
+  if (badges.length === 0) return null
+
+  const shown = badges.slice(0, 8)
+  const extra = badges.length - 8
+
+  return (
+    <div className="rounded-lg border bg-card p-5 space-y-3">
+      <strong className="text-sm flex items-center gap-1.5">
+        <TrophyIcon className="h-4 w-4 text-yellow-500" />
+        Achievements
+      </strong>
+      <div className="grid grid-cols-4 gap-2">
+        {shown.map((a, i) => (
+          <div
+            key={i}
+            className="flex flex-col items-center gap-1 rounded border bg-secondary/20 p-2 text-center"
+            title={`${a.achievementLabel} — ${a.gameName}`}
+          >
+            <span className="text-xl leading-none">{a.achievementIcon}</span>
+            <span className="text-xs font-medium leading-tight line-clamp-2">{a.achievementLabel}</span>
+          </div>
+        ))}
+      </div>
+      {extra > 0 && (
+        <p className="text-xs text-muted-foreground">+{extra} more achievement{extra !== 1 ? 's' : ''}</p>
+      )}
+    </div>
+  )
 }
 
 export function PublicProfile() {
@@ -74,6 +113,11 @@ export function PublicProfile() {
           <p className="text-sm text-muted-foreground mt-0.5">
             {stats.totalGames} {stats.totalGames === 1 ? 'game' : 'games'} played
           </p>
+          {stats.joinedAt && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Member since {relativeTime(stats.joinedAt)}
+            </p>
+          )}
         </div>
       </div>
 
@@ -112,8 +156,12 @@ export function PublicProfile() {
             <div className="text-xl font-bold">{avgRank > 0 ? `#${avgRank.toFixed(1)}` : '—'}</div>
           </div>
           <div className="rounded border bg-secondary/20 p-3 text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Total Score</div>
-            <div className="text-xl font-bold">{Math.floor(stats.totalScore).toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Resources Gathered</div>
+            <div className="text-xl font-bold">
+              {stats.totalResourcesGathered != null
+                ? Math.floor(stats.totalResourcesGathered).toLocaleString()
+                : '—'}
+            </div>
           </div>
         </div>
       </div>
@@ -138,9 +186,11 @@ export function PublicProfile() {
               <thead className="border-b">
                 <tr>
                   <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Game</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Type</th>
                   <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
                   <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rank</th>
                   <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Outcome</th>
+                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Replay</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,6 +199,7 @@ export function PublicProfile() {
                   return (
                     <tr key={g.gameId} className="border-b border-border last:border-0">
                       <td className="py-2 px-3 font-medium">{g.gameName}</td>
+                      <td className="py-2 px-3 text-xs text-muted-foreground hidden sm:table-cell">{g.gameDefType || '—'}</td>
                       <td className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap">
                         {relativeTime(g.gameEndTime)}
                       </td>
@@ -159,6 +210,7 @@ export function PublicProfile() {
                           {outcome.label}
                         </span>
                       </td>
+                      <td className="py-2 px-3 text-muted-foreground hidden sm:table-cell">—</td>
                     </tr>
                   )
                 })}
@@ -190,6 +242,9 @@ export function PublicProfile() {
           )}
         </div>
       )}
+
+      {/* Achievement badges — compact 2×4 grid, silent fail if unavailable */}
+      {userId && <PublicAchievementBadges userId={userId} />}
     </div>
   )
 }
