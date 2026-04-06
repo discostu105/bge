@@ -11,6 +11,7 @@ import type {
   PlayerNotificationViewModel,
 } from '@/api/types'
 import { relativeTime, cn } from '@/lib/utils'
+import { useTouchZoomPan } from '@/hooks/useTouchZoomPan'
 
 const POLL_MS = 10_000
 
@@ -61,6 +62,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
   const { currentGame } = useCurrentGame()
   const isFinished = currentGame?.status === 'Finished'
   const refetchInterval = isFinished ? false : POLL_MS
+  const { containerProps, wrapperStyle } = useTouchZoomPan()
 
   const { data: resources, dataUpdatedAt: resourcesUpdatedAt } = useQuery<PlayerResourcesViewModel>({
     queryKey: ['resources', gameId],
@@ -107,7 +109,8 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
   const homeUnits = unitsData?.units.filter((u) => u.positionPlayerId === null) ?? []
 
   return (
-    <div className="space-y-4">
+    <div {...containerProps}>
+    <div className="space-y-4" style={wrapperStyle}>
       {/* Page header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Live View</h1>
@@ -312,6 +315,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
           </Section>
         </div>
       </div>
+    </div>
     </div>
   )
 }
