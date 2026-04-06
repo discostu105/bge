@@ -4,6 +4,7 @@ import apiClient from '@/api/client'
 import type { BattleReportDetailViewModel, UnitCountViewModel } from '@/api/types'
 import { ApiError } from '@/components/ApiError'
 import { SkeletonLine } from '@/components/Skeleton'
+import { useTouchZoomPan } from '@/hooks/useTouchZoomPan'
 
 interface BattleReplayProps {
   gameId: string
@@ -41,6 +42,7 @@ function OutcomeBadge({ outcome }: { outcome: string }) {
 
 export function BattleReplay({ gameId }: BattleReplayProps) {
   const { reportId } = useParams<{ reportId: string }>()
+  const { containerProps, wrapperStyle } = useTouchZoomPan()
 
   const { data: report, isLoading, error, refetch } = useQuery<BattleReportDetailViewModel>({
     queryKey: ['battle-report', gameId, reportId],
@@ -91,7 +93,8 @@ export function BattleReplay({ gameId }: BattleReplayProps) {
   const date = new Date(report.createdAt)
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div {...containerProps}>
+    <div className="max-w-3xl space-y-6" style={wrapperStyle}>
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
@@ -202,6 +205,7 @@ export function BattleReplay({ gameId }: BattleReplayProps) {
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }
