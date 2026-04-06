@@ -216,7 +216,7 @@ export interface TradeHistoryItemViewModel {
   status: string
 }
 
-export interface CreateCurrencyTradeOfferRequest {
+export interface CreateTradeOfferRequest {
   targetPlayerId: string
   offeredResourceId: string
   offeredAmount: number

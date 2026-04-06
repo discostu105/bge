@@ -20,7 +20,7 @@ export function Shop() {
 
   const purchaseMutation = useMutation({
     mutationFn: (req: PurchaseItemRequest) => apiClient.post('/api/shop/purchase', req),
-    onSuccess: (_, req) => {
+    onSuccess: () => {
       setPurchaseError(null)
       setPurchaseSuccess(`Item purchased!`)
       void queryClient.invalidateQueries({ queryKey: ['shop'] })

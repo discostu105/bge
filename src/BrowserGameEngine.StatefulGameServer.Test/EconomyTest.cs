@@ -156,6 +156,151 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public void CreateTradeOffer_ZeroAmount_ReturnsValidationError() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			var result = service.CreateTradeOffer("user1", "user2", offeredAmount: 0, wantedItemId: null, wantedCurrencyAmount: 30);
+			Assert.Equal(CreateTradeResultKind.ValidationError, result.Kind);
+		}
+
+		[Fact]
+		public void CreateTradeOffer_BothWantedFieldsNull_ReturnsValidationError() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			var result = service.CreateTradeOffer("user1", "user2", offeredAmount: 50, wantedItemId: null, wantedCurrencyAmount: null);
+			Assert.Equal(CreateTradeResultKind.ValidationError, result.Kind);
+		}
+
+		[Fact]
+		public void CreateTradeOffer_BothWantedFieldsSet_ReturnsValidationError() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			var result = service.CreateTradeOffer("user1", "user2", offeredAmount: 50, wantedItemId: "item-a", wantedCurrencyAmount: 30);
+			Assert.Equal(CreateTradeResultKind.ValidationError, result.Kind);
+		}
+
+		[Fact]
+		public void CreateTradeOffer_WantedItemNotOwned_ReturnsItemNotOwned() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			var result = service.CreateTradeOffer("user1", "user2", offeredAmount: 50, wantedItemId: "item-a", wantedCurrencyAmount: null);
+			Assert.Equal(CreateTradeResultKind.ItemNotOwned, result.Kind);
+		}
+
+		[Fact]
+		public void CreateTradeOffer_InsufficientFunds_ReturnsInsufficientFunds() {
+			var service = MakeService();
+			// No balance
+			var result = service.CreateTradeOffer("user1", "user2", offeredAmount: 50, wantedItemId: null, wantedCurrencyAmount: 30);
+			Assert.Equal(CreateTradeResultKind.InsufficientFunds, result.Kind);
+		}
+
+		[Fact]
+		public void AcceptTradeOffer_NotFound_ReturnsNotFound() {
+			var service = MakeService();
+			var result = service.AcceptTradeOffer("user2", "nonexistent-offer-id");
+			Assert.Equal(AcceptTradeResultKind.NotFound, result.Kind);
+		}
+
+		[Fact]
+		public void AcceptTradeOffer_Expired_ReturnsExpiredAndRefunds() {
+			var globalState = new GlobalState();
+			var service = MakeService(globalState);
+			service.AwardGameReward("user1", 1, 100);
+			service.AwardGameReward("user2", 1, 100);
+			var createResult = service.CreateTradeOffer("user1", "user2", offeredAmount: 60, wantedItemId: null, wantedCurrencyAmount: 30);
+
+			// Manually set offer to 25h ago to simulate expiry
+			var offer = globalState.GetCurrencyTradeOffers().First(o => o.OfferId == createResult.OfferId);
+			globalState.UpdateCurrencyTradeOffer(offer, offer with { CreatedAt = DateTime.UtcNow.AddHours(-25) });
+
+			var acceptResult = service.AcceptTradeOffer("user2", createResult.OfferId!);
+			Assert.Equal(AcceptTradeResultKind.Expired, acceptResult.Kind);
+			Assert.Equal(100, service.GetBalance("user1")); // refunded
+		}
+
+		[Fact]
+		public void AcceptTradeOffer_InsufficientFundsOnAcceptor_ReturnsFail() {
+			var globalState = new GlobalState();
+			var service = MakeService(globalState);
+			service.AwardGameReward("user1", 1, 100);
+			// user2 has no balance
+			var createResult = service.CreateTradeOffer("user1", "user2", offeredAmount: 60, wantedItemId: null, wantedCurrencyAmount: 30);
+			var acceptResult = service.AcceptTradeOffer("user2", createResult.OfferId!);
+			Assert.Equal(AcceptTradeResultKind.InsufficientFunds, acceptResult.Kind);
+		}
+
+		[Fact]
+		public void AcceptTradeOffer_ItemForCurrency_TransfersItemAndCoins() {
+			var globalState = new GlobalState();
+			var service = MakeService(globalState);
+			service.AwardGameReward("user1", 1, 100);
+			// user2 buys item-a first
+			service.AwardGameReward("user2", 1, 100);
+			service.PurchaseItem("user2", "item-a", Guid.NewGuid().ToString());
+
+			var createResult = service.CreateTradeOffer("user1", "user2", offeredAmount: 40, wantedItemId: "item-a", wantedCurrencyAmount: null);
+			Assert.Equal(CreateTradeResultKind.Success, createResult.Kind);
+
+			var acceptResult = service.AcceptTradeOffer("user2", createResult.OfferId!);
+			Assert.Equal(AcceptTradeResultKind.Success, acceptResult.Kind);
+
+			// user2 gets 40 coins, user1 gets the item
+			Assert.Equal(50 + 40, service.GetBalance("user2")); // 50 remaining after purchase + 40 trade
+			Assert.Contains(service.GetOwnedItems("user1"), o => o.ItemId == "item-a");
+			Assert.DoesNotContain(service.GetOwnedItems("user2"), o => o.ItemId == "item-a");
+		}
+
+		[Fact]
+		public void CancelTradeOffer_FromSender_RefundsEscrow() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			var createResult = service.CreateTradeOffer("user1", "user2", offeredAmount: 60, wantedItemId: null, wantedCurrencyAmount: 30);
+			Assert.Equal(40, service.GetBalance("user1"));
+
+			var cancelled = service.DeclineOrCancelTradeOffer("user1", createResult.OfferId!);
+			Assert.True(cancelled);
+			Assert.Equal(100, service.GetBalance("user1"));
+		}
+
+		[Fact]
+		public void DeclineOrCancelTradeOffer_NotFound_ReturnsFalse() {
+			var service = MakeService();
+			Assert.False(service.DeclineOrCancelTradeOffer("user1", "nonexistent"));
+		}
+
+		[Fact]
+		public void GetTransactions_FilterByType() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			service.PurchaseItem("user1", "item-a", Guid.NewGuid().ToString());
+			var (rewards, rewardTotal) = service.GetTransactions("user1", 1, 20, CurrencyTransactionType.GameReward);
+			Assert.Equal(1, rewardTotal);
+			Assert.All(rewards, t => Assert.Equal(CurrencyTransactionType.GameReward, t.Type));
+			var (purchases, purchaseTotal) = service.GetTransactions("user1", 1, 20, CurrencyTransactionType.Purchase);
+			Assert.Equal(1, purchaseTotal);
+		}
+
+		[Fact]
+		public void GetOwnedItems_ReturnsOnlyUserItems() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			service.AwardGameReward("user2", 1, 100);
+			service.PurchaseItem("user1", "item-a", Guid.NewGuid().ToString());
+			service.PurchaseItem("user2", "item-a", Guid.NewGuid().ToString());
+			Assert.Single(service.GetOwnedItems("user1"));
+			Assert.Single(service.GetOwnedItems("user2"));
+		}
+
+		[Fact]
+		public void PurchaseItem_NonExistentItem_ReturnsNotFound() {
+			var service = MakeService();
+			service.AwardGameReward("user1", 1, 100);
+			var result = service.PurchaseItem("user1", "nonexistent-item", Guid.NewGuid().ToString());
+			Assert.Equal(PurchaseResultKind.NotFound, result.Kind);
+		}
+
+		[Fact]
 		public void SerializeDeserialize_RoundTrip_PreservesBalance() {
 			var globalState = new GlobalState();
 			var service = MakeService(globalState);
