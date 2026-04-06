@@ -77,6 +77,13 @@ namespace BrowserGameEngine.Shared {
 		string? TournamentId = null
 	);
 
+	/// <summary>Tick timing info returned by GET /api/game/tick-info.</summary>
+	public record TickInfoViewModel(
+		DateTime ServerTime,
+		DateTime NextTickAt,
+		int UnreadMessageCount
+	);
+
 	/// <summary>A game the current user is actively playing in, with their player info.</summary>
 	public record MyGameViewModel(
 		string GameId,
