@@ -2,13 +2,14 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using BrowserGameEngine.StatefulGameServer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Net.Http.Headers;
 
 namespace BrowserGameEngine.FrontendServer.Middleware {
 	/// <summary>
 	/// Middleware that authenticates API requests using a Bearer token in the format bge_k_...
 	/// Resolves the token to a Player and stores the PlayerId in HttpContext.Items for CurrentUserMiddleware.
-	/// Also sets HttpContext.User so that [Authorize] passes.
+	/// Also sets HttpContext.User and the IAuthenticateResultFeature so that [Authorize] passes.
 	/// Must run after UseAuthentication() but before CurrentUserMiddleware.
 	/// </summary>
 	public class BearerTokenMiddleware {
@@ -33,7 +34,15 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 							new Claim(ClaimTypes.NameIdentifier, player.PlayerId.Id),
 							new Claim(ClaimTypes.AuthenticationMethod, "ApiKey"),
 						};
-						context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "ApiKey"));
+						var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "ApiKey"));
+						context.User = principal;
+						// Update the auth result feature so UseAuthorization() sees the authenticated result
+						// instead of the stale cookie-scheme NoResult from UseAuthentication().
+						var ticket = new AuthenticationTicket(principal, "ApiKey");
+						var feature = context.Features.Get<IAuthenticateResultFeature>();
+						if (feature != null) {
+							feature.AuthenticateResult = AuthenticateResult.Success(ticket);
+						}
 					}
 				}
 			}
