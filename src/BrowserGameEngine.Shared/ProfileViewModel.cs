@@ -1,3 +1,5 @@
+using System;
+
 namespace BrowserGameEngine.Shared {
 	public record ProfileViewModel {
 		public string? PlayerName { get; init; }
@@ -14,5 +16,6 @@ namespace BrowserGameEngine.Shared {
 		public int Wins { get; init; }
 		public int BestRank { get; init; }
 		public string? CurrentGameId { get; init; }
+		public DateTime? JoinedAt { get; init; }
 	}
 }
