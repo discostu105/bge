@@ -20,6 +20,12 @@ provider "aws" {
   region = var.aws_region
 }
 
+# Route 53 health check metrics are published only to us-east-1.
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 variable "aws_region" {
   default = "eu-central-1"
 }
@@ -988,6 +994,55 @@ resource "aws_cloudwatch_dashboard" "production" {
       }
     ]
   })
+}
+
+# --- Route 53 Health Check (External Uptime) ---
+
+# External uptime check from multiple AWS regions against the production health endpoint.
+# Route 53 polls every 30s and considers the endpoint unhealthy after 2 consecutive failures.
+resource "aws_route53_health_check" "app" {
+  fqdn              = "ageofagents.net"
+  port              = 443
+  type              = "HTTPS"
+  resource_path     = "/health"
+  request_interval  = 30
+  failure_threshold = 2
+
+  # Checked from multiple AWS edge locations for global coverage.
+  regions = ["us-east-1", "us-west-1", "eu-west-1"]
+
+  tags = {
+    Name = "${var.app_name}-uptime"
+  }
+}
+
+# Route 53 HealthCheckStatus: 1 = healthy, 0 = unhealthy.
+# Alarm triggers when the value drops to 0 (LESS_THAN threshold of 1).
+# NOTE: Route 53 health check metrics are only available in us-east-1.
+resource "aws_cloudwatch_metric_alarm" "route53_health" {
+  provider = aws.us_east_1
+
+  alarm_name          = "${var.app_name}-uptime"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "HealthCheckStatus"
+  namespace           = "AWS/Route53"
+  period              = 60
+  statistic           = "Minimum"
+  threshold           = 1
+  alarm_description   = "BGE: Production health check failing (ageofagents.net/health)"
+  treat_missing_data  = "breaching"
+
+  dimensions = {
+    HealthCheckId = aws_route53_health_check.app.id
+  }
+
+  alarm_actions = [aws_sns_topic.alarms.arn]
+  ok_actions    = [aws_sns_topic.alarms.arn]
+
+  lifecycle {
+    ignore_changes = [tags, tags_all]
+  }
 }
 
 # --- Outputs ---
