@@ -1,8 +1,6 @@
 name: .NET
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -17,6 +15,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ hashFiles('src/**/*.csproj') }}
+        restore-keys: nuget-
     - name: Install dependencies
       working-directory: src
       run: dotnet restore
@@ -56,6 +60,32 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Cache Docker layers
+      uses: actions/cache@v4
+      with:
+        path: /tmp/.buildx-cache
+        key: docker-e2e-${{ hashFiles('src/BrowserGameEngine.FrontendServer/Dockerfile', 'src/**/*.csproj') }}
+        restore-keys: docker-e2e-
+
+    - name: Build Docker image
+      working-directory: src
+      run: |
+        docker buildx build \
+          --file BrowserGameEngine.FrontendServer/Dockerfile \
+          --cache-from type=local,src=/tmp/.buildx-cache \
+          --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
+          --load \
+          -t src-bge \
+          .
+
+    - name: Rotate cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
     - name: Start BGE stack
       working-directory: src
       env:
@@ -89,9 +119,26 @@ jobs:
       working-directory: src/ReactClient
       run: npm ci
 
+    - name: Get Playwright version
+      id: pw-version
+      working-directory: src/ReactClient
+      run: echo "version=$(npx playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Playwright browsers
+      id: pw-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-${{ steps.pw-version.outputs.version }}
+
     - name: Install Playwright browsers
       working-directory: src/ReactClient
-      run: npx playwright install --with-deps chromium
+      if: steps.pw-cache.outputs.cache-hit != 'true'
+      run: npx playwright install chromium
+
+    - name: Install Playwright system deps
+      working-directory: src/ReactClient
+      run: npx playwright install-deps chromium
 
     - name: Run E2E smoke tests
       working-directory: src/ReactClient
