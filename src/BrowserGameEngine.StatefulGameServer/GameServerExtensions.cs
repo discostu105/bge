@@ -27,6 +27,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton(defaultInstance.GameDef);
 			services.AddSingleton(TimeProvider.System);
 			services.AddSingleton<IGameEventPublisher, NullGameEventPublisher>();
+		services.AddSingleton<ISpectatorEventPublisher, NullSpectatorEventPublisher>();
 			services.AddSingleton<GameRepository>();
 
 			services.AddSingleton<UserRepository>();
@@ -95,6 +96,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, VictoryProgressNotificationModule>();
 			services.AddSingleton<IGameTickModule, VictoryConditionModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();
+			services.AddSingleton<IGameTickModule, SpectatorTickModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this
 			services.AddSingleton<GameTickEngine>();
 

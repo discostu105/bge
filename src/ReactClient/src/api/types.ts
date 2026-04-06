@@ -1059,3 +1059,20 @@ export interface GameReplayViewModel {
   finalStandings: ReplayPlayerViewModel[]
   battleEvents: ReplayBattleEventViewModel[]
 }
+
+export interface SpectatorPlayerEntryViewModel {
+  rank: number
+  playerId: string
+  playerName: string
+  score: number
+  isOnline: boolean
+  isAgent: boolean
+}
+
+export interface SpectatorSnapshotViewModel {
+  gameId: string
+  gameName: string
+  gameStatus: string
+  topPlayers: SpectatorPlayerEntryViewModel[]
+  tick: number
+}
