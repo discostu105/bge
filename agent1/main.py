@@ -63,6 +63,7 @@ def run(config: AgentConfig) -> None:
 			next_tick_at: str = tick_info.get("nextTickAt", "")
 
 			if next_tick_at != last_next_tick_at:
+				is_first_tick = not last_next_tick_at
 				last_next_tick_at = next_tick_at
 				current_tick = hash(next_tick_at)
 
@@ -78,7 +79,7 @@ def run(config: AgentConfig) -> None:
 					max_land=tracker.max_land,
 					unit_list=list(tracker.unit_list),
 					attackable_players=list(tracker.attackable_players),
-				) if last_next_tick_at else None
+				) if not is_first_tick else None
 
 				tracker.update(tick_info, resources, units, attackable)
 
