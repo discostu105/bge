@@ -15,34 +15,6 @@ import { ApiError } from '@/components/ApiError'
 import { cn } from '@/lib/utils'
 import { formatDate, rankBadgeClass } from '@/lib/formatters'
 
-// ── Mock milestone data (backend TBD — defines the API contract) ────────────
-
-const MOCK_MILESTONES: MilestoneAchievementViewModel[] = [
-	// Combat
-	{ id: 'combat-first-blood', name: 'First Blood', description: 'Win your first battle', category: 'combat', icon: '⚔️', isUnlocked: true, unlockedAt: '2026-03-20T12:00:00Z', currentProgress: 1, targetProgress: 1, tier: 'bronze' },
-	{ id: 'combat-warlord', name: 'Warlord', description: 'Win 10 battles in a single game', category: 'combat', icon: '🗡️', isUnlocked: true, unlockedAt: '2026-03-22T15:30:00Z', currentProgress: 10, targetProgress: 10, tier: 'silver' },
-	{ id: 'combat-conqueror', name: 'Conqueror', description: 'Destroy 50 enemy units', category: 'combat', icon: '💀', isUnlocked: false, unlockedAt: null, currentProgress: 32, targetProgress: 50, tier: 'gold' },
-	{ id: 'combat-supreme', name: 'Supreme Commander', description: 'Win a game without losing a single battle', category: 'combat', icon: '👑', isUnlocked: false, unlockedAt: null, currentProgress: 0, targetProgress: 1, tier: 'legendary' },
-
-	// Economy
-	{ id: 'econ-first-mine', name: 'Mineral Rush', description: 'Accumulate 10,000 minerals', category: 'economy', icon: '💎', isUnlocked: true, unlockedAt: '2026-03-19T10:00:00Z', currentProgress: 10000, targetProgress: 10000, tier: 'bronze' },
-	{ id: 'econ-gas-giant', name: 'Gas Giant', description: 'Accumulate 5,000 gas', category: 'economy', icon: '⛽', isUnlocked: true, unlockedAt: '2026-03-21T08:00:00Z', currentProgress: 5000, targetProgress: 5000, tier: 'silver' },
-	{ id: 'econ-market-mogul', name: 'Market Mogul', description: 'Complete 20 market trades', category: 'economy', icon: '📈', isUnlocked: false, unlockedAt: null, currentProgress: 14, targetProgress: 20, tier: 'gold' },
-	{ id: 'econ-tycoon', name: 'Galactic Tycoon', description: 'Accumulate 1,000,000 total resources', category: 'economy', icon: '🏦', isUnlocked: false, unlockedAt: null, currentProgress: 420000, targetProgress: 1000000, tier: 'legendary' },
-
-	// Diplomacy
-	{ id: 'diplo-first-ally', name: 'First Contact', description: 'Join or create an alliance', category: 'diplomacy', icon: '🤝', isUnlocked: true, unlockedAt: '2026-03-20T14:00:00Z', currentProgress: 1, targetProgress: 1, tier: 'bronze' },
-	{ id: 'diplo-peacekeeper', name: 'Peacekeeper', description: 'Sign 3 non-aggression pacts', category: 'diplomacy', icon: '🕊️', isUnlocked: false, unlockedAt: null, currentProgress: 1, targetProgress: 3, tier: 'silver' },
-	{ id: 'diplo-deal-maker', name: 'Deal Maker', description: 'Complete 10 player-to-player trades', category: 'diplomacy', icon: '📜', isUnlocked: false, unlockedAt: null, currentProgress: 4, targetProgress: 10, tier: 'gold' },
-	{ id: 'diplo-united', name: 'United Nations', description: 'Lead an alliance with 5+ members to victory', category: 'diplomacy', icon: '🌍', isUnlocked: false, unlockedAt: null, currentProgress: 0, targetProgress: 1, tier: 'legendary' },
-
-	// Exploration
-	{ id: 'explore-settler', name: 'Settler', description: 'Colonize 100 land', category: 'exploration', icon: '🏗️', isUnlocked: true, unlockedAt: '2026-03-19T11:00:00Z', currentProgress: 100, targetProgress: 100, tier: 'bronze' },
-	{ id: 'explore-expand', name: 'Expansionist', description: 'Colonize 500 land', category: 'exploration', icon: '🗺️', isUnlocked: false, unlockedAt: null, currentProgress: 310, targetProgress: 500, tier: 'silver' },
-	{ id: 'explore-tech-rush', name: 'Tech Rush', description: 'Research 10 technologies', category: 'exploration', icon: '🔬', isUnlocked: false, unlockedAt: null, currentProgress: 6, targetProgress: 10, tier: 'gold' },
-	{ id: 'explore-pioneer', name: 'Galactic Pioneer', description: 'Fully explore the tech tree in a single game', category: 'exploration', icon: '🚀', isUnlocked: false, unlockedAt: null, currentProgress: 0, targetProgress: 1, tier: 'legendary' },
-]
-
 // ── Config ───────────────────────────────────────────────────────────────────
 
 const CATEGORIES: { key: MilestoneCategory; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
