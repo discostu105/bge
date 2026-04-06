@@ -1004,3 +1004,34 @@ export interface PaginatedResponse<T> {
   totalCount: number
   totalPages: number
 }
+
+// Replay Viewer
+
+export interface ReplayPlayerViewModel {
+  playerId: string
+  playerName: string
+  race: string
+  finalRank: number
+  finalScore: number
+}
+
+export interface ReplayBattleEventViewModel {
+  reportId: string
+  occurredAt: string
+  attackerName: string
+  defenderName: string
+  outcome: string
+  isCurrentPlayerAttacker: boolean
+  isCurrentPlayerDefender: boolean
+}
+
+export interface GameReplayViewModel {
+  gameId: string
+  gameName: string
+  gameDefType: string
+  startTime: string
+  actualEndTime: string | null
+  status: string
+  finalStandings: ReplayPlayerViewModel[]
+  battleEvents: ReplayBattleEventViewModel[]
+}

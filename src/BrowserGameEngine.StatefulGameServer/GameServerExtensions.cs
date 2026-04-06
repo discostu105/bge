@@ -77,6 +77,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<ResourceHistoryRepositoryWrite>();
 			services.AddSingleton<MilestoneRepository>();
 			services.AddSingleton<MilestoneRepositoryWrite>();
+			services.AddSingleton<GameReplayRepository>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();

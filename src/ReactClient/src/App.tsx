@@ -44,6 +44,7 @@ const PlayersList = lazy(() => import('@/pages/PlayersList').then(m => ({ defaul
 const Trade = lazy(() => import('@/pages/Trade').then(m => ({ default: m.Trade })))
 const Help = lazy(() => import('@/pages/Help').then(m => ({ default: m.Help })))
 const BattleReplay = lazy(() => import('@/pages/BattleReplay').then(m => ({ default: m.BattleReplay })))
+const ReplayViewer = lazy(() => import('@/pages/ReplayViewer').then(m => ({ default: m.ReplayViewer })))
 const GameLiveView = lazy(() => import('@/pages/GameLiveView').then(m => ({ default: m.GameLiveView })))
 const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ default: m.PlayerStats })))
 const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m => ({ default: m.TournamentResults })))
@@ -206,6 +207,7 @@ const router = createBrowserRouter([
       { path: '/alliances/:allianceId', element: <AllianceDetail /> },
       { path: '/achievements', element: <Achievements /> },
       { path: '/history', element: <PlayerHistory /> },
+      { path: '/replays/:gameId', element: <ReplayViewer /> },
       { path: '/stats', element: <PlayerStats /> },
       { path: '/tournaments/:tournamentId', element: <TournamentResults /> },
       { path: '/admin/games', element: <AdminGames /> },
