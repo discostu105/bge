@@ -1,6 +1,7 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
+using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
@@ -22,6 +23,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly UserRepositoryWrite userRepositoryWrite;
 		private readonly IGameEventPublisher eventPublisher;
 		private readonly TimeProvider timeProvider;
+		private readonly MilestoneRepository milestoneRepository;
+		private readonly MilestoneRepositoryWrite milestoneRepositoryWrite;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -34,6 +37,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			UserRepositoryWrite userRepositoryWrite,
 			IGameEventPublisher eventPublisher,
 			TimeProvider timeProvider,
+			MilestoneRepository milestoneRepository,
+			MilestoneRepositoryWrite milestoneRepositoryWrite,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -45,6 +50,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.userRepositoryWrite = userRepositoryWrite;
 			this.eventPublisher = eventPublisher;
 			this.timeProvider = timeProvider;
+			this.milestoneRepository = milestoneRepository;
+			this.milestoneRepositoryWrite = milestoneRepositoryWrite;
 			this.logger = logger;
 		}
 
@@ -162,6 +169,18 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				VictoryConditionType = victoryConditionType
 			};
 			globalState.UpdateGame(record, updated);
+
+			// Auto-unlock milestones and notify players of new achievements
+			foreach (var player in instance.WorldState.Players.Values) {
+				if (player.UserId == null) continue;
+				var evaluations = milestoneRepository.GetMilestonesForUser(player.UserId);
+				foreach (var eval in evaluations) {
+					if (!eval.IsUnlocked && eval.CurrentProgress >= eval.Definition.TargetProgress) {
+						milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
+						playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
+					}
+				}
+			}
 
 			// Persist final world state before freeing memory
 			await persistenceService.StoreGameState(record.GameId, instance.WorldState.ToImmutable());

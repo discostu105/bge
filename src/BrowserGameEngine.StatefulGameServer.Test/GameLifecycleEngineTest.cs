@@ -98,6 +98,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepositoryWrite,
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
+				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(gameRegistry.GlobalState, gameRegistry),
+				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(gameRegistry.GlobalState),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
@@ -238,6 +240,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepoWrite,
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
+				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(globalState, registry),
+				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(globalState),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 
