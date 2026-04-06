@@ -56,8 +56,8 @@ test.describe('Error boundary fallback UI', () => {
 
 		// ErrorBoundary should render its fallback.
 		await expect(page.getByRole('heading', { name: 'Something went wrong' })).toBeVisible({ timeout: 10_000 })
-		await expect(page.getByText('An unexpected error occurred. Try refreshing the page.')).toBeVisible()
-		await expect(page.getByRole('button', { name: 'Refresh Page' })).toBeVisible()
+		await expect(page.getByText('An unexpected error occurred on this page.')).toBeVisible()
+		await expect(page.getByRole('button', { name: 'Try Again' })).toBeVisible()
 	})
 
 	test('normal pages do not trigger the error boundary', async ({ page }) => {

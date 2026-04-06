@@ -103,7 +103,7 @@ test.describe('Attack flow', () => {
 			new RegExp(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`),
 			{ timeout: 10_000 }
 		)
-		await expect(page.getByRole('heading', { name: /enemy base/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible()
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 
@@ -114,8 +114,11 @@ test.describe('Attack flow', () => {
 		// Build a unit and send it to the defender's base via API
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=1`, { data: {} })
 		const unitsRes = await page.request.get(`${baseURL}/api/units`)
-		const units = await unitsRes.json() as { units: Array<{ unitId: string }> }
-		const unitId = units.units[0].unitId
+		const units = await unitsRes.json() as { units: Array<{ unitId: string; positionPlayerId: string | null }> }
+		// Pick a unit that is at home (positionPlayerId is null) — previously sent units may still be en-route
+		const homeUnit = units.units.find(u => !u.positionPlayerId)
+		expect(homeUnit).toBeTruthy()
+		const unitId = homeUnit!.unitId
 
 		const sendRes = await page.request.post(
 			`${baseURL}/api/battle/sendunits?unitId=${encodeURIComponent(unitId)}&enemyPlayerId=${encodeURIComponent(defenderPlayerId)}`,
@@ -125,14 +128,14 @@ test.describe('Attack flow', () => {
 
 		// Navigate to EnemyBase and click Attack
 		await page.goto(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`)
-		await expect(page.getByRole('heading', { name: /enemy base/i })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible({ timeout: 10_000 })
 
-		// Our units are en-route — the page shows "Attacking units"
-		await expect(page.getByText(/attacking/i)).toBeVisible({ timeout: 10_000 })
+		// Our units are en-route — the page shows a "Your Troops" table
+		await expect(page.getByText(/your troops/i)).toBeVisible({ timeout: 10_000 })
 
 		await page.getByRole('button', { name: /^attack$/i }).click()
 
-		// Battle report heading should appear
-		await expect(page.getByRole('heading', { name: 'Battle Result' })).toBeVisible({ timeout: 10_000 })
+		// Battle result heading (h2) should appear
+		await expect(page.getByRole('heading', { name: /battle result/i })).toBeVisible({ timeout: 10_000 })
 	})
 })

@@ -100,19 +100,25 @@ test.describe('Create player', () => {
 		// Use a fresh browser context (no admin storageState) so the new user's
 		// auth cookie is the only one present — avoids cookie conflicts with the
 		// shared admin session that the page fixture carries by default.
+		// Pass baseURL so relative navigation (page.goto('/...')) works correctly.
 		const freshUserId = `e2e-newuser-${Date.now()}`
-		const context = await browser.newContext()
+		const context = await browser.newContext({ baseURL })
 		const page = await context.newPage()
 
 		// Sign in as a fresh user who has no player profile yet.
 		// createPlayer=false skips the automatic player creation so /createplayer works as intended.
+		// First load any page so the browser context has the correct origin for cookies.
+		await page.goto(`${baseURL}/`)
+		await page.waitForLoadState('load')
+		// Sign in via API — this sets the auth cookie on the context.
 		await page.request.post(`${baseURL}/signindev`, {
 			form: { playerid: freshUserId, returnUrl: '/', createPlayer: 'false' },
 		})
-
+		// Navigate to /createplayer — use full URL to ensure the cookie domain matches.
 		await page.goto(`${baseURL}/createplayer`)
-		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible()
-		await expect(page.getByLabel('Commander name')).toBeVisible()
+		await page.waitForLoadState('networkidle')
+		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible({ timeout: 15_000 })
+		await expect(page.getByLabel('Commander name')).toBeVisible({ timeout: 10_000 })
 
 		// Fill and submit
 		await page.getByLabel('Commander name').fill(`Commander ${freshUserId.slice(-8)}`)

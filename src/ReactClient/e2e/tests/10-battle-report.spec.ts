@@ -37,7 +37,7 @@ async function createFreshDefender(browser: import('@playwright/test').Browser):
 	const context = await browser.newContext()
 	const page = await context.newPage()
 	const res = await page.request.post(`${baseURL}/signindev`, {
-		form: { playerid: freshUserId, returnUrl: '/' },
+		form: { playerid: freshUserId, returnUrl: '/', protectionTicks: '0' },
 	})
 	expect([200, 302]).toContain(res.status())
 	await context.close()
@@ -47,9 +47,11 @@ async function createFreshDefender(browser: import('@playwright/test').Browser):
 async function triggerBattle(page: import('@playwright/test').Page, defenderPlayerId: string): Promise<void> {
 	await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=1`, { data: {} })
 	const unitsRes = await page.request.get(`${baseURL}/api/units`)
-	const units = await unitsRes.json() as { units: Array<{ unitId: string }> }
-	expect(units.units.length).toBeGreaterThan(0)
-	const unitId = units.units[0].unitId
+	const units = await unitsRes.json() as { units: Array<{ unitId: string; positionPlayerId: string | null }> }
+	// Pick a unit that is at home (positionPlayerId is null) — previously sent units may still be en-route
+	const homeUnit = units.units.find(u => !u.positionPlayerId)
+	expect(homeUnit).toBeTruthy()
+	const unitId = homeUnit!.unitId
 
 	const sendRes = await page.request.post(
 		`${baseURL}/api/battle/sendunits?unitId=${encodeURIComponent(unitId)}&enemyPlayerId=${encodeURIComponent(defenderPlayerId)}`,
@@ -66,10 +68,10 @@ test.describe('Battle report detail page', () => {
 
 		// Trigger the attack
 		await page.goto(`/games/${gameId}/enemybase/${encodeURIComponent(defenderPlayerId)}`)
-		await expect(page.getByRole('heading', { name: /enemy base/i })).toBeVisible()
-		await expect(page.getByText(/attacking/i)).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByRole('heading', { name: /attack/i })).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByText(/your troops/i)).toBeVisible({ timeout: 10_000 })
 		await page.getByRole('button', { name: /^attack$/i }).click()
-		await expect(page.getByRole('heading', { name: 'Battle Result' })).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByRole('heading', { name: /battle result/i })).toBeVisible({ timeout: 10_000 })
 
 		// Fetch report ID from the API
 		const reportsRes = await page.request.get(`${baseURL}/api/battle/reports`)
