@@ -96,7 +96,7 @@ test.describe('Attack flow', () => {
 		const enemySelect = page.locator('select')
 		await enemySelect.selectOption({ value: defenderPlayerId })
 
-		await page.getByRole('button', { name: /send/i }).click()
+		await page.getByRole('button', { name: 'Send Troops' }).click()
 
 		// Should navigate to EnemyBase
 		await expect(page).toHaveURL(
