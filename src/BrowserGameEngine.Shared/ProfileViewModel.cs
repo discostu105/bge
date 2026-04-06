@@ -1,5 +1,6 @@
 namespace BrowserGameEngine.Shared {
 	public record ProfileViewModel {
+		public bool HasPlayer { get; init; } = true;
 		public string? PlayerName { get; init; }
 		public string? DisplayName { get; init; }
 		public string? AvatarUrl { get; init; }

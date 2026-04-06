@@ -62,7 +62,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				.OrderByDescending(a => a.FinishedAt)
 				.ToList();
 
-			if (achievements.Count == 0) return NotFound();
+			if (achievements.Count == 0) {
+				return Ok(new PlayerCrossGameStatsViewModel(
+					UserId: userId,
+					PlayerName: userId,
+					TotalGames: 0,
+					TotalWins: 0,
+					BestRank: 0,
+					TotalScore: 0,
+					Games: System.Array.Empty<PlayerCrossGameEntry>()
+				));
+			}
 
 			var gameMap = globalState.GetGames().ToDictionary(g => g.GameId.Id);
 

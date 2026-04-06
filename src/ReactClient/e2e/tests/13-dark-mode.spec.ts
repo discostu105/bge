@@ -93,9 +93,10 @@ test.describe('Dark mode toggle', () => {
 	test('switching to dark mode removes light class from html', async ({ page }) => {
 		const gameId = await createNavGame(page)
 
-		// Start in light mode
-		await page.evaluate(() => localStorage.setItem('bge-theme', 'light'))
+		// Navigate first, then set theme preference via localStorage
 		await page.goto(`/games/${gameId}/base`)
+		await page.evaluate(() => localStorage.setItem('bge-theme', 'light'))
+		await page.reload()
 
 		const htmlEl = page.locator('html')
 		await expect(htmlEl).toHaveClass(/light/)

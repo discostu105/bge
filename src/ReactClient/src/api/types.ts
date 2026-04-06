@@ -919,6 +919,7 @@ export interface RaceListViewModel {
 // Profile
 
 export interface ProfileViewModel {
+  hasPlayer?: boolean
   playerName: string | null
   displayName: string | null
   avatarUrl: string | null
