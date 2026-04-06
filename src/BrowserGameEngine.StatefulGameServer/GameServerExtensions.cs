@@ -8,6 +8,7 @@ using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
+using BrowserGameEngine.StatefulGameServer.Repositories;
 using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -77,6 +78,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<ResourceHistoryRepositoryWrite>();
 			services.AddSingleton<MilestoneRepository>();
 			services.AddSingleton<MilestoneRepositoryWrite>();
+			services.AddSingleton<LeaderboardRepository>();
 			services.AddSingleton<GameReplayRepository>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();

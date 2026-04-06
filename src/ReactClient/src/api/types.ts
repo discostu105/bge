@@ -995,6 +995,30 @@ export interface PublicPlayerAchievementsViewModel {
   achievements: PublicAchievementEntry[]
 }
 
+// Global Leaderboard
+
+export interface GlobalLeaderboardEntryViewModel {
+  rank: number
+  userId: string
+  displayName: string
+  score: number
+  tournamentWins: number
+  gameWins: number
+  achievementsUnlocked: number
+  isCurrentPlayer: boolean
+}
+
+export interface GlobalLeaderboardViewModel {
+  entries: GlobalLeaderboardEntryViewModel[]
+  seasonStart: string
+  seasonEnd: string
+}
+
+export interface PlayerLeaderboardContextViewModel {
+  rank: number
+  nearbyEntries: GlobalLeaderboardEntryViewModel[]
+}
+
 // Pagination
 
 export interface PaginatedResponse<T> {

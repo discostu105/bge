@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router'
+import { Link } from 'react-router'
 import { UserIcon, TrophyIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { PlayerCrossGameStatsViewModel, PublicPlayerAchievementsViewModel } from '@/api/types'
+import type { PlayerCrossGameStatsViewModel, PublicPlayerAchievementsViewModel, PlayerLeaderboardContextViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -75,6 +76,13 @@ export function PublicProfile() {
     enabled: !!userId,
   })
 
+  const { data: leaderboardCtx } = useQuery<PlayerLeaderboardContextViewModel>({
+    queryKey: ['leaderboard-context', userId],
+    queryFn: () =>
+      apiClient.get(`/api/leaderboard/player/${encodeURIComponent(userId ?? '')}`).then((r) => r.data),
+    enabled: !!userId,
+  })
+
   if (isLoading) return <PageLoader message="Loading profile..." />
   if (error) return <ApiError message="Failed to load player profile." onRetry={() => void refetch()} />
   if (!stats) {
@@ -113,6 +121,13 @@ export function PublicProfile() {
           <p className="text-sm text-muted-foreground mt-0.5">
             {stats.totalGames} {stats.totalGames === 1 ? 'game' : 'games'} played
           </p>
+          {leaderboardCtx && (
+            <p className="text-xs mt-0.5">
+              <Link to={`/leaderboard?highlight=${encodeURIComponent(userId ?? '')}`} className="text-yellow-500 hover:underline font-medium">
+                🏆 Season rank #{leaderboardCtx.rank}
+              </Link>
+            </p>
+          )}
           {stats.joinedAt && (
             <p className="text-xs text-muted-foreground mt-0.5">
               Member since {relativeTime(stats.joinedAt)}
