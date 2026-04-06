@@ -1,5 +1,6 @@
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,13 +25,16 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var players = grouped.Select(g => {
 				var list = g.ToList();
 				var displayName = globalState.GetUserDisplayName(g.Key) ?? list.First().PlayerName;
+				var totalXp = globalState.GetUserTotalXp(g.Key);
 				return new AllTimePlayerEntryViewModel(
 					DisplayName: displayName,
 					UserId: g.Key,
 					TotalGames: list.Count,
 					TotalWins: list.Count(a => a.FinalRank == 1),
 					BestRank: list.Min(a => a.FinalRank),
-					TotalScore: list.Sum(a => a.FinalScore)
+					TotalScore: list.Sum(a => a.FinalScore),
+					TotalXp: totalXp,
+					Level: XpHelper.ComputeLevel(totalXp)
 				);
 			})
 			.OrderByDescending(p => p.TotalScore)
@@ -80,6 +84,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				);
 			}).ToArray();
 
+			var crossGameXp = globalState.GetUserTotalXp(userId);
 			return Ok(new PlayerCrossGameStatsViewModel(
 				UserId: userId,
 				PlayerName: achievements.First().PlayerName,
@@ -89,7 +94,9 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TotalScore: entries.Sum(e => e.FinalScore),
 				Games: entries,
 				JoinedAt: globalState.GetUserCreated(userId),
-				TotalResourcesGathered: null
+				TotalResourcesGathered: null,
+				TotalXp: crossGameXp,
+				Level: XpHelper.ComputeLevel(crossGameXp)
 			));
 		}
 

@@ -170,20 +170,50 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			};
 			globalState.UpdateGame(record, updated);
 
-			// Auto-unlock milestones and notify players of new achievements
+			// Build rank lookup for XP award
+			var rankByUserId = new System.Collections.Generic.Dictionary<string, int>();
+			for (int i = 0; i < rankings.Count; i++) {
+				var player = instance.WorldState.Players[rankings[i].PlayerId];
+				if (player.UserId != null) rankByUserId[player.UserId] = i + 1;
+			}
+
+			// Auto-unlock non-XP milestones, count new unlocks per player, then award XP
 			foreach (var player in instance.WorldState.Players.Values) {
 				if (player.UserId == null) continue;
 				var evaluations = milestoneRepository.GetMilestonesForUser(player.UserId);
+				int newMilestones = 0;
 				foreach (var eval in evaluations) {
-					if (!eval.IsUnlocked && eval.CurrentProgress >= eval.Definition.TargetProgress) {
-						milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
-						playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
-						eventPublisher.PublishToPlayer(player.PlayerId, GameEventTypes.MilestoneUnlocked, new {
-							milestoneId = eval.Definition.Id,
-							name = eval.Definition.Name,
-							icon = eval.Definition.Icon
-						});
-					}
+					if (eval.IsUnlocked || eval.CurrentProgress < eval.Definition.TargetProgress) continue;
+					// Defer XP-based milestones until after XP is awarded
+					if (eval.Definition.Category == "progression") continue;
+					milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
+					newMilestones++;
+					playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
+					eventPublisher.PublishToPlayer(player.PlayerId, GameEventTypes.MilestoneUnlocked, new {
+						milestoneId = eval.Definition.Id,
+						name = eval.Definition.Name,
+						icon = eval.Definition.Icon
+					});
+				}
+
+				// Award XP for this game
+				int finalRank = rankByUserId.TryGetValue(player.UserId, out var r) ? r : rankings.Count;
+				long xpEarned = Achievements.XpHelper.ComputeGameXp(finalRank, newMilestones);
+				globalState.AddXpToUser(player.UserId, xpEarned);
+				playerNotificationService.Push(player.UserId, $"+{xpEarned} XP earned!", NotificationKind.GameEvent);
+
+				// Now evaluate XP/level-based (progression) milestones
+				var xpEvaluations = milestoneRepository.GetMilestonesForUser(player.UserId);
+				foreach (var eval in xpEvaluations) {
+					if (eval.Definition.Category != "progression") continue;
+					if (eval.IsUnlocked || eval.CurrentProgress < eval.Definition.TargetProgress) continue;
+					milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
+					playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
+					eventPublisher.PublishToPlayer(player.PlayerId, GameEventTypes.MilestoneUnlocked, new {
+						milestoneId = eval.Definition.Id,
+						name = eval.Definition.Name,
+						icon = eval.Definition.Icon
+					});
 				}
 			}
 

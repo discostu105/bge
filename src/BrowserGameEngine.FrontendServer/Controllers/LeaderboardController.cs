@@ -57,7 +57,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TournamentWins: e.TournamentWins,
 				GameWins: e.GameWins,
 				AchievementsUnlocked: e.AchievementsUnlocked,
-				IsCurrentPlayer: e.UserId == currentUserId
+				IsCurrentPlayer: e.UserId == currentUserId,
+				Level: e.Level
 			);
 	}
 }

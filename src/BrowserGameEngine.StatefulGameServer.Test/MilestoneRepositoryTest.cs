@@ -533,7 +533,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var results = repo.GetMilestonesForUser(UserId);
 
-			Assert.Equal(19, results.Count);
+			Assert.Equal(24, results.Count);
 		}
 
 		[Fact]

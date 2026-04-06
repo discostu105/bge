@@ -10,6 +10,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public DateTime Created { get; init; }
 		public bool WantsGameNotification { get; set; }
 		public bool AutoJoinNextGame { get; set; }
+		public long TotalXp { get; set; }
 	}
 
 	internal static class UserExtensions {
@@ -21,7 +22,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				DisplayName: user.DisplayName,
 				Created: user.Created,
 				WantsGameNotification: user.WantsGameNotification,
-				AutoJoinNextGame: user.AutoJoinNextGame
+				AutoJoinNextGame: user.AutoJoinNextGame,
+				TotalXp: user.TotalXp
 			);
 		}
 
@@ -33,7 +35,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				DisplayName = userImmutable.DisplayName,
 				Created = userImmutable.Created,
 				WantsGameNotification = userImmutable.WantsGameNotification,
-				AutoJoinNextGame = userImmutable.AutoJoinNextGame
+				AutoJoinNextGame = userImmutable.AutoJoinNextGame,
+				TotalXp = userImmutable.TotalXp
 			};
 		}
 	}

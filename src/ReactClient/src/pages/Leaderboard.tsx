@@ -95,15 +95,20 @@ export function Leaderboard() {
                       {medalLabel(entry.rank)}
                     </td>
                     <td className="px-4 py-3 font-medium">
-                      <Link
-                        to={`/profile/${encodeURIComponent(entry.userId)}`}
-                        className="hover:underline text-primary"
-                      >
-                        {entry.displayName}
-                      </Link>
-                      {entry.isCurrentPlayer && (
-                        <span className="ml-2 text-xs text-muted-foreground">(you)</span>
-                      )}
+                      <span className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          to={`/profile/${encodeURIComponent(entry.userId)}`}
+                          className="hover:underline text-primary"
+                        >
+                          {entry.displayName}
+                        </Link>
+                        <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary border border-primary/25">
+                          Lv {entry.level}
+                        </span>
+                        {entry.isCurrentPlayer && (
+                          <span className="text-xs text-muted-foreground">(you)</span>
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-semibold">
                       {entry.score.toFixed(1)}
@@ -134,8 +139,13 @@ export function Leaderboard() {
                   <tr>
                     <td className="px-4 py-3 font-bold text-muted-foreground w-12">#{currentPlayerEntry.rank}</td>
                     <td className="px-4 py-3 font-medium">
-                      {currentPlayerEntry.displayName}
-                      <span className="ml-2 text-xs text-muted-foreground">(you)</span>
+                      <span className="flex items-center gap-2 flex-wrap">
+                        {currentPlayerEntry.displayName}
+                        <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary border border-primary/25">
+                          Lv {currentPlayerEntry.level}
+                        </span>
+                        <span className="text-xs text-muted-foreground">(you)</span>
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-semibold">
                       {currentPlayerEntry.score.toFixed(1)}
@@ -170,12 +180,17 @@ export function Leaderboard() {
                     >
                       <td className="px-4 py-2 font-mono text-muted-foreground w-12">#{entry.rank}</td>
                       <td className="px-4 py-2 font-medium">
-                        <Link
-                          to={`/profile/${encodeURIComponent(entry.userId)}`}
-                          className="hover:underline text-primary"
-                        >
-                          {entry.displayName}
-                        </Link>
+                        <span className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            to={`/profile/${encodeURIComponent(entry.userId)}`}
+                            className="hover:underline text-primary"
+                          >
+                            {entry.displayName}
+                          </Link>
+                          <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary border border-primary/25">
+                            Lv {entry.level}
+                          </span>
+                        </span>
                       </td>
                       <td className="px-4 py-2 text-right font-mono">{entry.score.toFixed(1)}</td>
                       <td className="px-4 py-2 text-right font-mono hidden sm:table-cell">{entry.tournamentWins}</td>

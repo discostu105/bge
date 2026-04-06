@@ -47,6 +47,13 @@ namespace BrowserGameEngine.StatefulGameServer.Achievements {
 			new("top3-leaderboard",  "Hall of Fame",      "Reach top 3 on the all-time leaderboard",    "combat",      "🏅", "gold",      1),
 			new("games-100",         "Century Commander", "Complete 100 games",                          "exploration", "💯", "legendary",100),
 			new("difficulty-master", "Dominator",         "Win a game with 5 or more players",          "combat",      "👑", "gold",      1),
+
+			// Phase 7B XP milestones — cross-game progression
+			new("xp-rising-star",  "Rising Star",        "Earn 500 XP",            "progression", "⭐", "bronze",    500),
+			new("xp-elite",        "Elite Warrior",      "Earn 2,000 XP",          "progression", "🌟", "silver",   2000),
+			new("xp-legend",       "XP Legend",          "Earn 10,000 XP",         "progression", "💫", "legendary",10000),
+			new("level-10",        "Seasoned Commander", "Reach level 10",          "progression", "🎖️", "silver",   10),
+			new("level-25",        "Battle-Hardened",    "Reach level 25",          "progression", "🏆", "gold",     25),
 		};
 	}
 }

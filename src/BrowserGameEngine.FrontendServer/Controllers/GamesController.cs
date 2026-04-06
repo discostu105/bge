@@ -2,6 +2,7 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -444,13 +445,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				.ToList();
 
 			return players
-				.Select((x, idx) => new LeaderboardEntryViewModel(
-					Rank: idx + 1,
-					PlayerId: x.player.PlayerId.Id,
-					PlayerName: x.name,
-					Score: x.score,
-					IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId
-				))
+				.Select((x, idx) => {
+					var xp = x.player.UserId != null ? globalState.GetUserTotalXp(x.player.UserId) : 0;
+					return new LeaderboardEntryViewModel(
+						Rank: idx + 1,
+						PlayerId: x.player.PlayerId.Id,
+						PlayerName: x.name,
+						Score: x.score,
+						IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId,
+						Level: XpHelper.ComputeLevel(xp)
+					);
+				})
 				.ToList();
 		}
 
