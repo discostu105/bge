@@ -111,8 +111,8 @@ export function NavMenu() {
       <div className="mt-4 px-3">
         <ul className="space-y-0.5">
           <SectionLabel>Economy</SectionLabel>
-          <NavItem to="/shop" icon={StoreIcon} label="Shop" />
-          <NavItem to="/economy" icon={CoinsIcon} label="My Economy" />
+          <NavItem to={g('shop')} icon={StoreIcon} label="Shop" />
+          <NavItem to={g('economy')} icon={CoinsIcon} label="My Economy" />
         </ul>
         <div className="mt-2 px-2">
           <CurrencyBadge />
