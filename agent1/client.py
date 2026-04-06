@@ -75,3 +75,37 @@ class BgeClient:
 		"""GET /api/games/{gameId} → GameDetailViewModel (status, winnerId, …)."""
 		gid = urllib.parse.quote(game_id, safe="")
 		return self._get(f"/api/games/{gid}")
+
+	# --- Alliance API ---
+
+	def get_my_alliance_status(self) -> dict:
+		"""GET /api/alliances/my-status → MyAllianceStatusViewModel."""
+		return self._get("/api/alliances/my-status")
+
+	def get_all_alliances(self) -> list:
+		"""GET /api/alliances → list[AllianceViewModel]."""
+		return self._get("/api/alliances")
+
+	def get_alliance_detail(self, alliance_id: str) -> dict:
+		"""GET /api/alliances/{id} → AllianceDetailViewModel (includes member list)."""
+		aid = urllib.parse.quote(alliance_id, safe="")
+		return self._get(f"/api/alliances/{aid}")
+
+	def get_alliance_wars(self, alliance_id: str) -> list:
+		"""GET /api/alliances/{id}/wars → list[AllianceWarViewModel]."""
+		aid = urllib.parse.quote(alliance_id, safe="")
+		return self._get(f"/api/alliances/{aid}/wars")
+
+	def create_alliance(self, name: str, password: str) -> str:
+		"""POST /api/alliances — create a new alliance; returns the new alliance ID."""
+		return self._post("/api/alliances", {"allianceName": name, "password": password})
+
+	def join_alliance(self, alliance_id: str, password: str) -> None:
+		"""POST /api/alliances/{id}/join — join an existing alliance."""
+		aid = urllib.parse.quote(alliance_id, safe="")
+		self._post(f"/api/alliances/{aid}/join", {"password": password})
+
+	def declare_war(self, my_alliance_id: str, target_alliance_id: str) -> None:
+		"""POST /api/alliances/{id}/declare-war — declare war on another alliance."""
+		aid = urllib.parse.quote(my_alliance_id, safe="")
+		self._post(f"/api/alliances/{aid}/declare-war", {"targetAllianceId": target_alliance_id})

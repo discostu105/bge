@@ -47,6 +47,11 @@ class AgentConfig:
     # Fine-grained per-bot overrides; arbitrary key/value dict
     strategy_overrides: dict = field(default_factory=dict)
 
+    # Alliance mode: "passive" (default) avoids attacking allies but takes no
+    # proactive alliance actions.  "active" enables creating/joining alliances
+    # and declaring war per configured thresholds.
+    alliance_mode: str = "passive"
+
     # Resolved profile — kept in sync with difficulty
     difficulty_profile: DifficultyProfile = field(init=False)
 
@@ -98,6 +103,7 @@ def load_config(config_path: str | Path | None = None) -> AgentConfig:
     )
 
     strategy_overrides = dict(agent_raw.get("strategy_overrides") or {})
+    alliance_mode = str(agent_raw.get("alliance_mode", "passive")).lower()
 
     return AgentConfig(
         poll_interval_seconds=int(agent_raw.get("poll_interval_seconds", 5)),
@@ -108,6 +114,7 @@ def load_config(config_path: str | Path | None = None) -> AgentConfig:
         strategy=strategy,
         difficulty=difficulty,
         strategy_overrides=strategy_overrides,
+        alliance_mode=alliance_mode,
     )
 
 

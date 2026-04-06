@@ -9,13 +9,14 @@ from collections import deque
 from .client import BgeClient
 from .config import AgentConfig, load_config
 from .server import start_server
+from .state.alliance_tracker import AllianceTracker
 from .state.tracker import GameStateTracker
 from .strategy.adaptive_difficulty import INSUFFICIENT_DATA, AdaptiveDifficultyAdvisor
 from .strategy.base import StrategyContext
 from .strategy.difficulty import PROFILES
 from .strategy.dispatcher import ActionDispatcher
 from .strategy.engine import DecisionEngine
-from .strategy.registry import load_strategy
+from .strategy.registry import load_alliance_module, load_strategy
 
 # Confidence threshold to trigger an automatic difficulty adjustment.
 _AUTO_ADJUST_CONFIDENCE = 0.5
@@ -64,9 +65,11 @@ def run(config: AgentConfig) -> None:
 
 	client = BgeClient(config.base_url, config.api_key)
 	tracker = GameStateTracker()
+	alliance_tracker = AllianceTracker()
 	dispatcher = ActionDispatcher(client)
 	strategy = load_strategy(config.strategy)
-	engine = DecisionEngine(strategy, dispatcher)
+	alliance_module = load_alliance_module()
+	engine = DecisionEngine(strategy, dispatcher, alliance_module=alliance_module)
 	history: deque = deque(maxlen=20)
 	advisor = AdaptiveDifficultyAdvisor()
 
@@ -76,10 +79,11 @@ def run(config: AgentConfig) -> None:
 	last_game_status: str = ""
 
 	logger.info(
-		"Agent1 started — base_url=%s difficulty=%s strategy=%s poll=%ds",
+		"Agent1 started — base_url=%s difficulty=%s strategy=%s alliance_mode=%s poll=%ds",
 		config.base_url,
 		config.difficulty,
 		config.strategy,
+		config.alliance_mode,
 		config.poll_interval_seconds,
 	)
 
@@ -92,6 +96,9 @@ def run(config: AgentConfig) -> None:
 				last_next_tick_at = next_tick_at
 				current_tick = hash(next_tick_at)
 
+				# Refresh alliance state before strategy decisions.
+				alliance_tracker.update(client)
+
 				resources = client.get_resources()
 				units = client.get_units()
 				attackable = client.get_attackable_players()
@@ -103,15 +110,18 @@ def run(config: AgentConfig) -> None:
 					tick=current_tick,
 					config=config,
 					history=history,
+					alliance_tracker=alliance_tracker,
 				)
 				engine.run_tick(ctx)
 				history.append(tracker)
 
 				logger.debug(
-					"Tick processed — minerals=%d units=%d enemies=%d",
+					"Tick processed — minerals=%d units=%d enemies=%d ally_count=%d war_enemies=%d",
 					tracker.minerals,
 					tracker.units,
 					len(tracker.attackable_players),
+					len(alliance_tracker.allied_player_ids),
+					len(alliance_tracker.war_enemy_player_ids),
 				)
 
 				# Detect game end and trigger adaptive difficulty adjustment.
