@@ -96,15 +96,21 @@ test.describe('Join game and navigate in-game pages', () => {
 })
 
 test.describe('Create player', () => {
-	test('create player page renders and form is functional', async ({ page }) => {
+	test('create player page renders and form is functional', async ({ browser }) => {
+		// Use a fresh browser context (no admin storageState) so the new user's
+		// auth cookie is the only one present — avoids cookie conflicts with the
+		// shared admin session that the page fixture carries by default.
+		const freshUserId = `e2e-newuser-${Date.now()}`
+		const context = await browser.newContext()
+		const page = await context.newPage()
+
 		// Sign in as a fresh user who has no player profile yet.
 		// createPlayer=false skips the automatic player creation so /createplayer works as intended.
-		const freshUserId = `e2e-newuser-${Date.now()}`
 		await page.request.post(`${baseURL}/signindev`, {
 			form: { playerid: freshUserId, returnUrl: '/', createPlayer: 'false' },
 		})
 
-		await page.goto('/createplayer')
+		await page.goto(`${baseURL}/createplayer`)
 		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible()
 		await expect(page.getByLabel('Commander name')).toBeVisible()
 
@@ -115,5 +121,7 @@ test.describe('Create player', () => {
 		// After creating player, redirected to games with welcome message
 		await expect(page).toHaveURL(/\/games\?welcome=1/, { timeout: 10_000 })
 		await expect(page.getByText('Welcome to BGE!')).toBeVisible()
+
+		await context.close()
 	})
 })

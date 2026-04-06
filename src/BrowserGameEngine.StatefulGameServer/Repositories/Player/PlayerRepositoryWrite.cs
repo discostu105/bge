@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -96,9 +96,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			world.Players[playerId].LastOnline = time;
 		}
 
-		public void CreatePlayer(PlayerId playerId, string? userId = null, string playerType = "terran") {
+		public void CreatePlayer(PlayerId playerId, string? userId = null, string playerType = "terran", int? protectionTicks = null) {
 			lock (_lock) {
-				CreatePlayerInternal(playerId, userId, playerType);
+				CreatePlayerInternal(playerId, userId, playerType, protectionTicks);
 			}
 		}
 
@@ -117,7 +117,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
-		private void CreatePlayerInternal(PlayerId playerId, string? userId, string playerType) {
+		private void CreatePlayerInternal(PlayerId playerId, string? userId, string playerType, int? protectionTicks = null) {
 			if (world.PlayerExists(playerId)) throw new PlayerAlreadyExistsException(playerId);
 			var settings = world.GameSettings;
 			world.Players[playerId] = new Player() {
@@ -140,7 +140,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 							Level = 1
 						},
 					},
-					ProtectionTicksRemaining = settings.ProtectionTicks
+					ProtectionTicksRemaining = protectionTicks ?? settings.ProtectionTicks
 				}
 			};
 		}

@@ -77,7 +77,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		/// Direct login without any password. A new user gets created directly if it does not exist.
 		/// </summary>
 		[HttpPost("~/signindev")]
-		public async Task<IActionResult> SignInDev([FromForm] string playerid, [FromForm] bool createPlayer = true) {
+		public async Task<IActionResult> SignInDev([FromForm] string playerid, [FromForm] bool createPlayer = true, [FromForm] int? protectionTicks = null) {
 			// only works if DevAuth setting in appsettings is set (dev only!)
 			if (!options.Value.DevAuth) return BadRequest();
 			if (string.IsNullOrWhiteSpace(playerid)) return BadRequest();
@@ -89,7 +89,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (createPlayer) {
 				var playerId = PlayerIdFactory.Create(playerid);
 				if (!playerRepository.Exists(playerId)) {
-					playerRepositoryWrite.CreatePlayer(playerId, userId: user.UserId);
+					playerRepositoryWrite.CreatePlayer(playerId, userId: user.UserId, protectionTicks: protectionTicks);
 				}
 			}
 

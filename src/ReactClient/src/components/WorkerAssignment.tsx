@@ -17,7 +17,7 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
 
   const assignMutation = useMutation({
     mutationFn: (params: { mineralWorkers: number; gasWorkers: number }) =>
-      apiClient.post('/api/workers/assign', params),
+      apiClient.post('/api/workers/assign', null, { params }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['workers', gameId] })
     },
