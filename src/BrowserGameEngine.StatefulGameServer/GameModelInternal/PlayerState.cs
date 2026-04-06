@@ -3,9 +3,11 @@ using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 	internal class PlayerState {
+		internal readonly Lock StateLock = new();
 		public DateTime? LastGameTickUpdate { get; set; }
 		public GameTick CurrentGameTick { get; set; } = new GameTick(0);
 		public IDictionary<ResourceDefId, decimal> Resources { get; set; } = new Dictionary<ResourceDefId, decimal>();
@@ -35,33 +37,35 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 	internal static class PlayerStateExtensions {
 		internal static PlayerStateImmutable ToImmutable(this PlayerState playerState) {
-			return new PlayerStateImmutable(
-				LastGameTickUpdate: playerState.LastGameTickUpdate,
-				CurrentGameTick: playerState.CurrentGameTick,
-				Resources: new Dictionary<ResourceDefId, decimal>(playerState.Resources),
-				Assets: playerState.Assets.Select(x => x.ToImmutable()).ToHashSet(),
-				Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
-				MineralWorkers: playerState.MineralWorkers,
-				GasWorkers: playerState.GasWorkers,
-				ProtectionTicksRemaining: playerState.ProtectionTicksRemaining,
-				Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList(),
-				AttackUpgradeLevel: playerState.AttackUpgradeLevel,
-				DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
-				UpgradeResearchTimer: playerState.UpgradeResearchTimer,
-				UpgradeBeingResearched: playerState.UpgradeBeingResearched,
-				BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList(),
-				SpyCooldowns: new Dictionary<string, DateTime>(playerState.SpyCooldowns),
-				UnlockedTechs: new List<string>(playerState.UnlockedTechs),
-				TechBeingResearched: playerState.TechBeingResearched,
-				TechResearchTimer: playerState.TechResearchTimer,
-				LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults),
-				SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs),
-				Notifications: new List<GameNotification>(playerState.Notifications),
-				SpyMissions: playerState.SpyMissions.Select(x => x.ToImmutable()).ToList(),
-				TutorialCompleted: playerState.TutorialCompleted,
-				ResourceHistory: new List<ResourceSnapshot>(playerState.ResourceHistory),
-				BattleReports: playerState.BattleReports.Select(x => x.ToImmutable()).ToList()
-			);
+			lock (playerState.StateLock) {
+				return new PlayerStateImmutable(
+					LastGameTickUpdate: playerState.LastGameTickUpdate,
+					CurrentGameTick: playerState.CurrentGameTick,
+					Resources: new Dictionary<ResourceDefId, decimal>(playerState.Resources),
+					Assets: playerState.Assets.Select(x => x.ToImmutable()).ToHashSet(),
+					Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
+					MineralWorkers: playerState.MineralWorkers,
+					GasWorkers: playerState.GasWorkers,
+					ProtectionTicksRemaining: playerState.ProtectionTicksRemaining,
+					Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList(),
+					AttackUpgradeLevel: playerState.AttackUpgradeLevel,
+					DefenseUpgradeLevel: playerState.DefenseUpgradeLevel,
+					UpgradeResearchTimer: playerState.UpgradeResearchTimer,
+					UpgradeBeingResearched: playerState.UpgradeBeingResearched,
+					BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList(),
+					SpyCooldowns: new Dictionary<string, DateTime>(playerState.SpyCooldowns),
+					UnlockedTechs: new List<string>(playerState.UnlockedTechs),
+					TechBeingResearched: playerState.TechBeingResearched,
+					TechResearchTimer: playerState.TechResearchTimer,
+					LastSpyResults: new Dictionary<string, SpyResult>(playerState.LastSpyResults),
+					SpyAttemptLogs: new List<SpyAttemptLog>(playerState.SpyAttemptLogs),
+					Notifications: new List<GameNotification>(playerState.Notifications),
+					SpyMissions: playerState.SpyMissions.Select(x => x.ToImmutable()).ToList(),
+					TutorialCompleted: playerState.TutorialCompleted,
+					ResourceHistory: new List<ResourceSnapshot>(playerState.ResourceHistory),
+					BattleReports: playerState.BattleReports.Select(x => x.ToImmutable()).ToList()
+				);
+			}
 		}
 
 		internal static PlayerState ToMutable(this PlayerStateImmutable playerStateImmutable) {

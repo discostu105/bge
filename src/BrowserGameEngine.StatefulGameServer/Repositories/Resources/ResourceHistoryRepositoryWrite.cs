@@ -16,10 +16,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void AppendSnapshot(PlayerId playerId, ResourceSnapshot snapshot) {
 			lock (_lock) {
-				var history = world.GetPlayer(playerId).State.ResourceHistory;
-				history.Add(snapshot);
-				while (history.Count > MaxHistorySize) {
-					history.RemoveAt(0);
+				var state = world.GetPlayer(playerId).State;
+				lock (state.StateLock) {
+					state.ResourceHistory.Add(snapshot);
+					while (state.ResourceHistory.Count > MaxHistorySize) {
+						state.ResourceHistory.RemoveAt(0);
+					}
 				}
 			}
 		}
