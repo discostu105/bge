@@ -1,13 +1,87 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { useParams } from 'react-router'
 import { Link } from 'react-router'
-import { UserIcon, TrophyIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { UserIcon, TrophyIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, FlagIcon } from 'lucide-react'
+import axios from 'axios'
 import apiClient from '@/api/client'
 import type { PlayerCrossGameStatsViewModel, PublicPlayerAchievementsViewModel, PlayerLeaderboardContextViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+
+const REPORT_REASONS = ['Cheating', 'Harassment', 'Spam', 'Inappropriate name', 'Other']
+
+function ReportModal({ targetUserId, onClose }: { targetUserId: string; onClose: () => void }) {
+  const [reason, setReason] = useState(REPORT_REASONS[0])
+  const [details, setDetails] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const mutation = useMutation({
+    mutationFn: () => apiClient.post('/api/reports', { targetUserId, reason, details: details.trim() || null }),
+    onSuccess: () => setSubmitted(true),
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div
+        className="bg-card border border-border rounded-lg p-6 w-full max-w-sm space-y-4 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-bold">Report Player</h2>
+        {submitted ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Your report has been submitted. Thank you.</p>
+            <button onClick={onClose} className="w-full rounded bg-primary text-primary-foreground px-3 py-2 text-sm">
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Reason</label>
+              <select
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="w-full border border-border rounded px-2 py-1.5 text-sm bg-background"
+              >
+                {REPORT_REASONS.map((r) => <option key={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Details (optional)</label>
+              <textarea
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                rows={3}
+                maxLength={500}
+                className="w-full border border-border rounded px-2 py-1.5 text-sm bg-background resize-none"
+                placeholder="Provide any additional context..."
+              />
+            </div>
+            {mutation.isError && (
+              <p className="text-xs text-destructive">
+                {axios.isAxiosError(mutation.error) ? (mutation.error.response?.data as string ?? mutation.error.message) : 'Failed to submit report.'}
+              </p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button onClick={onClose} className="px-3 py-1.5 rounded border border-border text-sm hover:bg-muted">
+                Cancel
+              </button>
+              <button
+                onClick={() => mutation.mutate()}
+                disabled={mutation.isPending}
+                className="px-3 py-1.5 rounded bg-destructive text-destructive-foreground text-sm hover:bg-destructive/90 disabled:opacity-50"
+              >
+                {mutation.isPending ? 'Submitting…' : 'Submit Report'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 const PAGE_SIZE = 10
 
@@ -68,6 +142,7 @@ function PublicAchievementBadges({ userId }: { userId: string }) {
 export function PublicProfile() {
   const { userId } = useParams<{ userId: string }>()
   const [page, setPage] = useState(0)
+  const [showReport, setShowReport] = useState(false)
 
   const { data: stats, isLoading, error, refetch } = useQuery<PlayerCrossGameStatsViewModel>({
     queryKey: ['public-profile', userId],
@@ -116,7 +191,7 @@ export function PublicProfile() {
         >
           {avatarInitials(stats.playerName)}
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-bold">{stats.playerName ?? 'Unknown Player'}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {stats.totalGames} {stats.totalGames === 1 ? 'game' : 'games'} played
@@ -134,7 +209,18 @@ export function PublicProfile() {
             </p>
           )}
         </div>
+        {userId && (
+          <button
+            onClick={() => setShowReport(true)}
+            className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded border border-border text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            title="Report this player"
+          >
+            <FlagIcon className="h-3 w-3" />
+            Report
+          </button>
+        )}
       </div>
+      {showReport && userId && <ReportModal targetUserId={userId} onClose={() => setShowReport(false)} />}
 
       {/* Statistics panel */}
       <div className="rounded-lg border bg-card p-5 space-y-3">

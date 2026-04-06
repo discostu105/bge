@@ -15,5 +15,6 @@ namespace BrowserGameEngine.Shared {
 		public DateTime? LastOnline { get; set; }
 		public bool IsAgent { get; set; }
 		public int ProtectionTicksRemaining { get; set; }
+		public string? UserId { get; set; }
 	}
 }

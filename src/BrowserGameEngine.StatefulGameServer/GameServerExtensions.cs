@@ -85,6 +85,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<TournamentRepository>();
 			services.AddSingleton<TournamentRepositoryWrite>();
 			services.AddSingleton<TournamentEngine>();
+			services.AddSingleton<AdminAuditLog>();
+			services.AddSingleton<ReportStore>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();
