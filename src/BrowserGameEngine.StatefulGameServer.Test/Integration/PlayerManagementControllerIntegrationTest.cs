@@ -59,6 +59,39 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 		}
 
 		[Fact]
+		public async Task GenerateApiKey_ThenUseAsBearer_Authenticates() {
+			var userId = "user-pm-apikey-bearer-1";
+			var playerId = await CreatePlayerAsync(userId, "BearerPlayer1");
+
+			// Generate the API key via cookie-authenticated client
+			var authClient = CreateClient(userId);
+			var genResponse = await authClient.PostAsync($"/api/player-management/{playerId}/apikey", null);
+			Assert.Equal(HttpStatusCode.OK, genResponse.StatusCode);
+			var vm = await DeserializeAsync<ApiKeyViewModel>(genResponse);
+			Assert.NotNull(vm);
+			Assert.False(string.IsNullOrEmpty(vm!.ApiKey));
+
+			// Use the API key as a Bearer token on an unauthenticated client
+			var bearerClient = CreateClient(); // no cookie auth
+			bearerClient.DefaultRequestHeaders.Authorization =
+				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", vm.ApiKey);
+
+			// Hit a protected endpoint — should succeed, not 401
+			var response = await bearerClient.GetAsync("/api/profile");
+			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		}
+
+		[Fact]
+		public async Task BearerToken_InvalidKey_Returns401() {
+			var bearerClient = CreateClient();
+			bearerClient.DefaultRequestHeaders.Authorization =
+				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "bge_k_invalid_key_here");
+
+			var response = await bearerClient.GetAsync("/api/profile");
+			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+		}
+
+		[Fact]
 		public async Task DeletePlayer_Unauthenticated_Returns401() {
 			var client = CreateClient();
 			var response = await client.DeleteAsync("/api/player-management/some-player-id");
