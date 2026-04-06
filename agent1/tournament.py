@@ -32,12 +32,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import subprocess
 import urllib.request
 import urllib.error
 import json
 
 from ._yaml import load_yaml as _load_yaml
-from .bot_manager import BotSlot, load_bot_manager_config
+from .bot_manager import BotSlot, _build_env, load_bot_manager_config
 
 _DEFAULT_CONFIG_PATH = Path("config/tournament.yaml")
 
@@ -95,8 +96,8 @@ def _create_game(base_url: str, api_key: str, name: str, tournament_id: str,
     return result["gameId"]
 
 
-def _get_game_status(base_url: str, game_id: str) -> str:
-    result = _api_request(base_url, f"/api/games/{game_id}")
+def _get_game_status(base_url: str, game_id: str, api_key: str = "") -> str:
+    result = _api_request(base_url, f"/api/games/{game_id}", api_key=api_key)
     return result.get("status", "Unknown")
 
 
@@ -118,6 +119,7 @@ def run_tournament(config_path: str | None = None) -> None:
     print(f"Rounds: {cfg.rounds}, Duration: {cfg.game_duration_minutes}m/game, Bots/game: {cfg.bots_per_game}")
 
     game_ids: list[str] = []
+    bot_processes: list[subprocess.Popen] = []
     now = datetime.datetime.utcnow()
 
     for round_num in range(1, cfg.rounds + 1):
@@ -152,7 +154,10 @@ def run_tournament(config_path: str | None = None) -> None:
                 game_id=game_id,
                 difficulty=cfg.difficulty,
             )
-            print(f"  Provisioned bot slot: {bot_name} (difficulty={cfg.difficulty})")
+            env = _build_env(slot, base_url)
+            proc = subprocess.Popen([sys.executable, "-m", "agent1"], env=env)
+            bot_processes.append(proc)
+            print(f"  Spawned bot {bot_name!r} (pid={proc.pid}, difficulty={cfg.difficulty})")
 
     if not game_ids:
         print("No games were created. Exiting.", file=sys.stderr)
@@ -164,7 +169,7 @@ def run_tournament(config_path: str | None = None) -> None:
         statuses = {}
         for game_id in game_ids:
             try:
-                statuses[game_id] = _get_game_status(base_url, game_id)
+                statuses[game_id] = _get_game_status(base_url, game_id, api_key=admin_api_key)
             except Exception as exc:
                 statuses[game_id] = f"ERROR({exc})"
 
@@ -174,6 +179,9 @@ def run_tournament(config_path: str | None = None) -> None:
         if finished == len(game_ids):
             break
         time.sleep(poll_interval)
+
+    for proc in bot_processes:
+        proc.terminate()
 
     print(f"\nAll games finished. Fetching tournament results for {tournament_id} ...")
     try:
