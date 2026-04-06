@@ -10,6 +10,7 @@ using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
 using BrowserGameEngine.StatefulGameServer.Repositories;
 using BrowserGameEngine.StatefulGameServer.Repositories.Chat;
+using BrowserGameEngine.StatefulGameServer.Repositories.Tournament;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -81,6 +82,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<MilestoneRepositoryWrite>();
 			services.AddSingleton<LeaderboardRepository>();
 			services.AddSingleton<GameReplayRepository>();
+			services.AddSingleton<TournamentRepository>();
+			services.AddSingleton<TournamentRepositoryWrite>();
+			services.AddSingleton<TournamentEngine>();
 
 			services.AddSingleton<IActionLogger, ActionLogger>();
 			services.AddSingleton<IGameTickModule, ActionQueueExecutor>();

@@ -25,6 +25,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly TimeProvider timeProvider;
 		private readonly MilestoneRepository milestoneRepository;
 		private readonly MilestoneRepositoryWrite milestoneRepositoryWrite;
+		private readonly TournamentEngine tournamentEngine;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -39,6 +40,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			TimeProvider timeProvider,
 			MilestoneRepository milestoneRepository,
 			MilestoneRepositoryWrite milestoneRepositoryWrite,
+			TournamentEngine tournamentEngine,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -52,6 +54,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.timeProvider = timeProvider;
 			this.milestoneRepository = milestoneRepository;
 			this.milestoneRepositoryWrite = milestoneRepositoryWrite;
+			this.tournamentEngine = tournamentEngine;
 			this.logger = logger;
 		}
 
@@ -240,6 +243,13 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 
 			logger.LogInformation("Game {GameId} finalized. Winner: {WinnerId}, Players: {PlayerCount}",
 				record.GameId.Id, winnerId?.Id ?? "(none)", rankings.Count);
+
+			// Process tournament progression (no-op for non-tournament games)
+			try {
+				tournamentEngine.ProcessGameFinalized(updated);
+			} catch (Exception ex) {
+				logger.LogError(ex, "Tournament progression failed for game {GameId}", record.GameId.Id);
+			}
 
 			var victoryLabel = GetVictoryConditionLabel(victoryConditionType);
 			await notificationService.NotifyGameFinishedAsync(updated, winnerId, winnerName, rankings.Count, victoryLabel);

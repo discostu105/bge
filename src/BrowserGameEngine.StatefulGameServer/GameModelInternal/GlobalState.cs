@@ -16,6 +16,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		private readonly object _milestonesLock = new();
 		private List<UserMilestoneImmutable> _milestones = new();
 
+		private readonly object _tournamentsLock = new();
+		private List<TournamentImmutable> _tournaments = new();
+
 		public string? GetUserDisplayName(string userId) {
 			var user = Users.Values.FirstOrDefault(u => u.UserId == userId);
 			return user?.DisplayName;
@@ -90,6 +93,29 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				addValueFactory: _ => throw new System.InvalidOperationException($"User {userId} not found when awarding XP"),
 				updateValueFactory: (_, existing) => { existing.TotalXp += xp; return existing; });
 		}
+
+		public IReadOnlyList<TournamentImmutable> GetTournaments() {
+			lock (_tournamentsLock) return _tournaments.ToList();
+		}
+
+		public TournamentImmutable? GetTournamentById(string tournamentId) {
+			lock (_tournamentsLock) return _tournaments.FirstOrDefault(t => t.TournamentId == tournamentId);
+		}
+
+		public void AddTournament(TournamentImmutable tournament) {
+			lock (_tournamentsLock) _tournaments.Add(tournament);
+		}
+
+		public void UpdateTournament(TournamentImmutable old, TournamentImmutable updated) {
+			lock (_tournamentsLock) {
+				var idx = _tournaments.IndexOf(old);
+				if (idx >= 0) _tournaments[idx] = updated;
+			}
+		}
+
+		public void SetTournaments(IEnumerable<TournamentImmutable> tournaments) {
+			lock (_tournamentsLock) _tournaments = tournaments.ToList();
+		}
 	}
 
 	public static class GlobalStateExtensions {
@@ -98,7 +124,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Users: globalState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				Games: globalState.GetGames().ToList(),
 				Achievements: globalState.GetAchievements().ToList(),
-				Milestones: globalState.GetAllMilestones().ToList()
+				Milestones: globalState.GetAllMilestones().ToList(),
+				Tournaments: globalState.GetTournaments().ToList()
 			);
 		}
 
@@ -110,6 +137,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			state.SetGames(globalStateImmutable.Games);
 			state.SetAchievements(globalStateImmutable.Achievements);
 			state.SetMilestones(globalStateImmutable.Milestones ?? Enumerable.Empty<UserMilestoneImmutable>());
+			state.SetTournaments(globalStateImmutable.Tournaments ?? Enumerable.Empty<TournamentImmutable>());
 			return state;
 		}
 	}
