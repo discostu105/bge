@@ -74,6 +74,7 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
 }
 
 @keyframes page-fade-in {

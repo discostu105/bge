@@ -70,7 +70,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
       {error ? (
         <ApiError message="Failed to load ranking." onRetry={() => void refetch()} />
       ) : (
-        <div className="rounded-lg border overflow-hidden">
+        <div className="rounded-lg border overflow-x-auto max-w-full">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
