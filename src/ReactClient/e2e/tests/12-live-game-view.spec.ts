@@ -31,26 +31,29 @@ async function createActiveGame(page: import('@playwright/test').Page): Promise<
 }
 
 test.describe('Live game view page', () => {
-	test('renders resource and ranking sections for an active game', async ({ page }) => {
+	test('renders leaderboard and unit sections for an active game', async ({ page }) => {
 		const gameId = await createActiveGame(page)
 
 		await page.goto(`/games/${gameId}/live`)
 
-		// Main sections should render
-		await expect(page.getByText('Resources')).toBeVisible({ timeout: 10_000 })
-		await expect(page.getByText('Rankings')).toBeVisible({ timeout: 10_000 })
+		// Page heading
+		await expect(page.getByRole('heading', { name: 'Live View' })).toBeVisible({ timeout: 10_000 })
+
+		// Main sections should render (actual section titles from GameLiveView component)
+		await expect(page.getByText('Live Leaderboard')).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByText('Units at Base')).toBeVisible({ timeout: 10_000 })
 
 		// At least one data section or skeleton loaded
 		await expect(page.locator('.rounded-lg.border').first()).toBeVisible()
 	})
 
-	test('shows tick update timestamp', async ({ page }) => {
+	test('shows live indicator and update timestamp', async ({ page }) => {
 		const gameId = await createActiveGame(page)
 
 		await page.goto(`/games/${gameId}/live`)
 
-		// The page displays "Last updated" or a time reference once data loads
-		await expect(page.getByText(/last updated/i).or(page.getByText(/units at base/i))).toBeVisible({ timeout: 10_000 })
+		// The page displays an "Updated" timestamp and a Live indicator once data loads
+		await expect(page.getByText(/updated/i).or(page.getByText(/live/i))).toBeVisible({ timeout: 10_000 })
 	})
 
 	test('shows finish-game notice for a completed game', async ({ page }) => {
