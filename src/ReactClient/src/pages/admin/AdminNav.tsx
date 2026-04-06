@@ -4,13 +4,15 @@ const links = [
   { path: '/admin/games', label: 'Games' },
   { path: '/admin/players', label: 'Players' },
   { path: '/admin/ticks', label: 'Tick Control' },
-  { path: '/admin/stats', label: 'Live Stats' },
+  { path: '/admin/metrics', label: 'Metrics' },
+  { path: '/admin/audit', label: 'Audit Log' },
+  { path: '/admin/reports', label: 'Reports' },
 ]
 
 export function AdminNav() {
   const location = useLocation()
   return (
-    <nav className="flex gap-1 mb-6 border-b border-border pb-2">
+    <nav className="flex gap-1 mb-6 border-b border-border pb-2 flex-wrap">
       {links.map(({ path, label }) => (
         <a
           key={path}
