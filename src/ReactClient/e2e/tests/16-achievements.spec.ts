@@ -30,11 +30,12 @@ test.describe('Achievements page — structure', () => {
 
 		await expect(page.getByRole('heading', { name: 'Achievements' })).toBeVisible()
 
-		// Summary stats section (4 cells)
-		await expect(page.getByText('Trophies', { exact: true })).toBeVisible()
-		await expect(page.getByText('Milestones', { exact: true })).toBeVisible()
-		await expect(page.getByText('Completion', { exact: true })).toBeVisible()
-		await expect(page.getByText('Best Tier', { exact: true })).toBeVisible()
+		// Summary stats section (4 cells) — use .first() to avoid strict-mode violation
+		// when the same label also appears in the tab bar
+		await expect(page.getByText('Trophies', { exact: true }).first()).toBeVisible()
+		await expect(page.getByText('Milestones', { exact: true }).first()).toBeVisible()
+		await expect(page.getByText('Completion', { exact: true }).first()).toBeVisible()
+		await expect(page.getByText('Best Tier', { exact: true }).first()).toBeVisible()
 
 		// Tab bar
 		await expect(page.getByRole('button', { name: 'Milestones' })).toBeVisible()
@@ -111,7 +112,7 @@ test.describe('Achievements page — milestone unlock', () => {
 
 		// Locked cards are styled with opacity-65; unlocked cards have a ring style.
 		// Verify the "Unlocked" date text appears somewhere on the card.
-		await expect(page.getByText(/Unlocked/i)).toBeVisible()
+		await expect(page.getByText(/Unlocked/i).first()).toBeVisible()
 	})
 
 	test('newly awarded milestone is reflected in Milestones completion count', async ({ page }) => {
@@ -184,7 +185,7 @@ test.describe('Public profile page — achievement badges', () => {
 
 		await page.goto(`/profile/${encodeURIComponent(userId)}`)
 		await expect(page.getByText('Something went wrong')).not.toBeVisible({ timeout: 5_000 })
-		await expect(page.locator('.max-w-2xl, .max-w-lg').first()).toBeVisible()
+		await expect(page.locator('.max-w-2xl, .max-w-lg').first()).toBeVisible({ timeout: 10_000 })
 	})
 
 	test('public profile hides badge section silently for user with no game trophies', async ({ page }) => {

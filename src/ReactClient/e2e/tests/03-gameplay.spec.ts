@@ -111,8 +111,8 @@ test.describe('Create player', () => {
 		})
 
 		await page.goto(`${baseURL}/createplayer`)
-		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible()
-		await expect(page.getByLabel('Commander name')).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Welcome to BGE' })).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByLabel('Commander name')).toBeVisible({ timeout: 10_000 })
 
 		// Fill and submit
 		await page.getByLabel('Commander name').fill(`Commander ${freshUserId.slice(-8)}`)

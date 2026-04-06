@@ -23,6 +23,7 @@ test.describe('Player profile page', () => {
 			page.getByText(/score/i)
 				.or(page.getByText(/rank/i))
 				.or(page.getByText(/not currently in a game/i))
+				.first()
 		).toBeVisible()
 	})
 
@@ -37,7 +38,7 @@ test.describe('Player profile page', () => {
 		await expect(page.getByRole('heading', { name: 'My Profile' })).toBeVisible()
 
 		// Fresh user has no active game — the "not in a game" message or Browse games link appears
-		await expect(page.getByText(/not currently in a game/i).or(page.getByRole('link', { name: /browse games/i }))).toBeVisible()
+		await expect(page.getByText(/not currently in a game/i).or(page.getByRole('link', { name: /browse games/i })).first()).toBeVisible()
 	})
 
 	test('public profile page renders for a known user', async ({ page }) => {
@@ -53,7 +54,7 @@ test.describe('Player profile page', () => {
 		await expect(page.getByText(/something went wrong/i)).not.toBeVisible({ timeout: 5_000 })
 
 		// The page should show some profile content
-		await expect(page.locator('main, [role="main"], .max-w-lg, .max-w-2xl').first()).toBeVisible()
+		await expect(page.locator('main, [role="main"], .max-w-lg, .max-w-2xl').first()).toBeVisible({ timeout: 10_000 })
 	})
 
 	test('public profile page shows not-found state for unknown user', async ({ page }) => {

@@ -53,7 +53,7 @@ test.describe('Live game view page', () => {
 		await page.goto(`/games/${gameId}/live`)
 
 		// The page displays an "Updated" timestamp and a Live indicator once data loads
-		await expect(page.getByText(/updated/i).or(page.getByText(/live/i))).toBeVisible({ timeout: 10_000 })
+		await expect(page.getByText(/updated/i).or(page.getByText(/live/i)).first()).toBeVisible({ timeout: 10_000 })
 	})
 
 	test('shows finish-game notice for a completed game', async ({ page }) => {
