@@ -93,6 +93,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					GameNotificationType.SpyAttempted => GameNotificationTypeViewModel.SpyAttempted,
 					GameNotificationType.AllianceRequest => GameNotificationTypeViewModel.AllianceRequest,
 					GameNotificationType.MessageReceived => GameNotificationTypeViewModel.MessageReceived,
+					GameNotificationType.MilestoneUnlocked => GameNotificationTypeViewModel.MilestoneUnlocked,
 					_ => GameNotificationTypeViewModel.AttackReceived
 				},
 				Title = n.Title,

@@ -11,4 +11,5 @@ public static class GameEventTypes
 	public const string MarketOrderFilled = "MarketOrderFilled";
 	public const string GameFinalized = "GameFinalized";
 	public const string LobbyUpdated = "LobbyUpdated";
+	public const string MilestoneUnlocked = "MilestoneUnlocked";
 }
