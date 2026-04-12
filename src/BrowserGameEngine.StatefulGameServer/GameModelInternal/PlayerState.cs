@@ -22,9 +22,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public int UpgradeResearchTimer { get; set; }
 		public UpgradeType UpgradeBeingResearched { get; set; }
 		public List<BuildQueueEntry> BuildQueue { get; set; } = new List<BuildQueueEntry>();
-		public List<string> UnlockedTechs { get; set; } = new List<string>();
-		public string? TechBeingResearched { get; set; }
-		public int TechResearchTimer { get; set; }
 		public List<GameNotification> Notifications { get; set; } = new List<GameNotification>();
 		public bool TutorialCompleted { get; set; }
 		public List<ResourceSnapshot> ResourceHistory { get; set; } = new List<ResourceSnapshot>();
@@ -49,9 +46,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 					UpgradeResearchTimer: playerState.UpgradeResearchTimer,
 					UpgradeBeingResearched: playerState.UpgradeBeingResearched,
 					BuildQueue: playerState.BuildQueue.Select(x => x.ToImmutable()).ToList(),
-					UnlockedTechs: new List<string>(playerState.UnlockedTechs),
-					TechBeingResearched: playerState.TechBeingResearched,
-					TechResearchTimer: playerState.TechResearchTimer,
 					Notifications: new List<GameNotification>(playerState.Notifications),
 					TutorialCompleted: playerState.TutorialCompleted,
 					ResourceHistory: new List<ResourceSnapshot>(playerState.ResourceHistory),
@@ -77,11 +71,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				UpgradeBeingResearched = playerStateImmutable.UpgradeBeingResearched,
 				BuildQueue = (playerStateImmutable.BuildQueue ?? new List<BuildQueueEntryImmutable>())
 					.Select(x => x.ToMutable()).ToList(),
-				UnlockedTechs = playerStateImmutable.UnlockedTechs != null
-					? new List<string>(playerStateImmutable.UnlockedTechs)
-					: new List<string>(),
-				TechBeingResearched = playerStateImmutable.TechBeingResearched,
-				TechResearchTimer = playerStateImmutable.TechResearchTimer,
 				Notifications = playerStateImmutable.Notifications != null
 					? new List<GameNotification>(playerStateImmutable.Notifications)
 					: new List<GameNotification>(),

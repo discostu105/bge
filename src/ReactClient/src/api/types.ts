@@ -129,26 +129,6 @@ export interface UpgradesViewModel {
   playerType: string
 }
 
-export interface TechNodeViewModel {
-  id: string
-  name: string
-  description: string
-  tier: number
-  cost: CostViewModel
-  researchTimeTicks: number
-  prerequisiteIds: string[]
-  effectType: string
-  effectValue: number
-  status: 'Unlocked' | 'InProgress' | 'Available' | 'Locked'
-}
-
-export interface TechTreeViewModel {
-  playerType: string
-  currentResearchId: string | null
-  researchTimerTicks: number
-  nodes: TechNodeViewModel[]
-}
-
 // Market
 
 export interface MarketOrderViewModel {
@@ -468,7 +448,6 @@ export interface InGamePlayerProfileViewModel {
   allianceId: string | null
   allianceName: string | null
   allianceRole: string | null
-  techsResearched: number
   isOnline: boolean
   lastOnline: string | null
   isAgent: boolean

@@ -10,7 +10,6 @@ namespace BrowserGameEngine.Shared {
 		public string? AllianceId { get; set; }
 		public string? AllianceName { get; set; }
 		public string? AllianceRole { get; set; }
-		public int TechsResearched { get; set; }
 		public bool IsOnline { get; set; }
 		public DateTime? LastOnline { get; set; }
 		public bool IsAgent { get; set; }

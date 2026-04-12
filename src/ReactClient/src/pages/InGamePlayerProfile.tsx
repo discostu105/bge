@@ -171,10 +171,6 @@ export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Rank</div>
             <div className="text-2xl font-bold">{player.rank} <span className="text-sm text-muted-foreground font-normal">/ {player.totalPlayers}</span></div>
           </div>
-          <div className="rounded border bg-secondary/20 p-3">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Techs Researched</div>
-            <div className="text-2xl font-bold">{player.techsResearched}</div>
-          </div>
           {player.protectionTicksRemaining > 0 && (
             <div className="rounded border border-yellow-700/50 bg-yellow-900/20 p-3">
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Protection</div>

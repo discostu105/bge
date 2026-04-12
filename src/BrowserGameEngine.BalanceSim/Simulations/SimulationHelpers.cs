@@ -93,7 +93,6 @@ public static class SimulationHelpers
 			Resources = gameDef.Resources,
 			ScoreResource = gameDef.ScoreResource,
 			GameTickModules = gameDef.GameTickModules,
-			TechNodes = gameDef.TechNodes,
 			VictoryConditions = gameDef.VictoryConditions,
 			TickDuration = gameDef.TickDuration,
 		};
