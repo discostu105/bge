@@ -1,12 +1,21 @@
+import { type ReactNode } from 'react'
+import { GemIcon, FlaskConicalIcon, CircleIcon } from 'lucide-react'
 import type { CostViewModel } from '@/api/types'
 
 interface CostBadgeProps {
   cost: CostViewModel | Record<string, number>
 }
 
-const RESOURCE_ICONS: Record<string, string> = {
-  minerals: '💎',
-  gas: '⚗️',
+function resourceIcon(resourceId: string): ReactNode {
+  const cls = 'h-3 w-3'
+  switch (resourceId) {
+    case 'minerals':
+      return <GemIcon className={`${cls} text-blue-400`} aria-hidden="true" />
+    case 'gas':
+      return <FlaskConicalIcon className={`${cls} text-green-400`} aria-hidden="true" />
+    default:
+      return <CircleIcon className={`${cls} text-muted-foreground`} aria-hidden="true" />
+  }
 }
 
 function getCostEntries(cost: CostViewModel | Record<string, number>): [string, number][] {
@@ -30,7 +39,7 @@ export function CostBadge({ cost }: CostBadgeProps) {
           key={resourceId}
           className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground"
         >
-          <span>{RESOURCE_ICONS[resourceId] ?? '🔷'}</span>
+          {resourceIcon(resourceId)}
           <span>{amount.toLocaleString()}</span>
           <span className="text-muted-foreground capitalize">{resourceId}</span>
         </span>

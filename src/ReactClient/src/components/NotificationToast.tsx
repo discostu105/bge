@@ -1,6 +1,14 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { XIcon } from 'lucide-react'
+import {
+  XIcon,
+  SwordsIcon,
+  CoinsIcon,
+  MailIcon,
+  ZapIcon,
+  AlertTriangleIcon,
+  InfoIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Toast {
@@ -14,16 +22,23 @@ interface Toast {
 const MAX_VISIBLE = 3
 const AUTO_DISMISS_MS = 5_000
 
-function toastIcon(type: string): string {
+function toastIcon(type: string): ReactNode {
+  const common = 'h-5 w-5 shrink-0'
   switch (type) {
     case 'Attack':
-    case 'BattleResult': return '⚔️'
+    case 'BattleResult':
+      return <SwordsIcon className={cn(common, 'text-destructive')} aria-hidden="true" />
     case 'TradeComplete':
-    case 'MarketOrderFilled': return '💰'
-    case 'MessageReceived': return '📩'
-    case 'GameEvent': return '⚡'
-    case 'Warning': return '⚠️'
-    default: return 'ℹ️'
+    case 'MarketOrderFilled':
+      return <CoinsIcon className={cn(common, 'text-warning')} aria-hidden="true" />
+    case 'MessageReceived':
+      return <MailIcon className={cn(common, 'text-primary')} aria-hidden="true" />
+    case 'GameEvent':
+      return <ZapIcon className={cn(common, 'text-primary')} aria-hidden="true" />
+    case 'Warning':
+      return <AlertTriangleIcon className={cn(common, 'text-warning')} aria-hidden="true" />
+    default:
+      return <InfoIcon className={cn(common, 'text-muted-foreground')} aria-hidden="true" />
   }
 }
 
@@ -107,7 +122,7 @@ function ToastItem({
         'cursor-pointer hover:bg-secondary/40 transition-colors'
       )}
     >
-      <span className="text-lg mt-0.5 shrink-0">{toastIcon(toast.type)}</span>
+      <span className="mt-0.5">{toastIcon(toast.type)}</span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium leading-snug">{toast.title}</p>
         {toast.body && (

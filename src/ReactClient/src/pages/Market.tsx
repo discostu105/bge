@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { MarketViewModel, MarketOrderViewModel, CreateMarketOrderRequest } from '@/api/types'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonRow, SkeletonLine } from '@/components/Skeleton'
+import { useConfirm } from '@/contexts/ConfirmContext'
 
 interface MarketProps {
   gameId: string
@@ -18,6 +19,7 @@ function exchangeRate(order: MarketOrderViewModel): string {
 
 export function Market({ gameId }: MarketProps) {
   const queryClient = useQueryClient()
+  const confirm = useConfirm()
   const [postError, setPostError] = useState<string | null>(null)
   const [orderErrors, setOrderErrors] = useState<Record<string, string>>({})
   const [offerResourceId, setOfferResourceId] = useState('')
@@ -96,7 +98,22 @@ export function Market({ gameId }: MarketProps) {
     },
   })
 
-  if (isLoading) return <PageLoader message="Loading market..." />
+  if (isLoading) {
+    return (
+      <div className="space-y-6" aria-hidden="true">
+        <SkeletonLine className="h-6 w-40" />
+        <div className="rounded-lg border bg-card overflow-hidden">
+          <table className="w-full text-sm">
+            <tbody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonRow key={i} cols={5} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
+  }
   if (queryError) return <ApiError message="Failed to load market." onRetry={() => void refetch()} />
   if (!data) return null
 
@@ -207,7 +224,16 @@ export function Market({ gameId }: MarketProps) {
                     <td className="py-2 px-3">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => cancelMutation.mutate(order.orderId)}
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: 'Cancel market order?',
+                              description: `Your ${order.offeredAmount} ${order.offeredResourceName} will be returned to your base.`,
+                              destructive: true,
+                              confirmLabel: 'Cancel order',
+                              cancelLabel: 'Keep order',
+                            })
+                            if (ok) cancelMutation.mutate(order.orderId)
+                          }}
                           disabled={cancelMutation.isPending}
                           className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
                         >

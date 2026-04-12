@@ -1,5 +1,14 @@
+import { type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
+import {
+  AlertTriangleIcon,
+  ZapIcon,
+  SwordsIcon,
+  HandshakeIcon,
+  MailIcon,
+  InfoIcon,
+} from 'lucide-react'
 import apiClient from '@/api/client'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
 import type {
@@ -21,14 +30,21 @@ function formatNum(v: number): string {
   return Math.floor(v).toLocaleString()
 }
 
-function notificationIcon(kind: string): string {
+function notificationIcon(kind: string): ReactNode {
+  const c = 'h-4 w-4 shrink-0'
   switch (kind) {
-    case 'Warning': return '⚠️'
-    case 'GameEvent': return '⚡'
-    case 'AttackReceived': return '⚔️'
-    case 'AllianceRequest': return '🤝'
-    case 'MessageReceived': return '✉️'
-    default: return 'ℹ️'
+    case 'Warning':
+      return <AlertTriangleIcon className={cn(c, 'text-warning')} aria-hidden="true" />
+    case 'GameEvent':
+      return <ZapIcon className={cn(c, 'text-primary')} aria-hidden="true" />
+    case 'AttackReceived':
+      return <SwordsIcon className={cn(c, 'text-destructive')} aria-hidden="true" />
+    case 'AllianceRequest':
+      return <HandshakeIcon className={cn(c, 'text-primary')} aria-hidden="true" />
+    case 'MessageReceived':
+      return <MailIcon className={cn(c, 'text-primary')} aria-hidden="true" />
+    default:
+      return <InfoIcon className={cn(c, 'text-muted-foreground')} aria-hidden="true" />
   }
 }
 
@@ -302,7 +318,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
               <ul className="divide-y">
                 {notifications.slice(0, 8).map((n) => (
                   <li key={n.id} className="flex items-start gap-2 py-2">
-                    <span className="text-sm shrink-0">{notificationIcon(n.kind)}</span>
+                    <span className="mt-0.5">{notificationIcon(n.kind)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm">{n.message}</div>
                       <div className="text-xs text-muted-foreground">{relativeTime(n.createdAt)}</div>

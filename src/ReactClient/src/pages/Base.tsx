@@ -1,6 +1,7 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
+import { AlertTriangleIcon, ZapIcon, InfoIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type {
   AssetsViewModel,
@@ -19,18 +20,21 @@ import { relativeTime } from '@/lib/utils'
 const ResourceHistoryChart = lazy(() =>
 	import('@/components/ResourceHistoryChart').then(m => ({ default: m.ResourceHistoryChart }))
 )
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 
 interface BaseProps {
   gameId: string
 }
 
-function notificationIcon(kind: string): string {
+function notificationIcon(kind: string): ReactNode {
   switch (kind) {
-    case 'Warning': return '⚠️'
-    case 'GameEvent': return '⚡'
-    default: return 'ℹ️'
+    case 'Warning':
+      return <AlertTriangleIcon className="h-4 w-4 text-warning shrink-0" aria-hidden="true" />
+    case 'GameEvent':
+      return <ZapIcon className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+    default:
+      return <InfoIcon className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
   }
 }
 
@@ -281,7 +285,11 @@ export function Base({ gameId }: BaseProps) {
       {/* Assets */}
       {lastError && <div className="text-destructive text-sm">{lastError}</div>}
       {assetsLoading ? (
-        <PageLoader message="Loading assets..." />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-32" />
+          ))}
+        </div>
       ) : assetsError && !assetsData ? (
         <ApiError message="Failed to load assets." onRetry={() => void refetchAssets()} />
       ) : assetsData ? (
@@ -319,14 +327,18 @@ export function Base({ gameId }: BaseProps) {
         </div>
         <div className="p-2">
           {!notifications ? (
-            <div className="p-3 text-muted-foreground text-sm">Loading...</div>
+            <div className="p-3 space-y-2" aria-hidden="true">
+              <SkeletonLine className="w-3/4" />
+              <SkeletonLine className="w-2/3" />
+              <SkeletonLine className="w-1/2" />
+            </div>
           ) : notifications.length === 0 ? (
             <div className="p-3 text-muted-foreground text-sm">No recent activity.</div>
           ) : (
             <ul className="divide-y">
               {notifications.slice(0, 10).map((n) => (
                 <li key={n.id} className="flex items-start gap-2 py-2 px-2">
-                  <span>{notificationIcon(n.kind)}</span>
+                  <span className="mt-0.5">{notificationIcon(n.kind)}</span>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm">{n.message}</span>
                     <div className="text-xs text-muted-foreground">{relativeTime(n.createdAt)}</div>

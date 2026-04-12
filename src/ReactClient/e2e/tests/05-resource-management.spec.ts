@@ -45,7 +45,7 @@ test.describe('Resource management — worker assignment', () => {
 		await expect(page.getByText('Total')).toBeVisible()
 		await expect(page.getByText(/Mining/)).toBeVisible()
 		// Use a label-specific locator to avoid matching unrelated 'Gas' occurrences on the page
-		await expect(page.getByText('⚗️ Gas Workers')).toBeVisible()
+		await expect(page.getByText('Gas Workers')).toBeVisible()
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 
@@ -58,8 +58,8 @@ test.describe('Resource management — worker assignment', () => {
 		await page.goto(`/games/${gameId}/base`)
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 
-		await expect(page.getByLabel('💎 Mineral Workers')).toBeVisible()
-		await expect(page.getByLabel('⚗️ Gas Workers')).toBeVisible()
+		await expect(page.getByLabel('Mineral Workers')).toBeVisible()
+		await expect(page.getByLabel('Gas Workers')).toBeVisible()
 	})
 
 	test('assigning workers via API is reflected in the base page UI', async ({ page }) => {
@@ -79,8 +79,8 @@ test.describe('Resource management — worker assignment', () => {
 		await page.goto(`/games/${gameId}/base`)
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 
-		await expect(page.getByLabel('💎 Mineral Workers')).toHaveValue('2')
-		await expect(page.getByLabel('⚗️ Gas Workers')).toHaveValue('2')
+		await expect(page.getByLabel('Mineral Workers')).toHaveValue('2')
+		await expect(page.getByLabel('Gas Workers')).toHaveValue('2')
 	})
 
 	test('changing worker assignment via the UI input sends an update', async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe('Resource management — worker assignment', () => {
 
 		// Set a new value for mineral workers; wait for the assign API call to complete
 		// before reading back the state (onChange fires immediately on fill).
-		const mineralInput = page.getByLabel('💎 Mineral Workers')
+		const mineralInput = page.getByLabel('Mineral Workers')
 		const assignPromise = page.waitForResponse(
 			(r) => r.url().includes('/api/workers/assign') && r.request().method() === 'POST'
 		)

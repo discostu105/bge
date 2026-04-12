@@ -7,9 +7,11 @@ import type { ProfileViewModel, PlayerHistoryViewModel, PlayerListViewModel, Api
 import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { relativeTime } from '@/lib/utils'
+import { useConfirm } from '@/contexts/ConfirmContext'
 
 function ApiKeySection() {
   const queryClient = useQueryClient()
+  const confirm = useConfirm()
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -90,7 +92,16 @@ function ApiKeySection() {
               {generateMutation.isPending ? 'Regenerating...' : 'Regenerate'}
             </button>
             <button
-              onClick={() => revokeMutation.mutate(player.playerId)}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: 'Revoke API key?',
+                  description: 'Any bot or integration using this key will immediately stop working. You can generate a new one afterwards.',
+                  destructive: true,
+                  confirmLabel: 'Revoke key',
+                  cancelLabel: 'Keep key',
+                })
+                if (ok) revokeMutation.mutate(player.playerId)
+              }}
               disabled={revokeMutation.isPending}
               className="rounded border border-destructive/50 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50 flex items-center gap-1"
             >
