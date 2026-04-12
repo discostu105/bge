@@ -42,10 +42,9 @@ every tick (from `StatefulGameServer/GameTicks/Modules/` and
 3. **ResourceHistory** — push a snapshot into each player's resource history log.
 4. **NewPlayerProtection** — decrement `ProtectionTicksRemaining`.
 5. **UpgradeTimer** — tick attack/defense upgrade research (see §8).
-6. **TechResearch** — tick tech research (see §9).
-7. **BuildQueue** — pop and execute the next affordable queue entry (see §6).
-8. **VictoryCondition** — check for economic threshold win (see §11).
-9. **GameFinalization** — finalize and archive game when a winner is decided.
+6. **BuildQueue** — pop and execute the next affordable queue entry (see §6).
+7. **VictoryCondition** — check for economic threshold win (see §10).
+8. **GameFinalization** — finalize and archive game when a winner is decided.
 
 All ticks are deterministic. The only non-determinism is the tie-breaking ordering
 applied during combat damage distribution.
@@ -66,7 +65,6 @@ of truth for an individual player within a game:
 | `ProtectionTicksRemaining` | Newbie shield countdown |
 | `AttackUpgradeLevel`, `DefenseUpgradeLevel` | 0–3 |
 | `UpgradeBeingResearched`, `UpgradeResearchTimer` | Current upgrade job |
-| `UnlockedTechs`, `TechBeingResearched`, `TechResearchTimer` | Tech state |
 | `BuildQueue` | Priority-ordered build queue |
 | `Messages`, `Notifications`, `BattleReports`, `ResourceHistory` | Logs & inbox |
 | `TutorialCompleted` | UX flag |
@@ -79,8 +77,8 @@ anyone can send units at anyone.
 
 ## 4. Factions, Buildings, Units
 
-SCO ships three playable factions. Every faction has its own distinct tech tree,
-units, and buildings, but the underlying stat model is identical.
+SCO ships three playable factions. Every faction has its own distinct building
+prerequisite chain and unit roster, but the underlying stat model is identical.
 
 ### 4.1 Buildings (Assets)
 
@@ -217,8 +215,7 @@ per_worker_base    = 4
 efficiency_factor  = 0.03 (minerals) | 0.06 (gas)
 efficiency         = clamp(land / (workers * efficiency_factor), 0.2, 100.0)
 worker_income      = workers * per_worker_base * efficiency / 100
-raw                = base_income + worker_income
-income             = raw * (1 + sum_of_matching_tech_bonuses)
+income             = base_income + worker_income
 ```
 
 Intuitively: **land is the divisor that makes workers diminishing-returns**. The
@@ -233,8 +230,7 @@ one gas worker are auto-granted to prevent soft-locks.
 ### 5.3 Storage and base income
 
 There is no storage cap. The `+10`/`+10` base income ensures every player has a
-trickle even with no workers assigned. Base income is a flat addition applied
-before the tech multiplier.
+trickle even with no workers assigned.
 
 ### 5.4 Land
 
@@ -282,7 +278,7 @@ way *out*; the travel cost is paid as a `ReturnTimer` on the way home).
 Combat runs for at most **8 rounds**. Each round:
 
 1. **Attacker phase.** Sum every attacker unit's effective attack:
-   `unit.Attack + tech.AttackBonus + (upgradeLevel > 0 ? unit.AttackBonuses[level-1] : 0)`
+   `unit.Attack + (upgradeLevel > 0 ? unit.AttackBonuses[level-1] : 0)`
    multiplied by group count. This is distributed as damage to defenders.
 2. **Defender phase.** Same calculation with defense stats, dealt to attackers.
 3. **Damage distribution.** Target units are ordered by
@@ -347,58 +343,20 @@ per faction — the listing in §4.2 is the full bonus table.
 
 ---
 
-## 9. Tech Tree
+## 9. Markets, Trading & Messaging
 
-Source: `StarcraftOnlineGameDefFactory.cs` (around lines 850–1018). Techs are
-*global*, race-agnostic, and must be researched sequentially (one at a time). Each
-stores its effect as a `TechEffectType` with a numeric value.
-
-### Tier 1
-
-| Id | Cost | Time | Effect |
-|---|---|---|---|
-| `improved-mining` | 50 M | 3 | `ProductionBoostMinerals` +15% |
-| `gas-extraction` | 50 M | 3 | `ProductionBoostGas` +15% |
-| `troop-conditioning` | 50 M | 3 | `AttackBonus` +2 |
-
-### Tier 2
-
-| Id | Cost | Time | Prereq | Effect |
-|---|---|---|---|---|
-| `advanced-mining` | 150 M + 50 G | 8 | improved-mining | +30% minerals |
-| `gas-refinement` | 150 M + 50 G | 8 | gas-extraction | +30% gas |
-| `combat-stims` | 150 M + 50 G | 8 | troop-conditioning | +5 attack |
-| `defensive-fortifications` | 150 M + 50 G | 8 | troop-conditioning | +5 defense |
-
-### Tier 3
-
-| Id | Cost | Time | Prereq | Effect |
-|---|---|---|---|---|
-| `orbital-extraction` | 300 M + 150 G | 15 | advanced-mining | +60% minerals |
-| `vespene-mastery` | 300 M + 150 G | 15 | gas-refinement | +60% gas |
-| `advanced-weapons` | 300 M + 150 G | 15 | combat-stims | +10 attack |
-| `bunker-protocol` | 300 M + 150 G | 15 | defensive-fortifications | +10 defense |
-| `bio-engineering` | 300 M + 150 G | 15 | combat-stims + defensive-fortifications | +8 defense |
-
-Production boosts are applied multiplicatively in the resource formula. Attack and
-defense tech bonuses are applied additively to every unit's combat stat.
-
----
-
-## 10. Markets, Trading & Messaging
-
-### 10.1 Global market
+### 9.1 Global market
 
 - `CreateMarketOrderCommand` — offer N of resource A for M of resource B.
 - `AcceptMarketOrderCommand` — any player can fulfill an open order.
 - `CancelMarketOrderCommand` — retract your own order.
 
-### 10.2 Direct trade offers
+### 9.2 Direct trade offers
 
 - `CreateTradeOfferCommand` — directed at a specific recipient, with a note.
 - `AcceptTradeOfferCommand` / `DeclineTradeOfferCommand` / `CancelTradeOfferCommand`.
 
-### 10.3 Messaging & chat
+### 9.3 Messaging & chat
 
 - `SendMessageCommand` — private in-game mail.
 - `MarkMessageReadCommand`.
@@ -407,7 +365,7 @@ defense tech bonuses are applied additively to every unit's combat stat.
 
 ---
 
-## 11. Victory, Game Lifecycle & Finalization
+## 10. Victory, Game Lifecycle & Finalization
 
 Source: `GameTicks/Modules/VictoryConditionModule.cs`, `GameFinalization` module.
 
@@ -421,11 +379,11 @@ Source: `GameTicks/Modules/VictoryConditionModule.cs`, `GameFinalization` module
 
 ---
 
-## 12. Alliances, Elections & Wars
+## 11. Alliances, Elections & Wars
 
 Source: `GameModelInternal/Alliance.cs`.
 
-### 12.1 Structure
+### 11.1 Structure
 
 - Each alliance has a leader, members (possibly pending approval), a password,
   an MOTD, and a message-board style post feed.
@@ -434,7 +392,7 @@ Source: `GameModelInternal/Alliance.cs`.
   `LeaveAllianceCommand`, `AcceptMemberCommand`, `RejectMemberCommand`,
   `KickMemberCommand`, `SetAlliancePasswordCommand`, `SetAllianceMessageCommand`.
 
-### 12.2 Elections
+### 11.2 Elections
 
 Alliances run timed elections for leadership:
 
@@ -443,7 +401,7 @@ Alliances run timed elections for leadership:
 - `CastElectionVoteCommand` — one vote per member.
 - `CancelElectionCommand` — abort in progress.
 
-### 12.3 Alliance war
+### 11.3 Alliance war
 
 - `DeclareAllianceWarCommand` opens a war between alliances.
 - `ProposeAlliancePeaceCommand` / `AcceptAlliancePeaceCommand` end it.
@@ -453,7 +411,7 @@ The war record itself is metadata; combat still happens player-vs-player through
 
 ---
 
-## 13. Command Catalogue
+## 12. Command Catalogue
 
 Every player action is a record in `StatefulGameServer/Commands/Commands.cs`.
 Grouped summary:
@@ -462,7 +420,7 @@ Grouped summary:
   `SplitUnitCommand`, `SendUnitCommand`, `ReturnUnitsHomeCommand`, `MergeAllUnitsCommand`.
 - **Economy.** `HarvestResourceCommand`, `AssignWorkersCommand`, `ColonizeCommand`,
   `TradeResourceCommand`.
-- **Research.** `ResearchUpgradeCommand`, `ResearchTechCommand`.
+- **Research.** `ResearchUpgradeCommand`.
 - **Markets & trade.** `CreateMarketOrderCommand`, `AcceptMarketOrderCommand`,
   `CancelMarketOrderCommand`, `CreateTradeOfferCommand`, `AcceptTradeOfferCommand`,
   `DeclineTradeOfferCommand`, `CancelTradeOfferCommand`.
@@ -482,7 +440,7 @@ Grouped summary:
 
 ---
 
-## 14. Key Constants (cheat sheet)
+## 13. Key Constants (cheat sheet)
 
 | Constant | Value | Source |
 |---|---|---|
@@ -504,11 +462,11 @@ Grouped summary:
 
 ---
 
-## 15. File Index
+## 14. File Index
 
 | Area | File |
 |---|---|
-| Game definition (factions/buildings/units/techs) | `BrowserGameEngine.GameDefinition.SCO/StarcraftOnlineGameDefFactory.cs` |
+| Game definition (factions/buildings/units) | `BrowserGameEngine.GameDefinition.SCO/StarcraftOnlineGameDefFactory.cs` |
 | Initial world state | `BrowserGameEngine.GameDefinition.SCO/StarcraftOnlineWorldStateFactory.cs` |
 | Tick modules | `BrowserGameEngine.StatefulGameServer/GameTicks/Modules/` |
 | Commands | `BrowserGameEngine.StatefulGameServer/Commands/Commands.cs` |
@@ -516,7 +474,6 @@ Grouped summary:
 | Battle report generator | `BrowserGameEngine.StatefulGameServer/BattleReportGenerator.cs` |
 | Resource growth | `BrowserGameEngine.StatefulGameServer/GameTicks/Modules/ResourceGrowthSco.cs` |
 | Upgrades | `BrowserGameEngine.StatefulGameServer/Repositories/Upgrades/UpgradeRepositoryWrite.cs` |
-| Tech research | `BrowserGameEngine.StatefulGameServer/Repositories/Tech/TechRepositoryWrite.cs` |
 | Asset building | `BrowserGameEngine.StatefulGameServer/Repositories/Asset/AssetRepositoryWrite.cs` |
 | Build queue | `BrowserGameEngine.StatefulGameServer/Repositories/BuildQueue/BuildQueueRepositoryWrite.cs` |
 | Market | `BrowserGameEngine.StatefulGameServer/Repositories/Market/MarketRepository.cs` |
@@ -525,4 +482,4 @@ Grouped summary:
 | Unit state | `BrowserGameEngine.StatefulGameServer/GameModelInternal/UnitState.cs` |
 | Battle report types | `BrowserGameEngine.StatefulGameServer/GameModelInternal/BattleReport.cs` |
 | Game settings | `BrowserGameEngine.GameModel/GameSettings.cs` |
-| Cost/resource primitives | `BrowserGameEngine.GameDefinition/Cost.cs`, `UnitDef.cs`, `AssetDef.cs`, `TechNodeDef.cs` |
+| Cost/resource primitives | `BrowserGameEngine.GameDefinition/Cost.cs`, `UnitDef.cs`, `AssetDef.cs` |

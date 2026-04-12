@@ -21,7 +21,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly OnlineStatusRepository onlineStatusRepository;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly AllianceRepository allianceRepository;
-		private readonly TechRepository techRepository;
 
 		public PlayerRankingController(ILogger<PlayerRankingController> logger
 				, ScoreRepository scoreRepository
@@ -30,7 +29,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, OnlineStatusRepository onlineStatusRepository
 				, CurrentUserContext currentUserContext
 				, AllianceRepository allianceRepository
-				, TechRepository techRepository
 			) {
 			this.logger = logger;
 			this.scoreRepository = scoreRepository;
@@ -39,7 +37,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.onlineStatusRepository = onlineStatusRepository;
 			this.currentUserContext = currentUserContext;
 			this.allianceRepository = allianceRepository;
-			this.techRepository = techRepository;
 		}
 
 		/// <summary>Returns the current game's player ranking list with scores and online status. Resource and unit counts are fog-of-war gated. Supports optional pagination via page/pageSize query params.</summary>
@@ -88,7 +85,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				AllianceId = alliance?.AllianceId.Id.ToString(),
 				AllianceName = alliance?.Name,
 				AllianceRole = allianceRole,
-				TechsResearched = techRepository.GetUnlockedTechs(pid).Count,
 				IsOnline = onlineStatusRepository.IsOnline(pid),
 				LastOnline = player.LastOnline,
 				IsAgent = player.ApiKeyHash != null,

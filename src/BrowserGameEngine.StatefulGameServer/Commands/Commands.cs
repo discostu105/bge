@@ -53,6 +53,4 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record CancelMarketOrderCommand(PlayerId PlayerId, MarketOrderId OrderId) : ICommand;
 
 	public record PostChatMessageCommand(PlayerId AuthorPlayerId, string Body) : ICommand;
-
-	public record ResearchTechCommand(PlayerId PlayerId, TechNodeId TechNodeId) : ICommand;
 }

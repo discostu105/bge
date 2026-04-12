@@ -74,31 +74,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					}
 				},
 
-				TechNodes = new List<TechNodeDef> {
-					new TechNodeDef {
-						Id = Id.TechNode("tech-tier1"),
-						Name = "Test Tech Tier 1",
-						Description = "Test tier 1",
-						Tier = 1,
-						Cost = CostHelper.Create(("res1", 50)),
-						ResearchTimeTicks = 2,
-						Prerequisites = new List<TechNodeId>(),
-						EffectType = TechEffectType.ProductionBoostMinerals,
-						EffectValue = 0.15m
-					},
-					new TechNodeDef {
-						Id = Id.TechNode("tech-tier2"),
-						Name = "Test Tech Tier 2",
-						Description = "Test tier 2",
-						Tier = 2,
-						Cost = CostHelper.Create(("res1", 150)),
-						ResearchTimeTicks = 5,
-						Prerequisites = new List<TechNodeId> { Id.TechNode("tech-tier1") },
-						EffectType = TechEffectType.AttackBonus,
-						EffectValue = 3
-					},
-				},
-
 				Units = new List<UnitDef> {
 					new UnitDef {
 						Id = Id.UnitDef("unit1"),

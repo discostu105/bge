@@ -47,7 +47,6 @@ const SECTIONS: GuideSection[] = [
     icon: '🔬',
     items: [
       'Research upgrades to improve your units\' attack and defense globally.',
-      'Unlock the tech tree to access advanced buildings, units, and abilities.',
       'Research takes time — queue it early and let it complete while you play.',
     ],
   },
