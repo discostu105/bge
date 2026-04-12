@@ -7,15 +7,6 @@ import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { useSignalR } from '@/hooks/useSignalR'
 
-function victoryLabel(type: string | null | undefined): string {
-  switch (type) {
-    case 'EconomicThreshold': return 'Economic Threshold'
-    case 'TimeExpired': return 'Time Expired'
-    case 'AdminFinalized': return 'Admin Finalized'
-    default: return type ?? 'Unknown'
-  }
-}
-
 function statusBadge(status: string): { css: string; label: string } {
   switch (status.toLowerCase()) {
     case 'upcoming': return { css: 'bg-warning text-warning-foreground', label: 'Upcoming' }
@@ -121,12 +112,8 @@ export function GameLobbyDetail() {
               {' / '}{lobby.settings.startingGas.toLocaleString()} Gas
               {' / '}{lobby.settings.startingLand} Land
             </dd>
-            <dt className="text-muted-foreground font-medium">Victory Condition</dt>
-            <dd>
-              {victoryLabel(lobby.settings.victoryConditionType)}
-              {lobby.settings.victoryConditionType === 'EconomicThreshold' &&
-                ` — reach ${lobby.settings.victoryThreshold.toLocaleString()} pts`}
-            </dd>
+            <dt className="text-muted-foreground font-medium">Game Length</dt>
+            <dd>{lobby.settings.endTick.toLocaleString()} ticks</dd>
             <dt className="text-muted-foreground font-medium">Protection</dt>
             <dd>{lobby.settings.protectionTicks} ticks after joining</dd>
             <dt className="text-muted-foreground font-medium">Max Players</dt>

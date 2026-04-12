@@ -48,9 +48,22 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			var finishedAt = DateTime.UtcNow;
 			var players = worldStateAccessor.WorldState.Players;
 
+			// Ranking: land (score resource) desc, then minerals+gas desc, then playerId (stable)
+			var landRes = BrowserGameEngine.GameModel.Id.ResDef("land");
+			var mineralsRes = BrowserGameEngine.GameModel.Id.ResDef("minerals");
+			var gasRes = BrowserGameEngine.GameModel.Id.ResDef("gas");
+			decimal GetRes(GameModelInternal.Player p, BrowserGameEngine.GameDefinition.ResourceDefId id)
+				=> p.State.Resources.TryGetValue(id, out var v) ? v : 0m;
 			var rankedPlayers = players
-				.Select(kv => (PlayerId: kv.Key, Player: kv.Value, Score: GetScore(kv.Key)))
+				.Select(kv => (
+					PlayerId: kv.Key,
+					Player: kv.Value,
+					Score: GetRes(kv.Value, landRes),
+					WealthTiebreak: GetRes(kv.Value, mineralsRes) + GetRes(kv.Value, gasRes)
+				))
 				.OrderByDescending(x => x.Score)
+				.ThenByDescending(x => x.WealthTiebreak)
+				.ThenBy(x => x.PlayerId.Id, System.StringComparer.Ordinal)
 				.ToList();
 
 			PlayerId? winnerId = rankedPlayers.Count > 0 ? rankedPlayers[0].PlayerId : null;
@@ -67,13 +80,5 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			gameRegistry.Remove(gameId);
 		}
 
-		private decimal GetScore(PlayerId playerId) {
-			if (worldStateAccessor.WorldState.Players.TryGetValue(playerId, out var player)) {
-				if (player.State.Resources.TryGetValue(gameDef.ScoreResource, out var score)) {
-					return score;
-				}
-			}
-			return 0;
-		}
 	}
 }

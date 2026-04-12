@@ -1,9 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
-import type { PlayerProfileViewModel, LeaderboardEntryViewModel } from '@/api/types'
+import type { GameDetailViewModel } from '@/api/types'
 import { cn } from '@/lib/utils'
-
-const ECONOMIC_THRESHOLD = 500_000
 
 function barColor(percent: number): string {
 	if (percent >= 90) return 'bg-red-500'
@@ -11,90 +10,77 @@ function barColor(percent: number): string {
 	return 'bg-yellow-500'
 }
 
+function formatDuration(ms: number): string {
+	if (ms <= 0) return '0s'
+	const totalSeconds = Math.floor(ms / 1000)
+	const days = Math.floor(totalSeconds / 86400)
+	const hours = Math.floor((totalSeconds % 86400) / 3600)
+	const minutes = Math.floor((totalSeconds % 3600) / 60)
+	const seconds = totalSeconds % 60
+	if (days > 0) return `${days}d ${hours}h ${minutes}m`
+	if (hours > 0) return `${hours}h ${minutes}m`
+	if (minutes > 0) return `${minutes}m ${seconds}s`
+	return `${seconds}s`
+}
+
 interface VictoryProgressBarProps {
 	gameId: string
 }
 
 export function VictoryProgressBar({ gameId }: VictoryProgressBarProps) {
-	const { data: profile } = useQuery<PlayerProfileViewModel>({
-		queryKey: ['playerprofile', gameId],
-		queryFn: () => apiClient.get('/api/playerprofile').then((r) => r.data),
+	const { data: game } = useQuery<GameDetailViewModel>({
+		queryKey: ['game-detail', gameId],
+		queryFn: () => apiClient.get(`/api/games/${gameId}`).then((r) => r.data),
 		refetchInterval: 30_000,
 	})
 
-	const { data: leaderboard } = useQuery<LeaderboardEntryViewModel[]>({
-		queryKey: ['leaderboard', gameId],
-		queryFn: () => apiClient.get(`/api/games/${gameId}/leaderboard`).then((r) => r.data),
-		refetchInterval: 30_000,
-	})
+	// Tick the clock every second so the countdown looks live.
+	const [now, setNow] = useState<number>(() => Date.now())
+	useEffect(() => {
+		const id = window.setInterval(() => setNow(Date.now()), 1000)
+		return () => window.clearInterval(id)
+	}, [])
 
-	const playerScore = profile?.score ?? 0
-	const progressPercent = Math.min(100, Math.round((playerScore / ECONOMIC_THRESHOLD) * 100))
+	if (!game) {
+		return (
+			<div className="rounded-lg border bg-card p-4 text-xs text-muted-foreground">
+				Loading game clock…
+			</div>
+		)
+	}
 
-	// Top 3 competitors (excluding current player)
-	const top3 = (leaderboard ?? [])
-		.filter((e) => !e.isCurrentPlayer)
-		.slice(0, 3)
+	const startMs = new Date(game.startTime).getTime()
+	const endMs = new Date(game.endTime).getTime()
+	const totalMs = Math.max(1, endMs - startMs)
+	const elapsedMs = Math.min(totalMs, Math.max(0, now - startMs))
+	const remainingMs = Math.max(0, endMs - now)
+	const percent = Math.min(100, Math.round((elapsedMs / totalMs) * 100))
 
 	return (
 		<div className="rounded-lg border bg-card p-4 space-y-3">
 			<div className="flex items-baseline justify-between">
-				<span className="text-sm font-semibold">Victory Progress</span>
-				<span className="text-xs text-muted-foreground">
-					Target: {ECONOMIC_THRESHOLD.toLocaleString()} Land
+				<span className="text-sm font-semibold">Time Remaining</span>
+				<span className="text-xs text-muted-foreground font-mono">
+					{formatDuration(remainingMs)}
 				</span>
 			</div>
 
-			{/* Player's own progress */}
-			<div>
-				<div className="flex items-center justify-between mb-1">
-					<span className="text-xs font-medium text-primary">You</span>
-					<span className="text-xs text-muted-foreground font-mono">
-						{Math.floor(playerScore).toLocaleString()} ({progressPercent}%)
-					</span>
-				</div>
-				<div className="h-3 w-full rounded-full bg-secondary overflow-hidden">
-					<div
-						className={cn('h-full rounded-full transition-all', barColor(progressPercent))}
-						style={{ width: `${progressPercent}%` }}
-						role="progressbar"
-						aria-valuenow={progressPercent}
-						aria-valuemin={0}
-						aria-valuemax={100}
-						aria-label="Your victory progress"
-					/>
-				</div>
+			<div className="h-3 w-full rounded-full bg-secondary overflow-hidden">
+				<div
+					className={cn('h-full rounded-full transition-all', barColor(percent))}
+					style={{ width: `${percent}%` }}
+					role="progressbar"
+					aria-valuenow={percent}
+					aria-valuemin={0}
+					aria-valuemax={100}
+					aria-label="Game time elapsed"
+				/>
 			</div>
 
-			{/* Top competitors */}
-			{top3.length > 0 && (
-				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground uppercase tracking-wide">Top Competitors</span>
-					{top3.map((entry) => {
-						const pct = Math.min(100, Math.round((entry.score / ECONOMIC_THRESHOLD) * 100))
-						return (
-							<div key={entry.playerId} className="flex items-center gap-2">
-								<span className="text-xs text-muted-foreground truncate w-20">{entry.playerName}</span>
-								<div className="h-1.5 flex-1 rounded-full bg-secondary overflow-hidden">
-									<div
-										className={cn('h-full rounded-full transition-all opacity-70', barColor(pct))}
-										style={{ width: `${pct}%` }}
-									/>
-								</div>
-								<span className="text-[10px] text-muted-foreground font-mono w-7 text-right">{pct}%</span>
-							</div>
-						)
-					})}
-				</div>
-			)}
-
-			{/* Milestone markers */}
 			<div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
-				<span>0%</span>
-				<span>50%</span>
-				<span>75%</span>
-				<span>90%</span>
-				<span>100%</span>
+				<span>Start</span>
+				<span>{percent}% elapsed</span>
+				<span>End</span>
 			</div>
 		</div>
 	)

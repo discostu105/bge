@@ -40,17 +40,12 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
-					new GameTickModuleDef("victorycondition:1", new Dictionary<string, string> {
-						{ "type", "EconomicThreshold" },
-						{ "threshold", "500000" }
-					}.ToFrozenDictionary()),
+					new GameTickModuleDef("victorycondition:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("gamefinalization:1", new Dictionary<string, string> { }.ToFrozenDictionary())
 				},
 
 				VictoryConditions = new List<VictoryConditionDef> {
-					new VictoryConditionDef(VictoryConditionTypes.EconomicThreshold, new Dictionary<string, string> {
-						{ "threshold", "500000" }
-					})
+					new VictoryConditionDef(VictoryConditionTypes.TimeExpired, new Dictionary<string, string> { })
 				},
 
 				Assets = new List<AssetDef> {

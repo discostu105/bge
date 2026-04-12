@@ -87,7 +87,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
 			services.AddSingleton<IGameTickModule, ResourceHistoryModule>();
 			services.AddSingleton<IGameTickModule, ElectionTickModule>();
-			services.AddSingleton<IGameTickModule, VictoryProgressNotificationModule>();
 			services.AddSingleton<IGameTickModule, VictoryConditionModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();
 			services.AddSingleton<IGameTickModule, SpectatorTickModule>();

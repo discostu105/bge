@@ -40,47 +40,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			return game;
 		}
 
-		private static (TestGame game, GameRegistryNs.GameRegistry registry, VictoryConditionModule module) SetupVictoryModule(
-			GameSettings? settings = null, int playerCount = 1
-		) {
-			var game = new TestGame(playerCount);
-			var record = MakeRecord(settings);
-			game.GlobalState.AddGame(record);
-
-			var registry = new GameRegistryNs.GameRegistry(game.GlobalState);
-			var instance = new GameInstance(record, game.World, game.GameDef);
-			registry.Register(instance);
-
-			var storage = new InMemoryBlobStorage();
-			var persistenceService = new PersistenceService(storage, new GameStateJsonSerializer());
-			var globalPersistenceService = new GlobalPersistenceService(storage, new GlobalStateJsonSerializer());
-			var userRepositoryWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
-			var tournamentRepositoryWrite = new BrowserGameEngine.StatefulGameServer.Repositories.Tournament.TournamentRepositoryWrite(game.GlobalState);
-			var tournamentEngine = new GameRegistryNs.TournamentEngine(
-				game.GlobalState, registry, game.WorldStateFactory, game.GameDef,
-				TimeProvider.System, tournamentRepositoryWrite,
-				NullLogger<GameRegistryNs.TournamentEngine>.Instance);
-			var lifecycleEngine = new GameRegistryNs.GameLifecycleEngine(
-				registry,
-				game.GlobalState,
-				persistenceService,
-				globalPersistenceService,
-				new GameRegistryNs.NullGameNotificationService(),
-				new InMemoryPlayerNotificationService(NullGameEventPublisher.Instance),
-				userRepositoryWrite,
-				NullGameEventPublisher.Instance,
-				TimeProvider.System,
-				tournamentEngine,
-				new GameRegistryNs.CurrencyService(game.GlobalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
-				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
-			);
-
-			var module = new VictoryConditionModule(game.Accessor, game.GlobalState, game.GameDef, lifecycleEngine);
-			module.SetProperty("type", VictoryConditionTypes.EconomicThreshold);
-
-			return (game, registry, module);
-		}
-
 		[Fact]
 		public void CreatePlayer_WithCustomSettings_UsesConfiguredStartingResources() {
 			var settings = new GameSettings(
@@ -116,40 +75,13 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void VictoryConditionModule_UsesPerGameThreshold_LowThreshold() {
-			// Test player starts with res1=1000 (from TestWorldStateFactory)
-			// Set a threshold of 500 so it's already exceeded
-			var settings = new GameSettings(VictoryThreshold: 500);
-			var (game, _, module) = SetupVictoryModule(settings, playerCount: 1);
-
-			module.CalculateTick(game.Player1);
-
-			var gameRecord = game.GlobalState.GetGames().Single();
-			Assert.Equal(GameStatus.Finished, gameRecord.Status);
-			Assert.Equal(VictoryConditionTypes.EconomicThreshold, gameRecord.VictoryConditionType);
-		}
-
-		[Fact]
-		public void VictoryConditionModule_HighThreshold_DoesNotFinalize() {
-			// Test player starts with res1=1000, high threshold won't be reached
-			var settings = new GameSettings(VictoryThreshold: 999999);
-			var (game, _, module) = SetupVictoryModule(settings, playerCount: 1);
-
-			module.CalculateTick(game.Player1);
-
-			var gameRecord = game.GlobalState.GetGames().Single();
-			Assert.Equal(GameStatus.Active, gameRecord.Status);
-		}
-
-		[Fact]
 		public void GameSettings_Default_HasExpectedValues() {
 			var defaults = GameSettings.Default;
 			Assert.Equal(50, defaults.StartingLand);
 			Assert.Equal(5000, defaults.StartingMinerals);
 			Assert.Equal(3000, defaults.StartingGas);
 			Assert.Equal(480, defaults.ProtectionTicks);
-			Assert.Equal(500000, defaults.VictoryThreshold);
-			Assert.Equal(VictoryConditionTypes.EconomicThreshold, defaults.VictoryConditionType);
+			Assert.Equal(2880, defaults.EndTick);
 			Assert.Equal(0, defaults.MaxPlayers);
 		}
 
