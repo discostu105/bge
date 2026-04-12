@@ -8,6 +8,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Bge__DevAuth=true
+      - Bge__DevSeedScenario=${BGE_DEV_SEED_SCENARIO:-realistic}
       - GitHub__ClientId=${GITHUB_CLIENT_ID}
       - GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
       # To use S3 storage instead of local file storage:
