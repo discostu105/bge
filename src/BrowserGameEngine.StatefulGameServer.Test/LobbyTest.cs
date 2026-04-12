@@ -68,7 +68,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				NullGameEventPublisher.Instance,
 				TimeProvider.System,
 				tournamentEngine,
-				new CurrencyService(globalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<CurrencyService>.Instance),
 				NullLogger<GameLifecycleEngine>.Instance
 			);
 
