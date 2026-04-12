@@ -3,6 +3,7 @@ import { HammerIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { BuildQueueViewModel } from '@/api/types'
 import { EmptyState } from '@/components/EmptyState'
+import { useConfirm } from '@/contexts/ConfirmContext'
 
 interface BuildQueueProps {
   gameId: string
@@ -10,6 +11,7 @@ interface BuildQueueProps {
 
 export function BuildQueue({ gameId }: BuildQueueProps) {
   const queryClient = useQueryClient()
+  const confirm = useConfirm()
 
   const { data, isLoading } = useQuery<BuildQueueViewModel>({
     queryKey: ['buildqueue', gameId],
@@ -65,7 +67,16 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
                 <span className="text-xs text-muted-foreground capitalize">{entry.type}</span>
               </div>
               <button
-                onClick={() => removeMutation.mutate(entry.id)}
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: 'Remove from build queue?',
+                    description: `“${entry.name}” will be removed from the queue. Any resources already reserved will be refunded.`,
+                    destructive: true,
+                    confirmLabel: 'Remove',
+                    cancelLabel: 'Keep',
+                  })
+                  if (ok) removeMutation.mutate(entry.id)
+                }}
                 className="rounded min-h-[36px] px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10"
               >
                 Remove
