@@ -243,8 +243,6 @@ export interface GameDetailViewModel {
   winnerId: string | null
   winnerName: string | null
   actualEndTime: string | null
-  victoryConditionType: string | null
-  victoryConditionLabel: string | null
   tournamentId: string | null
 }
 
@@ -261,7 +259,6 @@ export interface GameSummaryViewModel {
   winnerId: string | null
   winnerName: string | null
   isPlayerEnrolled: boolean
-  victoryConditionType: string | null
   discordWebhookUrl: string | null
   createdByUserId: string | null
   tournamentId: string | null
@@ -275,7 +272,7 @@ export interface GameResultEntryViewModel {
   rank: number
   playerName: string
   playerId: string
-  score: number
+  land: number
   isWinner: boolean
 }
 
@@ -287,8 +284,6 @@ export interface GameResultsViewModel {
   endTime: string
   standings: GameResultEntryViewModel[]
   currentPlayerId: string | null
-  victoryConditionType: string | null
-  victoryConditionLabel: string | null
   tournamentId: string | null
 }
 
@@ -401,7 +396,7 @@ export interface TournamentPlayerResultViewModel {
   playerName: string
   gamesPlayed: number
   wins: number
-  totalScore: number
+  totalLand: number
 }
 
 export interface TournamentResultsViewModel {
@@ -415,7 +410,7 @@ export interface TournamentResultsViewModel {
 export interface PlayerProfileViewModel {
   playerId: string | null
   playerName: string | null
-  score: number
+  land: number
   protectionTicksRemaining: number
   isOnline: boolean
   lastOnline: string | null
@@ -425,7 +420,7 @@ export interface PlayerProfileViewModel {
 export interface PublicPlayerViewModel {
   playerId: string | null
   playerName: string | null
-  score: number
+  land: number
   protectionTicksRemaining: number
   userDisplayName: string | null
   isAgent: boolean
@@ -440,7 +435,7 @@ export interface PublicPlayerViewModel {
 export interface InGamePlayerProfileViewModel {
   playerId: string
   playerName: string
-  score: number
+  land: number
   rank: number
   totalPlayers: number
   allianceId: string | null
@@ -459,14 +454,14 @@ export interface PlayerRankingEntryViewModel {
   rank: number
   playerId: string
   playerName: string
-  score: number
+  land: number
 }
 
 export interface LeaderboardEntryViewModel {
   rank: number
   playerId: string
   playerName: string
-  score: number
+  land: number
   isCurrentPlayer: boolean
 }
 
@@ -513,7 +508,8 @@ export interface AllianceRankingEntryViewModel {
   allianceId: string
   allianceName: string
   memberCount: number
-  totalScore: number
+  totalLand: number
+  avgLand: number
 }
 
 export interface AllianceInviteViewModel {
@@ -767,7 +763,7 @@ export interface PlayerGameHistoryEntryViewModel {
   endTime: string
   finishedAt: string
   finalRank: number
-  finalScore: number
+  finalLand: number
   playersInGame: number
   isWin: boolean
 }
@@ -776,7 +772,7 @@ export interface PlayerHistoryViewModel {
   totalGames: number
   totalWins: number
   bestRank: number
-  totalScore: number
+  totalLand: number
   games: PlayerGameHistoryEntryViewModel[]
 }
 
@@ -788,7 +784,7 @@ export interface PlayerStatsGameEntry {
   endTime: string
   finalRank: number
   playersInGame: number
-  finalScore: number
+  finalLand: number
   isWin: boolean
   durationMs: number | null
 }
@@ -799,8 +795,8 @@ export interface PlayerStatsViewModel {
   winRate: number
   bestRank: number
   avgFinalRank: number
-  totalScore: number
-  avgScorePerGame: number
+  totalLand: number
+  avgLandPerGame: number
   avgGameDurationMs: number | null
   games: PlayerStatsGameEntry[]
 }
@@ -821,7 +817,7 @@ export interface AllTimePlayerEntryViewModel {
   totalGames: number
   totalWins: number
   bestRank: number
-  totalScore: number
+  totalLand: number
 }
 
 export interface AllTimePlayerListViewModel {
@@ -887,7 +883,6 @@ export interface ProfileViewModel {
   playerName: string | null
   displayName: string | null
   avatarUrl: string | null
-  score: number
   land: number
   minerals: number
   gas: number
@@ -909,7 +904,7 @@ export interface PlayerCrossGameEntry {
   gameStatus: string
   gameEndTime: string
   finalRank: number
-  finalScore: number
+  finalLand: number
   isWinner: boolean
   gameDefType?: string
 }
@@ -920,7 +915,7 @@ export interface PlayerCrossGameStatsViewModel {
   totalGames: number
   totalWins: number
   bestRank: number
-  totalScore: number
+  totalLand: number
   games: PlayerCrossGameEntry[]
   joinedAt?: string | null
   totalResourcesGathered?: number | null
@@ -943,7 +938,7 @@ export interface ReplayPlayerViewModel {
   playerName: string
   race: string
   finalRank: number
-  finalScore: number
+  finalLand: number
 }
 
 export interface ReplayBattleEventViewModel {
@@ -971,7 +966,7 @@ export interface SpectatorPlayerEntryViewModel {
   rank: number
   playerId: string
   playerName: string
-  score: number
+  land: number
   isOnline: boolean
   isAgent: boolean
 }

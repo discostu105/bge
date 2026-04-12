@@ -91,9 +91,7 @@ public static class SimulationHelpers
 			Units = units,
 			Assets = gameDef.Assets,
 			Resources = gameDef.Resources,
-			ScoreResource = gameDef.ScoreResource,
 			GameTickModules = gameDef.GameTickModules,
-			VictoryConditions = gameDef.VictoryConditions,
 			TickDuration = gameDef.TickDuration,
 		};
 	}

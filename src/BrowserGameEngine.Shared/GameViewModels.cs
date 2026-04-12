@@ -13,8 +13,6 @@ namespace BrowserGameEngine.Shared {
 		string? WinnerId,
 		string? WinnerName = null,
 		DateTime? ActualEndTime = null,
-		string? VictoryConditionType = null,
-		string? VictoryConditionLabel = null,
 		string? TournamentId = null
 	);
 
@@ -58,7 +56,7 @@ namespace BrowserGameEngine.Shared {
 		int Rank,
 		string PlayerName,
 		string PlayerId,
-		decimal Score,
+		decimal Land,
 		bool IsWinner
 	);
 
@@ -70,8 +68,6 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		List<GameResultEntryViewModel> Standings,
 		string? CurrentPlayerId = null,
-		string? VictoryConditionType = null,
-		string? VictoryConditionLabel = null,
 		string? TournamentId = null
 	);
 

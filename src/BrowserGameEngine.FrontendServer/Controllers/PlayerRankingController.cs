@@ -15,7 +15,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 	[Route("api/[controller]")]
 	public class PlayerRankingController : ControllerBase {
 		private readonly ILogger<PlayerRankingController> logger;
-		private readonly ScoreRepository scoreRepository;
+		private readonly ResourceRepository resourceRepository;
 		private readonly PlayerRepository playerRepository;
 		private readonly UserRepository userRepository;
 		private readonly OnlineStatusRepository onlineStatusRepository;
@@ -23,7 +23,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly AllianceRepository allianceRepository;
 
 		public PlayerRankingController(ILogger<PlayerRankingController> logger
-				, ScoreRepository scoreRepository
+				, ResourceRepository resourceRepository
 				, PlayerRepository playerRepository
 				, UserRepository userRepository
 				, OnlineStatusRepository onlineStatusRepository
@@ -31,7 +31,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, AllianceRepository allianceRepository
 			) {
 			this.logger = logger;
-			this.scoreRepository = scoreRepository;
+			this.resourceRepository = resourceRepository;
 			this.playerRepository = playerRepository;
 			this.userRepository = userRepository;
 			this.onlineStatusRepository = onlineStatusRepository;
@@ -39,15 +39,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.allianceRepository = allianceRepository;
 		}
 
-		/// <summary>Returns the current game's player ranking list with scores and online status. Resource and unit counts are fog-of-war gated. Supports optional pagination via page/pageSize query params.</summary>
+		/// <summary>Returns the current game's player ranking list with land and online status. Resource and unit counts are fog-of-war gated. Supports optional pagination via page/pageSize query params.</summary>
 		[HttpGet]
 		[ProducesResponseType(typeof(PaginatedResponse<PublicPlayerViewModel>), StatusCodes.Status200OK)]
 		public ActionResult<PaginatedResponse<PublicPlayerViewModel>> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			var players = playerRepository.GetAll().Select(p => {
 				bool isOwnPlayer = currentUserContext.PlayerId != null && p.PlayerId == currentUserContext.PlayerId;
-				var vm = p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, isOwnPlayer);
+				var vm = p.ToPublicPlayerViewModel(resourceRepository, userRepository, onlineStatusRepository, isOwnPlayer);
 				return vm with { IsCurrentPlayer = isOwnPlayer };
-			}).OrderByDescending(p => p.Score);
+			}).OrderByDescending(p => p.Land);
 			return PaginatedResponse<PublicPlayerViewModel>.Create(players, page, pageSize);
 		}
 
@@ -64,8 +64,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var player = playerRepository.Get(pid);
 
 			var allPlayers = playerRepository.GetAll()
-				.Select(p => (player: p, score: scoreRepository.GetScore(p.PlayerId)))
-				.OrderByDescending(x => x.score)
+				.Select(p => (player: p, land: resourceRepository.GetLand(p.PlayerId)))
+				.OrderByDescending(x => x.land)
 				.ToList();
 
 			int rank = allPlayers.FindIndex(x => x.player.PlayerId == pid) + 1;
@@ -79,7 +79,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new InGamePlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
-				Score = scoreRepository.GetScore(pid),
+				Land = resourceRepository.GetLand(pid),
 				Rank = rank,
 				TotalPlayers = allPlayers.Count,
 				AllianceId = alliance?.AllianceId.Id.ToString(),

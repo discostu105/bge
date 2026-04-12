@@ -19,20 +19,20 @@ public class SpectatorController : ControllerBase
 	private readonly GlobalState _globalState;
 	private readonly GameRegistry _gameRegistry;
 	private readonly PlayerRepository _playerRepository;
-	private readonly ScoreRepository _scoreRepository;
+	private readonly ResourceRepository _resourceRepository;
 	private readonly OnlineStatusRepository _onlineStatusRepository;
 
 	public SpectatorController(
 		GlobalState globalState,
 		GameRegistry gameRegistry,
 		PlayerRepository playerRepository,
-		ScoreRepository scoreRepository,
+		ResourceRepository resourceRepository,
 		OnlineStatusRepository onlineStatusRepository)
 	{
 		_globalState = globalState;
 		_gameRegistry = gameRegistry;
 		_playerRepository = playerRepository;
-		_scoreRepository = scoreRepository;
+		_resourceRepository = resourceRepository;
 		_onlineStatusRepository = onlineStatusRepository;
 	}
 
@@ -60,15 +60,15 @@ public class SpectatorController : ControllerBase
 		var entries = _playerRepository.GetAll()
 			.Select(p => new {
 				Player = p,
-				Score = _scoreRepository.GetScore(p.PlayerId),
+				Land = _resourceRepository.GetLand(p.PlayerId),
 			})
-			.OrderByDescending(x => x.Score)
+			.OrderByDescending(x => x.Land)
 			.Take(20)
 			.Select((x, i) => new SpectatorPlayerEntryViewModel(
 				Rank: i + 1,
 				PlayerId: x.Player.PlayerId.Id,
 				PlayerName: x.Player.Name,
-				Score: x.Score,
+				Land: x.Land,
 				IsOnline: _onlineStatusRepository.IsOnline(x.Player.PlayerId),
 				IsAgent: x.Player.ApiKeyHash != null
 			))

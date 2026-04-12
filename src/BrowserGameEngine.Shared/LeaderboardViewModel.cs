@@ -3,7 +3,7 @@ namespace BrowserGameEngine.Shared {
 		int Rank,
 		string PlayerId,
 		string PlayerName,
-		decimal Score,
+		decimal Land,
 		bool IsCurrentPlayer
 	);
 }

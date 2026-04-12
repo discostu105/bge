@@ -76,7 +76,7 @@ namespace BrowserGameEngine.Shared {
 		string PlayerName,
 		int GamesPlayed,
 		int Wins,
-		decimal TotalScore
+		decimal TotalLand
 	);
 
 	public record TournamentResultsViewModel(

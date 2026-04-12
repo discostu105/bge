@@ -33,8 +33,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinRate: 0.0,
 				BestRank: 0,
 				AvgFinalRank: 0.0,
-				TotalScore: 0,
-				AvgScorePerGame: 0,
+				TotalLand: 0,
+				AvgLandPerGame: 0,
 				AvgGameDurationMs: null,
 				Games: new List<PlayerStatsGameEntry>()
 			));

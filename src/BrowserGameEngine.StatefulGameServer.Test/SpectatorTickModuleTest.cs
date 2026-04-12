@@ -69,7 +69,7 @@ public class SpectatorTickModuleTest
 	}
 
 	[Fact]
-	public void CalculateTick_PublishesTopPlayersRankedByScore()
+	public void CalculateTick_PublishesTopPlayersRankedByLand()
 	{
 		var (game, module, publisher) = Setup(playerCount: 3);
 
@@ -79,15 +79,14 @@ public class SpectatorTickModuleTest
 		var players = json.GetProperty("topPlayers");
 		Assert.True(players.GetArrayLength() > 0);
 
-		// Players should be ranked 1, 2, 3, ...
 		int i = 0;
-		decimal prevScore = decimal.MaxValue;
+		decimal prev = decimal.MaxValue;
 		foreach (var p in players.EnumerateArray())
 		{
 			Assert.Equal(i + 1, p.GetProperty("rank").GetInt32());
-			var score = p.GetProperty("score").GetDecimal();
-			Assert.True(score <= prevScore);
-			prevScore = score;
+			var land = p.GetProperty("land").GetDecimal();
+			Assert.True(land <= prev);
+			prev = land;
 			i++;
 		}
 	}

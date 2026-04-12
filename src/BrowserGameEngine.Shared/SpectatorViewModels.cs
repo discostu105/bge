@@ -6,7 +6,7 @@ public record SpectatorPlayerEntryViewModel(
 	int Rank,
 	string PlayerId,
 	string PlayerName,
-	decimal Score,
+	decimal Land,
 	bool IsOnline,
 	bool IsAgent
 );

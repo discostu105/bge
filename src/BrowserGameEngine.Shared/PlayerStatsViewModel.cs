@@ -8,7 +8,7 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		int FinalRank,
 		int PlayersInGame,
-		decimal FinalScore,
+		decimal FinalLand,
 		bool IsWin,
 		long? DurationMs
 	);
@@ -19,8 +19,8 @@ namespace BrowserGameEngine.Shared {
 		double WinRate,
 		int BestRank,
 		double AvgFinalRank,
-		decimal TotalScore,
-		decimal AvgScorePerGame,
+		decimal TotalLand,
+		decimal AvgLandPerGame,
 		long? AvgGameDurationMs,
 		IReadOnlyList<PlayerStatsGameEntry> Games
 	);

@@ -64,7 +64,7 @@ export function SelectEnemy({ gameId }: SelectEnemyProps) {
               >
                 {model.attackablePlayers.map((p) => (
                   <option key={p.playerId ?? ""} value={p.playerId ?? ""}>
-                    {p.playerName} ({Math.round(p.score)})
+                    {p.playerName} ({Math.round(p.land)})
                   </option>
                 ))}
               </select>

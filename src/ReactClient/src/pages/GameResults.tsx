@@ -4,7 +4,6 @@ import apiClient from '@/api/client'
 import type { GameResultsViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
-import { vcEmoji, vcBadgeCss, vcText } from '@/lib/victory'
 import { formatDuration } from '@/lib/formatters'
 
 export function GameResults() {
@@ -41,18 +40,6 @@ export function GameResults() {
         </div>
       )}
 
-      {model.victoryConditionType && (
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{vcEmoji(model.victoryConditionType)}</span>
-          <span className={`text-sm font-bold px-3 py-1 rounded ${vcBadgeCss(model.victoryConditionType)}`}>
-            {vcText(model.victoryConditionType)}
-          </span>
-          {model.victoryConditionLabel && (
-            <span className="text-muted-foreground text-sm">— {model.victoryConditionLabel}</span>
-          )}
-        </div>
-      )}
-
       <p className="text-muted-foreground text-sm">
         {start.toLocaleDateString()} {start.toLocaleTimeString()} — {end.toLocaleDateString()} {end.toLocaleTimeString()}
         &nbsp;·&nbsp; Duration: {duration}
@@ -70,14 +57,14 @@ export function GameResults() {
               <div className="rounded-lg border border-border text-center p-4 w-36">
                 <div className="text-2xl">🥈</div>
                 <div className="font-bold text-sm">{second.playerName}</div>
-                <div className="text-muted-foreground text-xs">{second.score.toLocaleString()}</div>
+                <div className="text-muted-foreground text-xs">{second.land.toLocaleString()}</div>
               </div>
             )}
             {first && (
               <div className="rounded-lg border border-warning/50 text-center p-4 w-40">
                 <div className="text-3xl">🏆</div>
                 <div className="font-bold">{first.playerName}</div>
-                <div className="text-muted-foreground text-sm">{first.score.toLocaleString()}</div>
+                <div className="text-muted-foreground text-sm">{first.land.toLocaleString()}</div>
                 <span className="text-xs px-2 py-0.5 rounded bg-warning text-warning-foreground mt-1 inline-block">Winner</span>
               </div>
             )}
@@ -85,7 +72,7 @@ export function GameResults() {
               <div className="rounded-lg border border-border text-center p-4 w-36">
                 <div className="text-2xl">🥉</div>
                 <div className="font-bold text-sm">{third.playerName}</div>
-                <div className="text-muted-foreground text-xs">{third.score.toLocaleString()}</div>
+                <div className="text-muted-foreground text-xs">{third.land.toLocaleString()}</div>
               </div>
             )}
           </div>
@@ -96,7 +83,7 @@ export function GameResults() {
               <tr className="border-b border-border text-left text-muted-foreground">
                 <th scope="col" className="py-2 pr-4">Rank</th>
                 <th scope="col" className="py-2 pr-4">Player</th>
-                <th scope="col" className="py-2">Score</th>
+                <th scope="col" className="py-2">Land</th>
               </tr>
             </thead>
             <tbody>
@@ -121,7 +108,7 @@ export function GameResults() {
                         <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-warning text-warning-foreground">Winner</span>
                       )}
                     </td>
-                    <td className="py-2">{entry.score.toLocaleString()}</td>
+                    <td className="py-2">{entry.land.toLocaleString()}</td>
                   </tr>
                 )
               })}

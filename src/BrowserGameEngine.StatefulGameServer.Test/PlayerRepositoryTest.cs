@@ -69,21 +69,20 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var player2 = PlayerIdFactory.Create("player1");
 
 			// Give player1 a much higher score so player2 falls below 50% threshold
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("res1"), 9000); // player1 score = 10000
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000); // player1 score = 10000
 			// player2 score = 1000, which is < 10000 * 0.5 = 5000
 
 			Assert.False(game.PlayerRepository.IsPlayerAttackable(player1, player2));
 		}
 
 		[Fact]
-		public void IsPlayerAttackable_DefenderAboveMinScore_ReturnsTrue() {
+		public void IsPlayerAttackable_DefenderAboveMinLand_ReturnsTrue() {
 			var game = new TestGame(playerCount: 2);
 			var player1 = PlayerIdFactory.Create("player0");
 			var player2 = PlayerIdFactory.Create("player1");
 
-			// Give player1 a slightly higher score
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("res1"), 500); // player1 score = 1500
-			// player2 score = 1000, which is >= 1500 * 0.5 = 750
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 500); // player1 land = 550
+			game.ResourceRepositoryWrite.AddResources(player2, Id.ResDef("land"), 400); // player2 land = 450 ≥ 275
 
 			Assert.True(game.PlayerRepository.IsPlayerAttackable(player1, player2));
 		}
@@ -105,7 +104,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var player2 = PlayerIdFactory.Create("player1");
 
 			// Make player1 much stronger
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("res1"), 9000);
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000);
 
 			var attackable = game.PlayerRepository.GetAttackablePlayers(player1).ToList();
 
@@ -127,7 +126,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var player2 = PlayerIdFactory.Create("player1");
 
 			// Give player1 a much higher score so player2 falls below 50% threshold
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("res1"), 9000); // player1 score = 10000
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000); // player1 score = 10000
 			// player2 score = 1000, which is < 10000 * 0.5 = 5000
 
 			Assert.Equal(AttackIneligibilityReason.LandTooSmall, game.PlayerRepository.GetIneligibilityReason(player1, player2));
@@ -144,14 +143,13 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void GetIneligibilityReason_DefenderAboveMinScore_ReturnsNull() {
+		public void GetIneligibilityReason_DefenderAboveMinLand_ReturnsNull() {
 			var game = new TestGame(playerCount: 2);
 			var player1 = PlayerIdFactory.Create("player0");
 			var player2 = PlayerIdFactory.Create("player1");
 
-			// Give player1 a slightly higher score
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("res1"), 500); // player1 score = 1500
-			// player2 score = 1000, which is >= 1500 * 0.5 = 750
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 500); // player1 land = 550
+			game.ResourceRepositoryWrite.AddResources(player2, Id.ResDef("land"), 400); // player2 land = 450 ≥ 275
 
 			Assert.Null(game.PlayerRepository.GetIneligibilityReason(player1, player2));
 		}

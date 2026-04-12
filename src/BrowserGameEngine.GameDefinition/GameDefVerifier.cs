@@ -42,7 +42,6 @@ namespace BrowserGameEngine.GameDefinition {
 
 		private void VerifyResources(GameDef gameDef) {
 			ValidateAllUnique(gameDef.Resources.Select(x => x.Id.Id), "Resources");
-			gameDef.ValidateResourceDefId(gameDef.ScoreResource, "ScoreResource");
 		}
 
 		public static void ValidateAllUnique(IEnumerable<string> values, string name) {

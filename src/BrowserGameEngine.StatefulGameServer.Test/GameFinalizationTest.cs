@@ -78,15 +78,5 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(GameStatus.Active, gameRecord.Status);
 		}
 
-		[Fact]
-		public void CalculateTick_WhenEndTimeReached_SetsVictoryConditionTypeToTimeExpired() {
-			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1));
-
-			module.CalculateTick(game.Player1);
-
-			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
-			Assert.Equal(VictoryConditionTypes.TimeExpired, gameRecord.VictoryConditionType);
-		}
-
 	}
 }

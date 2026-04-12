@@ -48,24 +48,24 @@ public class SpectatorTickModule : IGameTickModule
 
 	public object BuildSnapshot(GameId gameId, GameRecordImmutable gameRecord, long tick)
 	{
-		var scoreResource = _gameDef.ScoreResource;
+		var landResource = ResourceRepository.LandResource;
 		var world = _worldStateAccessor.WorldState;
 
 		var topPlayers = world.Players.Values
 			.Select(p => new {
 				playerId = p.PlayerId.Id,
 				playerName = p.Name,
-				score = p.State.Resources.TryGetValue(scoreResource, out var s) ? s : 0m,
+				land = p.State.Resources.TryGetValue(landResource, out var s) ? s : 0m,
 				isOnline = p.LastOnline.HasValue && DateTime.UtcNow - p.LastOnline.Value < TimeSpan.FromMinutes(8),
 				isAgent = p.ApiKeyHash != null,
 			})
-			.OrderByDescending(p => p.score)
+			.OrderByDescending(p => p.land)
 			.Take(20)
 			.Select((p, i) => new {
 				rank = i + 1,
 				p.playerId,
 				p.playerName,
-				p.score,
+				p.land,
 				p.isOnline,
 				p.isAgent,
 			})

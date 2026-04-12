@@ -19,7 +19,7 @@ public record ReplayPlayerViewModel(
 	string PlayerName,
 	string Race,
 	int FinalRank,
-	decimal FinalScore
+	decimal FinalLand
 );
 
 public record ReplayBattleEventViewModel(

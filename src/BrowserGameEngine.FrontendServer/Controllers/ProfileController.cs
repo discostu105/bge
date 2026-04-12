@@ -18,7 +18,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly PlayerRepository playerRepository;
 		private readonly UserRepository userRepository;
-		private readonly ScoreRepository scoreRepository;
 		private readonly ResourceRepository resourceRepository;
 		private readonly UnitRepository unitRepository;
 		private readonly GameRegistry gameRegistry;
@@ -29,7 +28,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			CurrentUserContext currentUserContext,
 			PlayerRepository playerRepository,
 			UserRepository userRepository,
-			ScoreRepository scoreRepository,
 			ResourceRepository resourceRepository,
 			UnitRepository unitRepository,
 			GameRegistry gameRegistry,
@@ -39,7 +37,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.currentUserContext = currentUserContext;
 			this.playerRepository = playerRepository;
 			this.userRepository = userRepository;
-			this.scoreRepository = scoreRepository;
 			this.resourceRepository = resourceRepository;
 			this.unitRepository = unitRepository;
 			this.gameRegistry = gameRegistry;
@@ -72,7 +69,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			var allPlayers = playerRepository.GetAll().ToList();
 			var ranked = allPlayers
-				.OrderByDescending(p => scoreRepository.GetScore(p.PlayerId))
+				.OrderByDescending(p => resourceRepository.GetLand(p.PlayerId))
 				.ToList();
 			var rank = ranked.FindIndex(p => p.PlayerId == playerId) + 1;
 
@@ -89,7 +86,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				PlayerName = player.Name,
 				DisplayName = user?.DisplayName,
 				AvatarUrl = avatarUrl,
-				Score = scoreRepository.GetScore(playerId),
 				Land = land,
 				Minerals = minerals,
 				Gas = gas,

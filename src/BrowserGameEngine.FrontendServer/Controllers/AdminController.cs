@@ -37,7 +37,6 @@ public class AdminController : ControllerBase
 	private readonly IBlobStorage storage;
 	private readonly IActionLogger actionLogger;
 	private readonly GameDef gameDef;
-	private readonly ScoreRepository scoreRepository;
 	private readonly MarketRepository marketRepository;
 	private readonly AdminAuditLog auditLog;
 	private readonly ReportStore reportStore;
@@ -59,7 +58,6 @@ public class AdminController : ControllerBase
 		IBlobStorage storage,
 		IActionLogger actionLogger,
 		GameDef gameDef,
-		ScoreRepository scoreRepository,
 		MarketRepository marketRepository,
 		AdminAuditLog auditLog,
 		ReportStore reportStore,
@@ -81,7 +79,6 @@ public class AdminController : ControllerBase
 		this.storage = storage;
 		this.actionLogger = actionLogger;
 		this.gameDef = gameDef;
-		this.scoreRepository = scoreRepository;
 		this.marketRepository = marketRepository;
 		this.auditLog = auditLog;
 		this.reportStore = reportStore;
@@ -292,7 +289,7 @@ public class AdminController : ControllerBase
 			lastOnline = player.LastOnline,
 			isBanned = player.IsBanned,
 			allianceId = player.AllianceId?.Id,
-			score = scoreRepository.GetScore(pid),
+			land = resourceRepository.GetLand(pid),
 			resources,
 			unitCount = player.State.Units.Count,
 			assetCount = player.State.Assets.Count,
@@ -315,10 +312,10 @@ public class AdminController : ControllerBase
 			lastOnline = p.LastOnline,
 			isBanned = p.IsBanned,
 			allianceId = p.AllianceId?.Id,
-			score = scoreRepository.GetScore(p.PlayerId),
+			land = resourceRepository.GetLand(p.PlayerId),
 			unitCount = p.State.Units.Count,
 			assetCount = p.State.Assets.Count,
-		}).OrderByDescending(p => p.score);
+		}).OrderByDescending(p => p.land);
 		return Ok(players);
 	}
 

@@ -9,14 +9,6 @@ import { EmptyState } from '@/components/EmptyState'
 import { SkeletonRow } from '@/components/Skeleton'
 import { UsersIcon } from 'lucide-react'
 
-const VICTORY_THRESHOLD = 500_000
-
-function progressBarColor(percent: number): string {
-  if (percent >= 90) return 'bg-red-500'
-  if (percent >= 75) return 'bg-orange-500'
-  return 'bg-yellow-500'
-}
-
 interface PlayerRankingProps {
   gameId: string
 }
@@ -34,7 +26,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
   })
 
   const players = data?.items
-  const sorted = [...(players ?? [])].sort((a, b) => b.score - a.score)
+  const sorted = [...(players ?? [])].sort((a, b) => b.land - a.land)
   const filtered = sorted.filter((p) => {
     if (filter === 'human') return !p.isAgent
     if (filter === 'agent') return p.isAgent
@@ -76,8 +68,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <th scope="col" className="px-4 py-2 text-left w-10">#</th>
                 <th scope="col" className="px-4 py-2 text-left">Player</th>
-                <th scope="col" className="px-4 py-2 text-right">Score</th>
-                <th scope="col" className="px-4 py-2 text-left hidden sm:table-cell w-32">Victory</th>
+                <th scope="col" className="px-4 py-2 text-right">Land</th>
                 <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
                 <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
                 <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Units</th>
@@ -86,10 +77,10 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {isLoading && Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} cols={9} />)}
+              {isLoading && Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} cols={8} />)}
               {!isLoading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={9}>
+                  <td colSpan={8}>
                     <EmptyState
                       icon={<UsersIcon />}
                       title="No players yet"
@@ -122,23 +113,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                       <span className="ml-1.5 text-[10px] text-warning-foreground" title="Under protection">🛡</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-right font-mono">{Math.floor(p.score).toLocaleString()}</td>
-                  <td className="px-4 py-2 hidden sm:table-cell">
-                    {(() => {
-                      const pct = Math.min(100, Math.round((p.score / VICTORY_THRESHOLD) * 100))
-                      return (
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
-                            <div
-                              className={cn('h-full rounded-full transition-all', progressBarColor(pct))}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <span className="text-[10px] text-muted-foreground font-mono w-7 text-right">{pct}%</span>
-                        </div>
-                      )
-                    })()}
-                  </td>
+                  <td className="px-4 py-2 text-right font-mono">{Math.floor(p.land).toLocaleString()}</td>
                   <td className="px-4 py-2 text-right font-mono hidden sm:table-cell">
                     {p.approxMinerals != null ? Math.floor(p.approxMinerals).toLocaleString() : <span className="text-muted-foreground italic">?</span>}
                   </td>

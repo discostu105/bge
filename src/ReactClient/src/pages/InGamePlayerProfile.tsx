@@ -164,8 +164,8 @@ export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded border bg-secondary/20 p-3">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Score</div>
-            <div className="text-2xl font-bold">{Math.floor(player.score).toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Land</div>
+            <div className="text-2xl font-bold">{Math.floor(player.land).toLocaleString()}</div>
           </div>
           <div className="rounded border bg-secondary/20 p-3">
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Rank</div>

@@ -30,13 +30,18 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		public void SetProperty(string name, string value) { }
 
 		public void CalculateTick(PlayerId playerId) {
-			var gameId = worldStateAccessor.WorldState.GameId;
+			var world = worldStateAccessor.WorldState;
+			var gameId = world.GameId;
 			var gameRecord = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId.Id);
 			if (gameRecord == null || gameRecord.Status != GameStatus.Active) return;
-			if (gameRecord.EndTime >= DateTime.UtcNow) return;
+
+			var endTick = world.GameSettings.EndTick;
+			var currentTick = world.GameTickState.CurrentGameTick.Tick;
+			bool endTimeReached = gameRecord.EndTime < DateTime.UtcNow;
+			bool endTickReached = endTick > 0 && currentTick >= endTick;
+			if (!endTimeReached && !endTickReached) return;
 
 			lock (_finalizeLock) {
-				// Re-check inside lock to avoid double-finalization
 				gameRecord = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId.Id);
 				if (gameRecord == null || gameRecord.Status != GameStatus.Active) return;
 
@@ -73,8 +78,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				Status = GameStatus.Finished,
 				WinnerId = winnerId,
 				WinnerUserId = winnerUserId,
-				ActualEndTime = finishedAt,
-				VictoryConditionType = VictoryConditionTypes.TimeExpired
+				ActualEndTime = finishedAt
 			};
 			globalState.UpdateGame(gameRecord, updatedRecord);
 			gameRegistry.Remove(gameId);

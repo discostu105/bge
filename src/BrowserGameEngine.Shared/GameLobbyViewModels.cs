@@ -15,7 +15,6 @@ namespace BrowserGameEngine.Shared {
 		string? WinnerId = null,
 		string? WinnerName = null,
 		bool IsPlayerEnrolled = false,
-		string? VictoryConditionType = null,
 		string? DiscordWebhookUrl = null,
 		string? CreatedByUserId = null,
 		string? TournamentId = null

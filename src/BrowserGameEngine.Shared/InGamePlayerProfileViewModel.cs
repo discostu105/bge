@@ -4,7 +4,7 @@ namespace BrowserGameEngine.Shared {
 	public record InGamePlayerProfileViewModel {
 		public string? PlayerId { get; set; }
 		public string? PlayerName { get; set; }
-		public decimal Score { get; set; }
+		public decimal Land { get; set; }
 		public int Rank { get; set; }
 		public int TotalPlayers { get; set; }
 		public string? AllianceId { get; set; }
