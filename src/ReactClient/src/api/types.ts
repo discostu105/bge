@@ -579,62 +579,6 @@ export interface PostAllianceChatRequest {
   body: string
 }
 
-// Diplomacy
-
-export type DiplomacyProposalType = 'Nap' | 'ResourceAgreement'
-
-export interface DiplomacyProposalViewModel {
-  proposalId: string
-  type: DiplomacyProposalType
-  proposerPlayerId: string
-  proposerPlayerName: string
-  targetPlayerId: string
-  targetPlayerName: string
-  durationTicks: number
-  mineralsPerTick: number
-  gasPerTick: number
-  proposedAt: string
-}
-
-export interface ActiveNapViewModel {
-  napId: string
-  partnerPlayerId: string
-  partnerPlayerName: string
-  ticksRemaining: number
-}
-
-export interface ActiveResourceAgreementViewModel {
-  agreementId: string
-  partnerPlayerId: string
-  partnerPlayerName: string
-  mineralsPerTick: number
-  gasPerTick: number
-  ticksRemaining: number
-}
-
-export interface DiplomacyStatusViewModel {
-  pendingIncoming: DiplomacyProposalViewModel[]
-  pendingSent: DiplomacyProposalViewModel[]
-  activeNaps: ActiveNapViewModel[]
-  activeResourceAgreements: ActiveResourceAgreementViewModel[]
-}
-
-export interface ProposeNapRequest {
-  targetPlayerId: string
-  durationTicks: number
-}
-
-export interface ProposeResourceAgreementRequest {
-  targetPlayerId: string
-  durationTicks: number
-  mineralsPerTick: number
-  gasPerTick: number
-}
-
-export interface RespondToProposalRequest {
-  accept: boolean
-}
-
 // Enemy Base / Battle
 
 export interface UnitLossViewModel {

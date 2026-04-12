@@ -26,7 +26,6 @@ const Base = lazy(() => import('@/pages/Base').then(m => ({ default: m.Base })))
 const Units = lazy(() => import('@/pages/Units').then(m => ({ default: m.Units })))
 const Research = lazy(() => import('@/pages/Research').then(m => ({ default: m.Research })))
 const Market = lazy(() => import('@/pages/Market').then(m => ({ default: m.Market })))
-const Diplomacy = lazy(() => import('@/pages/Diplomacy').then(m => ({ default: m.Diplomacy })))
 const EnemyBase = lazy(() => import('@/pages/EnemyBase').then(m => ({ default: m.EnemyBase })))
 const SelectEnemy = lazy(() => import('@/pages/SelectEnemy').then(m => ({ default: m.SelectEnemy })))
 const Chat = lazy(() => import('@/pages/Chat').then(m => ({ default: m.Chat })))
@@ -98,11 +97,6 @@ function MarketPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Market gameId={gameId} />
-}
-function DiplomacyPage() {
-  const { gameId } = useParams<{ gameId: string }>()
-  if (!gameId) return null
-  return <Diplomacy gameId={gameId} />
 }
 function EnemyBasePage() {
   const { gameId } = useParams<{ gameId: string }>()
@@ -184,7 +178,6 @@ const router = createBrowserRouter([
 					{ path: 'ranking', element: <RouteWithBoundary><PlayerRankingPage /></RouteWithBoundary> },
 					{ path: 'alliances', element: <RouteWithBoundary><AlliancesPage /></RouteWithBoundary> },
 					{ path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
-					{ path: 'diplomacy', element: <RouteWithBoundary><DiplomacyPage /></RouteWithBoundary> },
 					{ path: 'selectenemy/:unitId', element: <RouteWithBoundary><SelectEnemyPage /></RouteWithBoundary> },
 					{ path: 'unitdefinitions', element: <RouteWithBoundary><UnitDefinitions /></RouteWithBoundary> },
 					{ path: 'help', element: <RouteWithBoundary><Help /></RouteWithBoundary> },
