@@ -91,3 +91,76 @@ body {
     animation: none;
   }
 }
+
+/*
+ * Responsive table — at md+ renders as a normal table, below md
+ * collapses into a stacked card-per-row layout with each cell
+ * prefixed by its column label (via the data-label attribute).
+ *
+ * Usage:
+ *   <table className="responsive-table">
+ *     <thead> ... </thead>
+ *     <tbody>
+ *       <tr>
+ *         <td data-label="Unit">Marine</td>
+ *         <td data-label="Count">42</td>
+ *       </tr>
+ *     </tbody>
+ *   </table>
+ *
+ * Cells may opt out of the label prefix with `data-label-hide` or by
+ * omitting `data-label` (the ::before will be empty).
+ */
+@media (max-width: 767px) {
+  .responsive-table {
+    display: block;
+  }
+  .responsive-table thead {
+    display: none;
+  }
+  .responsive-table tbody,
+  .responsive-table tr {
+    display: block;
+    width: 100%;
+  }
+  .responsive-table tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--color-card);
+  }
+  .responsive-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.25rem 0 !important;
+    border: none !important;
+    text-align: right;
+  }
+  .responsive-table td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
+    text-align: left;
+    flex-shrink: 0;
+  }
+  /* A cell with data-label="" (or no data-label) takes the full row —
+     useful for action rows or primary titles. */
+  .responsive-table td[data-label=""],
+  .responsive-table td:not([data-label]) {
+    display: block;
+    text-align: left;
+    padding-top: 0.5rem !important;
+  }
+  .responsive-table td[data-label=""]::before,
+  .responsive-table td:not([data-label])::before {
+    content: none;
+  }
+  /* Opt out: hide this cell entirely on mobile. */
+  .responsive-table td[data-label-hide] {
+    display: none;
+  }
+}

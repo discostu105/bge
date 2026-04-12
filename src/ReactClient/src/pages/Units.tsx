@@ -80,13 +80,13 @@ function UnitRow({
 
   return (
     <tr className="border-b border-border">
-      <td className="py-2 px-3 font-medium">{unit.definition?.name}</td>
-      <td className="py-2 px-3 text-right tabular-nums">{unit.count.toLocaleString()}</td>
-      <td className="py-2 px-3 text-xs text-muted-foreground hidden sm:table-cell">
+      <td data-label="Unit" className="py-2 px-3 font-medium">{unit.definition?.name}</td>
+      <td data-label="Count" className="py-2 px-3 text-right tabular-nums">{unit.count.toLocaleString()}</td>
+      <td data-label="Stats" className="py-2 px-3 text-xs text-muted-foreground">
         ⚔️{unit.definition?.attack} 🛡️{unit.definition?.defense} ❤️{unit.definition?.hitpoints}
       </td>
       {unit.positionPlayerId && (
-        <td className="py-2 px-3 text-xs">
+        <td data-label="Location" className="py-2 px-3 text-xs">
           <Link
             to={`/games/${gameId}/enemybase/${encodeURIComponent(unit.positionPlayerId)}`}
             className="text-primary hover:underline"
@@ -95,7 +95,7 @@ function UnitRow({
           </Link>
         </td>
       )}
-      <td className="py-2 px-3">
+      <td data-label="" className="py-2 px-3">
         <div className="flex flex-wrap gap-1.5">
           {!unit.positionPlayerId && (
             <Link
@@ -230,12 +230,12 @@ export function Units({ gameId }: UnitsProps) {
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="responsive-table w-full text-sm">
                   <thead className="border-b">
                     <tr>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
                       <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Location</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
@@ -273,12 +273,12 @@ export function Units({ gameId }: UnitsProps) {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="responsive-table w-full text-sm">
                   <thead className="border-b">
                     <tr>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
                       <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
