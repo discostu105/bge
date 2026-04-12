@@ -90,7 +90,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Id = n.Id,
 				Type = n.Type switch {
 					GameNotificationType.AttackReceived => GameNotificationTypeViewModel.AttackReceived,
-					GameNotificationType.SpyAttempted => GameNotificationTypeViewModel.SpyAttempted,
 					GameNotificationType.AllianceRequest => GameNotificationTypeViewModel.AllianceRequest,
 					GameNotificationType.MessageReceived => GameNotificationTypeViewModel.MessageReceived,
 					_ => GameNotificationTypeViewModel.AttackReceived

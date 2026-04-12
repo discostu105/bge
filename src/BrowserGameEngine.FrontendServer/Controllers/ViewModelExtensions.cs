@@ -25,7 +25,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
-		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ScoreRepository scoreRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository, SpyResult? intel, bool isOwnPlayer) {
+		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ScoreRepository scoreRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository, bool isOwnPlayer) {
 			var vm = player.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository);
 			if (isOwnPlayer) {
 				player.State.Resources.TryGetValue(MineralsId, out var exactMinerals);
@@ -33,12 +33,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				vm.ApproxMinerals = exactMinerals;
 				vm.ApproxGas = exactGas;
 				vm.ApproxHomeUnitCount = player.State.Units.Where(u => u.Position == null).Sum(u => u.Count);
-			} else if (intel != null) {
-				intel.ApproximateResources.TryGetValue(MineralsId, out var approxMinerals);
-				intel.ApproximateResources.TryGetValue(GasId, out var approxGas);
-				vm.ApproxMinerals = approxMinerals;
-				vm.ApproxGas = approxGas;
-				vm.ApproxHomeUnitCount = intel.UnitEstimates.Sum(e => e.ApproximateCount);
 			}
 			return vm;
 		}

@@ -3,7 +3,6 @@ using System;
 namespace BrowserGameEngine.Shared {
 	public enum GameNotificationTypeViewModel {
 		AttackReceived,
-		SpyAttempted,
 		AllianceRequest,
 		MessageReceived
 	}

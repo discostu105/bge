@@ -28,7 +28,6 @@ function notificationIcon(kind: string): string {
     case 'AttackReceived': return '⚔️'
     case 'AllianceRequest': return '🤝'
     case 'MessageReceived': return '✉️'
-    case 'SpyAttempted': return '🕵️'
     default: return 'ℹ️'
   }
 }

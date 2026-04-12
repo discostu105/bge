@@ -1,7 +1,7 @@
 using System;
 
 namespace BrowserGameEngine.Shared {
-	public enum NotificationKind { Info, Warning, GameEvent, AttackReceived, AllianceRequest, MessageReceived, SpyAttempted }
+	public enum NotificationKind { Info, Warning, GameEvent, AttackReceived, AllianceRequest, MessageReceived }
 
 	public record PlayerNotificationViewModel(
 		string Id,

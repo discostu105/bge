@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router'
 import axios from 'axios'
 import apiClient from '@/api/client'
-import type { EnemyBaseViewModel, BattleResultViewModel, SpyReportViewModel } from '@/api/types'
+import type { EnemyBaseViewModel, BattleResultViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
@@ -15,7 +15,6 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
   const { enemyPlayerId } = useParams<{ enemyPlayerId: string }>()
   const [lastError, setLastError] = useState<string | null>(null)
   const [battleResult, setBattleResult] = useState<BattleResultViewModel | null>(null)
-  const [spyReport, setSpyReport] = useState<SpyReportViewModel | null>(null)
 
   const { data: model, isLoading, error: queryError, refetch } = useQuery<EnemyBaseViewModel>({
     queryKey: ['enemybase', gameId, enemyPlayerId],
@@ -38,20 +37,6 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
     },
     onError: (err) => {
       if (axios.isAxiosError(err)) setLastError((err.response?.data as string) ?? 'Attack failed')
-    },
-  })
-
-  const spyMutation = useMutation({
-    mutationFn: () =>
-      apiClient
-        .post(`/api/spy/execute?targetPlayerId=${encodeURIComponent(enemyPlayerId ?? '')}`, null)
-        .then((r) => r.data as SpyReportViewModel),
-    onSuccess: (report) => {
-      setLastError(null)
-      setSpyReport(report)
-    },
-    onError: (err) => {
-      if (axios.isAxiosError(err)) setLastError((err.response?.data as string) ?? 'Spy failed')
     },
   })
 
@@ -78,60 +63,9 @@ export function EnemyBase({ gameId }: EnemyBaseProps) {
         >
           Attack
         </button>
-        <button
-          onClick={() => spyMutation.mutate()}
-          disabled={spyMutation.isPending}
-          className="rounded bg-secondary px-4 py-1.5 text-sm text-secondary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {spyMutation.isPending ? 'Spying…' : `Send Spy (${model.spyCostLabel})`}
-        </button>
       </div>
 
       {lastError && <div className="text-destructive text-sm">{lastError}</div>}
-
-      {/* Spy Report */}
-      {spyReport && (
-        <details open className="rounded-lg border bg-card p-4">
-          <summary className="cursor-pointer font-semibold text-sm">
-            Spy Report — {spyReport.targetPlayerName}{' '}
-            <span className="text-muted-foreground font-normal">
-              ({new Date(spyReport.reportTime).toLocaleTimeString()})
-            </span>
-          </summary>
-          <div className="mt-3 space-y-2 text-sm">
-            <p>
-              <strong>Approximate Resources:</strong> ~{Math.round(spyReport.approximateMinerals)}{' '}
-              minerals, ~{Math.round(spyReport.approximateGas)} gas
-            </p>
-            {spyReport.unitEstimates.length > 0 ? (
-              <table className="w-full text-sm">
-                <thead className="border-b">
-                  <tr>
-                    <th scope="col" className="py-1 text-left font-medium text-muted-foreground">Unit</th>
-                    <th scope="col" className="py-1 text-left font-medium text-muted-foreground">~Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {spyReport.unitEstimates
-                    .slice()
-                    .sort((a, b) => b.approximateCount - a.approximateCount)
-                    .map((u) => (
-                      <tr key={u.unitDefId} className="border-b border-border">
-                        <td className="py-1">{u.unitTypeName}</td>
-                        <td className="py-1">~{u.approximateCount}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            ) : (
-              <p className="text-muted-foreground">No units detected at base.</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Next spy available: {new Date(spyReport.cooldownExpiresAt).toLocaleTimeString()}
-            </p>
-          </div>
-        </details>
-      )}
 
       {/* Battle Result */}
       {battleResult ? (

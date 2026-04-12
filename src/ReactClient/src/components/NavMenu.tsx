@@ -5,8 +5,6 @@ import {
   FlaskConicalIcon,
   ShoppingCartIcon,
   ArrowRightLeftIcon,
-  EyeIcon,
-  CrosshairIcon,
   BarChart2Icon,
   FlagIcon,
   UsersIcon,
@@ -81,8 +79,6 @@ export function NavMenu() {
         <NavItem to={g('research')} icon={FlaskConicalIcon} label="Research" />
         <NavItem to={g('market')} icon={ShoppingCartIcon} label="Market" />
         <NavItem to={g('trade')} icon={ArrowRightLeftIcon} label="Trade" />
-        <NavItem to={g('spy')} icon={EyeIcon} label="Spy" />
-        <NavItem to={g('operations')} icon={CrosshairIcon} label="Operations" />
 
         <SectionLabel>Info</SectionLabel>
         <NavItem to={g('live')} icon={RadioIcon} label="Live View" />

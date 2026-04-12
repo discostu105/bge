@@ -29,7 +29,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 		private readonly BattleReportGenerator battleReportGenerator;
 		private readonly OnlineStatusRepository onlineStatusRepository;
-		private readonly SpyRepositoryWrite spyRepositoryWrite;
 		private readonly BattleReportRepository battleReportRepository;
 
 		public BattleController(ILogger<BattleController> logger
@@ -42,7 +41,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, UnitRepositoryWrite unitRepositoryWrite
 				, BattleReportGenerator battleReportGenerator
 				, OnlineStatusRepository onlineStatusRepository
-				, SpyRepositoryWrite spyRepositoryWrite
 				, BattleReportRepository battleReportRepository
 			) {
 			this.logger = logger;
@@ -55,7 +53,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.unitRepositoryWrite = unitRepositoryWrite;
 			this.battleReportGenerator = battleReportGenerator;
 			this.onlineStatusRepository = onlineStatusRepository;
-			this.spyRepositoryWrite = spyRepositoryWrite;
 			this.battleReportRepository = battleReportRepository;
 		}
 
@@ -102,8 +99,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<EnemyBaseViewModel> EnemyBase([FromQuery] string enemyPlayerId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
-				var spyCost = spyRepositoryWrite.GetSpyCost();
-				var spyCostLabel = string.Join(", ", spyCost.ToPlainDictionary().Select(kv => $"{(int)kv.Value} {kv.Key}"));
 				return new EnemyBaseViewModel {
 					PlayerAttackingUnits = new UnitsViewModel {
 						Units = unitRepository.GetAttackingUnits(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId))
@@ -112,8 +107,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					EnemyDefendingUnits = new UnitsViewModel {
 						Units = unitRepository.GetDefendingEnemyUnits(currentUserContext.PlayerId!, PlayerIdFactory.Create(enemyPlayerId))
 							.Select(x => x.ToUnitViewModel(unitRepository, currentUserContext, gameDef)).ToList()
-					},
-					SpyCostLabel = spyCostLabel
+					}
 				};
 			} catch (CannotViewEnemyBaseException e) {
 				return BadRequest(e.Message);

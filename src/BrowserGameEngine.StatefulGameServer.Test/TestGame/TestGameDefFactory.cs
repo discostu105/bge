@@ -97,39 +97,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 						EffectType = TechEffectType.AttackBonus,
 						EffectValue = 3
 					},
-					new TechNodeDef {
-						Id = Id.TechNode("counter-intel-basic"),
-						Name = "Counter-Intelligence",
-						Description = "15% spy detection chance.",
-						Tier = 1,
-						Cost = CostHelper.Create(("res1", 100)),
-						ResearchTimeTicks = 3,
-						Prerequisites = new List<TechNodeId>(),
-						EffectType = TechEffectType.CounterIntelDetection,
-						EffectValue = 0.15m
-					},
-					new TechNodeDef {
-						Id = Id.TechNode("counter-intel-advanced"),
-						Name = "Advanced Counter-Intelligence",
-						Description = "+15% spy detection chance.",
-						Tier = 2,
-						Cost = CostHelper.Create(("res1", 200)),
-						ResearchTimeTicks = 5,
-						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-basic") },
-						EffectType = TechEffectType.CounterIntelDetection,
-						EffectValue = 0.15m
-					},
-					new TechNodeDef {
-						Id = Id.TechNode("counter-intel-mastery"),
-						Name = "Counter-Intelligence Mastery",
-						Description = "+20% spy detection chance.",
-						Tier = 3,
-						Cost = CostHelper.Create(("res1", 300)),
-						ResearchTimeTicks = 8,
-						Prerequisites = new List<TechNodeId> { Id.TechNode("counter-intel-advanced") },
-						EffectType = TechEffectType.CounterIntelDetection,
-						EffectValue = 0.20m
-					}
 				},
 
 				Units = new List<UnitDef> {

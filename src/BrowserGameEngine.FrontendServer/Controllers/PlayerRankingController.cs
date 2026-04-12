@@ -20,7 +20,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly UserRepository userRepository;
 		private readonly OnlineStatusRepository onlineStatusRepository;
 		private readonly CurrentUserContext currentUserContext;
-		private readonly FogOfWarRepository fogOfWarRepository;
 		private readonly AllianceRepository allianceRepository;
 		private readonly TechRepository techRepository;
 
@@ -30,7 +29,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, UserRepository userRepository
 				, OnlineStatusRepository onlineStatusRepository
 				, CurrentUserContext currentUserContext
-				, FogOfWarRepository fogOfWarRepository
 				, AllianceRepository allianceRepository
 				, TechRepository techRepository
 			) {
@@ -40,7 +38,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.userRepository = userRepository;
 			this.onlineStatusRepository = onlineStatusRepository;
 			this.currentUserContext = currentUserContext;
-			this.fogOfWarRepository = fogOfWarRepository;
 			this.allianceRepository = allianceRepository;
 			this.techRepository = techRepository;
 		}
@@ -51,8 +48,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<PaginatedResponse<PublicPlayerViewModel>> Get([FromQuery] int page = 1, [FromQuery] int pageSize = 25) {
 			var players = playerRepository.GetAll().Select(p => {
 				bool isOwnPlayer = currentUserContext.PlayerId != null && p.PlayerId == currentUserContext.PlayerId;
-				SpyResult? intel = isOwnPlayer ? null : fogOfWarRepository.GetValidIntel(currentUserContext.PlayerId!, p.PlayerId);
-				var vm = p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, intel, isOwnPlayer);
+				var vm = p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository, isOwnPlayer);
 				return vm with { IsCurrentPlayer = isOwnPlayer };
 			}).OrderByDescending(p => p.Score);
 			return PaginatedResponse<PublicPlayerViewModel>.Create(players, page, pageSize);

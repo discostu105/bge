@@ -66,11 +66,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<BuildQueueRepository>();
 			services.AddSingleton<BuildQueueRepositoryWrite>();
 			services.AddSingleton<MarketRepository>();
-			services.AddSingleton<SpyRepository>();
-			services.AddSingleton<SpyRepositoryWrite>();
-			services.AddSingleton<SpyMissionRepository>();
-			services.AddSingleton<SpyMissionRepositoryWrite>();
-			services.AddSingleton<FogOfWarRepository>();
 			services.AddSingleton<TechRepository>();
 			services.AddSingleton<TechRepositoryWrite>();
 			services.AddSingleton<TradeRepository>();
@@ -94,7 +89,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, TechResearchTimerModule>();
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
 			services.AddSingleton<IGameTickModule, ResourceHistoryModule>();
-			services.AddSingleton<IGameTickModule, SpyMissionModule>();
 			services.AddSingleton<IGameTickModule, ElectionTickModule>();
 			services.AddSingleton<IGameTickModule, VictoryProgressNotificationModule>();
 			services.AddSingleton<IGameTickModule, VictoryConditionModule>();

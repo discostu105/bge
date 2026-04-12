@@ -241,7 +241,6 @@ export type NotificationKind =
   | 'AttackReceived'
   | 'AllianceRequest'
   | 'MessageReceived'
-  | 'SpyAttempted'
 
 export interface PlayerNotificationViewModel {
   id: string
@@ -659,59 +658,6 @@ export interface RespondToProposalRequest {
   accept: boolean
 }
 
-// Spy
-
-export interface SpyPlayerEntryViewModel {
-  playerId: string
-  playerName: string
-  score: number
-  cooldownExpiresAt: string | null
-}
-
-export interface SpyMissionViewModel {
-  id: string
-  targetPlayerId: string
-  targetPlayerName: string
-  missionType: string
-  status: string
-  createdAt: string
-  resolvedAt: string | null
-  result: string | null
-}
-
-export interface UnitEstimateViewModel {
-  unitDefId: string
-  unitTypeName: string
-  approximateCount: number
-}
-
-export interface SpyReportViewModel {
-  targetPlayerId: string
-  targetPlayerName: string
-  approximateMinerals: number
-  approximateGas: number
-  unitEstimates: UnitEstimateViewModel[]
-  reportTime: string
-  cooldownExpiresAt: string
-}
-
-export interface SpyAttemptViewModel {
-  id: string
-  attackerName: string
-  actionType: string
-  timestamp: string
-}
-
-export interface SendSpyMissionRequest {
-  targetPlayerId: string
-  missionType: string
-}
-
-export interface SendSpyMissionResponse {
-  missionId: string
-  estimatedResolveAt: string
-}
-
 // Enemy Base / Battle
 
 export interface UnitLossViewModel {
@@ -737,7 +683,6 @@ export interface BattleResultViewModel {
 export interface EnemyBaseViewModel {
   playerAttackingUnits: UnitsViewModel
   enemyDefendingUnits: UnitsViewModel
-  spyCostLabel: string
 }
 
 export interface SelectEnemyViewModel {

@@ -46,10 +46,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public BuildQueueRepository BuildQueueRepository { get; }
 		public BuildQueueRepositoryWrite BuildQueueRepositoryWrite { get; }
 		public MarketRepository MarketRepository { get; }
-		public SpyRepository SpyRepository { get; }
-		public SpyRepositoryWrite SpyRepositoryWrite { get; }
-		public SpyMissionRepository SpyMissionRepository { get; }
-		public SpyMissionRepositoryWrite SpyMissionRepositoryWrite { get; }
 		public ResourceHistoryRepository ResourceHistoryRepository { get; }
 		public ResourceHistoryRepositoryWrite ResourceHistoryRepositoryWrite { get; }
 		public BattleReportRepository BattleReportRepository { get; }
@@ -96,10 +92,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			BuildQueueRepository = new BuildQueueRepository(Accessor);
 			BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(LoggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), Accessor, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 			MarketRepository = new MarketRepository(Accessor, ResourceRepository, ResourceRepositoryWrite);
-			SpyRepository = new SpyRepository(Accessor, TimeProvider.System);
-			SpyRepositoryWrite = new SpyRepositoryWrite(Accessor, SpyRepository, ResourceRepositoryWrite, TechRepository, GameDef, TimeProvider.System);
-			SpyMissionRepository = new SpyMissionRepository(Accessor);
-			SpyMissionRepositoryWrite = new SpyMissionRepositoryWrite(Accessor, ResourceRepositoryWrite, ResourceRepository, TechRepository, PlayerRepository, NullNotificationService.Instance, TimeProvider.System, GameDef);
 			ResourceHistoryRepository = new ResourceHistoryRepository(Accessor);
 			ResourceHistoryRepositoryWrite = new ResourceHistoryRepositoryWrite(Accessor);
 			BattleReportRepository = new BattleReportRepository(Accessor);

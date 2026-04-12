@@ -35,7 +35,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 
 		[Fact]
 		public async Task EnemyBase_WithoutSendingUnits_ReturnsBadRequest() {
-			// Viewing an enemy base requires sending units first or having spy intel
+			// Viewing an enemy base requires sending units first
 			var attackerId = "user-battle-enemybase-1";
 			var defenderId = "user-battle-enemybase-2";
 			await CreatePlayerAsync(attackerId, "EBAttacker1");

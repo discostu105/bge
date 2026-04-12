@@ -54,9 +54,5 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 
 	public record PostChatMessageCommand(PlayerId AuthorPlayerId, string Body) : ICommand;
 
-	public record SpyCommand(PlayerId SpyingPlayerId, PlayerId TargetPlayerId) : ICommand;
-
-	public record SpyMissionCommand(PlayerId SpyingPlayerId, PlayerId TargetPlayerId, SpyMissionType MissionType) : ICommand;
-
 	public record ResearchTechCommand(PlayerId PlayerId, TechNodeId TechNodeId) : ICommand;
 }
