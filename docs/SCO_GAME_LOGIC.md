@@ -22,7 +22,8 @@ File paths throughout are relative to `src/` unless otherwise noted.
 | Starting minerals | 5,000 |
 | Starting gas | 3,000 |
 | New-player protection | 480 ticks (~4 hours) |
-| Victory condition | **Economic Threshold**: first player to reach 500,000 `land` |
+| Game length | **Fixed end tick** (default 2880 ticks ≈ 24 h) |
+| Victory condition | **Time expired**: ranking by `land` at end tick |
 
 A **tick** is the atomic unit of simulation. Every behavior described below runs as a
 tick module. Default tick length is 30 s, configured in the game definition factory.
@@ -43,8 +44,8 @@ every tick (from `StatefulGameServer/GameTicks/Modules/` and
 4. **NewPlayerProtection** — decrement `ProtectionTicksRemaining`.
 5. **UpgradeTimer** — tick attack/defense upgrade research (see §8).
 6. **BuildQueue** — pop and execute the next affordable queue entry (see §6).
-7. **VictoryCondition** — check for economic threshold win (see §10).
-8. **GameFinalization** — finalize and archive game when a winner is decided.
+7. **VictoryCondition** — trigger end-of-game finalization when `currentTick ≥ endTick` (see §10).
+8. **GameFinalization** — finalize and archive game, compute final ranking.
 
 All ticks are deterministic. The only non-determinism is the tie-breaking ordering
 applied during combat damage distribution.
@@ -367,15 +368,22 @@ per faction — the listing in §4.2 is the full bonus table.
 
 ## 10. Victory, Game Lifecycle & Finalization
 
-Source: `GameTicks/Modules/VictoryConditionModule.cs`, `GameFinalization` module.
+Source: `GameTicks/Modules/VictoryConditionModule.cs`, `GameFinalization` module,
+`GameSettings.cs`.
 
-- Only the **Economic Threshold** condition is implemented. Threshold defaults to
-  500,000 land.
-- Each tick, VictoryCondition checks every player's land. If any meet the threshold,
-  `GameLifecycleEngine.FinalizeGameEarlyAsync()` is invoked, which triggers the
-  GameFinalization module next tick to archive the instance and compute standings.
-- Finalization archives per-game state and computes an end-of-game ranking of the
-  players involved. There is no cross-game leaderboard or XP/achievement system.
+- Every game has a fixed **end tick**, set from `GameSettings.EndTick` at
+  creation time (default **2880** ticks ≈ 24 hours at 30 s/tick).
+- Each tick, `VictoryConditionModule` checks `currentGameTick >= endTick`. When
+  true, it calls `GameLifecycleEngine.FinalizeGameEarlyAsync(..., TimeExpired)`,
+  which hands control to `GameFinalizationModule` to archive the instance and
+  compute the final ranking.
+- **Ranking** at finalization is ordered by:
+  1. `land` (descending) — primary score
+  2. `minerals + gas` (descending) — tiebreaker
+  3. player id (stable) — final tiebreaker
+  That ordered list *is* the result. There is no early "economic victory", no
+  cross-game leaderboard, and no XP/achievement system.
+- Admin-initiated finalization uses the same path with reason `AdminFinalized`.
 
 ---
 
@@ -458,7 +466,7 @@ Grouped summary:
 | Upgrade research time | 10 ticks per level | `UpgradeRepositoryWrite.cs` |
 | Upgrade costs L1/2/3 | 150+100, 250+150, 400+200 | `UpgradeRepositoryWrite.cs` |
 | New player protection | 480 ticks | `GameSettings.cs` |
-| Victory threshold (default) | 500,000 land | `VictoryConditionModule.cs` |
+| End tick (default) | 2880 (≈24 h) | `GameSettings.cs` |
 
 ---
 

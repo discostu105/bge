@@ -85,10 +85,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
         <span className={`text-xs font-bold px-2 py-0.5 rounded ${vcBadgeCss(game.victoryConditionType)}`}>{vcText(game.victoryConditionType)}</span>
       </div>
       <div className="text-sm text-muted-foreground">
-        {game.winnerName && game.victoryConditionType === 'EconomicThreshold' && (
-          <div>Conqueror: <strong>{game.winnerName}</strong></div>
-        )}
-        {game.winnerName && game.victoryConditionType !== 'EconomicThreshold' && (
+        {game.winnerName && (
           <div>Winner: <strong>{game.winnerName}</strong></div>
         )}
         <div>Ended: {formatDateTime(game.endTime)}</div>

@@ -302,8 +302,7 @@ export interface GameSettingsViewModel {
   startingMinerals: number
   startingGas: number
   protectionTicks: number
-  victoryThreshold: number
-  victoryConditionType: string
+  endTick: number
   maxPlayers: number
 }
 
@@ -312,8 +311,7 @@ export interface GameSettingsRequest {
   startingMinerals?: number | null
   startingGas?: number | null
   protectionTicks?: number | null
-  victoryThreshold?: number | null
-  victoryConditionType?: string | null
+  endTick?: number | null
   maxPlayers?: number | null
 }
 

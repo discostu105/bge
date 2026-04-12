@@ -248,10 +248,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void Create_WithZeroVictoryThreshold_Returns400() {
+		public void Create_WithZeroEndTick_Returns400() {
 			var globalState = new GlobalState();
 			var controller = MakeController(globalState, userId: "alice");
-			var request = MakeCreateRequest(new GameSettingsRequest(VictoryThreshold: 0));
+			var request = MakeCreateRequest(new GameSettingsRequest(EndTick: 0));
 
 			var result = controller.Create(request);
 
@@ -270,18 +270,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void Create_WithInvalidVictoryConditionType_Returns400() {
-			var globalState = new GlobalState();
-			var controller = MakeController(globalState, userId: "alice");
-			var request = MakeCreateRequest(new GameSettingsRequest(VictoryConditionType: "InvalidType"));
-
-			var result = controller.Create(request);
-
-			var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
-			Assert.Contains("Unknown victory condition type", badRequest.Value!.ToString());
-		}
-
-		[Fact]
 		public void Create_WithValidSettings_CreatesGame() {
 			var globalState = new GlobalState();
 			var controller = MakeController(globalState, userId: "alice");
@@ -290,8 +278,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				StartingMinerals: 10000,
 				StartingGas: 6000,
 				ProtectionTicks: 120,
-				VictoryThreshold: 250000,
-				VictoryConditionType: "EconomicThreshold",
+				EndTick: 1440,
 				MaxPlayers: 10
 			);
 			var request = MakeCreateRequest(settings);
@@ -318,10 +305,10 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void Create_WithTimeExpiredVictoryCondition_CreatesGame() {
+		public void Create_WithCustomEndTick_CreatesGame() {
 			var globalState = new GlobalState();
 			var controller = MakeController(globalState, userId: "alice");
-			var settings = new GameSettingsRequest(VictoryConditionType: "TimeExpired");
+			var settings = new GameSettingsRequest(EndTick: 500);
 			var request = MakeCreateRequest(settings);
 
 			var result = controller.Create(request);

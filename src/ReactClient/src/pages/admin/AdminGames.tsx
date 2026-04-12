@@ -37,8 +37,7 @@ export function AdminGames() {
   const [createStartingMinerals, setCreateStartingMinerals] = useState<number | undefined>(undefined)
   const [createStartingGas, setCreateStartingGas] = useState<number | undefined>(undefined)
   const [createProtectionTicks, setCreateProtectionTicks] = useState<number | undefined>(undefined)
-  const [createVictoryThreshold, setCreateVictoryThreshold] = useState<number | undefined>(undefined)
-  const [createVictoryConditionType, setCreateVictoryConditionType] = useState('EconomicThreshold')
+  const [createEndTick, setCreateEndTick] = useState<number | undefined>(undefined)
   const [createMaxPlayers, setCreateMaxPlayers] = useState<number | undefined>(undefined)
   const [createTournamentId, setCreateTournamentId] = useState('')
 
@@ -112,16 +111,14 @@ export function AdminGames() {
     setCreateSuccess(null)
     const hasAdvanced = createStartingLand !== undefined || createStartingMinerals !== undefined
       || createStartingGas !== undefined || createProtectionTicks !== undefined
-      || createVictoryThreshold !== undefined || createMaxPlayers !== undefined
-      || createVictoryConditionType !== 'EconomicThreshold'
+      || createEndTick !== undefined || createMaxPlayers !== undefined
     const settings: GameSettingsRequest | null = hasAdvanced
       ? {
           startingLand: createStartingLand ?? null,
           startingMinerals: createStartingMinerals ?? null,
           startingGas: createStartingGas ?? null,
           protectionTicks: createProtectionTicks ?? null,
-          victoryThreshold: createVictoryThreshold ?? null,
-          victoryConditionType: createVictoryConditionType,
+          endTick: createEndTick ?? null,
           maxPlayers: createMaxPlayers ?? null,
         }
       : null
@@ -269,11 +266,11 @@ export function AdminGames() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Victory Threshold</label>
-                <input type="number" min={1} placeholder="500000 (default)"
+                <label className="block text-sm font-medium mb-1">End Tick</label>
+                <input type="number" min={1} placeholder="2880 (default)"
                   className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
-                  value={createVictoryThreshold ?? ''}
-                  onChange={(e) => setCreateVictoryThreshold(e.target.value ? Number(e.target.value) : undefined)}
+                  value={createEndTick ?? ''}
+                  onChange={(e) => setCreateEndTick(e.target.value ? Number(e.target.value) : undefined)}
                 />
               </div>
               <div>
@@ -283,18 +280,6 @@ export function AdminGames() {
                   value={createMaxPlayers ?? ''}
                   onChange={(e) => setCreateMaxPlayers(e.target.value ? Number(e.target.value) : undefined)}
                 />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium mb-1">Victory Condition</label>
-                <select
-                  className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
-                  value={createVictoryConditionType}
-                  onChange={(e) => setCreateVictoryConditionType(e.target.value)}
-                >
-                  <option value="EconomicThreshold">Economic Threshold (default)</option>
-                  <option value="TimeExpired">Time Expired</option>
-                  <option value="AdminFinalized">Admin Finalized</option>
-                </select>
               </div>
             </div>
           </details>

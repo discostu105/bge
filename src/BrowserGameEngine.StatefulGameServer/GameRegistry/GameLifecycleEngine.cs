@@ -134,11 +134,23 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			// Pause the tick engine so no more ticks run during finalization
 			instance.TickEngine?.PauseTicks();
 
-			// Compute rankings by score descending
-			var scoreRepo = new ScoreRepository(instance.GameDef, instance.WorldStateAccessor);
-			var rankings = instance.WorldState.Players.Keys
-				.Select(pid => (PlayerId: pid, Score: scoreRepo.GetScore(pid)))
+			// Compute rankings: land desc, then minerals+gas desc, then by player id (stable tiebreaker)
+			var landRes = BrowserGameEngine.GameModel.Id.ResDef("land");
+			var mineralsRes = BrowserGameEngine.GameModel.Id.ResDef("minerals");
+			var gasRes = BrowserGameEngine.GameModel.Id.ResDef("gas");
+			decimal GetRes(PlayerImmutable p, BrowserGameEngine.GameDefinition.ResourceDefId id)
+				=> p.State.Resources.TryGetValue(id, out var v) ? v : 0m;
+			var snapshot = instance.WorldState.Players.ToDictionary(kv => kv.Key, kv => kv.Value.ToImmutable());
+			var rankings = snapshot.Keys
+				.Select(pid => (
+					PlayerId: pid,
+					Score: GetRes(snapshot[pid], landRes),
+					WealthTiebreak: GetRes(snapshot[pid], mineralsRes) + GetRes(snapshot[pid], gasRes)
+				))
 				.OrderByDescending(x => x.Score)
+				.ThenByDescending(x => x.WealthTiebreak)
+				.ThenBy(x => x.PlayerId.Id, StringComparer.Ordinal)
+				.Select(x => (x.PlayerId, x.Score))
 				.ToList();
 
 			var winnerId = rankings.Count > 0 ? rankings[0].PlayerId : null;
@@ -202,7 +214,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		}
 
 		private static string? GetVictoryConditionLabel(string victoryConditionType) => victoryConditionType switch {
-			VictoryConditionTypes.EconomicThreshold => "Economic victory — score threshold reached",
 			VictoryConditionTypes.TimeExpired => "Time expired",
 			VictoryConditionTypes.AdminFinalized => "Admin finalized",
 			_ => null

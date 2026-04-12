@@ -23,8 +23,7 @@ namespace BrowserGameEngine.Shared {
 		int? StartingMinerals = null,
 		int? StartingGas = null,
 		int? ProtectionTicks = null,
-		int? VictoryThreshold = null,
-		string? VictoryConditionType = null,
+		int? EndTick = null,
 		int? MaxPlayers = null
 	);
 
@@ -33,8 +32,7 @@ namespace BrowserGameEngine.Shared {
 		int StartingMinerals,
 		int StartingGas,
 		int ProtectionTicks,
-		int VictoryThreshold,
-		string VictoryConditionType,
+		int EndTick,
 		int MaxPlayers
 	);
 

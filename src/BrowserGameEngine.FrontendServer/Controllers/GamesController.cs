@@ -145,26 +145,15 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				if (s.StartingMinerals < 0) return BadRequest("StartingMinerals cannot be negative.");
 				if (s.StartingGas < 0) return BadRequest("StartingGas cannot be negative.");
 				if (s.ProtectionTicks < 0) return BadRequest("ProtectionTicks cannot be negative.");
-				if (s.VictoryThreshold <= 0) return BadRequest("VictoryThreshold must be greater than zero.");
+				if (s.EndTick <= 0) return BadRequest("EndTick must be greater than zero.");
 				if (s.MaxPlayers < 0) return BadRequest("Settings.MaxPlayers cannot be negative.");
-				if (s.VictoryConditionType != null) {
-					var validTypes = new[] {
-						VictoryConditionTypes.EconomicThreshold,
-						VictoryConditionTypes.TimeExpired,
-						VictoryConditionTypes.AdminFinalized
-					};
-					if (!validTypes.Contains(s.VictoryConditionType)) {
-						return BadRequest($"Unknown victory condition type: {s.VictoryConditionType}. Valid types: EconomicThreshold, TimeExpired, AdminFinalized");
-					}
-				}
 				var defaults = GameSettings.Default;
 				gameSettings = new GameSettings(
 					StartingLand: s.StartingLand ?? defaults.StartingLand,
 					StartingMinerals: s.StartingMinerals ?? defaults.StartingMinerals,
 					StartingGas: s.StartingGas ?? defaults.StartingGas,
 					ProtectionTicks: s.ProtectionTicks ?? defaults.ProtectionTicks,
-					VictoryThreshold: s.VictoryThreshold ?? defaults.VictoryThreshold,
-					VictoryConditionType: s.VictoryConditionType ?? defaults.VictoryConditionType,
+					EndTick: s.EndTick ?? defaults.EndTick,
 					MaxPlayers: s.MaxPlayers ?? defaults.MaxPlayers
 				);
 			}
@@ -325,8 +314,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					StartingMinerals: s.StartingMinerals,
 					StartingGas: s.StartingGas,
 					ProtectionTicks: s.ProtectionTicks,
-					VictoryThreshold: s.VictoryThreshold,
-					VictoryConditionType: s.VictoryConditionType,
+					EndTick: s.EndTick,
 					MaxPlayers: s.MaxPlayers
 				);
 			}
@@ -508,7 +496,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		}
 
 		private static string? GetVictoryConditionLabel(string? victoryConditionType) => victoryConditionType switch {
-			BrowserGameEngine.GameDefinition.VictoryConditionTypes.EconomicThreshold => "Economic victory — score threshold reached",
 			BrowserGameEngine.GameDefinition.VictoryConditionTypes.TimeExpired => "Time expired",
 			BrowserGameEngine.GameDefinition.VictoryConditionTypes.AdminFinalized => "Admin finalized",
 			_ => null
