@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
+import { CoinsIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { CurrencyBalanceViewModel } from '@/api/types'
 import { useCurrentUser } from '@/contexts/CurrentUserContext'
@@ -18,7 +19,7 @@ export function CurrencyBadge() {
 
   return (
     <Link to="/economy" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-      <span>💰</span>
+      <CoinsIcon className="h-4 w-4 text-warning" aria-hidden="true" />
       <span>{data.balance}</span>
     </Link>
   )

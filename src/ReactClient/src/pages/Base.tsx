@@ -1,6 +1,7 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
+import { AlertTriangleIcon, ZapIcon, InfoIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type {
   AssetsViewModel,
@@ -26,11 +27,14 @@ interface BaseProps {
   gameId: string
 }
 
-function notificationIcon(kind: string): string {
+function notificationIcon(kind: string): ReactNode {
   switch (kind) {
-    case 'Warning': return '⚠️'
-    case 'GameEvent': return '⚡'
-    default: return 'ℹ️'
+    case 'Warning':
+      return <AlertTriangleIcon className="h-4 w-4 text-warning shrink-0" aria-hidden="true" />
+    case 'GameEvent':
+      return <ZapIcon className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+    default:
+      return <InfoIcon className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
   }
 }
 
@@ -334,7 +338,7 @@ export function Base({ gameId }: BaseProps) {
             <ul className="divide-y">
               {notifications.slice(0, 10).map((n) => (
                 <li key={n.id} className="flex items-start gap-2 py-2 px-2">
-                  <span>{notificationIcon(n.kind)}</span>
+                  <span className="mt-0.5">{notificationIcon(n.kind)}</span>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm">{n.message}</span>
                     <div className="text-xs text-muted-foreground">{relativeTime(n.createdAt)}</div>
