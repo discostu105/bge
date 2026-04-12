@@ -18,8 +18,6 @@ function toastIcon(type: string): string {
   switch (type) {
     case 'Attack':
     case 'BattleResult': return '⚔️'
-    case 'SpyDetected':
-    case 'SpyReport': return '🕵️'
     case 'TradeComplete':
     case 'MarketOrderFilled': return '💰'
     case 'MessageReceived': return '📩'
@@ -33,8 +31,6 @@ function toastRoute(type: string): string | null {
   switch (type) {
     case 'Attack':
     case 'BattleResult': return 'units'
-    case 'SpyDetected':
-    case 'SpyReport': return 'spy'
     case 'TradeComplete':
     case 'MarketOrderFilled': return 'market'
     case 'MessageReceived': return 'messages'

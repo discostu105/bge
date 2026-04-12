@@ -343,58 +343,5 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(zerglingCount, zerglingSurvived + zerglingDestroyed);
 		}
 
-		// ── Spy report pre-battle ──────────────────────────────────────────────
-
-		[Fact]
-		public void SpyReport_BeforeBattle_ReturnsEnemyUnitInfo() {
-			var game = new TestGame(playerCount: 2);
-			var player2 = PlayerIdFactory.Create("player1");
-
-			// Spy on player2 before any battle
-			var spyResult = game.SpyRepositoryWrite.ExecuteSpy(new SpyCommand(game.Player1, player2));
-
-			Assert.NotNull(spyResult);
-			Assert.Equal(player2, spyResult.TargetPlayerId);
-			Assert.NotNull(spyResult.UnitEstimates);
-		}
-
-		[Fact]
-		public void SpyReport_AfterGrantingUnits_ReflectsCurrentComposition() {
-			var game = new TestGame(playerCount: 2);
-			var player2 = PlayerIdFactory.Create("player1");
-
-			// Give player2 extra units
-			game.UnitRepositoryWrite.GrantUnits(player2, Id.UnitDef("unit2"), 50);
-
-			var spyResult = game.SpyRepositoryWrite.ExecuteSpy(new SpyCommand(game.Player1, player2));
-
-			Assert.NotNull(spyResult);
-			var unit2Count = spyResult.UnitEstimates
-				.Where(u => u.UnitDefId == Id.UnitDef("unit2"))
-				.Sum(u => u.ApproximateCount);
-			Assert.True(unit2Count >= 40, $"Spy should see at least 40 unit2 (estimates may vary), saw {unit2Count}");
-		}
-
-		[Fact]
-		public void SpyReport_ThenBattle_SpyDataDoesNotAffectBattleOutcome() {
-			var game = new TestGame(playerCount: 2);
-			var player2 = PlayerIdFactory.Create("player1");
-
-			// Spy first
-			game.SpyRepositoryWrite.ExecuteSpy(new SpyCommand(game.Player1, player2));
-
-			// Now send an overwhelming force and attack
-			game.UnitRepositoryWrite.GrantUnits(game.Player1, Id.UnitDef("unit2"), 1000);
-			var bigStack = game.UnitRepository.GetAll(game.Player1)
-				.Where(u => u.UnitDefId == Id.UnitDef("unit2") && u.Position == null && u.Count == 1000)
-				.Single();
-			game.UnitRepositoryWrite.SendUnit(new SendUnitCommand(game.Player1, bigStack.UnitId, player2));
-
-			var result = game.UnitRepositoryWrite.Attack(game.Player1, player2);
-
-			// Battle should work normally regardless of prior spy
-			Assert.True(result.BtlResult.AttackingUnitsSurvived.Any(), "Attacker should win");
-			Assert.False(result.BtlResult.DefendingUnitsSurvived.Any(), "Defender wiped out");
-		}
 	}
 }

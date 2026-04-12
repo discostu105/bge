@@ -44,12 +44,11 @@ every tick (from `StatefulGameServer/GameTicks/Modules/` and
 5. **UpgradeTimer** — tick attack/defense upgrade research (see §8).
 6. **TechResearch** — tick tech research (see §9).
 7. **BuildQueue** — pop and execute the next affordable queue entry (see §6).
-8. **SpyMission** — process active spy missions (see §10).
-9. **VictoryCondition** — check for economic threshold win (see §12).
-10. **GameFinalization** — finalize and archive game when a winner is decided.
+8. **VictoryCondition** — check for economic threshold win (see §11).
+9. **GameFinalization** — finalize and archive game when a winner is decided.
 
-All ticks are deterministic. The only RNG is the noise applied to spy reports and the
-tie-breaking ordering applied during combat damage distribution.
+All ticks are deterministic. The only non-determinism is the tie-breaking ordering
+applied during combat damage distribution.
 
 ---
 
@@ -69,7 +68,6 @@ of truth for an individual player within a game:
 | `UpgradeBeingResearched`, `UpgradeResearchTimer` | Current upgrade job |
 | `UnlockedTechs`, `TechBeingResearched`, `TechResearchTimer` | Tech state |
 | `BuildQueue` | Priority-ordered build queue |
-| `SpyCooldowns`, `SpyAttemptLogs`, `LastSpyResults`, `SpyMissions` | Espionage |
 | `Messages`, `Notifications`, `BattleReports`, `ResourceHistory` | Logs & inbox |
 | `TutorialCompleted` | UX flag |
 
@@ -362,7 +360,6 @@ stores its effect as a `TechEffectType` with a numeric value.
 | `improved-mining` | 50 M | 3 | `ProductionBoostMinerals` +15% |
 | `gas-extraction` | 50 M | 3 | `ProductionBoostGas` +15% |
 | `troop-conditioning` | 50 M | 3 | `AttackBonus` +2 |
-| `counter-intel-basic` | 100 M + 50 G | 5 | `CounterIntelDetection` +15% |
 
 ### Tier 2
 
@@ -372,7 +369,6 @@ stores its effect as a `TechEffectType` with a numeric value.
 | `gas-refinement` | 150 M + 50 G | 8 | gas-extraction | +30% gas |
 | `combat-stims` | 150 M + 50 G | 8 | troop-conditioning | +5 attack |
 | `defensive-fortifications` | 150 M + 50 G | 8 | troop-conditioning | +5 defense |
-| `counter-intel-advanced` | 200 M + 100 G | 10 | counter-intel-basic | +15% detection |
 
 ### Tier 3
 
@@ -383,46 +379,26 @@ stores its effect as a `TechEffectType` with a numeric value.
 | `advanced-weapons` | 300 M + 150 G | 15 | combat-stims | +10 attack |
 | `bunker-protocol` | 300 M + 150 G | 15 | defensive-fortifications | +10 defense |
 | `bio-engineering` | 300 M + 150 G | 15 | combat-stims + defensive-fortifications | +8 defense |
-| `counter-intel-mastery` | 300 M + 150 G | 15 | counter-intel-advanced | +20% detection |
 
 Production boosts are applied multiplicatively in the resource formula. Attack and
-defense tech bonuses are applied additively to every unit's combat stat. Counter-intel
-values are *summed* to form the spy detection probability.
+defense tech bonuses are applied additively to every unit's combat stat.
 
 ---
 
-## 10. Espionage
+## 10. Markets, Trading & Messaging
 
-Source: `Repositories/Spy/SpyRepositoryWrite.cs`.
-
-- **Cost.** 1 mineral per spy mission (paid from the "growth resource").
-- **Cooldown.** Per-target cooldown stored in `SpyCooldowns`.
-- **Noise.** Report accuracy is perturbed:
-  - Resource values: uniform ±30% noise.
-  - Unit counts (home units only): ±20% noise.
-  - Units that are away from home are not visible.
-- **Detection.** Sum of the target's `CounterIntelDetection` tech values is the
-  probability the spy is detected. Detected attempts are logged in the target's
-  `SpyAttemptLogs` and can be surfaced as notifications.
-- **Commands.** `SpyCommand` for basic intel; `SpyMissionCommand` carries a
-  `SpyMissionType` for richer mission types exposed through the `SpyMission` list.
-
----
-
-## 11. Markets, Trading & Messaging
-
-### 11.1 Global market
+### 10.1 Global market
 
 - `CreateMarketOrderCommand` — offer N of resource A for M of resource B.
 - `AcceptMarketOrderCommand` — any player can fulfill an open order.
 - `CancelMarketOrderCommand` — retract your own order.
 
-### 11.2 Direct trade offers
+### 10.2 Direct trade offers
 
 - `CreateTradeOfferCommand` — directed at a specific recipient, with a note.
 - `AcceptTradeOfferCommand` / `DeclineTradeOfferCommand` / `CancelTradeOfferCommand`.
 
-### 11.3 Messaging & chat
+### 10.3 Messaging & chat
 
 - `SendMessageCommand` — private in-game mail.
 - `MarkMessageReadCommand`.
@@ -431,7 +407,7 @@ Source: `Repositories/Spy/SpyRepositoryWrite.cs`.
 
 ---
 
-## 12. Victory, Game Lifecycle & Finalization
+## 11. Victory, Game Lifecycle & Finalization
 
 Source: `GameTicks/Modules/VictoryConditionModule.cs`, `GameFinalization` module.
 
@@ -445,11 +421,11 @@ Source: `GameTicks/Modules/VictoryConditionModule.cs`, `GameFinalization` module
 
 ---
 
-## 13. Alliances, Elections & Wars
+## 12. Alliances, Elections & Wars
 
 Source: `GameModelInternal/Alliance.cs`.
 
-### 13.1 Structure
+### 12.1 Structure
 
 - Each alliance has a leader, members (possibly pending approval), a password,
   an MOTD, and a message-board style post feed.
@@ -458,7 +434,7 @@ Source: `GameModelInternal/Alliance.cs`.
   `LeaveAllianceCommand`, `AcceptMemberCommand`, `RejectMemberCommand`,
   `KickMemberCommand`, `SetAlliancePasswordCommand`, `SetAllianceMessageCommand`.
 
-### 13.2 Elections
+### 12.2 Elections
 
 Alliances run timed elections for leadership:
 
@@ -467,7 +443,7 @@ Alliances run timed elections for leadership:
 - `CastElectionVoteCommand` — one vote per member.
 - `CancelElectionCommand` — abort in progress.
 
-### 13.3 Alliance war
+### 12.3 Alliance war
 
 - `DeclareAllianceWarCommand` opens a war between alliances.
 - `ProposeAlliancePeaceCommand` / `AcceptAlliancePeaceCommand` end it.
@@ -477,7 +453,7 @@ The war record itself is metadata; combat still happens player-vs-player through
 
 ---
 
-## 14. Command Catalogue
+## 13. Command Catalogue
 
 Every player action is a record in `StatefulGameServer/Commands/Commands.cs`.
 Grouped summary:
@@ -490,7 +466,6 @@ Grouped summary:
 - **Markets & trade.** `CreateMarketOrderCommand`, `AcceptMarketOrderCommand`,
   `CancelMarketOrderCommand`, `CreateTradeOfferCommand`, `AcceptTradeOfferCommand`,
   `DeclineTradeOfferCommand`, `CancelTradeOfferCommand`.
-- **Espionage.** `SpyCommand`, `SpyMissionCommand`.
 - **Build queue.** `AddToQueueCommand`, `RemoveFromQueueCommand`, `ReorderQueueCommand`.
 - **Messaging & chat.** `SendMessageCommand`, `MarkMessageReadCommand`,
   `PostChatMessageCommand`, `PostAllianceChatCommand`.
@@ -507,7 +482,7 @@ Grouped summary:
 
 ---
 
-## 15. Key Constants (cheat sheet)
+## 14. Key Constants (cheat sheet)
 
 | Constant | Value | Source |
 |---|---|---|
@@ -526,13 +501,10 @@ Grouped summary:
 | Upgrade costs L1/2/3 | 150+100, 250+150, 400+200 | `UpgradeRepositoryWrite.cs` |
 | New player protection | 480 ticks | `GameSettings.cs` |
 | Victory threshold (default) | 500,000 land | `VictoryConditionModule.cs` |
-| Spy resource noise | ±30% | `SpyRepositoryWrite.cs` |
-| Spy unit-count noise | ±20% | `SpyRepositoryWrite.cs` |
-| Spy cost | 1 mineral | `SpyRepositoryWrite.cs` |
 
 ---
 
-## 16. File Index
+## 15. File Index
 
 | Area | File |
 |---|---|
@@ -545,7 +517,6 @@ Grouped summary:
 | Resource growth | `BrowserGameEngine.StatefulGameServer/GameTicks/Modules/ResourceGrowthSco.cs` |
 | Upgrades | `BrowserGameEngine.StatefulGameServer/Repositories/Upgrades/UpgradeRepositoryWrite.cs` |
 | Tech research | `BrowserGameEngine.StatefulGameServer/Repositories/Tech/TechRepositoryWrite.cs` |
-| Spy system | `BrowserGameEngine.StatefulGameServer/Repositories/Spy/SpyRepositoryWrite.cs` |
 | Asset building | `BrowserGameEngine.StatefulGameServer/Repositories/Asset/AssetRepositoryWrite.cs` |
 | Build queue | `BrowserGameEngine.StatefulGameServer/Repositories/BuildQueue/BuildQueueRepositoryWrite.cs` |
 | Market | `BrowserGameEngine.StatefulGameServer/Repositories/Market/MarketRepository.cs` |

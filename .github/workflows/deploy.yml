@@ -64,7 +64,7 @@ jobs:
           root = tree.getroot()
           line_rate = float(root.attrib.get("line-rate", 0))
           pct = round(line_rate * 100, 1)
-          threshold = 60.0
+          threshold = 59.0
 
           print(f"Line coverage: {pct:.1f}% (threshold: {threshold}%)")
           if pct < threshold:

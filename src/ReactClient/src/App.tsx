@@ -26,8 +26,6 @@ const Base = lazy(() => import('@/pages/Base').then(m => ({ default: m.Base })))
 const Units = lazy(() => import('@/pages/Units').then(m => ({ default: m.Units })))
 const Research = lazy(() => import('@/pages/Research').then(m => ({ default: m.Research })))
 const Market = lazy(() => import('@/pages/Market').then(m => ({ default: m.Market })))
-const Spies = lazy(() => import('@/pages/Spies').then(m => ({ default: m.Spies })))
-const SpyReports = lazy(() => import('@/pages/SpyReports').then(m => ({ default: m.SpyReports })))
 const Diplomacy = lazy(() => import('@/pages/Diplomacy').then(m => ({ default: m.Diplomacy })))
 const EnemyBase = lazy(() => import('@/pages/EnemyBase').then(m => ({ default: m.EnemyBase })))
 const SelectEnemy = lazy(() => import('@/pages/SelectEnemy').then(m => ({ default: m.SelectEnemy })))
@@ -102,16 +100,6 @@ function MarketPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Market gameId={gameId} />
-}
-function OperationsPage() {
-  const { gameId } = useParams<{ gameId: string }>()
-  if (!gameId) return null
-  return <Spies gameId={gameId} />
-}
-function SpyReportsPage() {
-  const { gameId } = useParams<{ gameId: string }>()
-  if (!gameId) return null
-  return <SpyReports gameId={gameId} />
 }
 function DiplomacyPage() {
   const { gameId } = useParams<{ gameId: string }>()
@@ -199,8 +187,6 @@ const router = createBrowserRouter([
 					{ path: 'alliances', element: <RouteWithBoundary><AlliancesPage /></RouteWithBoundary> },
 					{ path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
 					{ path: 'diplomacy', element: <RouteWithBoundary><DiplomacyPage /></RouteWithBoundary> },
-					{ path: 'operations', element: <RouteWithBoundary><OperationsPage /></RouteWithBoundary> },
-					{ path: 'spy', element: <RouteWithBoundary><SpyReportsPage /></RouteWithBoundary> },
 					{ path: 'selectenemy/:unitId', element: <RouteWithBoundary><SelectEnemyPage /></RouteWithBoundary> },
 					{ path: 'unitdefinitions', element: <RouteWithBoundary><UnitDefinitions /></RouteWithBoundary> },
 					{ path: 'help', element: <RouteWithBoundary><Help /></RouteWithBoundary> },
@@ -227,8 +213,6 @@ const router = createBrowserRouter([
 			{ path: '/research', element: <BareRouteRedirect path="research" /> },
 			{ path: '/market', element: <BareRouteRedirect path="market" /> },
 			{ path: '/trade', element: <BareRouteRedirect path="trade" /> },
-			{ path: '/spy', element: <BareRouteRedirect path="spy" /> },
-			{ path: '/operations', element: <BareRouteRedirect path="operations" /> },
 
 			{ path: '/createplayer', element: <RouteWithBoundary><CreatePlayer /></RouteWithBoundary> },
 			{ path: '/lobby', element: <RouteWithBoundary><GameLobby /></RouteWithBoundary> },

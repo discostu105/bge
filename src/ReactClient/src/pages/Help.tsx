@@ -69,15 +69,6 @@ const SECTIONS: GuideSection[] = [
       'Declare wars or propose peace through the Diplomacy page.',
     ],
   },
-  {
-    title: 'Intelligence',
-    icon: '🕵️',
-    items: [
-      'Use spies on the Operations page to gather intel on enemy players.',
-      'Spy missions reveal enemy resources, units, and base layout.',
-      'Be careful — failed spy attempts can be detected by the target.',
-    ],
-  },
 ]
 
 export function Help() {

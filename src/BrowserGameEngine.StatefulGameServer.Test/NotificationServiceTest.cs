@@ -109,13 +109,13 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var game = new TestGame(playerCount: 1);
 			var service = new NotificationService(game.Accessor, NullGameEventPublisher.Instance);
 
-			service.Notify(Player1, GameNotificationType.SpyAttempted, "Spy detected!");
+			service.Notify(Player1, GameNotificationType.AttackReceived, "Attack detected!");
 
 			// Check via repository (returns immutable snapshot)
 			var playerState = game.PlayerRepository.Get(Player1).State;
 			Assert.NotNull(playerState.Notifications);
 			Assert.Single(playerState.Notifications!);
-			Assert.Equal("Spy detected!", playerState.Notifications![0].Title);
+			Assert.Equal("Attack detected!", playerState.Notifications![0].Title);
 		}
 
 		[Fact]
