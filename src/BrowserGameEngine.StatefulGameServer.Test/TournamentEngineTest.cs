@@ -218,21 +218,11 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var updated = globalState.GetTournamentById(tournament.TournamentId)!;
 			var match = updated.Matches!.First(m => m.Round == 1 && m.Status == MatchStatus.InProgress);
 
-			// Add achievement for the match game so ProcessGameFinalized can find a winner
-			globalState.AddAchievement(new PlayerAchievementImmutable(
-				UserId: match.Player1UserId!,
-				GameId: new GameId(match.GameId!),
-				PlayerId: PlayerIdFactory.Create("p1"),
-				PlayerName: "Player 1",
-				FinalRank: 1,
-				FinalScore: 100m,
-				GameDefType: "sco",
-				FinishedAt: DateTime.UtcNow
-			));
-
+			// WinnerUserId on the game record drives tournament progression.
 			var gameRecord = new GameRecordImmutable(
 				new GameId(match.GameId!), match.MatchId, "sco", GameStatus.Finished,
 				DateTime.UtcNow, DateTime.UtcNow, TimeSpan.FromMinutes(1),
+				WinnerUserId: match.Player1UserId,
 				TournamentId: tournament.TournamentId,
 				TournamentMatchId: match.MatchId
 			);

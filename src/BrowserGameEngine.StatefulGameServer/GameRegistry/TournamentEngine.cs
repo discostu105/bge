@@ -251,10 +251,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				return;
 			}
 
-			// Find winner from achievements
-			var winnerUserId = globalState.GetAchievements()
-				.FirstOrDefault(a => a.GameId == record.GameId && a.FinalRank == 1)
-				?.UserId;
+			var winnerUserId = record.WinnerUserId;
 
 			var idx = matches.IndexOf(match);
 			matches[idx] = match with { Status = MatchStatus.Completed, WinnerUserId = winnerUserId };

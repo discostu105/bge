@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { TrophyIcon, SwordsIcon, StarIcon, ChevronRightIcon, KeyIcon, CopyIcon, CheckIcon, Trash2Icon } from 'lucide-react'
+import { TrophyIcon, SwordsIcon, StarIcon, KeyIcon, CopyIcon, CheckIcon, Trash2Icon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { ProfileViewModel, PlayerAchievementsViewModel, PlayerHistoryViewModel, PlayerListViewModel, ApiKeyViewModel } from '@/api/types'
+import type { ProfileViewModel, PlayerHistoryViewModel, PlayerListViewModel, ApiKeyViewModel } from '@/api/types'
 import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { relativeTime } from '@/lib/utils'
@@ -130,11 +130,6 @@ export function PlayerProfile() {
     queryFn: () => apiClient.get<ProfileViewModel>('/api/profile').then((r) => r.data),
   })
 
-  const { data: achievementsData } = useQuery<PlayerAchievementsViewModel>({
-    queryKey: ['achievements'],
-    queryFn: () => apiClient.get('/api/player-management/me/achievements').then(r => r.data),
-  })
-
   const { data: historyData } = useQuery<PlayerHistoryViewModel>({
     queryKey: ['player-history'],
     queryFn: () => apiClient.get('/api/history').then(r => r.data),
@@ -198,9 +193,6 @@ export function PlayerProfile() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-lg">{displayName}</span>
-              <span className="inline-flex items-center rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-bold text-primary border border-primary/30">
-                Lv {profile.level}
-              </span>
             </div>
             {profile.playerName && profile.displayName && profile.playerName !== profile.displayName && (
               <div className="text-sm text-muted-foreground">Playing as {profile.playerName}</div>
@@ -210,22 +202,6 @@ export function PlayerProfile() {
                 Member since {relativeTime(profile.joinedAt)}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* XP progress bar */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-medium">Level {profile.level}{profile.level < 50 ? ` → ${profile.level + 1}` : ' (Max)'}</span>
-            <span>{profile.totalXp.toLocaleString()} XP total
-              {profile.level < 50 && <> · {profile.xpToNextLevel.toLocaleString()} to next level</>}
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-secondary overflow-hidden" role="progressbar" aria-valuenow={profile.levelProgress} aria-valuemin={0} aria-valuemax={100}>
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${profile.level >= 50 ? 100 : profile.levelProgress}%` }}
-            />
           </div>
         </div>
 
@@ -327,49 +303,6 @@ export function PlayerProfile() {
 
       {/* API Key management */}
       <ApiKeySection />
-
-      {/* Achievement badges */}
-      {(() => {
-        const badges = achievementsData?.achievements ?? []
-        if (badges.length === 0) return null
-        const shown = badges.slice(0, 4)
-        return (
-          <div className="rounded-lg border bg-card p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <strong className="text-sm flex items-center gap-1.5">
-                <TrophyIcon className="h-4 w-4 text-yellow-500" />
-                Recent Achievements
-              </strong>
-              <Link
-                to="/achievements"
-                className="text-xs text-primary hover:underline flex items-center gap-0.5"
-              >
-                View all <ChevronRightIcon className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {shown.map((a, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 rounded-full border bg-secondary/20 px-3 py-1.5"
-                  title={`${a.achievementLabel} — ${a.gameName}`}
-                >
-                  <span className="text-lg leading-none">{a.achievementIcon}</span>
-                  <span className="text-xs font-medium">{a.achievementLabel}</span>
-                </div>
-              ))}
-              {badges.length > 4 && (
-                <Link
-                  to="/achievements"
-                  className="flex items-center rounded-full border border-dashed px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  +{badges.length - 4} more
-                </Link>
-              )}
-            </div>
-          </div>
-        )
-      })()}
 
       {/* Game history — last 20 games */}
       {historyGames.length > 0 && (

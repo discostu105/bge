@@ -492,7 +492,6 @@ export interface LeaderboardEntryViewModel {
   playerName: string
   score: number
   isCurrentPlayer: boolean
-  level: number
 }
 
 // Alliance
@@ -836,67 +835,6 @@ export interface SendMessageViewModel {
   body: string
 }
 
-// Achievements (tech/in-game)
-
-export interface AchievementViewModel {
-  id: string
-  name: string
-  description: string
-  unlockedAt: string | null
-  isUnlocked: boolean
-}
-
-export interface AchievementsViewModel {
-  achievements: AchievementViewModel[]
-}
-
-// Milestone achievements (progress-based, unlockable)
-
-export type MilestoneCategory = 'combat' | 'economy' | 'diplomacy' | 'exploration' | 'progression'
-export type MilestoneTier = 'bronze' | 'silver' | 'gold' | 'legendary'
-
-export interface MilestoneAchievementViewModel {
-  id: string
-  name: string
-  description: string
-  category: MilestoneCategory
-  icon: string
-  isUnlocked: boolean
-  unlockedAt: string | null
-  currentProgress: number
-  targetProgress: number
-  tier: MilestoneTier
-}
-
-export interface MilestoneAchievementsSummaryViewModel {
-  totalAchievements: number
-  unlockedCount: number
-  unlockedByCategory: Record<string, number>
-}
-
-export interface MilestoneAchievementsViewModel {
-  achievements: MilestoneAchievementViewModel[]
-  summary: MilestoneAchievementsSummaryViewModel
-}
-
-// Player game-completion achievements (api/player-management/me/achievements)
-
-export interface PlayerAchievementViewModel {
-  achievementType: string
-  achievementLabel: string
-  achievementIcon: string
-  gameId: string
-  gameName: string
-  gameDefType: string
-  finalRank: number
-  score: number
-  earnedAt: string
-}
-
-export interface PlayerAchievementsViewModel {
-  achievements: PlayerAchievementViewModel[]
-}
-
 // Player History (api/history)
 
 export interface PlayerGameHistoryEntryViewModel {
@@ -962,8 +900,6 @@ export interface AllTimePlayerEntryViewModel {
   totalWins: number
   bestRank: number
   totalScore: number
-  totalXp: number
-  level: number
 }
 
 export interface AllTimePlayerListViewModel {
@@ -1041,10 +977,6 @@ export interface ProfileViewModel {
   bestRank: number
   currentGameId: string | null
   joinedAt?: string | null
-  totalXp: number
-  level: number
-  levelProgress: number
-  xpToNextLevel: number
 }
 
 // Public cross-game stats
@@ -1070,48 +1002,6 @@ export interface PlayerCrossGameStatsViewModel {
   games: PlayerCrossGameEntry[]
   joinedAt?: string | null
   totalResourcesGathered?: number | null
-  totalXp: number
-  level: number
-}
-
-// Public achievements (api/players/{userId}/achievements)
-
-export interface PublicAchievementEntry {
-  achievementType: string
-  achievementLabel: string
-  achievementIcon: string
-  gameId: string
-  gameName: string
-  earnedAt: string
-}
-
-export interface PublicPlayerAchievementsViewModel {
-  achievements: PublicAchievementEntry[]
-}
-
-// Global Leaderboard
-
-export interface GlobalLeaderboardEntryViewModel {
-  rank: number
-  userId: string
-  displayName: string
-  score: number
-  tournamentWins: number
-  gameWins: number
-  achievementsUnlocked: number
-  isCurrentPlayer: boolean
-  level: number
-}
-
-export interface GlobalLeaderboardViewModel {
-  entries: GlobalLeaderboardEntryViewModel[]
-  seasonStart: string
-  seasonEnd: string
-}
-
-export interface PlayerLeaderboardContextViewModel {
-  rank: number
-  nearbyEntries: GlobalLeaderboardEntryViewModel[]
 }
 
 // Pagination

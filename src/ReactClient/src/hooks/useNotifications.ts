@@ -42,31 +42,15 @@ export function useNotifications(options?: UseNotificationsOptions) {
     [queryClient, options?.onRealTimeNotification]
   )
 
-  const milestoneHandler = useCallback(
-    (...args: unknown[]) => {
-      const payload = args[0] as { milestoneId?: string; name?: string; icon?: string }
-      if (!payload?.name) return
-
-      options?.onRealTimeNotification?.({
-        type: 'MilestoneUnlocked',
-        title: `${payload.icon ?? '🏆'} Achievement Unlocked: ${payload.name}`,
-        createdAt: new Date().toISOString(),
-      })
-    },
-    [options?.onRealTimeNotification]
-  )
-
   useEffect(() => {
     if (!options?.signalR) return
     options.signalR.on('ReceiveNotification', handler)
     options.signalR.on('ReceiveAlert', handler)
-    options.signalR.on('MilestoneUnlocked', milestoneHandler)
     return () => {
       options.signalR?.off('ReceiveNotification', handler)
       options.signalR?.off('ReceiveAlert', handler)
-      options.signalR?.off('MilestoneUnlocked', milestoneHandler)
     }
-  }, [options?.signalR, handler, milestoneHandler])
+  }, [options?.signalR, handler])
 
   const dismissAll = useMutation({
     mutationFn: () => apiClient.delete('/api/notifications/recent'),

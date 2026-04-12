@@ -104,7 +104,6 @@ export function NavMenu() {
           <NavItem to={g('history')} icon={HistoryIcon} label="History" />
           <NavItem to={g('stats')} icon={LineChartIcon} label="My Stats" />
           <NavItem to={g('profile')} icon={UserIcon} label="Profile" />
-          <NavItem to={g('achievements')} icon={TrophyIcon} label="Achievements" />
         </ul>
       </div>
 

@@ -108,8 +108,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepositoryWrite,
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(gameRegistry.GlobalState, gameRegistry),
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(gameRegistry.GlobalState),
 				tournamentEngine,
 				new GameRegistryNs.CurrencyService(gameRegistry.GlobalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
@@ -142,40 +140,15 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public async Task FinalizeGame_CreatesAchievementsForPlayersWithUserId() {
+		public async Task FinalizeGame_SetsWinnerUserIdOnGameRecord() {
 			var ws = MakeTwoPlayerState("test-game").ToMutable();
 			var (registry, _) = MakeActiveEndedGame(ws);
 			var engine = MakeEngine(registry);
 
 			await engine.ProcessLifecycleAsync();
 
-			var achievements = registry.GlobalState.GetAchievements();
-			Assert.Equal(2, achievements.Count);
-			Assert.Contains(achievements, a => a.UserId == "user1" && a.FinalRank == 1);
-			Assert.Contains(achievements, a => a.UserId == "user2" && a.FinalRank == 2);
-		}
-
-		[Fact]
-		public async Task FinalizeGame_AchievementsPreservePlayerNameAndRankOrder() {
-			var ws = MakeTwoPlayerState("test-game").ToMutable();
-			var (registry, _) = MakeActiveEndedGame(ws);
-			var engine = MakeEngine(registry);
-
-			await engine.ProcessLifecycleAsync();
-
-			var achievements = registry.GlobalState.GetAchievements()
-				.OrderBy(a => a.FinalRank)
-				.ToList();
-
-			// Rank 1 = highest score (p1 with res1=2000), Rank 2 = lower score (p2)
-			Assert.Equal(2, achievements.Count);
-			Assert.Equal("Player 1", achievements[0].PlayerName);
-			Assert.Equal(1, achievements[0].FinalRank);
-			Assert.Equal("Player 2", achievements[1].PlayerName);
-			Assert.Equal(2, achievements[1].FinalRank);
-			// Rank-1 player is the winner recorded on the game record
 			var finalRecord = registry.GlobalState.GetGames()[0];
-			Assert.Equal(achievements[0].PlayerId.Id, finalRecord.WinnerId?.Id);
+			Assert.Equal("user1", finalRecord.WinnerUserId);
 		}
 
 		[Fact]
@@ -262,8 +235,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepoWrite,
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(globalState, registry),
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(globalState),
 				tournamentEngine2,
 				new GameRegistryNs.CurrencyService(globalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance

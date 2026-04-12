@@ -9,8 +9,6 @@ namespace BrowserGameEngine.StatefulGameServer;
 
 public class GameReplayData {
 	public GameRecordImmutable? Record { get; init; }
-	public IReadOnlyList<PlayerAchievementImmutable> GameAchievements { get; init; } = [];
-	public PlayerAchievementImmutable? CurrentPlayerAchievement { get; init; }
 	public WorldStateImmutable? WorldState { get; init; }
 }
 
@@ -32,15 +30,6 @@ public class GameReplayRepository {
 		}
 		if (record == null) return null;
 
-		var allGameAchievements = new List<PlayerAchievementImmutable>();
-		PlayerAchievementImmutable? currentPlayerAchievement = null;
-		foreach (var a in globalState.GetAchievements()) {
-			if (a.GameId.Id == gameId.Id) {
-				allGameAchievements.Add(a);
-				if (a.UserId == userId) currentPlayerAchievement = a;
-			}
-		}
-
 		WorldStateImmutable? worldState = null;
 		var activeInstance = gameRegistry.TryGetInstance(gameId);
 		if (activeInstance != null) {
@@ -51,8 +40,6 @@ public class GameReplayRepository {
 
 		return new GameReplayData {
 			Record = record,
-			GameAchievements = allGameAchievements,
-			CurrentPlayerAchievement = currentPlayerAchievement,
 			WorldState = worldState
 		};
 	}

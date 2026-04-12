@@ -2,7 +2,6 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
-using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
@@ -392,26 +391,32 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var record = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId);
 			if (record == null) return NotFound();
 
-			var achievements = globalState.GetAchievements()
-				.Where(a => a.GameId.Id == gameId)
-				.OrderBy(a => a.FinalRank)
-				.ToList();
-
-			var standings = achievements
-				.Select(a => new GameResultEntryViewModel(
-					Rank: a.FinalRank,
-					PlayerName: a.PlayerName,
-					PlayerId: a.PlayerId.Id,
-					Score: a.FinalScore,
-					IsWinner: a.FinalRank == 1
-				))
-				.ToList();
-
+			// Build standings from the live/persisted world state for the game.
+			var standings = new List<GameResultEntryViewModel>();
 			string? currentPlayerId = null;
-			if (currentUserContext.IsValid) {
-				currentPlayerId = achievements
-					.FirstOrDefault(a => a.UserId == currentUserContext.UserId)
-					?.PlayerId.Id;
+			var instance = gameRegistry.TryGetInstance(record.GameId);
+			if (instance != null) {
+				var snapshot = instance.WorldState.ToImmutable();
+				var ranked = snapshot.Players
+					.Select(kvp => {
+						kvp.Value.State.Resources.TryGetValue(gameDef.ScoreResource, out var score);
+						return (PlayerId: kvp.Key, Player: kvp.Value, Score: score);
+					})
+					.OrderByDescending(x => x.Score)
+					.ToList();
+				for (int i = 0; i < ranked.Count; i++) {
+					var entry = ranked[i];
+					standings.Add(new GameResultEntryViewModel(
+						Rank: i + 1,
+						PlayerName: entry.Player.Name,
+						PlayerId: entry.PlayerId.Id,
+						Score: entry.Score,
+						IsWinner: i == 0
+					));
+					if (currentUserContext.IsValid && entry.Player.UserId == currentUserContext.UserId) {
+						currentPlayerId = entry.PlayerId.Id;
+					}
+				}
 			}
 
 			return Ok(new GameResultsViewModel(
@@ -445,25 +450,26 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				.ToList();
 
 			return players
-				.Select((x, idx) => {
-					var xp = x.player.UserId != null ? globalState.GetUserTotalXp(x.player.UserId) : 0;
-					return new LeaderboardEntryViewModel(
-						Rank: idx + 1,
-						PlayerId: x.player.PlayerId.Id,
-						PlayerName: x.name,
-						Score: x.score,
-						IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId,
-						Level: XpHelper.ComputeLevel(xp)
-					);
-				})
+				.Select((x, idx) => new LeaderboardEntryViewModel(
+					Rank: idx + 1,
+					PlayerId: x.player.PlayerId.Id,
+					PlayerName: x.name,
+					Score: x.score,
+					IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId
+				))
 				.ToList();
 		}
 
 		private string? ResolveWinnerName(GameRecordImmutable record) {
 			if (record.WinnerId == null) return null;
-			return globalState.GetAchievements()
-				.FirstOrDefault(a => a.GameId == record.GameId && a.PlayerId == record.WinnerId)
-				?.PlayerName;
+			if (record.WinnerUserId != null) {
+				return globalState.GetUserDisplayName(record.WinnerUserId);
+			}
+			var instance = gameRegistry.TryGetInstance(record.GameId);
+			if (instance != null && instance.WorldState.ToImmutable().Players.TryGetValue(record.WinnerId, out var p)) {
+				return p.Name;
+			}
+			return null;
 		}
 
 		private GameSummaryViewModel ToSummary(GameRecordImmutable record) {

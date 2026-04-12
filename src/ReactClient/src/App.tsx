@@ -46,7 +46,6 @@ const CreatePlayer = lazy(() => import('@/pages/CreatePlayer').then(m => ({ defa
 const UnitDefinitions = lazy(() => import('@/pages/UnitDefinitions').then(m => ({ default: m.UnitDefinitions })))
 const Alliances = lazy(() => import('@/pages/Alliances').then(m => ({ default: m.Alliances })))
 const AllianceDetail = lazy(() => import('@/pages/AllianceDetail').then(m => ({ default: m.AllianceDetail })))
-const Achievements = lazy(() => import('@/pages/Achievements').then(m => ({ default: m.Achievements })))
 const PlayerHistory = lazy(() => import('@/pages/PlayerHistory').then(m => ({ default: m.PlayerHistory })))
 const PublicProfile = lazy(() => import('@/pages/PublicProfile').then(m => ({ default: m.PublicProfile })))
 const AdminGames = lazy(() => import('@/pages/admin/AdminGames').then(m => ({ default: m.AdminGames })))
@@ -66,7 +65,6 @@ const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ defaul
 const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m => ({ default: m.TournamentResults })))
 const TournamentList = lazy(() => import('@/pages/TournamentList').then(m => ({ default: m.TournamentList })))
 const TournamentDetail = lazy(() => import('@/pages/TournamentDetail').then(m => ({ default: m.TournamentDetail })))
-const Leaderboard = lazy(() => import('@/pages/Leaderboard').then(m => ({ default: m.Leaderboard })))
 const Spectator = lazy(() => import('@/pages/Spectator').then(m => ({ default: m.Spectator })))
 const Shop = lazy(() => import('@/pages/Shop').then(m => ({ default: m.Shop })))
 const Economy = lazy(() => import('@/pages/Economy').then(m => ({ default: m.Economy })))
@@ -218,7 +216,6 @@ const router = createBrowserRouter([
 					{ path: 'history', element: <RouteWithBoundary><PlayerHistory /></RouteWithBoundary> },
 					{ path: 'stats', element: <RouteWithBoundary><PlayerStats /></RouteWithBoundary> },
 					{ path: 'profile', element: <RouteWithBoundary><PlayerProfile /></RouteWithBoundary> },
-					{ path: 'achievements', element: <RouteWithBoundary><Achievements /></RouteWithBoundary> },
 					{ path: 'shop', element: <RouteWithBoundary><Shop /></RouteWithBoundary> },
 					{ path: 'economy', element: <RouteWithBoundary><Economy /></RouteWithBoundary> },
 				],
@@ -240,14 +237,12 @@ const router = createBrowserRouter([
 			{ path: '/profile/:userId', element: <RouteWithBoundary><PublicProfile /></RouteWithBoundary> },
 			{ path: '/players', element: <RouteWithBoundary><PlayersList /></RouteWithBoundary> },
 			{ path: '/alliances/:allianceId', element: <RouteWithBoundary><AllianceDetail /></RouteWithBoundary> },
-			{ path: '/achievements', element: <BareRouteRedirect path="achievements" /> },
 			{ path: '/history', element: <BareRouteRedirect path="history" /> },
 			{ path: '/replays/:gameId', element: <RouteWithBoundary><ReplayViewer /></RouteWithBoundary> },
 			{ path: '/stats', element: <BareRouteRedirect path="stats" /> },
 			{ path: '/tournaments', element: <RouteWithBoundary><TournamentList /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentDetail /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId/results', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
-			{ path: '/leaderboard', element: <RouteWithBoundary><Leaderboard /></RouteWithBoundary> },
 			{ path: '/shop', element: <BareRouteRedirect path="shop" /> },
 			{ path: '/economy', element: <BareRouteRedirect path="economy" /> },
 			{ path: '/games/:gameId/spectate', element: <RouteWithBoundary><SpectatorPage /></RouteWithBoundary> },

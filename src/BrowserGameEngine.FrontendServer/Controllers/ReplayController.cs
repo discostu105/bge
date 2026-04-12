@@ -1,3 +1,4 @@
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
@@ -15,10 +16,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 	public class ReplayController : ControllerBase {
 		private readonly CurrentUserContext currentUserContext;
 		private readonly GameReplayRepository gameReplayRepository;
+		private readonly GameDef gameDef;
 
-		public ReplayController(CurrentUserContext currentUserContext, GameReplayRepository gameReplayRepository) {
+		public ReplayController(CurrentUserContext currentUserContext, GameReplayRepository gameReplayRepository, GameDef gameDef) {
 			this.currentUserContext = currentUserContext;
 			this.gameReplayRepository = gameReplayRepository;
+			this.gameDef = gameDef;
 		}
 
 		/// <summary>Returns the replay data for a specific game, including final standings and battle events for the current player.</summary>
@@ -33,24 +36,34 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var data = await gameReplayRepository.GetGameReplayData(new GameId(gameId), currentUserContext.UserId!);
 			if (data?.Record == null) return NotFound();
 
-			var raceMap = data.WorldState?.Players
-				.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value.PlayerType.Id)
-				?? [];
-
-			var finalStandings = data.GameAchievements
-				.OrderBy(a => a.FinalRank)
-				.Select(a => new ReplayPlayerViewModel(
-					PlayerId: a.PlayerId.Id,
-					PlayerName: a.PlayerName,
-					Race: raceMap.GetValueOrDefault(a.PlayerId.Id, a.GameDefType),
-					FinalRank: a.FinalRank,
-					FinalScore: a.FinalScore
-				))
-				.ToList();
+			var finalStandings = new List<ReplayPlayerViewModel>();
+			PlayerId? currentPlayerFromWorld = null;
+			if (data.WorldState != null) {
+				var ranked = data.WorldState.Players
+					.Select(kvp => {
+						kvp.Value.State.Resources.TryGetValue(gameDef.ScoreResource, out var score);
+						return (PlayerId: kvp.Key, Player: kvp.Value, Score: score);
+					})
+					.OrderByDescending(x => x.Score)
+					.ToList();
+				for (int i = 0; i < ranked.Count; i++) {
+					var (pid, player, score) = ranked[i];
+					finalStandings.Add(new ReplayPlayerViewModel(
+						PlayerId: pid.Id,
+						PlayerName: player.Name,
+						Race: player.PlayerType.Id,
+						FinalRank: i + 1,
+						FinalScore: score
+					));
+					if (player.UserId == currentUserContext.UserId) {
+						currentPlayerFromWorld = pid;
+					}
+				}
+			}
 
 			var battleEvents = new List<ReplayBattleEventViewModel>();
-			if (data.CurrentPlayerAchievement != null && data.WorldState != null) {
-				var currentPlayerId = data.CurrentPlayerAchievement.PlayerId;
+			if (currentPlayerFromWorld != null && data.WorldState != null) {
+				var currentPlayerId = currentPlayerFromWorld;
 				if (data.WorldState.Players.TryGetValue(currentPlayerId, out var currentPlayer)) {
 					battleEvents = (currentPlayer.State.BattleReports ?? [])
 						.OrderBy(r => r.CreatedAt)

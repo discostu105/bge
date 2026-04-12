@@ -60,30 +60,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void CalculateTick_WhenEndTimeReached_CreatesAchievementsForAllPlayers() {
-			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1), playerCount: 2);
-			var player2 = new BrowserGameEngine.GameModel.PlayerId("player1");
-
-			module.CalculateTick(game.Player1);
-
-			var achievements = game.GlobalState.GetAchievements();
-			Assert.Equal(2, achievements.Count);
-			Assert.All(achievements, a => Assert.Equal(TestGameId, a.GameId.Id));
-			Assert.All(achievements, a => Assert.Equal("sco", a.GameDefType));
-		}
-
-		[Fact]
-		public void CalculateTick_WhenEndTimeReached_AchievementsHaveCorrectRanks() {
-			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1), playerCount: 2);
-
-			module.CalculateTick(game.Player1);
-
-			var achievements = game.GlobalState.GetAchievements().OrderBy(a => a.FinalRank).ToList();
-			Assert.Equal(1, achievements[0].FinalRank);
-			Assert.Equal(2, achievements[1].FinalRank);
-		}
-
-		[Fact]
 		public void CalculateTick_WhenEndTimeReached_RemovesGameFromRegistry() {
 			var (game, registry, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1));
 
@@ -100,7 +76,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
 			Assert.Equal(GameStatus.Active, gameRecord.Status);
-			Assert.Empty(game.GlobalState.GetAchievements());
 		}
 
 		[Fact]
@@ -113,17 +88,5 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(VictoryConditionTypes.TimeExpired, gameRecord.VictoryConditionType);
 		}
 
-		[Fact]
-		public void CalculateTick_CalledMultipleTimes_OnlyFinalizesOnce() {
-			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1), playerCount: 2);
-			var player2 = new BrowserGameEngine.GameModel.PlayerId("player1");
-
-			// Simulate multiple players calling CalculateTick in the same tick
-			module.CalculateTick(game.Player1);
-			module.CalculateTick(player2);
-
-			var achievements = game.GlobalState.GetAchievements();
-			Assert.Equal(2, achievements.Count); // Only 2 achievements, not 4
-		}
 	}
 }

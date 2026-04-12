@@ -5,8 +5,7 @@ namespace BrowserGameEngine.GameModel {
 		AttackReceived,
 		SpyAttempted,
 		AllianceRequest,
-		MessageReceived,
-		MilestoneUnlocked
+		MessageReceived
 	}
 
 	public record GameNotification(

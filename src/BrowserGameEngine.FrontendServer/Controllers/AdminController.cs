@@ -365,8 +365,6 @@ public class AdminController : ControllerBase
 		var now = DateTime.UtcNow;
 		var dayAgo = now.AddDays(-1);
 		var allGames = globalState.GetGames().ToList();
-		var allAchievements = globalState.GetAchievements().ToList();
-		var achievementUnlocksToday = allAchievements.Count(a => a.FinishedAt >= dayAgo);
 		var runningGames = allGames.Count(g => g.Status == GameStatus.Active);
 
 		// Daily active users: unique user IDs who have a player active in the last 24h
@@ -375,14 +373,6 @@ public class AdminController : ControllerBase
 			.Select(p => p.UserId!)
 			.Distinct()
 			.Count();
-
-		// Top achievements by game def type
-		var topAchievements = allAchievements
-			.GroupBy(a => a.GameDefType)
-			.Select(g => new { gameDefType = g.Key, count = g.Count() })
-			.OrderByDescending(x => x.count)
-			.Take(5)
-			.ToList();
 
 		return Ok(new {
 			totalPlayers = players.Count,
@@ -396,8 +386,6 @@ public class AdminController : ControllerBase
 			dailyActiveUsers,
 			runningGames,
 			totalGames = allGames.Count,
-			achievementUnlocksToday,
-			topAchievements,
 		});
 	}
 

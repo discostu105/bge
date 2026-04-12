@@ -116,7 +116,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			);
 		}
 
-		private static GlobalState MakeGlobalState(bool includeCurrentPlayer = true, bool includeBothAchievements = true) {
+		private static GlobalState MakeGlobalState() {
 			var state = new GlobalState();
 			state.AddGame(new GameRecordImmutable(
 				TestGameId, "Test Game", "sco", GameStatus.Finished,
@@ -125,20 +125,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				TimeSpan.FromSeconds(60),
 				ActualEndTime: new DateTime(2024, 1, 7, 12, 0, 0, DateTimeKind.Utc)
 			));
-			if (includeCurrentPlayer) {
-				state.AddAchievement(new PlayerAchievementImmutable(
-					UserId: UserId1, GameId: TestGameId, PlayerId: Player1Id,
-					PlayerName: "Alice", FinalRank: 2, FinalScore: 1000m,
-					GameDefType: "sco", FinishedAt: DateTime.UtcNow
-				));
-			}
-			if (includeBothAchievements) {
-				state.AddAchievement(new PlayerAchievementImmutable(
-					UserId: UserId2, GameId: TestGameId, PlayerId: Player2Id,
-					PlayerName: "Bob", FinalRank: 1, FinalScore: 2000m,
-					GameDefType: "sco", FinishedAt: DateTime.UtcNow
-				));
-			}
 			return state;
 		}
 
@@ -177,8 +163,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			Assert.NotNull(result);
 			Assert.NotNull(result!.WorldState);
-			Assert.Equal(UserId1, result.CurrentPlayerAchievement?.UserId);
-			Assert.Equal(2, result.GameAchievements.Count);
 			var playerReports = result.WorldState.Players[Player1Id].State.BattleReports;
 			Assert.NotNull(playerReports);
 			Assert.Equal(2, playerReports!.Count);
@@ -201,7 +185,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var result = await repo.GetGameReplayData(TestGameId, UserId1);
 
 			Assert.NotNull(result);
-			Assert.NotNull(result!.CurrentPlayerAchievement);
+			Assert.NotNull(result!.WorldState);
 			var playerReports = result.WorldState!.Players[Player1Id].State.BattleReports;
 			Assert.True(playerReports == null || playerReports.Count == 0);
 		}
@@ -224,8 +208,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.NotNull(result);
 			Assert.Equal("Test Game", result!.Record!.Name);
 			Assert.NotNull(result.WorldState);
-			Assert.Equal(UserId1, result.CurrentPlayerAchievement?.UserId);
-			Assert.Equal(2, result.GameAchievements.Count);
 		}
 
 		[Fact]
@@ -257,26 +239,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public async Task UserNotInGame_CurrentPlayerAchievementIsNull() {
-			var worldState = MakeWorldState();
-			var globalState = MakeGlobalState();
-			var gameRecord = new GameRecordImmutable(TestGameId, "Test Game", "sco", GameStatus.Active,
-				DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(6), TimeSpan.FromSeconds(60));
-			globalState.SetGames([..globalState.GetGames().Where(g => g.GameId.Id != TestGameId.Id), gameRecord]);
-
-			var instance = new GameInstance(gameRecord, worldState.ToMutable(), TestGameDef);
-			var registry = new GameRegistry.GameRegistry(globalState);
-			registry.Register(instance);
-
-			var repo = CreateRepo(globalState, registry, new TestBlobStorage());
-
-			var result = await repo.GetGameReplayData(TestGameId, "user-unknown");
-
-			Assert.NotNull(result);
-			Assert.Null(result!.CurrentPlayerAchievement);
-		}
-
-		[Fact]
 		public async Task GameWithNoWorldState_ReturnsDataWithNullWorldState() {
 			var globalState = MakeGlobalState();
 			var registry = new GameRegistry.GameRegistry(globalState);
@@ -287,7 +249,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.NotNull(result);
 			Assert.Null(result!.WorldState);
 			Assert.Equal("Test Game", result.Record!.Name);
-			Assert.Equal(2, result.GameAchievements.Count);
 		}
 
 		private class TestBlobStorage : IBlobStorage {

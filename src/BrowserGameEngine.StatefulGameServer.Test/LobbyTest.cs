@@ -67,8 +67,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepositoryWrite,
 				NullGameEventPublisher.Instance,
 				TimeProvider.System,
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(globalState, gameRegistry),
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(globalState),
 				tournamentEngine,
 				new CurrencyService(globalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<CurrencyService>.Instance),
 				NullLogger<GameLifecycleEngine>.Instance
