@@ -13,6 +13,11 @@ namespace BrowserGameEngine.FrontendServer {
 		public bool DevAuth { get; set; }
 
 		/// <summary>
+		/// Seed scenario used when bootstrapping a brand-new dev world. "empty" (no players) or "realistic" (20 players, 4 alliances, mid-game progression). Default: "realistic".
+		/// </summary>
+		public string DevSeedScenario { get; set; } = "realistic";
+
+		/// <summary>
 		/// User IDs that are granted admin privileges (e.g. access to admin endpoints, game creation).
 		/// </summary>
 		public List<string> AdminUserIds { get; set; } = new();

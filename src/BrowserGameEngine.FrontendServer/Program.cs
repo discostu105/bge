@@ -267,7 +267,10 @@ async Task ConfigureGameServices(IServiceCollection services) {
         ? new S3Storage(new AmazonS3Client(), s3BucketName, builder.Configuration["Bge:S3KeyPrefix"] ?? "")
         : new FileStorage(new DirectoryInfo("storage"));
 
-    var defaultWorldState = stateFactory.CreateDevWorldState();
+    var devSeedScenario = builder.Configuration["Bge:DevSeedScenario"] ?? "realistic";
+    var defaultWorldState = devSeedScenario.Equals("realistic", StringComparison.OrdinalIgnoreCase)
+        ? stateFactory.CreateRealisticDevWorldState()
+        : stateFactory.CreateDevWorldState(0);
     new WorldStateVerifier().Verify(gameDef, defaultWorldState);
 
     var serializer = new GameStateJsonSerializer();
