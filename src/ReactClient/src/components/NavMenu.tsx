@@ -6,7 +6,6 @@ import {
   ShoppingCartIcon,
   ArrowRightLeftIcon,
   BarChart2Icon,
-  FlagIcon,
   UsersIcon,
   MessageSquareIcon,
   MailIcon,
@@ -87,7 +86,6 @@ export function NavMenu() {
         <NavItem to={g('help')} icon={HelpCircleIcon} label="Help" />
 
         <SectionLabel>Social</SectionLabel>
-        <NavItem to={g('diplomacy')} icon={FlagIcon} label="Diplomacy" />
         <NavItem to={g('alliances')} icon={UsersIcon} label="Alliances" />
         <NavItem to={g('allianceranking')} icon={TrophyIcon} label="Alliance Ranking" />
         <NavItem to={g('chat')} icon={MessageSquareIcon} label="Chat" />
