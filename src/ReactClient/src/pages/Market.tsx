@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { MarketViewModel, MarketOrderViewModel, CreateMarketOrderRequest } from '@/api/types'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonRow, SkeletonLine } from '@/components/Skeleton'
 import { useConfirm } from '@/contexts/ConfirmContext'
 
 interface MarketProps {
@@ -98,7 +98,22 @@ export function Market({ gameId }: MarketProps) {
     },
   })
 
-  if (isLoading) return <PageLoader message="Loading market..." />
+  if (isLoading) {
+    return (
+      <div className="space-y-6" aria-hidden="true">
+        <SkeletonLine className="h-6 w-40" />
+        <div className="rounded-lg border bg-card overflow-hidden">
+          <table className="w-full text-sm">
+            <tbody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonRow key={i} cols={5} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
+  }
   if (queryError) return <ApiError message="Failed to load market." onRetry={() => void refetch()} />
   if (!data) return null
 

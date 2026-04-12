@@ -19,8 +19,8 @@ import { relativeTime } from '@/lib/utils'
 const ResourceHistoryChart = lazy(() =>
 	import('@/components/ResourceHistoryChart').then(m => ({ default: m.ResourceHistoryChart }))
 )
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 
 interface BaseProps {
   gameId: string
@@ -281,7 +281,11 @@ export function Base({ gameId }: BaseProps) {
       {/* Assets */}
       {lastError && <div className="text-destructive text-sm">{lastError}</div>}
       {assetsLoading ? (
-        <PageLoader message="Loading assets..." />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-32" />
+          ))}
+        </div>
       ) : assetsError && !assetsData ? (
         <ApiError message="Failed to load assets." onRetry={() => void refetchAssets()} />
       ) : assetsData ? (
@@ -319,7 +323,11 @@ export function Base({ gameId }: BaseProps) {
         </div>
         <div className="p-2">
           {!notifications ? (
-            <div className="p-3 text-muted-foreground text-sm">Loading...</div>
+            <div className="p-3 space-y-2" aria-hidden="true">
+              <SkeletonLine className="w-3/4" />
+              <SkeletonLine className="w-2/3" />
+              <SkeletonLine className="w-1/2" />
+            </div>
           ) : notifications.length === 0 ? (
             <div className="p-3 text-muted-foreground text-sm">No recent activity.</div>
           ) : (

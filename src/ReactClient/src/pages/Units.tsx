@@ -5,8 +5,8 @@ import axios from 'axios'
 import apiClient from '@/api/client'
 import type { UnitsViewModel, UnitViewModel } from '@/api/types'
 import { BuildQueue } from '@/components/BuildQueue'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonRow } from '@/components/Skeleton'
 
 interface UnitsProps {
   gameId: string
@@ -184,7 +184,15 @@ export function Units({ gameId }: UnitsProps) {
       <BuildQueue gameId={gameId} />
 
       {isLoading ? (
-        <PageLoader message="Loading units..." />
+        <div className="rounded-lg border bg-card overflow-hidden" aria-hidden="true">
+          <table className="w-full text-sm">
+            <tbody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonRow key={i} cols={5} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : queryError && !data ? (
         <ApiError message="Failed to load units." onRetry={() => void refetch()} />
       ) : !data || data.units.length === 0 ? (
