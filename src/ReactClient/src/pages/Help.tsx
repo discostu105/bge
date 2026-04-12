@@ -60,12 +60,11 @@ const SECTIONS: GuideSection[] = [
     ],
   },
   {
-    title: 'Alliances & Diplomacy',
+    title: 'Alliances',
     icon: '🤝',
     items: [
       'Create or join an alliance to team up with other players.',
       'Alliance members can chat privately and coordinate attacks.',
-      'Declare wars or propose peace through the Diplomacy page.',
     ],
   },
 ]

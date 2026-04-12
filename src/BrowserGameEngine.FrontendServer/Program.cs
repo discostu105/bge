@@ -59,10 +59,8 @@ builder.Services.AddHostedService<GameTickTimerService>();
 builder.Services.AddHostedService<PersistenceHostedService>();
 builder.Services.AddHostedService<GlobalPersistenceHostedService>();
 builder.Services.AddHostedService<GameLifecycleService>();
-builder.Services.AddHostedService<BrowserGameEngine.FrontendServer.HostedServices.GlobalEconomyCleanupService>();
 
 builder.Services.Configure<BgeOptions>(builder.Configuration.GetSection(BgeOptions.Position));
-builder.Services.Configure<BrowserGameEngine.GameDefinition.ShopConfig>(builder.Configuration.GetSection("Shop"));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<BrowserGameEngine.StatefulGameServer.GameRegistry.IGameNotificationService, BrowserGameEngine.FrontendServer.Services.DiscordWebhookNotificationService>();
 builder.Services.AddControllersWithViews();
@@ -267,7 +265,10 @@ async Task ConfigureGameServices(IServiceCollection services) {
         ? new S3Storage(new AmazonS3Client(), s3BucketName, builder.Configuration["Bge:S3KeyPrefix"] ?? "")
         : new FileStorage(new DirectoryInfo("storage"));
 
-    var defaultWorldState = stateFactory.CreateDevWorldState();
+    var devSeedScenario = builder.Configuration["Bge:DevSeedScenario"] ?? "realistic";
+    var defaultWorldState = devSeedScenario.Equals("realistic", StringComparison.OrdinalIgnoreCase)
+        ? stateFactory.CreateRealisticDevWorldState()
+        : stateFactory.CreateDevWorldState(0);
     new WorldStateVerifier().Verify(gameDef, defaultWorldState);
 
     var serializer = new GameStateJsonSerializer();

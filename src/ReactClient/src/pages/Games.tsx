@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams, Link } from 'react-router'
 import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { formatDateTime } from '@/lib/formatters'
 
 function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game: GameSummaryViewModel) => void }) {
@@ -153,7 +153,16 @@ export function Games() {
       {success && <div className="rounded-lg border border-success/50 bg-success/10 p-3 text-sm">{success}</div>}
       {error && <div className="rounded-lg border border-danger/50 bg-danger/10 p-3 text-sm text-danger-foreground">{error}</div>}
 
-      {queryLoading && <PageLoader message="Loading games..." />}
+      {queryLoading && (
+        <div className="space-y-4" aria-hidden="true">
+          <SkeletonLine className="h-5 w-24" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} className="h-28" />
+            ))}
+          </div>
+        </div>
+      )}
       {queryError && !data && <ApiError message="Failed to load games." onRetry={() => void refetch()} />}
 
       {data && (

@@ -11,6 +11,8 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 			throw new NotImplementedException();
 		}
 
+		public WorldStateImmutable CreateRealisticDevWorldState() => RealisticDevScenario.Build();
+
 		public WorldStateImmutable CreateDevWorldState(int playerCount = 0) {
 			var players = new List<PlayerImmutable>();
 

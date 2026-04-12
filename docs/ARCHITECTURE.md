@@ -155,7 +155,6 @@ ASP.NET Core host — the composition root. Wires everything together.
 - `SpectatorController` — live game spectating endpoints
 - `ReplayController` — battle replay data
 - `ChatController` — in-game chat
-- `DiplomacyController` — diplomacy actions
 - `HistoryController` — historical game data
 - `MarketController` — market/trading endpoints
 - `ResearchController` — research tree

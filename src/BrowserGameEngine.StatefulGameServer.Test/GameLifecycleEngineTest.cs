@@ -109,7 +109,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
 				tournamentEngine,
-				new GameRegistryNs.CurrencyService(gameRegistry.GlobalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 		}
@@ -236,7 +235,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
 				tournamentEngine2,
-				new GameRegistryNs.CurrencyService(globalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
 			);
 

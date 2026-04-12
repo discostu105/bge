@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { GemIcon, FlaskConicalIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { WorkerAssignmentViewModel } from '@/api/types'
 
@@ -48,11 +49,15 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-blue-400">{data.mineralWorkers}</div>
-          <div className="text-muted-foreground">💎 Mining</div>
+          <div className="text-muted-foreground inline-flex items-center justify-center gap-1">
+            <GemIcon className="h-3.5 w-3.5 text-blue-400" aria-hidden="true" /> Mining
+          </div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-green-400">{data.gasWorkers}</div>
-          <div className="text-muted-foreground">⚗️ Gas</div>
+          <div className="text-muted-foreground inline-flex items-center justify-center gap-1">
+            <FlaskConicalIcon className="h-3.5 w-3.5 text-green-400" aria-hidden="true" /> Gas
+          </div>
         </div>
       </div>
       <div className="text-xs text-muted-foreground mb-3">
@@ -60,7 +65,9 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="mineralWorkers" className="text-xs text-muted-foreground">💎 Mineral Workers</label>
+          <label htmlFor="mineralWorkers" className="text-xs text-muted-foreground inline-flex items-center gap-1">
+            <GemIcon className="h-3 w-3 text-blue-400" aria-hidden="true" /> Mineral Workers
+          </label>
           <input
             id="mineralWorkers"
             type="number"
@@ -72,7 +79,9 @@ export function WorkerAssignment({ gameId }: WorkerAssignmentProps) {
           />
         </div>
         <div>
-          <label htmlFor="gasWorkers" className="text-xs text-muted-foreground">⚗️ Gas Workers</label>
+          <label htmlFor="gasWorkers" className="text-xs text-muted-foreground inline-flex items-center gap-1">
+            <FlaskConicalIcon className="h-3 w-3 text-green-400" aria-hidden="true" /> Gas Workers
+          </label>
           <input
             id="gasWorkers"
             type="number"

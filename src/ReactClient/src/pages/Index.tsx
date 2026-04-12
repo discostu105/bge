@@ -16,6 +16,10 @@ export function Index() {
 
   useEffect(() => {
     if (!profile) return
+    if (!profile.playerName) {
+      void navigate('/createplayer', { replace: true })
+      return
+    }
     if (profile.currentGameId) {
       void navigate(`/games/${profile.currentGameId}/base`, { replace: true })
     } else {

@@ -26,7 +26,6 @@ const Base = lazy(() => import('@/pages/Base').then(m => ({ default: m.Base })))
 const Units = lazy(() => import('@/pages/Units').then(m => ({ default: m.Units })))
 const Research = lazy(() => import('@/pages/Research').then(m => ({ default: m.Research })))
 const Market = lazy(() => import('@/pages/Market').then(m => ({ default: m.Market })))
-const Diplomacy = lazy(() => import('@/pages/Diplomacy').then(m => ({ default: m.Diplomacy })))
 const EnemyBase = lazy(() => import('@/pages/EnemyBase').then(m => ({ default: m.EnemyBase })))
 const SelectEnemy = lazy(() => import('@/pages/SelectEnemy').then(m => ({ default: m.SelectEnemy })))
 const Chat = lazy(() => import('@/pages/Chat').then(m => ({ default: m.Chat })))
@@ -64,8 +63,6 @@ const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m 
 const TournamentList = lazy(() => import('@/pages/TournamentList').then(m => ({ default: m.TournamentList })))
 const TournamentDetail = lazy(() => import('@/pages/TournamentDetail').then(m => ({ default: m.TournamentDetail })))
 const Spectator = lazy(() => import('@/pages/Spectator').then(m => ({ default: m.Spectator })))
-const Shop = lazy(() => import('@/pages/Shop').then(m => ({ default: m.Shop })))
-const Economy = lazy(() => import('@/pages/Economy').then(m => ({ default: m.Economy })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -100,11 +97,6 @@ function MarketPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
   return <Market gameId={gameId} />
-}
-function DiplomacyPage() {
-  const { gameId } = useParams<{ gameId: string }>()
-  if (!gameId) return null
-  return <Diplomacy gameId={gameId} />
 }
 function EnemyBasePage() {
   const { gameId } = useParams<{ gameId: string }>()
@@ -186,7 +178,6 @@ const router = createBrowserRouter([
 					{ path: 'ranking', element: <RouteWithBoundary><PlayerRankingPage /></RouteWithBoundary> },
 					{ path: 'alliances', element: <RouteWithBoundary><AlliancesPage /></RouteWithBoundary> },
 					{ path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
-					{ path: 'diplomacy', element: <RouteWithBoundary><DiplomacyPage /></RouteWithBoundary> },
 					{ path: 'selectenemy/:unitId', element: <RouteWithBoundary><SelectEnemyPage /></RouteWithBoundary> },
 					{ path: 'unitdefinitions', element: <RouteWithBoundary><UnitDefinitions /></RouteWithBoundary> },
 					{ path: 'help', element: <RouteWithBoundary><Help /></RouteWithBoundary> },
@@ -202,8 +193,6 @@ const router = createBrowserRouter([
 					{ path: 'history', element: <RouteWithBoundary><PlayerHistory /></RouteWithBoundary> },
 					{ path: 'stats', element: <RouteWithBoundary><PlayerStats /></RouteWithBoundary> },
 					{ path: 'profile', element: <RouteWithBoundary><PlayerProfile /></RouteWithBoundary> },
-					{ path: 'shop', element: <RouteWithBoundary><Shop /></RouteWithBoundary> },
-					{ path: 'economy', element: <RouteWithBoundary><Economy /></RouteWithBoundary> },
 				],
 			},
 
@@ -227,8 +216,6 @@ const router = createBrowserRouter([
 			{ path: '/tournaments', element: <RouteWithBoundary><TournamentList /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentDetail /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId/results', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
-			{ path: '/shop', element: <BareRouteRedirect path="shop" /> },
-			{ path: '/economy', element: <BareRouteRedirect path="economy" /> },
 			{ path: '/games/:gameId/spectate', element: <RouteWithBoundary><SpectatorPage /></RouteWithBoundary> },
 			{ path: '/admin/games', element: <RouteWithBoundary><AdminGames /></RouteWithBoundary> },
 			{ path: '/admin/players', element: <RouteWithBoundary><AdminPlayers /></RouteWithBoundary> },

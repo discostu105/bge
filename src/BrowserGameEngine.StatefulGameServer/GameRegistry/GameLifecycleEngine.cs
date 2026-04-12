@@ -23,7 +23,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly IGameEventPublisher eventPublisher;
 		private readonly TimeProvider timeProvider;
 		private readonly TournamentEngine tournamentEngine;
-		private readonly CurrencyService currencyService;
 		private readonly ILogger<GameLifecycleEngine> logger;
 
 		public GameLifecycleEngine(
@@ -37,7 +36,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			IGameEventPublisher eventPublisher,
 			TimeProvider timeProvider,
 			TournamentEngine tournamentEngine,
-			CurrencyService currencyService,
 			ILogger<GameLifecycleEngine> logger
 		) {
 			this.gameRegistry = gameRegistry;
@@ -50,7 +48,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.eventPublisher = eventPublisher;
 			this.timeProvider = timeProvider;
 			this.tournamentEngine = tournamentEngine;
-			this.currencyService = currencyService;
 			this.logger = logger;
 		}
 
@@ -156,17 +153,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			var winnerId = rankings.Count > 0 ? rankings[0].PlayerId : null;
 			var winnerName = winnerId != null && instance.WorldState.Players.TryGetValue(winnerId, out var winner) ? winner.Name : null;
 			var winnerUserId = winnerId != null && instance.WorldState.Players.TryGetValue(winnerId, out var winnerP) ? winnerP.UserId : null;
-			for (int i = 0; i < rankings.Count; i++) {
-				var (playerId, score) = rankings[i];
-				var player = instance.WorldState.Players[playerId];
-				if (player.UserId != null) {
-					try {
-						currencyService.AwardGameReward(player.UserId, i + 1, score);
-					} catch (Exception ex) {
-						logger.LogError(ex, "Failed to award currency to user {UserId} for game {GameId}", player.UserId, record.GameId.Id);
-					}
-				}
-			}
 
 			// Update game record to Finished
 			var updated = record with {

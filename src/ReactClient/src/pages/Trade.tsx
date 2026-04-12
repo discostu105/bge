@@ -14,6 +14,7 @@ import type {
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { useConfirm } from '@/contexts/ConfirmContext'
 
 interface TradeProps {
 	gameId: string
@@ -21,6 +22,7 @@ interface TradeProps {
 
 export function Trade({ gameId }: TradeProps) {
 	const queryClient = useQueryClient()
+	const confirm = useConfirm()
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState<string | null>(null)
 
@@ -319,7 +321,16 @@ export function Trade({ gameId }: TradeProps) {
 										<td className="py-2 px-3 text-xs text-muted-foreground">{relativeTime(offer.sentAt)}</td>
 										<td className="py-2 px-3">
 											<button
-												onClick={() => cancelMut.mutate(offer.offerId)}
+												onClick={async () => {
+													const ok = await confirm({
+														title: 'Cancel trade offer?',
+														description: 'The offer will be withdrawn and the recipient can no longer accept it.',
+														destructive: true,
+														confirmLabel: 'Cancel offer',
+														cancelLabel: 'Keep offer',
+													})
+													if (ok) cancelMut.mutate(offer.offerId)
+												}}
 												disabled={cancelMut.isPending}
 												className="rounded bg-destructive px-2 py-0.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
 											>

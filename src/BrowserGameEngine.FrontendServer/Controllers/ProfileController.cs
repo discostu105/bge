@@ -48,18 +48,30 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(typeof(ProfileViewModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public ActionResult<ProfileViewModel> Get() {
-			if (!currentUserContext.IsValid) return Unauthorized();
-
-			var playerId = currentUserContext.PlayerId!;
-			var player = playerRepository.Get(playerId);
+			if (!currentUserContext.IsValid && currentUserContext.UserId == null) return Unauthorized();
 
 			var user = currentUserContext.UserId != null
 				? userRepository.GetByUserId(currentUserContext.UserId)
 				: null;
-
 			var avatarUrl = user?.GithubLogin != null
 				? $"https://github.com/{user.GithubLogin}.png"
 				: null;
+
+			// Authenticated but no player yet: return a minimal profile so the client
+			// can route to the create-player flow instead of treating it as 401.
+			if (!currentUserContext.IsValid) {
+				return new ProfileViewModel {
+					PlayerName = null,
+					DisplayName = user?.DisplayName,
+					AvatarUrl = avatarUrl,
+					JoinedAt = currentUserContext.UserId != null
+						? globalState.GetUserCreated(currentUserContext.UserId)
+						: null
+				};
+			}
+
+			var playerId = currentUserContext.PlayerId!;
+			var player = playerRepository.Get(playerId);
 
 			var land = resourceRepository.GetAmount(playerId, Id.ResDef("land"));
 			var minerals = resourceRepository.GetAmount(playerId, Id.ResDef("minerals"));

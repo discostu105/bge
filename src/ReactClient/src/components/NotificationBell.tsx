@@ -1,16 +1,25 @@
-import { useState, useRef, useEffect } from 'react'
-import { BellIcon, CheckCircleIcon } from 'lucide-react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
+import {
+  BellIcon,
+  CheckCircleIcon,
+  AlertTriangleIcon,
+  ZapIcon,
+  InfoIcon,
+} from 'lucide-react'
 import { useNotifications } from '@/hooks/useNotifications'
 import type { UseSignalRReturn } from '@/hooks/useSignalR'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/EmptyState'
 
-function notificationIcon(kind: string): string {
+function notificationIcon(kind: string): ReactNode {
   switch (kind) {
-    case 'Warning': return '⚠️'
-    case 'GameEvent': return '⚡'
-    default: return 'ℹ️'
+    case 'Warning':
+      return <AlertTriangleIcon className="h-4 w-4 text-warning" aria-hidden="true" />
+    case 'GameEvent':
+      return <ZapIcon className="h-4 w-4 text-primary" aria-hidden="true" />
+    default:
+      return <InfoIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
   }
 }
 

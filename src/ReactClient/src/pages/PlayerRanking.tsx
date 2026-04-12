@@ -63,16 +63,16 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
         <ApiError message="Failed to load ranking." onRetry={() => void refetch()} />
       ) : (
         <div className="rounded-lg border overflow-x-auto max-w-full">
-          <table className="w-full text-sm">
+          <table className="responsive-table w-full text-sm">
             <thead>
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <th scope="col" className="px-4 py-2 text-left w-10">#</th>
                 <th scope="col" className="px-4 py-2 text-left">Player</th>
                 <th scope="col" className="px-4 py-2 text-right">Land</th>
-                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Minerals</th>
-                <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Gas</th>
-                <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Units</th>
-                <th scope="col" className="px-4 py-2 text-center hidden md:table-cell">Type</th>
+                <th scope="col" className="px-4 py-2 text-right">Minerals</th>
+                <th scope="col" className="px-4 py-2 text-right">Gas</th>
+                <th scope="col" className="px-4 py-2 text-right">Units</th>
+                <th scope="col" className="px-4 py-2 text-center">Type</th>
                 <th scope="col" className="px-4 py-2 text-center">Status</th>
               </tr>
             </thead>
@@ -97,8 +97,8 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                     ? 'bg-primary/10 border-l-2 border-l-primary font-semibold'
                     : 'hover:bg-secondary/20'
                 )}>
-                  <td className="px-4 py-2 font-mono text-muted-foreground">#{i + 1}</td>
-                  <td className="px-4 py-2">
+                  <td data-label="Rank" className="px-4 py-2 font-mono text-muted-foreground">#{i + 1}</td>
+                  <td data-label="Player" className="px-4 py-2">
                     <Link
                       to={`/games/${gameId}/player/${p.playerId}`}
                       className={cn(
@@ -113,17 +113,17 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                       <span className="ml-1.5 text-[10px] text-warning-foreground" title="Under protection">🛡</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-right font-mono">{Math.floor(p.land).toLocaleString()}</td>
-                  <td className="px-4 py-2 text-right font-mono hidden sm:table-cell">
+                  <td data-label="Land" className="px-4 py-2 text-right font-mono">{Math.floor(p.land).toLocaleString()}</td>
+                  <td data-label="Minerals" className="px-4 py-2 text-right font-mono">
                     {p.approxMinerals != null ? Math.floor(p.approxMinerals).toLocaleString() : <span className="text-muted-foreground italic">?</span>}
                   </td>
-                  <td className="px-4 py-2 text-right font-mono hidden sm:table-cell">
+                  <td data-label="Gas" className="px-4 py-2 text-right font-mono">
                     {p.approxGas != null ? Math.floor(p.approxGas).toLocaleString() : <span className="text-muted-foreground italic">?</span>}
                   </td>
-                  <td className="px-4 py-2 text-right font-mono hidden md:table-cell">
+                  <td data-label="Units" className="px-4 py-2 text-right font-mono">
                     {p.approxHomeUnitCount ?? <span className="text-muted-foreground italic">?</span>}
                   </td>
-                  <td className="px-4 py-2 text-center hidden md:table-cell">
+                  <td data-label="Type" className="px-4 py-2 text-center">
                     <span className={cn(
                       'rounded px-1.5 py-0.5 text-[10px] font-medium',
                       p.isAgent ? 'bg-accent text-accent-foreground' : 'bg-info/50 text-info-foreground'
@@ -131,7 +131,7 @@ export function PlayerRanking({ gameId }: PlayerRankingProps) {
                       {p.isAgent ? 'AI' : 'Human'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-center">
+                  <td data-label="Status" className="px-4 py-2 text-center">
                     <span className={cn(
                       'inline-block h-2 w-2 rounded-full',
                       p.isOnline ? 'bg-success' : 'bg-muted-foreground'

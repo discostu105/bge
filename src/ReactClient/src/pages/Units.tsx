@@ -5,8 +5,9 @@ import axios from 'axios'
 import apiClient from '@/api/client'
 import type { UnitsViewModel, UnitViewModel } from '@/api/types'
 import { BuildQueue } from '@/components/BuildQueue'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
+import { SkeletonRow } from '@/components/Skeleton'
+import { AttackDialog } from '@/components/AttackDialog'
 
 interface UnitsProps {
   gameId: string
@@ -71,22 +72,24 @@ function UnitRow({
   unit,
   gameId,
   onMerge,
+  onAttack,
 }: {
   unit: UnitViewModel
   gameId: string
   onMerge: (defId: string) => void
+  onAttack: (unit: UnitViewModel) => void
 }) {
   const [showSplit, setShowSplit] = useState(false)
 
   return (
     <tr className="border-b border-border">
-      <td className="py-2 px-3 font-medium">{unit.definition?.name}</td>
-      <td className="py-2 px-3 text-right tabular-nums">{unit.count.toLocaleString()}</td>
-      <td className="py-2 px-3 text-xs text-muted-foreground hidden sm:table-cell">
+      <td data-label="Unit" className="py-2 px-3 font-medium">{unit.definition?.name}</td>
+      <td data-label="Count" className="py-2 px-3 text-right tabular-nums">{unit.count.toLocaleString()}</td>
+      <td data-label="Stats" className="py-2 px-3 text-xs text-muted-foreground">
         ⚔️{unit.definition?.attack} 🛡️{unit.definition?.defense} ❤️{unit.definition?.hitpoints}
       </td>
       {unit.positionPlayerId && (
-        <td className="py-2 px-3 text-xs">
+        <td data-label="Location" className="py-2 px-3 text-xs">
           <Link
             to={`/games/${gameId}/enemybase/${encodeURIComponent(unit.positionPlayerId)}`}
             className="text-primary hover:underline"
@@ -95,15 +98,16 @@ function UnitRow({
           </Link>
         </td>
       )}
-      <td className="py-2 px-3">
+      <td data-label="" className="py-2 px-3">
         <div className="flex flex-wrap gap-1.5">
           {!unit.positionPlayerId && (
-            <Link
-              to={`/games/${gameId}/selectenemy/${unit.unitId}`}
-              className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90 inline-flex items-center"
+            <button
+              type="button"
+              onClick={() => onAttack(unit)}
+              className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90"
             >
               Attack
-            </Link>
+            </button>
           )}
           <button
             onClick={() => onMerge(unit.definition.id)}
@@ -139,6 +143,7 @@ function UnitRow({
 export function Units({ gameId }: UnitsProps) {
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
+  const [attackUnit, setAttackUnit] = useState<UnitViewModel | null>(null)
 
   const { data, isLoading, error: queryError, refetch } = useQuery<UnitsViewModel>({
     queryKey: ['units', gameId],
@@ -184,7 +189,15 @@ export function Units({ gameId }: UnitsProps) {
       <BuildQueue gameId={gameId} />
 
       {isLoading ? (
-        <PageLoader message="Loading units..." />
+        <div className="rounded-lg border bg-card overflow-hidden" aria-hidden="true">
+          <table className="w-full text-sm">
+            <tbody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonRow key={i} cols={5} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : queryError && !data ? (
         <ApiError message="Failed to load units." onRetry={() => void refetch()} />
       ) : !data || data.units.length === 0 ? (
@@ -222,12 +235,12 @@ export function Units({ gameId }: UnitsProps) {
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="responsive-table w-full text-sm">
                   <thead className="border-b">
                     <tr>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
                       <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Location</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
@@ -242,6 +255,7 @@ export function Units({ gameId }: UnitsProps) {
                           unit={unit}
                           gameId={gameId}
                           onMerge={(defId) => mergeMutation.mutate(defId)}
+                          onAttack={(u) => setAttackUnit(u)}
                         />
                       ))}
                   </tbody>
@@ -265,12 +279,12 @@ export function Units({ gameId }: UnitsProps) {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="responsive-table w-full text-sm">
                   <thead className="border-b">
                     <tr>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
                       <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Stats</th>
+                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
                       <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
@@ -284,6 +298,7 @@ export function Units({ gameId }: UnitsProps) {
                           unit={unit}
                           gameId={gameId}
                           onMerge={(defId) => mergeMutation.mutate(defId)}
+                          onAttack={(u) => setAttackUnit(u)}
                         />
                       ))}
                   </tbody>
@@ -293,6 +308,13 @@ export function Units({ gameId }: UnitsProps) {
           </div>
         </>
       )}
+
+      <AttackDialog
+        open={attackUnit !== null}
+        onOpenChange={(open) => { if (!open) setAttackUnit(null) }}
+        gameId={gameId}
+        unit={attackUnit}
+      />
     </div>
   )
 }
