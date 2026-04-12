@@ -17,8 +17,6 @@ interface LiveStats {
   dailyActiveUsers: number
   runningGames: number
   totalGames: number
-  achievementUnlocksToday: number
-  topAchievements: { gameDefType: string; count: number }[]
 }
 
 export function AdminMetrics() {
@@ -82,7 +80,7 @@ export function AdminMetrics() {
           {/* Games */}
           <div className="rounded-lg border border-border bg-card p-4">
             <h2 className="text-lg font-semibold mb-3">Games</h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
                 <div className="text-3xl font-bold">{stats.totalGames}</div>
                 <div className="text-xs text-muted-foreground">Total</div>
@@ -91,27 +89,8 @@ export function AdminMetrics() {
                 <div className="text-3xl font-bold text-success-foreground">{stats.runningGames}</div>
                 <div className="text-xs text-muted-foreground">Running</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-yellow-500">{stats.achievementUnlocksToday}</div>
-                <div className="text-xs text-muted-foreground">Achievements Today</div>
-              </div>
             </div>
           </div>
-
-          {/* Top Achievement Types */}
-          {stats.topAchievements.length > 0 && (
-            <div className="rounded-lg border border-border bg-card p-4">
-              <h2 className="text-lg font-semibold mb-3">Achievements by Game Type</h2>
-              <div className="space-y-2">
-                {stats.topAchievements.map((a) => (
-                  <div key={a.gameDefType} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground font-mono">{a.gameDefType}</span>
-                    <span className="font-bold">{a.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Tick Info */}
           <div className="rounded-lg border border-border bg-card p-4">

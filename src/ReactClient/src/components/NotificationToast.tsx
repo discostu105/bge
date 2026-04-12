@@ -23,7 +23,6 @@ function toastIcon(type: string): string {
     case 'TradeComplete':
     case 'MarketOrderFilled': return '💰'
     case 'MessageReceived': return '📩'
-    case 'MilestoneUnlocked': return '🏆'
     case 'GameEvent': return '⚡'
     case 'Warning': return '⚠️'
     default: return 'ℹ️'
@@ -39,7 +38,6 @@ function toastRoute(type: string): string | null {
     case 'TradeComplete':
     case 'MarketOrderFilled': return 'market'
     case 'MessageReceived': return 'messages'
-    case 'MilestoneUnlocked': return 'achievements'
     default: return null
   }
 }

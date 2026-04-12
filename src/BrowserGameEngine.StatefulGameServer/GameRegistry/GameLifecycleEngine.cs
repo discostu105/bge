@@ -1,7 +1,6 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Persistence;
-using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.Notifications;
@@ -23,8 +22,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		private readonly UserRepositoryWrite userRepositoryWrite;
 		private readonly IGameEventPublisher eventPublisher;
 		private readonly TimeProvider timeProvider;
-		private readonly MilestoneRepository milestoneRepository;
-		private readonly MilestoneRepositoryWrite milestoneRepositoryWrite;
 		private readonly TournamentEngine tournamentEngine;
 		private readonly CurrencyService currencyService;
 		private readonly ILogger<GameLifecycleEngine> logger;
@@ -39,8 +36,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			UserRepositoryWrite userRepositoryWrite,
 			IGameEventPublisher eventPublisher,
 			TimeProvider timeProvider,
-			MilestoneRepository milestoneRepository,
-			MilestoneRepositoryWrite milestoneRepositoryWrite,
 			TournamentEngine tournamentEngine,
 			CurrencyService currencyService,
 			ILogger<GameLifecycleEngine> logger
@@ -54,8 +49,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			this.userRepositoryWrite = userRepositoryWrite;
 			this.eventPublisher = eventPublisher;
 			this.timeProvider = timeProvider;
-			this.milestoneRepository = milestoneRepository;
-			this.milestoneRepositoryWrite = milestoneRepositoryWrite;
 			this.tournamentEngine = tournamentEngine;
 			this.currencyService = currencyService;
 			this.logger = logger;
@@ -150,20 +143,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 
 			var winnerId = rankings.Count > 0 ? rankings[0].PlayerId : null;
 			var winnerName = winnerId != null && instance.WorldState.Players.TryGetValue(winnerId, out var winner) ? winner.Name : null;
+			var winnerUserId = winnerId != null && instance.WorldState.Players.TryGetValue(winnerId, out var winnerP) ? winnerP.UserId : null;
 			for (int i = 0; i < rankings.Count; i++) {
 				var (playerId, score) = rankings[i];
 				var player = instance.WorldState.Players[playerId];
 				if (player.UserId != null) {
-					globalState.AddAchievement(new PlayerAchievementImmutable(
-						UserId: player.UserId,
-						GameId: record.GameId,
-						PlayerId: playerId,
-						PlayerName: player.Name,
-						FinalRank: i + 1,
-						FinalScore: score,
-						GameDefType: record.GameDefType,
-						FinishedAt: utcNow
-					));
 					try {
 						currencyService.AwardGameReward(player.UserId, i + 1, score);
 					} catch (Exception ex) {
@@ -177,56 +161,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				Status = GameStatus.Finished,
 				ActualEndTime = utcNow,
 				WinnerId = winnerId,
+				WinnerUserId = winnerUserId,
 				VictoryConditionType = victoryConditionType
 			};
 			globalState.UpdateGame(record, updated);
-
-			// Build rank lookup for XP award
-			var rankByUserId = new System.Collections.Generic.Dictionary<string, int>();
-			for (int i = 0; i < rankings.Count; i++) {
-				var player = instance.WorldState.Players[rankings[i].PlayerId];
-				if (player.UserId != null) rankByUserId[player.UserId] = i + 1;
-			}
-
-			// Auto-unlock non-XP milestones, count new unlocks per player, then award XP
-			foreach (var player in instance.WorldState.Players.Values) {
-				if (player.UserId == null) continue;
-				var evaluations = milestoneRepository.GetMilestonesForUser(player.UserId);
-				int newMilestones = 0;
-				foreach (var eval in evaluations) {
-					if (eval.IsUnlocked || eval.CurrentProgress < eval.Definition.TargetProgress) continue;
-					// Defer XP-based milestones until after XP is awarded
-					if (eval.Definition.Category == "progression") continue;
-					milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
-					newMilestones++;
-					playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
-					eventPublisher.PublishToPlayer(player.PlayerId, GameEventTypes.MilestoneUnlocked, new {
-						milestoneId = eval.Definition.Id,
-						name = eval.Definition.Name,
-						icon = eval.Definition.Icon
-					});
-				}
-
-				// Award XP for this game
-				int finalRank = rankByUserId.TryGetValue(player.UserId, out var r) ? r : rankings.Count;
-				long xpEarned = Achievements.XpHelper.ComputeGameXp(finalRank, newMilestones);
-				globalState.AddXpToUser(player.UserId, xpEarned);
-				playerNotificationService.Push(player.UserId, $"+{xpEarned} XP earned!", NotificationKind.GameEvent);
-
-				// Now evaluate XP/level-based (progression) milestones
-				var xpEvaluations = milestoneRepository.GetMilestonesForUser(player.UserId);
-				foreach (var eval in xpEvaluations) {
-					if (eval.Definition.Category != "progression") continue;
-					if (eval.IsUnlocked || eval.CurrentProgress < eval.Definition.TargetProgress) continue;
-					milestoneRepositoryWrite.UnlockIfNew(player.UserId, eval.Definition.Id, utcNow);
-					playerNotificationService.Push(player.UserId, $"Achievement unlocked: {eval.Definition.Name}!", NotificationKind.GameEvent);
-					eventPublisher.PublishToPlayer(player.PlayerId, GameEventTypes.MilestoneUnlocked, new {
-						milestoneId = eval.Definition.Id,
-						name = eval.Definition.Name,
-						icon = eval.Definition.Icon
-					});
-				}
-			}
 
 			// Persist final world state before freeing memory
 			await persistenceService.StoreGameState(record.GameId, instance.WorldState.ToImmutable());

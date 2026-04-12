@@ -61,8 +61,7 @@ namespace BrowserGameEngine.FrontendServer.Services {
 
 			var globalState = new GlobalStateImmutable(
 				Users: users,
-				Games: new List<GameRecordImmutable> { gameRecord },
-				Achievements: new List<PlayerAchievementImmutable>()
+				Games: new List<GameRecordImmutable> { gameRecord }
 			);
 
 			await globalPersistenceService.StoreGlobalState(globalState);

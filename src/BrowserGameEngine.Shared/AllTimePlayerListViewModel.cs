@@ -5,9 +5,7 @@ namespace BrowserGameEngine.Shared {
 		int TotalGames,
 		int TotalWins,
 		int BestRank,
-		decimal TotalScore,
-		long TotalXp = 0,
-		int Level = 1
+		decimal TotalScore
 	);
 
 	public record AllTimePlayerListViewModel(

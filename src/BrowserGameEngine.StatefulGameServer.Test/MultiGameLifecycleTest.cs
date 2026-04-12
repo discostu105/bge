@@ -65,8 +65,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userRepositoryWrite,
 				BrowserGameEngine.StatefulGameServer.Events.NullGameEventPublisher.Instance,
 				TimeProvider.System,
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepository(registry.GlobalState, registry),
-				new BrowserGameEngine.StatefulGameServer.Achievements.MilestoneRepositoryWrite(registry.GlobalState),
 				tournamentEngine,
 				new GameRegistryNs.CurrencyService(registry.GlobalState, new StaticOptionsMonitor<BrowserGameEngine.GameDefinition.ShopConfig>(new BrowserGameEngine.GameDefinition.ShopConfig()), TimeProvider.System, NullLogger<GameRegistryNs.CurrencyService>.Instance),
 				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
@@ -113,16 +111,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			// Winner is set to the highest-scoring player
 			Assert.NotNull(finalRecord1.WinnerId);
 
-			// Achievements written for both game 1 players
-			var achievements = globalState.GetAchievements()
-				.Where(a => a.GameId.Id == "game1")
-				.ToList();
-			Assert.Equal(2, achievements.Count);
-			Assert.Contains(achievements, a => a.UserId == "game1_user0");
-			Assert.Contains(achievements, a => a.UserId == "game1_user1");
-			Assert.Equal(1, achievements.Min(a => a.FinalRank));
-			Assert.Equal(2, achievements.Max(a => a.FinalRank));
-
 			// Game 1 evicted from registry
 			Assert.Null(registry.TryGetInstance(new GameId("game1")));
 
@@ -131,9 +119,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(GameStatus.Active, finalRecord2.Status);
 			Assert.Null(finalRecord2.ActualEndTime);
 			Assert.NotNull(registry.TryGetInstance(new GameId("game2")));
-
-			// No achievements for game 2 (it hasn't ended)
-			Assert.DoesNotContain(globalState.GetAchievements(), a => a.GameId.Id == "game2");
 		}
 	}
 }

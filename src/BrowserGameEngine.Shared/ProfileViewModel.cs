@@ -17,9 +17,5 @@ namespace BrowserGameEngine.Shared {
 		public int BestRank { get; init; }
 		public string? CurrentGameId { get; init; }
 		public DateTime? JoinedAt { get; init; }
-		public long TotalXp { get; init; }
-		public int Level { get; init; }
-		public int LevelProgress { get; init; }
-		public long XpToNextLevel { get; init; }
 	}
 }

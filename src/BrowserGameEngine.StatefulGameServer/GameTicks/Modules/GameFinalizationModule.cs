@@ -54,25 +54,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				.ToList();
 
 			PlayerId? winnerId = rankedPlayers.Count > 0 ? rankedPlayers[0].PlayerId : null;
-
-			for (int i = 0; i < rankedPlayers.Count; i++) {
-				var (pid, player, score) = rankedPlayers[i];
-				var achievement = new PlayerAchievementImmutable(
-					UserId: player.UserId ?? string.Empty,
-					GameId: gameId,
-					PlayerId: pid,
-					PlayerName: player.Name,
-					FinalRank: i + 1,
-					FinalScore: score,
-					GameDefType: gameRecord.GameDefType,
-					FinishedAt: finishedAt
-				);
-				globalState.AddAchievement(achievement);
-			}
+			string? winnerUserId = rankedPlayers.Count > 0 ? rankedPlayers[0].Player.UserId : null;
 
 			var updatedRecord = gameRecord with {
 				Status = GameStatus.Finished,
 				WinnerId = winnerId,
+				WinnerUserId = winnerUserId,
 				ActualEndTime = finishedAt,
 				VictoryConditionType = VictoryConditionTypes.TimeExpired
 			};

@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useParams } from 'react-router'
-import { Link } from 'react-router'
 import { UserIcon, TrophyIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, FlagIcon } from 'lucide-react'
 import axios from 'axios'
 import apiClient from '@/api/client'
-import type { PlayerCrossGameStatsViewModel, PublicPlayerAchievementsViewModel, PlayerLeaderboardContextViewModel } from '@/api/types'
+import type { PlayerCrossGameStatsViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
@@ -100,45 +99,6 @@ function outcomeLabel(isWinner: boolean, gameStatus: string): { label: string; c
   return { label: 'Loss', className: 'bg-red-900/30 text-red-300' }
 }
 
-function PublicAchievementBadges({ userId }: { userId: string }) {
-  const { data } = useQuery<PublicPlayerAchievementsViewModel>({
-    queryKey: ['public-achievements', userId],
-    queryFn: () =>
-      apiClient.get(`/api/players/${encodeURIComponent(userId)}/achievements`).then(r => r.data),
-    retry: false,
-  })
-
-  const badges = data?.achievements ?? []
-  if (badges.length === 0) return null
-
-  const shown = badges.slice(0, 8)
-  const extra = badges.length - 8
-
-  return (
-    <div className="rounded-lg border bg-card p-5 space-y-3">
-      <strong className="text-sm flex items-center gap-1.5">
-        <TrophyIcon className="h-4 w-4 text-yellow-500" />
-        Achievements
-      </strong>
-      <div className="grid grid-cols-4 gap-2">
-        {shown.map((a, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center gap-1 rounded border bg-secondary/20 p-2 text-center"
-            title={`${a.achievementLabel} — ${a.gameName}`}
-          >
-            <span className="text-xl leading-none">{a.achievementIcon}</span>
-            <span className="text-xs font-medium leading-tight line-clamp-2">{a.achievementLabel}</span>
-          </div>
-        ))}
-      </div>
-      {extra > 0 && (
-        <p className="text-xs text-muted-foreground">+{extra} more achievement{extra !== 1 ? 's' : ''}</p>
-      )}
-    </div>
-  )
-}
-
 export function PublicProfile() {
   const { userId } = useParams<{ userId: string }>()
   const [page, setPage] = useState(0)
@@ -148,13 +108,6 @@ export function PublicProfile() {
     queryKey: ['public-profile', userId],
     queryFn: () =>
       apiClient.get(`/api/players/${encodeURIComponent(userId ?? '')}/profile`).then((r) => r.data),
-    enabled: !!userId,
-  })
-
-  const { data: leaderboardCtx } = useQuery<PlayerLeaderboardContextViewModel>({
-    queryKey: ['leaderboard-context', userId],
-    queryFn: () =>
-      apiClient.get(`/api/leaderboard/player/${encodeURIComponent(userId ?? '')}`).then((r) => r.data),
     enabled: !!userId,
   })
 
@@ -196,13 +149,6 @@ export function PublicProfile() {
           <p className="text-sm text-muted-foreground mt-0.5">
             {stats.totalGames} {stats.totalGames === 1 ? 'game' : 'games'} played
           </p>
-          {leaderboardCtx && (
-            <p className="text-xs mt-0.5">
-              <Link to={`/leaderboard?highlight=${encodeURIComponent(userId ?? '')}`} className="text-yellow-500 hover:underline font-medium">
-                🏆 Season rank #{leaderboardCtx.rank}
-              </Link>
-            </p>
-          )}
           {stats.joinedAt && (
             <p className="text-xs text-muted-foreground mt-0.5">
               Member since {relativeTime(stats.joinedAt)}
@@ -344,8 +290,6 @@ export function PublicProfile() {
         </div>
       )}
 
-      {/* Achievement badges — compact 2×4 grid, silent fail if unavailable */}
-      {userId && <PublicAchievementBadges userId={userId} />}
     </div>
   )
 }

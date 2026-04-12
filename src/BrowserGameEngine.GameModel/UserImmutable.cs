@@ -8,7 +8,6 @@ namespace BrowserGameEngine.GameModel {
 		string DisplayName,
 		DateTime Created,
 		bool WantsGameNotification = false,
-		bool AutoJoinNextGame = false,
-		long TotalXp = 0
+		bool AutoJoinNextGame = false
 	);
 }

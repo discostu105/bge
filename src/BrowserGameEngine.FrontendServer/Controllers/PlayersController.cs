@@ -1,10 +1,9 @@
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
-using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using System;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
@@ -19,86 +18,19 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[AllowAnonymous]
 		[HttpGet("all")]
 		public ActionResult<AllTimePlayerListViewModel> GetAll() {
-			var achievements = globalState.GetAchievements();
-			var grouped = achievements.GroupBy(a => a.UserId);
-
-			var players = grouped.Select(g => {
-				var list = g.ToList();
-				var displayName = globalState.GetUserDisplayName(g.Key) ?? list.First().PlayerName;
-				var totalXp = globalState.GetUserTotalXp(g.Key);
-				return new AllTimePlayerEntryViewModel(
-					DisplayName: displayName,
-					UserId: g.Key,
-					TotalGames: list.Count,
-					TotalWins: list.Count(a => a.FinalRank == 1),
-					BestRank: list.Min(a => a.FinalRank),
-					TotalScore: list.Sum(a => a.FinalScore),
-					TotalXp: totalXp,
-					Level: XpHelper.ComputeLevel(totalXp)
-				);
-			})
-			.OrderByDescending(p => p.TotalScore)
-			.ToArray();
-
-			return Ok(new AllTimePlayerListViewModel(players));
-		}
-
-		/// <summary>
-		/// Public achievements for any user, identified by their OAuth user ID.
-		/// Returns empty list when the user has no achievements.
-		/// </summary>
-		[AllowAnonymous]
-		[HttpGet("{userId}/achievements")]
-		public ActionResult<PlayerAchievementsViewModel> GetAchievements(string userId) {
-			var achievements = AchievementMapper.GetForUser(globalState, userId);
-			return Ok(new PlayerAchievementsViewModel(achievements));
+			// Cross-game per-player history tracking was removed with the achievements subsystem.
+			return Ok(new AllTimePlayerListViewModel(Array.Empty<AllTimePlayerEntryViewModel>()));
 		}
 
 		/// <summary>
 		/// Public cross-game stats for any user, identified by their OAuth user ID (e.g. GitHub login).
-		/// Returns NotFound when the user has no game history.
+		/// Returns NotFound because per-game history is no longer tracked.
 		/// </summary>
 		[AllowAnonymous]
 		[HttpGet("{userId}/profile")]
 		public ActionResult<PlayerCrossGameStatsViewModel> GetProfile(string userId) {
-			var achievements = globalState.GetAchievements()
-				.Where(a => a.UserId == userId)
-				.OrderByDescending(a => a.FinishedAt)
-				.ToList();
-
-			if (achievements.Count == 0) return NotFound();
-
-			var gameMap = globalState.GetGames().ToDictionary(g => g.GameId.Id);
-
-			var entries = achievements.Select(a => {
-				gameMap.TryGetValue(a.GameId.Id, out var rec);
-				return new PlayerCrossGameEntry(
-					GameId: a.GameId.Id,
-					GameName: rec?.Name ?? a.GameId.Id,
-					GameStatus: rec?.Status.ToString() ?? "Finished",
-					GameEndTime: rec?.ActualEndTime ?? rec?.EndTime ?? System.DateTime.MinValue,
-					FinalRank: a.FinalRank,
-					FinalScore: a.FinalScore,
-					IsWinner: a.FinalRank == 1,
-					GameDefType: a.GameDefType
-				);
-			}).ToArray();
-
-			var crossGameXp = globalState.GetUserTotalXp(userId);
-			return Ok(new PlayerCrossGameStatsViewModel(
-				UserId: userId,
-				PlayerName: achievements.First().PlayerName,
-				TotalGames: entries.Length,
-				TotalWins: entries.Count(e => e.IsWinner),
-				BestRank: entries.Min(e => e.FinalRank),
-				TotalScore: entries.Sum(e => e.FinalScore),
-				Games: entries,
-				JoinedAt: globalState.GetUserCreated(userId),
-				TotalResourcesGathered: null,
-				TotalXp: crossGameXp,
-				Level: XpHelper.ComputeLevel(crossGameXp)
-			));
+			// Per-game player history tracking was removed with the achievements subsystem.
+			return NotFound();
 		}
-
 	}
 }

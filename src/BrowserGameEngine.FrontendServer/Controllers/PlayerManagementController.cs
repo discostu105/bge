@@ -5,7 +5,6 @@ using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
-using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.AspNetCore.Authorization;
@@ -24,8 +23,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly UserRepositoryWrite userRepositoryWrite;
 		private readonly GlobalState globalState;
-		private readonly MilestoneRepository milestoneRepository;
-		private readonly MilestoneRepositoryWrite milestoneRepositoryWrite;
 
 		public PlayerManagementController(
 			ILogger<PlayerManagementController> logger,
@@ -34,9 +31,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			PlayerRepository playerRepository,
 			PlayerRepositoryWrite playerRepositoryWrite,
 			UserRepositoryWrite userRepositoryWrite,
-			GlobalState globalState,
-			MilestoneRepository milestoneRepository,
-			MilestoneRepositoryWrite milestoneRepositoryWrite) {
+			GlobalState globalState) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.userRepository = userRepository;
@@ -44,8 +39,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.userRepositoryWrite = userRepositoryWrite;
 			this.globalState = globalState;
-			this.milestoneRepository = milestoneRepository;
-			this.milestoneRepositoryWrite = milestoneRepositoryWrite;
 		}
 
 		/// <summary>Returns all players belonging to the authenticated user.</summary>
@@ -141,37 +134,5 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return NoContent();
 		}
 
-		/// <summary>Returns all earned achievements for the authenticated user across all games.</summary>
-		[HttpGet("me/achievements")]
-		[ProducesResponseType(typeof(PlayerAchievementsViewModel), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<PlayerAchievementsViewModel> GetMyAchievements() {
-			if (currentUserContext.UserId == null) return Unauthorized();
-
-			var achievements = AchievementMapper.GetForUser(globalState, currentUserContext.UserId);
-			return Ok(new PlayerAchievementsViewModel(achievements));
-		}
-
-		/// <summary>Returns all milestone achievements for the authenticated user, unlocking any newly completed ones.</summary>
-		[HttpGet("me/milestone-achievements")]
-		[ProducesResponseType(typeof(MilestoneAchievementsViewModel), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public ActionResult<MilestoneAchievementsViewModel> GetMyMilestoneAchievements() {
-			if (currentUserContext.UserId == null) return Unauthorized();
-
-			var userId = currentUserContext.UserId;
-			var evaluations = milestoneRepository.GetMilestonesForUser(userId);
-
-			var now = DateTime.UtcNow;
-			foreach (var m in evaluations) {
-				if (m.CurrentProgress >= m.Definition.TargetProgress) {
-					milestoneRepositoryWrite.UnlockIfNew(userId, m.Definition.Id, now);
-				}
-			}
-
-			// Re-evaluate so newly unlocked milestones reflect their timestamps
-			evaluations = milestoneRepository.GetMilestonesForUser(userId);
-			return Ok(MilestoneMapper.ToViewModel(evaluations));
-		}
 	}
 }

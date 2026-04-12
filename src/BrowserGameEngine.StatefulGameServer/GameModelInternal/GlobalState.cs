@@ -40,12 +40,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		private readonly object _gamesLock = new();
 		private List<GameRecordImmutable> _games = new();
 
-		private readonly object _achievementsLock = new();
-		private List<PlayerAchievementImmutable> _achievements = new();
-
-		private readonly object _milestonesLock = new();
-		private List<UserMilestoneImmutable> _milestones = new();
-
 		private readonly object _tournamentsLock = new();
 		private List<TournamentImmutable> _tournaments = new();
 
@@ -82,52 +76,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 
 		public void SetGames(IEnumerable<GameRecordImmutable> games) {
 			lock (_gamesLock) _games = games.ToList();
-		}
-
-		public IReadOnlyList<PlayerAchievementImmutable> GetAchievements() {
-			lock (_achievementsLock) return _achievements.ToList();
-		}
-
-		public void AddAchievement(PlayerAchievementImmutable achievement) {
-			lock (_achievementsLock) _achievements.Add(achievement);
-		}
-
-		public void SetAchievements(IEnumerable<PlayerAchievementImmutable> achievements) {
-			lock (_achievementsLock) _achievements = achievements.ToList();
-		}
-
-		public IReadOnlyList<UserMilestoneImmutable> GetAllMilestones() {
-			lock (_milestonesLock) return _milestones.ToList();
-		}
-
-		public IReadOnlyList<UserMilestoneImmutable> GetMilestonesForUser(string userId) {
-			lock (_milestonesLock) return _milestones.Where(m => m.UserId == userId).ToList();
-		}
-
-		public bool HasMilestone(string userId, string milestoneId) {
-			lock (_milestonesLock) return _milestones.Any(m => m.UserId == userId && m.MilestoneId == milestoneId);
-		}
-
-		public void AddMilestone(UserMilestoneImmutable milestone) {
-			lock (_milestonesLock) _milestones.Add(milestone);
-		}
-
-		public void SetMilestones(IEnumerable<UserMilestoneImmutable> milestones) {
-			lock (_milestonesLock) _milestones = milestones.ToList();
-		}
-
-		public long GetUserTotalXp(string userId) {
-			Users.TryGetValue(userId, out var user);
-			return user?.TotalXp ?? 0;
-		}
-
-		public void AddXpToUser(string userId, long xp) {
-			if (xp <= 0) return;
-			// Silently skip if the user record doesn't exist (e.g. bot/guest players)
-			if (!Users.ContainsKey(userId)) return;
-			Users.AddOrUpdate(userId,
-				addValueFactory: _ => throw new System.InvalidOperationException($"User {userId} not found when awarding XP"),
-				updateValueFactory: (_, existing) => { existing.TotalXp += xp; return existing; });
 		}
 
 		public IReadOnlyList<TournamentImmutable> GetTournaments() {
@@ -190,8 +138,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			return new GlobalStateImmutable(
 				Users: globalState.Users.ToDictionary(x => x.Key, y => y.Value.ToImmutable()),
 				Games: globalState.GetGames().ToList(),
-				Achievements: globalState.GetAchievements().ToList(),
-				Milestones: globalState.GetAllMilestones().ToList(),
 				Tournaments: globalState.GetTournaments().ToList(),
 				CurrencyLedger: globalState.CurrencyLedger.Values.Select(s => s.ToImmutable()).ToList(),
 				OwnedItems: globalState.GetOwnedItems().ToList(),
@@ -205,8 +151,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 					globalStateImmutable.Users.ToDictionary(x => x.Key, y => y.Value.ToMutable()))
 			};
 			state.SetGames(globalStateImmutable.Games);
-			state.SetAchievements(globalStateImmutable.Achievements);
-			state.SetMilestones(globalStateImmutable.Milestones ?? Enumerable.Empty<UserMilestoneImmutable>());
 			state.SetTournaments(globalStateImmutable.Tournaments ?? Enumerable.Empty<TournamentImmutable>());
 			state.SetOwnedItems(globalStateImmutable.OwnedItems ?? Enumerable.Empty<ItemOwnershipImmutable>());
 			state.SetCurrencyTradeOffers(globalStateImmutable.CurrencyTradeOffers ?? Enumerable.Empty<CurrencyTradeOfferImmutable>());

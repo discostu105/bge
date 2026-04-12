@@ -2,7 +2,6 @@ using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
-using BrowserGameEngine.StatefulGameServer.Achievements;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using Microsoft.AspNetCore.Authorization;
@@ -81,16 +80,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				.FirstOrDefault(i => i.HasPlayer(playerId));
 			var currentGameId = currentInstance?.Record.GameId.Id;
 
-			var userAchievements = currentUserContext.UserId != null
-				? globalState.GetAchievements().Where(a => a.UserId == currentUserContext.UserId).ToList()
-				: new System.Collections.Generic.List<PlayerAchievementImmutable>();
-			var gamesPlayed = userAchievements.Count;
-			var wins = userAchievements.Count(a => a.FinalRank == 1);
-			var bestRank = gamesPlayed > 0 ? userAchievements.Min(a => a.FinalRank) : 0;
-
-			var totalXp = currentUserContext.UserId != null
-				? globalState.GetUserTotalXp(currentUserContext.UserId)
-				: 0;
+			// Per-game history tracking was removed with the achievements subsystem.
+			var gamesPlayed = 0;
+			var wins = 0;
+			var bestRank = 0;
 
 			return new ProfileViewModel {
 				PlayerName = player.Name,
@@ -109,11 +102,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				CurrentGameId = currentGameId,
 				JoinedAt = currentUserContext.UserId != null
 					? globalState.GetUserCreated(currentUserContext.UserId)
-					: null,
-				TotalXp = totalXp,
-				Level = XpHelper.ComputeLevel(totalXp),
-				LevelProgress = XpHelper.LevelProgress(totalXp),
-				XpToNextLevel = XpHelper.XpToNextLevel(totalXp)
+					: null
 			};
 		}
 	}

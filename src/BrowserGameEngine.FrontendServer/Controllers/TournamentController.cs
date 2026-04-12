@@ -50,25 +50,20 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 
 			if (games.Count == 0) return NotFound();
 
-			var gameIds = new HashSet<string>(games.Select(g => g.GameId.Id));
-			var achievements = globalState.GetAchievements()
-				.Where(a => gameIds.Contains(a.GameId.Id))
-				.ToList();
-
-			var rankings = achievements
-				.GroupBy(a => a.UserId ?? a.PlayerId.Id)
-				.Select(group => {
-					var first = group.First();
-					return new TournamentPlayerResultViewModel(
-						Rank: 0,
-						UserId: first.UserId,
-						PlayerName: first.PlayerName,
-						GamesPlayed: group.Count(),
-						Wins: group.Count(a => a.FinalRank == 1),
-						TotalScore: group.Sum(a => a.FinalScore)
-					);
-				})
-				.OrderByDescending(r => r.TotalScore)
+			// Rankings are aggregated from game records only since per-game player history
+			// was removed with the achievements subsystem.
+			var rankings = games
+				.Where(g => g.Status == GameStatus.Finished && g.WinnerUserId != null)
+				.GroupBy(g => g.WinnerUserId!)
+				.Select(group => new TournamentPlayerResultViewModel(
+					Rank: 0,
+					UserId: group.Key,
+					PlayerName: globalState.GetUserDisplayName(group.Key) ?? group.Key,
+					GamesPlayed: group.Count(),
+					Wins: group.Count(),
+					TotalScore: 0
+				))
+				.OrderByDescending(r => r.Wins)
 				.ThenBy(r => r.GamesPlayed)
 				.Select((r, idx) => r with { Rank = idx + 1 })
 				.ToList();
@@ -98,10 +93,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				bool canJoin = (record.Status == GameStatus.Upcoming || record.Status == GameStatus.Active)
 					&& (record.MaxPlayers == 0 || playerCount < record.MaxPlayers);
 
-				string? winnerName = record.WinnerId != null
-					? globalState.GetAchievements()
-						.FirstOrDefault(a => a.GameId == record.GameId && a.PlayerId == record.WinnerId)
-						?.PlayerName
+				string? winnerName = record.WinnerUserId != null
+					? globalState.GetUserDisplayName(record.WinnerUserId)
 					: null;
 
 				return new GameSummaryViewModel(
