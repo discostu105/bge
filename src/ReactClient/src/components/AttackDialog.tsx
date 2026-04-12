@@ -117,7 +117,7 @@ export function AttackDialog({ open, onOpenChange, gameId, unit }: AttackDialogP
                 >
                   {data.attackablePlayers.map((p) => (
                     <option key={p.playerId ?? ''} value={p.playerId ?? ''}>
-                      {p.playerName} ({Math.round(p.score).toLocaleString()})
+                      {p.playerName} ({Math.round(p.land).toLocaleString()})
                     </option>
                   ))}
                 </select>

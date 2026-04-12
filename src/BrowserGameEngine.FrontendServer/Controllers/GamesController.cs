@@ -28,7 +28,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly GameLifecycleEngine gameLifecycleEngine;
 		private readonly IGameEventPublisher gameEventPublisher;
 		private readonly PlayerRepository playerRepository;
-		private readonly ScoreRepository scoreRepository;
+		private readonly ResourceRepository resourceRepository;
 		private readonly UserRepository userRepository;
 
 		public GamesController(
@@ -42,7 +42,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			GameLifecycleEngine gameLifecycleEngine,
 			IGameEventPublisher gameEventPublisher,
 			PlayerRepository playerRepository,
-			ScoreRepository scoreRepository,
+			ResourceRepository resourceRepository,
 			UserRepository userRepository
 		) {
 			this.logger = logger;
@@ -55,7 +55,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameLifecycleEngine = gameLifecycleEngine;
 			this.gameEventPublisher = gameEventPublisher;
 			this.playerRepository = playerRepository;
-			this.scoreRepository = scoreRepository;
+			this.resourceRepository = resourceRepository;
 			this.userRepository = userRepository;
 		}
 
@@ -115,8 +115,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
 				ActualEndTime: record.ActualEndTime,
-				VictoryConditionType: record.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType),
 				TournamentId: record.TournamentId
 			));
 		}
@@ -229,9 +227,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				PlayerCount: GetPlayerCount(updated),
 				WinnerId: updated.WinnerId?.Id,
 				WinnerName: ResolveWinnerName(updated),
-				ActualEndTime: updated.ActualEndTime,
-				VictoryConditionType: updated.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(updated.VictoryConditionType)
+				ActualEndTime: updated.ActualEndTime
 			));
 		}
 
@@ -363,7 +359,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (record.Status != GameStatus.Active)
 				return BadRequest($"Game is not active (current status: {record.Status}).");
 
-			await gameLifecycleEngine.FinalizeGameEarlyAsync(record, timeProvider.GetUtcNow().UtcDateTime, BrowserGameEngine.GameDefinition.VictoryConditionTypes.AdminFinalized);
+			await gameLifecycleEngine.FinalizeGameEarlyAsync(record, timeProvider.GetUtcNow().UtcDateTime);
 			logger.LogInformation("Game {GameId} manually finalized by {UserId}", gameId, currentUserContext.UserId);
 			return Ok();
 		}
@@ -387,10 +383,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				var snapshot = instance.WorldState.ToImmutable();
 				var ranked = snapshot.Players
 					.Select(kvp => {
-						kvp.Value.State.Resources.TryGetValue(gameDef.ScoreResource, out var score);
-						return (PlayerId: kvp.Key, Player: kvp.Value, Score: score);
+						kvp.Value.State.Resources.TryGetValue(ResourceRepository.LandResource, out var land);
+						return (PlayerId: kvp.Key, Player: kvp.Value, Land: land);
 					})
-					.OrderByDescending(x => x.Score)
+					.OrderByDescending(x => x.Land)
 					.ToList();
 				for (int i = 0; i < ranked.Count; i++) {
 					var entry = ranked[i];
@@ -398,7 +394,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 						Rank: i + 1,
 						PlayerName: entry.Player.Name,
 						PlayerId: entry.PlayerId.Id,
-						Score: entry.Score,
+						Land: entry.Land,
 						IsWinner: i == 0
 					));
 					if (currentUserContext.IsValid && entry.Player.UserId == currentUserContext.UserId) {
@@ -415,8 +411,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: record.EndTime,
 				Standings: standings,
 				CurrentPlayerId: currentPlayerId,
-				VictoryConditionType: record.VictoryConditionType,
-				VictoryConditionLabel: GetVictoryConditionLabel(record.VictoryConditionType),
 				TournamentId: record.TournamentId
 			));
 		}
@@ -431,10 +425,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var players = playerRepository.GetAll()
 				.Select(p => (
 					player: p,
-					score: scoreRepository.GetScore(p.PlayerId),
+					land: resourceRepository.GetLand(p.PlayerId),
 					name: p.UserId != null ? userRepository.GetDisplayNameByUserId(p.UserId) ?? p.Name : p.Name
 				))
-				.OrderByDescending(x => x.score)
+				.OrderByDescending(x => x.land)
 				.ToList();
 
 			return players
@@ -442,7 +436,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					Rank: idx + 1,
 					PlayerId: x.player.PlayerId.Id,
 					PlayerName: x.name,
-					Score: x.score,
+					Land: x.land,
 					IsCurrentPlayer: x.player.PlayerId == currentUserContext.PlayerId
 				))
 				.ToList();
@@ -483,7 +477,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				WinnerId: record.WinnerId?.Id,
 				WinnerName: winnerName,
 				IsPlayerEnrolled: isPlayerEnrolled,
-				VictoryConditionType: record.VictoryConditionType,
 				DiscordWebhookUrl: record.DiscordWebhookUrl,
 				CreatedByUserId: record.CreatedByUserId,
 				TournamentId: record.TournamentId
@@ -494,11 +487,5 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			return instance?.PlayerCount ?? 0;
 		}
-
-		private static string? GetVictoryConditionLabel(string? victoryConditionType) => victoryConditionType switch {
-			BrowserGameEngine.GameDefinition.VictoryConditionTypes.TimeExpired => "Time expired",
-			BrowserGameEngine.GameDefinition.VictoryConditionTypes.AdminFinalized => "Admin finalized",
-			_ => null
-		};
 	}
 }

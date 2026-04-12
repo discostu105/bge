@@ -29,7 +29,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				TotalGames: 0,
 				TotalWins: 0,
 				BestRank: 0,
-				TotalScore: 0,
+				TotalLand: 0,
 				Games: Array.Empty<PlayerGameHistoryEntryViewModel>()
 			);
 			return Ok(vm);

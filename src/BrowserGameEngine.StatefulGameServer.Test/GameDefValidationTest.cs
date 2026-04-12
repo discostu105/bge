@@ -14,18 +14,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void InvalidGameDefScoreResource() {
-			var gameDef = new GameDef {
-				Resources = new List<ResourceDef> {
-					new ResourceDef(Id.ResDef("res1"), ""),
-					new ResourceDef(Id.ResDef("res2"), "")
-				},
-				ScoreResource = Id.ResDef("res3"),
-			};
-			Assert.Throws<InvalidGameDefException>(() => new GameDefVerifier().Verify(gameDef));
-		}
-
-		[Fact]
 		public void InvalidGameDefResourceUniqueness() {
 			var gameDef = new GameDef {
 				Resources = new List<ResourceDef> {

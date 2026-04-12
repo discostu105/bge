@@ -17,13 +17,11 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				},
 
 				Resources = new List<ResourceDef> {
-					new ResourceDef(Id.ResDef("res1"), "res1"),
+					new ResourceDef(Id.ResDef("res1"), "res1") { IsTradeable = false },
 					new ResourceDef(Id.ResDef("res2"), "res2"),
 					new ResourceDef(Id.ResDef("res3"), "res3"),
-					new ResourceDef(Id.ResDef("land"), "land")
+					new ResourceDef(Id.ResDef("land"), "land") { IsTradeable = false }
 				},
-
-				ScoreResource = Id.ResDef("res1"),
 
 				TickDuration = TimeSpan.FromSeconds(20),
 

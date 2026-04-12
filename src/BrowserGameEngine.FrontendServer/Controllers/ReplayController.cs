@@ -24,6 +24,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
+		private static readonly ResourceDefId LandResource = ResourceRepository.LandResource;
+
 		/// <summary>Returns the replay data for a specific game, including final standings and battle events for the current player.</summary>
 		/// <param name="gameId">The game identifier.</param>
 		[HttpGet("{gameId}")]
@@ -41,19 +43,19 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			if (data.WorldState != null) {
 				var ranked = data.WorldState.Players
 					.Select(kvp => {
-						kvp.Value.State.Resources.TryGetValue(gameDef.ScoreResource, out var score);
-						return (PlayerId: kvp.Key, Player: kvp.Value, Score: score);
+						kvp.Value.State.Resources.TryGetValue(LandResource, out var land);
+						return (PlayerId: kvp.Key, Player: kvp.Value, Land: land);
 					})
-					.OrderByDescending(x => x.Score)
+					.OrderByDescending(x => x.Land)
 					.ToList();
 				for (int i = 0; i < ranked.Count; i++) {
-					var (pid, player, score) = ranked[i];
+					var (pid, player, land) = ranked[i];
 					finalStandings.Add(new ReplayPlayerViewModel(
 						PlayerId: pid.Id,
 						PlayerName: player.Name,
 						Race: player.PlayerType.Id,
 						FinalRank: i + 1,
-						FinalScore: score
+						FinalLand: land
 					));
 					if (player.UserId == currentUserContext.UserId) {
 						currentPlayerFromWorld = pid;

@@ -43,8 +43,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var playerId = currentUserContext.PlayerId!;
 			var currentLand = resourceRepository.GetAmount(playerId, Id.ResDef("land"));
 			return new PlayerResourcesViewModel {
-				PrimaryResource = CostViewModel.Create(resourceRepository.GetPrimaryResource(playerId)),
-				SecondaryResources = CostViewModel.Create(resourceRepository.GetSecondaryResources(playerId)),
+				PrimaryResource = CostViewModel.Create(resourceRepository.GetLandResource(playerId)),
+				SecondaryResources = CostViewModel.Create(resourceRepository.GetNonLandResources(playerId)),
 				ColonizationCostPerLand = ColonizeRepositoryWrite.GetCostPerLand(currentLand)
 			};
 		}

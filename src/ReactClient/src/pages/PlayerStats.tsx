@@ -59,7 +59,7 @@ export function PlayerStats() {
 			highlight: winRatePct >= 50 ? 'text-green-400' : undefined,
 		},
 		{ label: 'Avg Rank', value: `#${data.avgFinalRank.toFixed(1)}` },
-		{ label: 'Avg Score', value: data.avgScorePerGame.toLocaleString() },
+		{ label: 'Avg Land', value: data.avgLandPerGame.toLocaleString() },
 		{ label: 'Avg Duration', value: formatDurationMs(data.avgGameDurationMs) },
 	]
 

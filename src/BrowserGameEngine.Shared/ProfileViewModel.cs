@@ -5,7 +5,6 @@ namespace BrowserGameEngine.Shared {
 		public string? PlayerName { get; init; }
 		public string? DisplayName { get; init; }
 		public string? AvatarUrl { get; init; }
-		public decimal Score { get; init; }
 		public decimal Land { get; init; }
 		public decimal Minerals { get; init; }
 		public decimal Gas { get; init; }

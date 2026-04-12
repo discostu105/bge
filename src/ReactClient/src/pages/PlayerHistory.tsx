@@ -37,7 +37,7 @@ export function PlayerHistory() {
           { label: 'Games Played', value: data.totalGames, color: '' },
           { label: 'Wins', value: data.totalWins, color: 'text-warning-foreground' },
           { label: 'Best Rank', value: `#${data.bestRank}`, color: '' },
-          { label: 'Total Score', value: Number(data.totalScore).toLocaleString(), color: '' },
+          { label: 'Total Land', value: Number(data.totalLand).toLocaleString(), color: '' },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-lg border border-border bg-card p-3 text-center">
             <div className={`text-2xl font-bold ${color}`}>{value}</div>
@@ -55,7 +55,7 @@ export function PlayerHistory() {
               <th scope="col" className="px-3 py-2 text-left font-medium">Ended</th>
               <th scope="col" className="px-3 py-2 text-left font-medium hidden sm:table-cell">Duration</th>
               <th scope="col" className="px-3 py-2 text-left font-medium">Rank</th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Land</th>
               <th scope="col" className="px-3 py-2 text-right font-medium hidden sm:table-cell">Players</th>
               <th scope="col" className="px-3 py-2 text-right font-medium hidden sm:table-cell"></th>
             </tr>
@@ -91,7 +91,7 @@ export function PlayerHistory() {
                   </span>
                 </td>
                 <td className="px-3 py-2 text-right font-mono">
-                  {Number(entry.finalScore).toLocaleString()}
+                  {Number(entry.finalLand).toLocaleString()}
                 </td>
                 <td className="px-3 py-2 text-right text-muted-foreground hidden sm:table-cell">
                   {entry.playersInGame}

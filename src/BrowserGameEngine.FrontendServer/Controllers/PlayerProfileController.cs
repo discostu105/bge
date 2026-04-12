@@ -22,7 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly PlayerRepository playerRepository;
 		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly UserRepository userRepository;
-		private readonly ScoreRepository scoreRepository;
+		private readonly ResourceRepository resourceRepository;
 		private readonly OnlineStatusRepository onlineStatusRepository;
 
 		public PlayerProfileController(ILogger<PlayerProfileController> logger
@@ -30,7 +30,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				, PlayerRepository playerRepository
 				, PlayerRepositoryWrite playerRepositoryWrite
 				, UserRepository userRepository
-				, ScoreRepository scoreRepository
+				, ResourceRepository resourceRepository
 				, OnlineStatusRepository onlineStatusRepository
 			) {
 			this.logger = logger;
@@ -38,7 +38,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.playerRepository = playerRepository;
 			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.userRepository = userRepository;
-			this.scoreRepository = scoreRepository;
+			this.resourceRepository = resourceRepository;
 			this.onlineStatusRepository = onlineStatusRepository;
 		}
 
@@ -52,7 +52,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new PlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
-				Score = scoreRepository.GetScore(player.PlayerId),
+				Land = resourceRepository.GetLand(player.PlayerId),
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
 				IsOnline = onlineStatusRepository.IsOnline(player.PlayerId),
 				LastOnline = player.LastOnline,

@@ -18,12 +18,10 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				},
 
 				Resources = new List<ResourceDef> {
-					new ResourceDef(Id.ResDef("land"), "Land"),
+					new ResourceDef(Id.ResDef("land"), "Land") { IsTradeable = false },
 					new ResourceDef(Id.ResDef("minerals"), "Mineralien"),
 					new ResourceDef(Id.ResDef("gas"), "Gas")
 				},
-
-				ScoreResource = Id.ResDef("land"),
 
 				TickDuration = TimeSpan.FromSeconds(30),
 
@@ -40,12 +38,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					new GameTickModuleDef("protection:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("upgradetimer:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("buildqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
-					new GameTickModuleDef("victorycondition:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("gamefinalization:1", new Dictionary<string, string> { }.ToFrozenDictionary())
-				},
-
-				VictoryConditions = new List<VictoryConditionDef> {
-					new VictoryConditionDef(VictoryConditionTypes.TimeExpired, new Dictionary<string, string> { })
 				},
 
 				Assets = new List<AssetDef> {

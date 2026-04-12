@@ -12,11 +12,11 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private static readonly ResourceDefId MineralsId = new ResourceDefId("minerals");
 		private static readonly ResourceDefId GasId = new ResourceDefId("gas");
 
-		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ScoreRepository scoreRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository) {
+		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ResourceRepository resourceRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository) {
 			return new PublicPlayerViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
-				Score = scoreRepository.GetScore(player.PlayerId),
+				Land = resourceRepository.GetLand(player.PlayerId),
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
 				UserDisplayName = player.UserId != null ? userRepository.GetDisplayNameByUserId(player.UserId) : null,
 				IsAgent = player.ApiKeyHash != null,
@@ -25,8 +25,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			};
 		}
 
-		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ScoreRepository scoreRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository, bool isOwnPlayer) {
-			var vm = player.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository);
+		public static PublicPlayerViewModel ToPublicPlayerViewModel(this PlayerImmutable player, ResourceRepository resourceRepository, UserRepository userRepository, OnlineStatusRepository onlineStatusRepository, bool isOwnPlayer) {
+			var vm = player.ToPublicPlayerViewModel(resourceRepository, userRepository, onlineStatusRepository);
 			if (isOwnPlayer) {
 				player.State.Resources.TryGetValue(MineralsId, out var exactMinerals);
 				player.State.Resources.TryGetValue(GasId, out var exactGas);

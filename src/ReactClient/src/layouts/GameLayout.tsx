@@ -11,7 +11,6 @@ import { TutorialOverlay } from '@/components/TutorialOverlay'
 import { PageLoader } from '@/components/PageLoader'
 import { useSignalR } from '@/hooks/useSignalR'
 import { cn } from '@/lib/utils'
-import { vcText, vcBadgeCss } from '@/lib/victory'
 import type { GameDetailViewModel } from '@/api/types'
 
 function GameEndedBanner({ game }: { game: GameDetailViewModel }) {
@@ -24,11 +23,6 @@ function GameEndedBanner({ game }: { game: GameDetailViewModel }) {
           <><strong>{game.winnerName} wins!</strong></>
         ) : (
           <strong>Game Over!</strong>
-        )}
-        {game.victoryConditionType && (
-          <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded ${vcBadgeCss(game.victoryConditionType)}`}>
-            {vcText(game.victoryConditionType)}
-          </span>
         )}
         {' — '}
         <NavLink to="results" className="underline hover:opacity-80">View final results</NavLink>
@@ -67,7 +61,6 @@ interface GameFinalizedPayload {
   gameId: string
   winnerId: string | null
   winnerName: string | null
-  victoryConditionType: string | null
 }
 
 function GameOverOverlay({ payload, gameId }: { payload: GameFinalizedPayload; gameId: string }) {
@@ -90,11 +83,6 @@ function GameOverOverlay({ payload, gameId }: { payload: GameFinalizedPayload; g
         <h2 className="text-3xl font-bold text-white">
           {payload.winnerName ? `${payload.winnerName} Wins!` : 'Game Over!'}
         </h2>
-        {payload.victoryConditionType && (
-          <span className={`inline-block text-sm font-bold px-4 py-1.5 rounded ${vcBadgeCss(payload.victoryConditionType)}`}>
-            {vcText(payload.victoryConditionType)}
-          </span>
-        )}
         <p className="text-sm text-gray-300">
           Redirecting to results in {countdown}s...
         </p>

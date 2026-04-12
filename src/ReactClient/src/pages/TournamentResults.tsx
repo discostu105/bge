@@ -36,7 +36,7 @@ export function TournamentResults() {
                 <th className="pb-2 pr-4">Player</th>
                 <th className="pb-2 pr-4">Games</th>
                 <th className="pb-2 pr-4">Wins</th>
-                <th className="pb-2">Score</th>
+                <th className="pb-2">Land</th>
               </tr>
             </thead>
             <tbody>
@@ -51,7 +51,7 @@ export function TournamentResults() {
                   <td className="py-2 pr-4">{entry.playerName}</td>
                   <td className="py-2 pr-4">{entry.gamesPlayed}</td>
                   <td className="py-2 pr-4">{entry.wins}</td>
-                  <td className="py-2">{entry.totalScore.toLocaleString()}</td>
+                  <td className="py-2">{entry.totalLand.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

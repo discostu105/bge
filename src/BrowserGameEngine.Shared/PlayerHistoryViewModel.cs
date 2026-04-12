@@ -9,7 +9,7 @@ namespace BrowserGameEngine.Shared {
 		DateTime EndTime,
 		DateTime FinishedAt,
 		int FinalRank,
-		decimal FinalScore,
+		decimal FinalLand,
 		int PlayersInGame,
 		bool IsWin
 	);
@@ -18,7 +18,7 @@ namespace BrowserGameEngine.Shared {
 		int TotalGames,
 		int TotalWins,
 		int BestRank,
-		decimal TotalScore,
+		decimal TotalLand,
 		PlayerGameHistoryEntryViewModel[] Games
 	);
 }

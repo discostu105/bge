@@ -22,7 +22,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ILogger<BattleController> logger;
 		private readonly GameDef gameDef;
 		private readonly CurrentUserContext currentUserContext;
-		private readonly ScoreRepository scoreRepository;
+		private readonly ResourceRepository resourceRepository;
 		private readonly PlayerRepository playerRepository;
 		private readonly UserRepository userRepository;
 		private readonly UnitRepository unitRepository;
@@ -34,7 +34,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public BattleController(ILogger<BattleController> logger
 				, GameDef gameDef
 				, CurrentUserContext currentUserContext
-				, ScoreRepository scoreRepository
+				, ResourceRepository resourceRepository
 				, PlayerRepository playerRepository
 				, UserRepository userRepository
 				, UnitRepository unitRepository
@@ -46,7 +46,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.logger = logger;
 			this.gameDef = gameDef;
 			this.currentUserContext = currentUserContext;
-			this.scoreRepository = scoreRepository;
+			this.resourceRepository = resourceRepository;
 			this.playerRepository = playerRepository;
 			this.userRepository = userRepository;
 			this.unitRepository = unitRepository;
@@ -63,7 +63,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<SelectEnemyViewModel> AttackablePlayers() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			return new SelectEnemyViewModel {
-				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId!).Select(p => p.ToPublicPlayerViewModel(scoreRepository, userRepository, onlineStatusRepository)).ToList()
+				AttackablePlayers = playerRepository.GetAttackablePlayers(currentUserContext.PlayerId!).Select(p => p.ToPublicPlayerViewModel(resourceRepository, userRepository, onlineStatusRepository)).ToList()
 			};
 		}
 

@@ -42,7 +42,8 @@ namespace BrowserGameEngine.GameDefinition {
 
 		private void VerifyResources(GameDef gameDef) {
 			ValidateAllUnique(gameDef.Resources.Select(x => x.Id.Id), "Resources");
-			gameDef.ValidateResourceDefId(gameDef.ScoreResource, "ScoreResource");
+			var tradeableCount = gameDef.Resources.Count(x => x.IsTradeable);
+			if (tradeableCount != 2) throw new InvalidGameDefException($"Expected exactly 2 tradeable resources, found {tradeableCount}. TradeResource picks 'the other tradeable resource' automatically and breaks otherwise.");
 		}
 
 		public static void ValidateAllUnique(IEnumerable<string> values, string name) {

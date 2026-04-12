@@ -106,16 +106,16 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				.ToList();
 
 			foreach (var record in toFinalize) {
-				await FinalizeGameAsync(record, utcNow, VictoryConditionTypes.TimeExpired);
+				await FinalizeGameAsync(record, utcNow);
 			}
 			return toFinalize.Count > 0;
 		}
 
-		public Task FinalizeGameEarlyAsync(GameRecordImmutable record, DateTime utcNow, string victoryConditionType = VictoryConditionTypes.AdminFinalized) {
-			return FinalizeGameAsync(record, utcNow, victoryConditionType);
+		public Task FinalizeGameEarlyAsync(GameRecordImmutable record, DateTime utcNow) {
+			return FinalizeGameAsync(record, utcNow);
 		}
 
-		private async Task FinalizeGameAsync(GameRecordImmutable record, DateTime utcNow, string victoryConditionType = VictoryConditionTypes.TimeExpired) {
+		private async Task FinalizeGameAsync(GameRecordImmutable record, DateTime utcNow) {
 			if (!_finalizingGames.TryAdd(record.GameId.Id, true)) {
 				logger.LogWarning("Game {GameId} is already being finalized — skipping duplicate finalization", record.GameId.Id);
 				return;
@@ -123,7 +123,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			var instance = gameRegistry.TryGetInstance(record.GameId);
 			if (instance == null) {
 				// Instance already gone; update the record only
-				globalState.UpdateGame(record, record with { Status = GameStatus.Finished, ActualEndTime = utcNow, VictoryConditionType = victoryConditionType });
+				globalState.UpdateGame(record, record with { Status = GameStatus.Finished, ActualEndTime = utcNow });
 				logger.LogWarning("Finalizing game {GameId}: no in-memory instance found, updated record only", record.GameId.Id);
 				return;
 			}
@@ -159,8 +159,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				Status = GameStatus.Finished,
 				ActualEndTime = utcNow,
 				WinnerId = winnerId,
-				WinnerUserId = winnerUserId,
-				VictoryConditionType = victoryConditionType
+				WinnerUserId = winnerUserId
 			};
 			globalState.UpdateGame(record, updated);
 
@@ -178,8 +177,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 			eventPublisher.PublishToGame(GameEventTypes.GameFinalized, new {
 				gameId = record.GameId.Id,
 				winnerId = winnerId?.Id,
-				winnerName,
-				victoryConditionType
+				winnerName
 			});
 
 			// Remove instance from registry to free memory
@@ -195,15 +193,8 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				logger.LogError(ex, "Tournament progression failed for game {GameId}", record.GameId.Id);
 			}
 
-			var victoryLabel = GetVictoryConditionLabel(victoryConditionType);
-			await notificationService.NotifyGameFinishedAsync(updated, winnerId, winnerName, rankings.Count, victoryLabel);
+			await notificationService.NotifyGameFinishedAsync(updated, winnerId, winnerName, rankings.Count);
 		}
-
-		private static string? GetVictoryConditionLabel(string victoryConditionType) => victoryConditionType switch {
-			VictoryConditionTypes.TimeExpired => "Time expired",
-			VictoryConditionTypes.AdminFinalized => "Admin finalized",
-			_ => null
-		};
 
 	}
 }

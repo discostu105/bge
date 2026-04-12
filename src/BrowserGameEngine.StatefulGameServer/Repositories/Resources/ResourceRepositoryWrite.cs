@@ -54,7 +54,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		public void TradeResource(TradeResourceCommand cmd) {
 			var tradeableResources = gameDef.Resources
-				.Where(r => r.Id != gameDef.ScoreResource)
+				.Where(r => r.IsTradeable)
 				.Select(r => r.Id)
 				.ToList();
 

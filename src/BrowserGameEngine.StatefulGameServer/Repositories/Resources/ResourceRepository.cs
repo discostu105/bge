@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BrowserGameEngine.GameDefinition;
@@ -7,6 +7,8 @@ using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 
 namespace BrowserGameEngine.StatefulGameServer {
 	public class ResourceRepository {
+		public static readonly ResourceDefId LandResource = Id.ResDef("land");
+
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
 		private readonly GameDef gameDef;
@@ -22,9 +24,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var playerRes = Res(playerId);
 			foreach(var res in cost.Resources) {
 				if (res.Value < 0) throw new ArgumentOutOfRangeException("Resource cost cannot be negative.");
-				if (GetAmount(playerId, res.Key) < res.Value) return false; // to little resources
+				if (GetAmount(playerId, res.Key) < res.Value) return false;
 			}
-			return true; // enough resources
+			return true;
 		}
 
 		public decimal GetAmount(PlayerId playerId, ResourceDefId resourceDefId) {
@@ -34,13 +36,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return 0;
 		}
 
-		public Cost GetPrimaryResource(PlayerId playerId) {
-			var res = Res(playerId).Single(x => x.Key == gameDef.ScoreResource);
-			return Cost.FromSingle(res.Key, res.Value);
+		public decimal GetLand(PlayerId playerId) => GetAmount(playerId, LandResource);
+
+		public Cost GetLandResource(PlayerId playerId) {
+			return Cost.FromSingle(LandResource, GetAmount(playerId, LandResource));
 		}
 
-		public Cost GetSecondaryResources(PlayerId playerId) {
-			return Cost.FromList(Res(playerId).Where(x => x.Key != gameDef.ScoreResource));
+		public Cost GetNonLandResources(PlayerId playerId) {
+			return Cost.FromList(Res(playerId).Where(x => x.Key != LandResource));
 		}
 	}
 }

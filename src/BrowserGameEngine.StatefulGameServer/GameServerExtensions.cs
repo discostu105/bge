@@ -37,7 +37,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<OnlineStatusRepository>();
 			services.AddSingleton<ResourceRepository>();
 			services.AddSingleton<ResourceRepositoryWrite>();
-			services.AddSingleton<ScoreRepository>();
 			services.AddSingleton<AllianceRepository>();
 			services.AddSingleton<AllianceRepositoryWrite>();
 			services.AddSingleton<AllianceChatRepository>();
@@ -49,7 +48,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<AllianceElectionRepository>();
 			services.AddSingleton<AllianceElectionRepositoryWrite>();
 			services.AddSingleton<ChatRepositoryWrite>();
-			services.AddSingleton<AllianceScoreRepository>();
 			services.AddSingleton<AssetRepository>();
 			services.AddSingleton<AssetRepositoryWrite>();
 			services.AddSingleton<UnitRepository>();
@@ -86,7 +84,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			services.AddSingleton<IGameTickModule, BuildQueueModule>();
 			services.AddSingleton<IGameTickModule, ResourceHistoryModule>();
 			services.AddSingleton<IGameTickModule, ElectionTickModule>();
-			services.AddSingleton<IGameTickModule, VictoryConditionModule>();
 			services.AddSingleton<IGameTickModule, GameFinalizationModule>();
 			services.AddSingleton<IGameTickModule, SpectatorTickModule>();
 			services.AddSingleton<GameTickModuleRegistry>(); // Modules need to be registered before this

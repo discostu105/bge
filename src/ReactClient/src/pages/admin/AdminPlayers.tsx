@@ -14,7 +14,7 @@ interface AdminPlayerEntry {
   lastOnline: string | null
   isBanned: boolean
   allianceId: string | null
-  score: number
+  land: number
   unitCount: number
   assetCount: number
 }
@@ -137,7 +137,7 @@ export function AdminPlayers() {
               <tr className="border-b border-border bg-muted/40">
                 <th scope="col" className="px-3 py-2 text-left font-medium">Name</th>
                 <th scope="col" className="px-3 py-2 text-left font-medium">Type</th>
-                <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Land</th>
                 <th scope="col" className="px-3 py-2 text-right font-medium hidden md:table-cell">Units</th>
                 <th scope="col" className="px-3 py-2 text-left font-medium hidden md:table-cell">Last Online</th>
                 <th scope="col" className="px-3 py-2 text-left font-medium">Status</th>
@@ -150,7 +150,7 @@ export function AdminPlayers() {
                   <tr key={player.playerId} className="border-b border-border/50">
                     <td className="px-3 py-2 font-medium">{player.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{player.playerType}</td>
-                    <td className="px-3 py-2 text-right">{player.score}</td>
+                    <td className="px-3 py-2 text-right">{player.land}</td>
                     <td className="px-3 py-2 text-right text-muted-foreground hidden md:table-cell">{player.unitCount}</td>
                     <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">
                       {player.lastOnline ? new Date(player.lastOnline).toLocaleString() : 'Never'}

@@ -11,11 +11,11 @@ import {
 } from 'recharts'
 import type { PlayerStatsGameEntry } from '@/api/types'
 
-function buildScoreData(games: PlayerStatsGameEntry[]) {
+function buildLandData(games: PlayerStatsGameEntry[]) {
 	return games.map((g, i) => ({
 		index: i + 1,
 		gameName: g.gameName,
-		finalScore: g.finalScore,
+		finalLand: g.finalLand,
 		finalRank: g.finalRank,
 	}))
 }
@@ -42,16 +42,16 @@ function buildRankData(games: PlayerStatsGameEntry[]) {
 	}))
 }
 
-function ScoreChart({ data }: { data: ReturnType<typeof buildScoreData> }) {
+function LandChart({ data }: { data: ReturnType<typeof buildLandData> }) {
 	return (
 		<div className="rounded-lg border bg-card p-4">
-			<h2 className="font-semibold mb-3 text-sm">Score Progression</h2>
-			<ResponsiveContainer width="100%" height={220} aria-label="Score progression over games">
+			<h2 className="font-semibold mb-3 text-sm">Land Progression</h2>
+			<ResponsiveContainer width="100%" height={220} aria-label="Land progression over games">
 				<LineChart data={data}>
 					<XAxis dataKey="index" tick={{ fontSize: 11 }} />
 					<YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
 					<Tooltip />
-					<Line type="monotone" dataKey="finalScore" stroke="#3b82f6" dot={false} name="Score" />
+					<Line type="monotone" dataKey="finalLand" stroke="#3b82f6" dot={false} name="Land" />
 				</LineChart>
 			</ResponsiveContainer>
 		</div>
@@ -96,14 +96,14 @@ interface PlayerStatsChartsProps {
 }
 
 export function PlayerStatsCharts({ games }: PlayerStatsChartsProps) {
-	const scoreData = buildScoreData(games)
+	const landData = buildLandData(games)
 	const winRateTrend = buildWinRateTrendData(games)
 	const rankData = buildRankData(games)
 
 	return (
 		<>
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-				<ScoreChart data={scoreData} />
+				<LandChart data={landData} />
 				<WinRateChart data={winRateTrend} />
 			</div>
 			{games.length > 1 && <RankChart data={rankData} />}

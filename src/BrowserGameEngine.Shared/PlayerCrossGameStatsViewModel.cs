@@ -7,7 +7,7 @@ namespace BrowserGameEngine.Shared {
 		string GameStatus,
 		DateTime GameEndTime,
 		int FinalRank,
-		decimal FinalScore,
+		decimal FinalLand,
 		bool IsWinner,
 		string GameDefType = ""
 	);
@@ -18,7 +18,7 @@ namespace BrowserGameEngine.Shared {
 		int TotalGames,
 		int TotalWins,
 		int BestRank,
-		decimal TotalScore,
+		decimal TotalLand,
 		PlayerCrossGameEntry[] Games,
 		DateTime? JoinedAt = null,
 		decimal? TotalResourcesGathered = null

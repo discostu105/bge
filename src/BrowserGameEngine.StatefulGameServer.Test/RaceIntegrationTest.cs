@@ -233,7 +233,7 @@ public class RaceIntegrationTest
 		repoWrite.CreatePlayer(playerId, userId: null, playerType: race);
 
 		var playerRepo = new PlayerRepository(accessor,
-			new ScoreRepository(scoGameDef, accessor),
+			new ResourceRepository(accessor, scoGameDef),
 			new AllianceRepository(accessor));
 		var playerType = playerRepo.GetPlayerType(playerId);
 		Assert.Equal(Id.PlayerType(race), playerType);

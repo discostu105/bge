@@ -5,7 +5,6 @@ import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
 import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
-import { vcBadgeCss, vcText } from '@/lib/victory'
 import { formatDateTime } from '@/lib/formatters'
 
 function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game: GameSummaryViewModel) => void }) {
@@ -82,7 +81,7 @@ function GameCard({ game, onJoin }: { game: GameSummaryViewModel; onJoin: (game:
     <div className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
       <div className="flex justify-between items-start">
         <h3 className="font-semibold">{game.name}</h3>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded ${vcBadgeCss(game.victoryConditionType)}`}>{vcText(game.victoryConditionType)}</span>
+        <span className="text-xs font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">FINISHED</span>
       </div>
       <div className="text-sm text-muted-foreground">
         {game.winnerName && (

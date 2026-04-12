@@ -8,7 +8,7 @@ namespace BrowserGameEngine.Shared {
 	public record PublicPlayerViewModel {
 		public string? PlayerId { get; set; }
 		public string? PlayerName { get; set; }
-		public decimal Score { get; set; }
+		public decimal Land { get; set; }
 		public int ProtectionTicksRemaining { get; set; }
 		public string? UserDisplayName { get; set; }
 		public bool IsAgent { get; set; }

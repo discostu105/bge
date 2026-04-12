@@ -31,7 +31,7 @@ export function PlayersList() {
               <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
                 <th scope="col" className="px-4 py-2 text-left w-10">#</th>
                 <th scope="col" className="px-4 py-2 text-left">Player</th>
-                <th scope="col" className="px-4 py-2 text-right">Score</th>
+                <th scope="col" className="px-4 py-2 text-right">Land</th>
                 <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Games</th>
                 <th scope="col" className="px-4 py-2 text-right hidden sm:table-cell">Wins</th>
                 <th scope="col" className="px-4 py-2 text-right hidden md:table-cell">Best Rank</th>
@@ -47,7 +47,7 @@ export function PlayersList() {
                     </Link>
                   </td>
                   <td className="px-4 py-2 text-right font-mono">
-                    {Math.floor(p.totalScore).toLocaleString()}
+                    {Math.floor(p.totalLand).toLocaleString()}
                   </td>
                   <td className="px-4 py-2 text-right font-mono hidden sm:table-cell">
                     {p.totalGames}

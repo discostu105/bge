@@ -19,7 +19,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public GameDef GameDef { get; }
 		public GlobalState GlobalState { get; }
 		public IWorldStateAccessor Accessor { get; }
-		public ScoreRepository ScoreRepository { get; }
 		public AllianceRepository AllianceRepository { get; }
 		public AllianceRepositoryWrite AllianceRepositoryWrite { get; }
 		public AllianceInviteRepository AllianceInviteRepository { get; }
@@ -63,7 +62,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			GameDef = new TestGameDefFactory().CreateGameDef();
 			GlobalState = new GlobalState();
 			Accessor = new SingletonWorldStateAccessor(World);
-			ScoreRepository = new ScoreRepository(GameDef, Accessor);
 			AllianceRepository = new AllianceRepository(Accessor);
 			AllianceRepositoryWrite = new AllianceRepositoryWrite(Accessor, AllianceRepository);
 			AllianceInviteRepository = new AllianceInviteRepository(Accessor);
@@ -72,9 +70,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			AllianceWarRepositoryWrite = new AllianceWarRepositoryWrite(Accessor);
 			AllianceElectionRepository = new AllianceElectionRepository(Accessor);
 			AllianceElectionRepositoryWrite = new AllianceElectionRepositoryWrite(Accessor, AllianceElectionRepository, AllianceRepository);
-			PlayerRepository = new PlayerRepository(Accessor, ScoreRepository, AllianceRepository);
-			PlayerRepositoryWrite = new PlayerRepositoryWrite(Accessor, TimeProvider.System);
 			ResourceRepository = new ResourceRepository(Accessor, GameDef);
+			PlayerRepository = new PlayerRepository(Accessor, ResourceRepository, AllianceRepository);
+			PlayerRepositoryWrite = new PlayerRepositoryWrite(Accessor, TimeProvider.System);
 			ResourceRepositoryWrite = new ResourceRepositoryWrite(Accessor, ResourceRepository, GameDef);
 			ActionQueueRepository = new ActionQueueRepository(Accessor);
 			AssetRepository = new AssetRepository(Accessor, PlayerRepository, ActionQueueRepository);

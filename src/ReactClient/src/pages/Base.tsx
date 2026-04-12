@@ -16,7 +16,6 @@ import { BuildQueue } from '@/components/BuildQueue'
 import { BuildUnitsForm } from '@/components/BuildUnitsForm'
 import { WorkerAssignment } from '@/components/WorkerAssignment'
 import { CostBadge } from '@/components/CostBadge'
-import { VictoryProgressBar } from '@/components/VictoryProgressBar'
 import { relativeTime, cn } from '@/lib/utils'
 const ResourceHistoryChart = lazy(() =>
 	import('@/components/ResourceHistoryChart').then(m => ({ default: m.ResourceHistoryChart }))
@@ -224,10 +223,6 @@ export function Base({ gameId }: BaseProps) {
         </div>
       )}
 
-      {/* Pinned rail: always visible above the tabs */}
-      {!isFinished && gameDetail?.gameDefType === 'sco' && (
-        <VictoryProgressBar gameId={gameId} />
-      )}
       <BuildQueue gameId={gameId} />
 
       {/* Tabs */}

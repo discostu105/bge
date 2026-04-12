@@ -9,9 +9,7 @@ namespace BrowserGameEngine.GameDefinition {
 		public IEnumerable<UnitDef> Units { get; init; } = new List<UnitDef>();
 		public IEnumerable<AssetDef> Assets { get; init; } = new List<AssetDef>();
 		public IEnumerable<ResourceDef> Resources { get; init; } = new List<ResourceDef>();
-		public ResourceDefId ScoreResource { get; init; } = null!; // player ranking is based on this resource
 		public IEnumerable<GameTickModuleDef> GameTickModules { get; init; } = new List<GameTickModuleDef>();
-		public IReadOnlyList<VictoryConditionDef> VictoryConditions { get; init; } = [];
 		public TimeSpan TickDuration { get; init; } = TimeSpan.FromMinutes(20);
 
 	}

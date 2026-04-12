@@ -170,7 +170,7 @@ export function ReplayViewer() {
                 <th scope="col" className="px-3 py-2 text-left font-medium">Rank</th>
                 <th scope="col" className="px-3 py-2 text-left font-medium">Player</th>
                 <th scope="col" className="px-3 py-2 text-left font-medium hidden sm:table-cell">Race</th>
-                <th scope="col" className="px-3 py-2 text-right font-medium">Score</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Land</th>
               </tr>
             </thead>
             <tbody>
@@ -200,7 +200,7 @@ export function ReplayViewer() {
                     <td className="px-3 py-2 font-medium">{p.playerName}</td>
                     <td className="px-3 py-2 text-muted-foreground hidden sm:table-cell">{p.race}</td>
                     <td className="px-3 py-2 text-right font-mono">
-                      {Number(p.finalScore).toLocaleString()}
+                      {Number(p.finalLand).toLocaleString()}
                     </td>
                   </tr>
                 )

@@ -20,7 +20,7 @@ test.describe('Player profile page', () => {
 
 		// The profile card shows either current game stats or a "not in a game" message
 		await expect(
-			page.getByText(/score/i)
+			page.getByText(/land/i)
 				.or(page.getByText(/rank/i))
 				.or(page.getByText(/not currently in a game/i))
 				.first()

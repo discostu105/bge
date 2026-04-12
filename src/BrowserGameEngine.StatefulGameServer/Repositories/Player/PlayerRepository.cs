@@ -9,16 +9,16 @@ namespace BrowserGameEngine.StatefulGameServer {
 	public class PlayerRepository {
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private WorldState world => worldStateAccessor.WorldState;
-		private readonly ScoreRepository scoreRepository;
+		private readonly ResourceRepository resourceRepository;
 		private readonly AllianceRepository allianceRepository;
 
 		private IDictionary<PlayerId, Player> Players => world.Players;
 
 		public PlayerRepository(IWorldStateAccessor worldStateAccessor
-			, ScoreRepository scoreRepository
+			, ResourceRepository resourceRepository
 			, AllianceRepository allianceRepository) {
 			this.worldStateAccessor = worldStateAccessor;
-			this.scoreRepository = scoreRepository;
+			this.resourceRepository = resourceRepository;
 			this.allianceRepository = allianceRepository;
 		}
 
@@ -40,8 +40,8 @@ namespace BrowserGameEngine.StatefulGameServer {
 				.Select(x => x.Value.ToImmutable());
 		}
 
-		private static decimal GetMinScore(decimal playerScore) {
-			return playerScore * 0.5M; // TODO: selection shall be configurable behavior
+		private static decimal GetMinLand(decimal attackerLand) {
+			return attackerLand * 0.5M; // TODO: selection shall be configurable behavior
 		}
 
 		public bool IsPlayerAttackable(PlayerId attacker, PlayerId defender) {
@@ -53,9 +53,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			if (IsProtected(attacker)) return AttackIneligibilityReason.AttackerProtected;
 			if (IsProtected(defender)) return AttackIneligibilityReason.DefenderProtected;
 			if (AreAllied(attacker, defender)) return AttackIneligibilityReason.SameAlliance;
-			var attackerScore = scoreRepository.GetScore(attacker);
-			var defenderScore = scoreRepository.GetScore(defender);
-			if (defenderScore < GetMinScore(attackerScore)) return AttackIneligibilityReason.LandTooSmall;
+			var attackerLand = resourceRepository.GetLand(attacker);
+			var defenderLand = resourceRepository.GetLand(defender);
+			if (defenderLand < GetMinLand(attackerLand)) return AttackIneligibilityReason.LandTooSmall;
 			return null;
 		}
 

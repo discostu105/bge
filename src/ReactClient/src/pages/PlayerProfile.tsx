@@ -176,8 +176,8 @@ export function PlayerProfile() {
   const losses = profile.gamesPlayed - profile.wins
   const winRate = profile.gamesPlayed > 0 ? (profile.wins / profile.gamesPlayed) * 100 : 0
   const historyGames = historyData?.games ?? []
-  const avgScore = historyGames.length > 0
-    ? historyGames.reduce((sum, g) => sum + g.finalScore, 0) / historyGames.length
+  const avgLand = historyGames.length > 0
+    ? historyGames.reduce((sum, g) => sum + g.finalLand, 0) / historyGames.length
     : 0
 
   return (
@@ -221,8 +221,8 @@ export function PlayerProfile() {
           <>
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded border bg-secondary/20 p-3">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Score</div>
-                <div className="text-2xl font-bold">{Math.floor(profile.score).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Land</div>
+                <div className="text-2xl font-bold">{Math.floor(profile.land).toLocaleString()}</div>
               </div>
               <div className="rounded border bg-secondary/20 p-3">
                 <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Rank</div>
@@ -294,8 +294,8 @@ export function PlayerProfile() {
               <div className="text-xl font-bold">{winRate.toFixed(0)}%</div>
             </div>
             <div className="rounded border bg-secondary/20 p-3 text-center">
-              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Avg Score</div>
-              <div className="text-xl font-bold">{avgScore > 0 ? Math.floor(avgScore).toLocaleString() : '—'}</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Avg Land</div>
+              <div className="text-xl font-bold">{avgLand > 0 ? Math.floor(avgLand).toLocaleString() : '—'}</div>
             </div>
             <div className="rounded border bg-secondary/20 p-3 text-center">
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Best Rank</div>

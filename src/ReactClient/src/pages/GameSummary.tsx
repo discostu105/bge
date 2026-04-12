@@ -36,7 +36,7 @@ export function GameSummary() {
           <span className="text-4xl">🏆</span>
           <div>
             <div className="font-bold text-lg">{winner.playerName} wins!</div>
-            <div className="text-muted-foreground text-sm">Final Score: {winner.score.toLocaleString()}</div>
+            <div className="text-muted-foreground text-sm">Final Land: {winner.land.toLocaleString()}</div>
           </div>
         </div>
       )}
@@ -51,7 +51,7 @@ export function GameSummary() {
               <tr className="border-b border-border text-left text-muted-foreground">
                 <th scope="col" className="py-2 pr-4">Rank</th>
                 <th scope="col" className="py-2 pr-4">Player</th>
-                <th scope="col" className="py-2">Score</th>
+                <th scope="col" className="py-2">Land</th>
               </tr>
             </thead>
             <tbody>
@@ -64,7 +64,7 @@ export function GameSummary() {
                     {entry.isWinner ? '🏆 1' : `#${entry.rank}`}
                   </td>
                   <td className="py-2 pr-4">{entry.playerName}</td>
-                  <td className="py-2">{entry.score.toLocaleString()}</td>
+                  <td className="py-2">{entry.land.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

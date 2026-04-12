@@ -114,7 +114,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
   const lastUpdatedDate = lastUpdated ? new Date(lastUpdated) : null
 
   const players = rankingData?.items ?? []
-  const sorted = [...players].sort((a, b) => b.score - a.score)
+  const sorted = [...players].sort((a, b) => b.land - a.land)
   const me = sorted.find((p) => p.isCurrentPlayer)
   const myRank = me ? sorted.indexOf(me) + 1 : null
 
@@ -173,7 +173,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
           )}
           {me && (
             <span className="font-mono text-sm">
-              Score: <strong>{Math.floor(me.score).toLocaleString()}</strong>
+              Land: <strong>{Math.floor(me.land).toLocaleString()}</strong>
             </span>
           )}
           {resources && Object.entries(resources.primaryResource.cost).map(([name, value]) => (
@@ -204,7 +204,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
                   <tr className="border-b bg-secondary/30 text-xs text-muted-foreground uppercase tracking-wide">
                     <th scope="col" className="px-3 py-1.5 text-left w-8">#</th>
                     <th scope="col" className="px-3 py-1.5 text-left">Player</th>
-                    <th scope="col" className="px-3 py-1.5 text-right">Score</th>
+                    <th scope="col" className="px-3 py-1.5 text-right">Land</th>
                     <th scope="col" className="px-3 py-1.5 text-center hidden sm:table-cell">Type</th>
                   </tr>
                 </thead>
@@ -235,7 +235,7 @@ export function GameLiveView({ gameId }: GameLiveViewProps) {
                         </Link>
                       </td>
                       <td className="px-3 py-1.5 text-right font-mono text-xs">
-                        {Math.floor(p.score).toLocaleString()}
+                        {Math.floor(p.land).toLocaleString()}
                       </td>
                       <td className="px-3 py-1.5 text-center hidden sm:table-cell">
                         <span className={cn(

@@ -153,7 +153,7 @@ namespace BrowserGameEngine.StatefulGameServer.Benchmarks {
 				var pid = players[i % players.Count];
 				readTasks[i] = Task.Run(() => {
 					// Read-only operations that must not be blocked or corrupted by ticking
-					_ = game.ResourceRepository.GetPrimaryResource(pid);
+					_ = game.ResourceRepository.GetLand(pid);
 					_ = game.PlayerRepository.GetAll();
 				});
 			}

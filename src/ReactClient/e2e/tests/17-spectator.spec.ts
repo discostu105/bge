@@ -68,7 +68,7 @@ test.describe('Spectator mode', () => {
 
 		// Column headers from Spectator.tsx
 		await expect(page.getByRole('columnheader', { name: 'Player' })).toBeVisible()
-		await expect(page.getByRole('columnheader', { name: 'Score' })).toBeVisible()
+		await expect(page.getByRole('columnheader', { name: 'Land' })).toBeVisible()
 
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})

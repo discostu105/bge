@@ -61,7 +61,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					PlayerName: globalState.GetUserDisplayName(group.Key) ?? group.Key,
 					GamesPlayed: group.Count(),
 					Wins: group.Count(),
-					TotalScore: 0
+					TotalLand: 0
 				))
 				.OrderByDescending(r => r.Wins)
 				.ThenBy(r => r.GamesPlayed)
@@ -110,7 +110,6 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 					WinnerId: record.WinnerId?.Id,
 					WinnerName: winnerName,
 					IsPlayerEnrolled: false,
-					VictoryConditionType: record.VictoryConditionType,
 					DiscordWebhookUrl: record.DiscordWebhookUrl,
 					CreatedByUserId: record.CreatedByUserId,
 					TournamentId: record.TournamentId

@@ -4,7 +4,6 @@ namespace BrowserGameEngine.Shared {
 		string Name,
 		int MemberCount,
 		decimal TotalLand,
-		decimal AvgLand,
-		decimal Score
+		decimal AvgLand
 	);
 }
