@@ -196,7 +196,7 @@ export function Market({ gameId }: MarketProps) {
         <div>
           <h2 className="font-semibold mb-3">My Orders</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead className="border-b">
                 <tr>
                   <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
@@ -209,19 +209,19 @@ export function Market({ gameId }: MarketProps) {
               <tbody>
                 {myOrders.map((order) => (
                   <tr key={order.orderId} className="border-b border-border bg-info/10">
-                    <td className="py-2 px-3">
+                    <td data-label="Offering" className="py-2 px-3">
                       {order.offeredAmount} {order.offeredResourceName}
                     </td>
-                    <td className="py-2 px-3">
+                    <td data-label="Wants" className="py-2 px-3">
                       {order.wantedAmount} {order.wantedResourceName}
                     </td>
-                    <td className="py-2 px-3 text-muted-foreground text-xs">
+                    <td data-label="Rate" className="py-2 px-3 text-muted-foreground text-xs">
                       {exchangeRate(order)}
                     </td>
-                    <td className="py-2 px-3 text-xs text-muted-foreground">
+                    <td data-label="Posted" className="py-2 px-3 text-xs text-muted-foreground">
                       {new Date(order.createdAt).toLocaleString()}
                     </td>
-                    <td className="py-2 px-3">
+                    <td data-label="" className="py-2 px-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={async () => {
@@ -259,7 +259,7 @@ export function Market({ gameId }: MarketProps) {
           <p className="text-muted-foreground text-sm">No open orders from other players.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead className="border-b">
                 <tr>
                   <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Seller</th>
@@ -273,20 +273,20 @@ export function Market({ gameId }: MarketProps) {
               <tbody>
                 {otherOrders.map((order) => (
                   <tr key={order.orderId} className="border-b border-border">
-                    <td className="py-2 px-3">{order.sellerPlayerName}</td>
-                    <td className="py-2 px-3">
+                    <td data-label="Seller" className="py-2 px-3">{order.sellerPlayerName}</td>
+                    <td data-label="Offering" className="py-2 px-3">
                       {order.offeredAmount} {order.offeredResourceName}
                     </td>
-                    <td className="py-2 px-3">
+                    <td data-label="Wants" className="py-2 px-3">
                       {order.wantedAmount} {order.wantedResourceName}
                     </td>
-                    <td className="py-2 px-3 text-muted-foreground text-xs">
+                    <td data-label="Rate" className="py-2 px-3 text-muted-foreground text-xs">
                       {exchangeRate(order)}
                     </td>
-                    <td className="py-2 px-3 text-xs text-muted-foreground">
+                    <td data-label="Posted" className="py-2 px-3 text-xs text-muted-foreground">
                       {new Date(order.createdAt).toLocaleString()}
                     </td>
-                    <td className="py-2 px-3">
+                    <td data-label="" className="py-2 px-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => acceptMutation.mutate(order.orderId)}
