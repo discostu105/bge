@@ -1,30 +1,31 @@
-using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
-
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using System;
 using System.Linq;
 
 namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
+	/// <summary>
+	/// Triggers full game finalization when either the wall-clock EndTime or the configured
+	/// EndTick is reached. Delegates to GameLifecycleEngine.FinalizeGameEarlyAsync so that
+	/// currency rewards, world-state persistence, SignalR events, Discord notifications and
+	/// tournament progression all run — same path as admin-triggered finalization.
+	/// </summary>
 	public class GameFinalizationModule : IGameTickModule {
 		public string Name => "gamefinalization:1";
 
 		private readonly IWorldStateAccessor worldStateAccessor;
 		private readonly GlobalState globalState;
-		private readonly GameRegistry.GameRegistry gameRegistry;
-		private readonly GameDef gameDef;
+		private readonly GameLifecycleEngine gameLifecycleEngine;
 		private readonly object _finalizeLock = new();
 
 		public GameFinalizationModule(
 			IWorldStateAccessor worldStateAccessor,
 			GlobalState globalState,
-			GameRegistry.GameRegistry gameRegistry,
-			GameDef gameDef) {
+			GameLifecycleEngine gameLifecycleEngine) {
 			this.worldStateAccessor = worldStateAccessor;
 			this.globalState = globalState;
-			this.gameRegistry = gameRegistry;
-			this.gameDef = gameDef;
+			this.gameLifecycleEngine = gameLifecycleEngine;
 		}
 
 		public void SetProperty(string name, string value) { }
@@ -45,44 +46,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				gameRecord = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == gameId.Id);
 				if (gameRecord == null || gameRecord.Status != GameStatus.Active) return;
 
-				FinalizeGame(gameId, gameRecord);
+				// Fire-and-forget; FinalizeGameEarlyAsync logs its own exceptions and uses
+				// _finalizingGames to avoid duplicate runs from concurrent triggers.
+				_ = gameLifecycleEngine.FinalizeGameEarlyAsync(gameRecord, DateTime.UtcNow);
 			}
 		}
-
-		private void FinalizeGame(GameId gameId, GameRecordImmutable gameRecord) {
-			var finishedAt = DateTime.UtcNow;
-			var players = worldStateAccessor.WorldState.Players;
-
-			// Ranking: land (score resource) desc, then minerals+gas desc, then playerId (stable)
-			var landRes = BrowserGameEngine.GameModel.Id.ResDef("land");
-			var mineralsRes = BrowserGameEngine.GameModel.Id.ResDef("minerals");
-			var gasRes = BrowserGameEngine.GameModel.Id.ResDef("gas");
-			decimal GetRes(GameModelInternal.Player p, BrowserGameEngine.GameDefinition.ResourceDefId id)
-				=> p.State.Resources.TryGetValue(id, out var v) ? v : 0m;
-			var rankedPlayers = players
-				.Select(kv => (
-					PlayerId: kv.Key,
-					Player: kv.Value,
-					Score: GetRes(kv.Value, landRes),
-					WealthTiebreak: GetRes(kv.Value, mineralsRes) + GetRes(kv.Value, gasRes)
-				))
-				.OrderByDescending(x => x.Score)
-				.ThenByDescending(x => x.WealthTiebreak)
-				.ThenBy(x => x.PlayerId.Id, System.StringComparer.Ordinal)
-				.ToList();
-
-			PlayerId? winnerId = rankedPlayers.Count > 0 ? rankedPlayers[0].PlayerId : null;
-			string? winnerUserId = rankedPlayers.Count > 0 ? rankedPlayers[0].Player.UserId : null;
-
-			var updatedRecord = gameRecord with {
-				Status = GameStatus.Finished,
-				WinnerId = winnerId,
-				WinnerUserId = winnerUserId,
-				ActualEndTime = finishedAt
-			};
-			globalState.UpdateGame(gameRecord, updatedRecord);
-			gameRegistry.Remove(gameId);
-		}
-
 	}
 }

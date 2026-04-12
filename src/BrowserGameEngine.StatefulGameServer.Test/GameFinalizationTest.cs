@@ -1,10 +1,14 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.Persistence;
+using BrowserGameEngine.StatefulGameServer.Events;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using GameRegistryNs = BrowserGameEngine.StatefulGameServer.GameRegistry;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Linq;
+using System.Threading;
 using Xunit;
 
 namespace BrowserGameEngine.StatefulGameServer.Test {
@@ -23,8 +27,41 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var instance = new GameRegistryNs.GameInstance(record, game.World, game.GameDef);
 			registry.Register(instance);
 
-			var module = new GameFinalizationModule(game.Accessor, game.GlobalState, registry, game.GameDef);
+			var storage = new InMemoryBlobStorage();
+			var persistenceService = new PersistenceService(storage, new GameStateJsonSerializer());
+			var globalPersistenceService = new GlobalPersistenceService(storage, new GlobalStateJsonSerializer());
+			var userRepositoryWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
+			var tournamentRepositoryWrite = new BrowserGameEngine.StatefulGameServer.Repositories.Tournament.TournamentRepositoryWrite(game.GlobalState);
+			var tournamentEngine = new BrowserGameEngine.StatefulGameServer.GameRegistry.TournamentEngine(
+				game.GlobalState, registry, game.WorldStateFactory, game.GameDef,
+				TimeProvider.System, tournamentRepositoryWrite,
+				NullLogger<BrowserGameEngine.StatefulGameServer.GameRegistry.TournamentEngine>.Instance);
+			var lifecycleEngine = new GameRegistryNs.GameLifecycleEngine(
+				registry,
+				game.GlobalState,
+				persistenceService,
+				globalPersistenceService,
+				new GameRegistryNs.NullGameNotificationService(),
+				new BrowserGameEngine.StatefulGameServer.Notifications.InMemoryPlayerNotificationService(NullGameEventPublisher.Instance),
+				userRepositoryWrite,
+				NullGameEventPublisher.Instance,
+				TimeProvider.System,
+				tournamentEngine,
+				new BrowserGameEngine.StatefulGameServer.GameRegistry.CurrencyService(game.GlobalState, new StaticOptionsMonitor<ShopConfig>(new ShopConfig()), TimeProvider.System, NullLogger<BrowserGameEngine.StatefulGameServer.GameRegistry.CurrencyService>.Instance),
+				NullLogger<GameRegistryNs.GameLifecycleEngine>.Instance
+			);
+
+			var module = new GameFinalizationModule(game.Accessor, game.GlobalState, lifecycleEngine);
 			return (game, registry, module);
+		}
+
+		private static void WaitForFinalization(GlobalState globalState) {
+			// FinalizeGameEarlyAsync is fire-and-forget; poll for the status flip.
+			for (int i = 0; i < 100; i++) {
+				var rec = globalState.GetGames().FirstOrDefault(g => g.GameId.Id == TestGameId);
+				if (rec?.Status == GameStatus.Finished) return;
+				Thread.Sleep(20);
+			}
 		}
 
 		[Fact]
@@ -32,6 +69,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1));
 
 			module.CalculateTick(game.Player1);
+			WaitForFinalization(game.GlobalState);
 
 			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
 			Assert.Equal(GameStatus.Finished, gameRecord.Status);
@@ -43,6 +81,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1));
 
 			module.CalculateTick(game.Player1);
+			WaitForFinalization(game.GlobalState);
 
 			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
 			Assert.NotNull(gameRecord.ActualEndTime);
@@ -54,6 +93,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(-1));
 
 			module.CalculateTick(game.Player1);
+			WaitForFinalization(game.GlobalState);
 
 			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
 			Assert.NotNull(gameRecord.WinnerId);
@@ -73,6 +113,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var (game, _, module) = Setup(endTime: DateTime.UtcNow.AddHours(1));
 
 			module.CalculateTick(game.Player1);
+			WaitForFinalization(game.GlobalState);
 
 			var gameRecord = game.GlobalState.GetGames().Single(g => g.GameId.Id == TestGameId);
 			Assert.Equal(GameStatus.Active, gameRecord.Status);

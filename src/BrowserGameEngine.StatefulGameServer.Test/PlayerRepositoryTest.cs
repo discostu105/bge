@@ -68,9 +68,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var player1 = PlayerIdFactory.Create("player0");
 			var player2 = PlayerIdFactory.Create("player1");
 
-			// Give player1 a much higher score so player2 falls below 50% threshold
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000); // player1 score = 10000
-			// player2 score = 1000, which is < 10000 * 0.5 = 5000
+			// Players start with land=50; bump player1 well above the 50% threshold.
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000); // player1 land = 9050
+			// player2 land = 50, which is < 9050 * 0.5 = 4525
 
 			Assert.False(game.PlayerRepository.IsPlayerAttackable(player1, player2));
 		}
@@ -103,7 +103,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var player1 = PlayerIdFactory.Create("player0");
 			var player2 = PlayerIdFactory.Create("player1");
 
-			// Make player1 much stronger
+			// Players start with land=50; bump player1 so player2 falls below 50% threshold.
 			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000);
 
 			var attackable = game.PlayerRepository.GetAttackablePlayers(player1).ToList();
@@ -125,9 +125,9 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var player1 = PlayerIdFactory.Create("player0");
 			var player2 = PlayerIdFactory.Create("player1");
 
-			// Give player1 a much higher score so player2 falls below 50% threshold
-			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000); // player1 score = 10000
-			// player2 score = 1000, which is < 10000 * 0.5 = 5000
+			// Players start with land=50; bump player1 well above the 50% threshold.
+			game.ResourceRepositoryWrite.AddResources(player1, Id.ResDef("land"), 9000); // player1 land = 9050
+			// player2 land = 50, which is < 9050 * 0.5 = 4525
 
 			Assert.Equal(AttackIneligibilityReason.LandTooSmall, game.PlayerRepository.GetIneligibilityReason(player1, player2));
 		}
