@@ -73,7 +73,7 @@ function AssetCard({
 					</>
 				) : asset.alreadyQueued ? (
 					<div className="text-xs text-muted-foreground">
-						Queued — ready in {asset.ticksLeftForBuild} rounds
+						Queued — ready in {asset.ticksLeftForBuild} ticks
 					</div>
 				) : (
 					<>
