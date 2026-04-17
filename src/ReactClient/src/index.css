@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('/fonts/JetBrainsMono-Variable.woff2') format('woff2-variations');
-}
-
 @theme {
   /* Dark — default */
   --color-background: hsl(222 47% 6%);
