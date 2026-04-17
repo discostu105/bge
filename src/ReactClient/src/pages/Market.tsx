@@ -1,312 +1,370 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type { MarketViewModel, MarketOrderViewModel, CreateMarketOrderRequest } from '@/api/types'
-import { ApiError } from '@/components/ApiError'
-import { SkeletonRow, SkeletonLine } from '@/components/Skeleton'
 import { useConfirm } from '@/contexts/ConfirmContext'
+import { PageHeader } from '@/components/ui/page-header'
+import { Section } from '@/components/ui/section'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { DataTable, type ColumnDef } from '@/components/ui/data-table'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Field } from '@/components/ui/field'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select'
+import {
+	Tooltip,
+	TooltipTrigger,
+	TooltipContent,
+	TooltipProvider,
+} from '@/components/ui/tooltip'
+import { ConvertResourceForm } from '@/components/ConvertResourceForm'
+import { ApiError } from '@/components/ApiError'
 
 interface MarketProps {
-  gameId: string
+	gameId: string
 }
 
 function exchangeRate(order: MarketOrderViewModel): string {
-  if (order.wantedAmount === 0) return '—'
-  const ratio = order.offeredAmount / order.wantedAmount
-  return `${ratio.toFixed(4)} ${order.offeredResourceName}/${order.wantedResourceName}`
+	if (order.wantedAmount === 0) return '—'
+	const ratio = order.offeredAmount / order.wantedAmount
+	return `${ratio.toFixed(4)} ${order.offeredResourceName}/${order.wantedResourceName}`
 }
 
+const postOfferSchema = z.object({
+	offeredResourceId: z.string().min(1, 'Select a resource to offer'),
+	offeredAmount: z.number().int().min(1, 'Must be at least 1'),
+	wantedResourceId: z.string().min(1, 'Select a resource to want'),
+	wantedAmount: z.number().int().min(1, 'Must be at least 1'),
+})
+type PostOfferValues = z.infer<typeof postOfferSchema>
+
 export function Market({ gameId }: MarketProps) {
-  const queryClient = useQueryClient()
-  const confirm = useConfirm()
-  const [postError, setPostError] = useState<string | null>(null)
-  const [orderErrors, setOrderErrors] = useState<Record<string, string>>({})
-  const [offerResourceId, setOfferResourceId] = useState('')
-  const [offerAmount, setOfferAmount] = useState(100)
-  const [wantResourceId, setWantResourceId] = useState('')
-  const [wantAmount, setWantAmount] = useState(100)
+	const queryClient = useQueryClient()
+	const confirm = useConfirm()
 
-  const { data, isLoading, error: queryError, refetch } = useQuery<MarketViewModel>({
-    queryKey: ['market', gameId],
-    queryFn: () => apiClient.get('/api/market').then((r) => r.data),
-    refetchInterval: 30_000,
-  })
+	const { data, isLoading, error: queryError, refetch } = useQuery<MarketViewModel>({
+		queryKey: ['market', gameId],
+		queryFn: () => apiClient.get('/api/market').then((r) => r.data),
+		refetchInterval: 30_000,
+	})
 
-  const postOfferMutation = useMutation({
-    mutationFn: () => {
-      const request: CreateMarketOrderRequest = {
-        offeredResourceId: offerResourceId,
-        offeredAmount: offerAmount,
-        wantedResourceId: wantResourceId,
-        wantedAmount: wantAmount,
-      }
-      return apiClient.post('/api/market/post', request)
-    },
-    onSuccess: () => {
-      setPostError(null)
-      setOfferResourceId('')
-      setOfferAmount(100)
-      setWantResourceId('')
-      setWantAmount(100)
-      void queryClient.invalidateQueries({ queryKey: ['market', gameId] })
-    },
-    onError: (err) => {
-      if (axios.isAxiosError(err)) setPostError((err.response?.data as string) ?? 'Post failed')
-    },
-  })
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const form = useForm<PostOfferValues>({
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		resolver: zodResolver(postOfferSchema) as any,
+		defaultValues: {
+			offeredResourceId: '',
+			offeredAmount: 100,
+			wantedResourceId: '',
+			wantedAmount: 100,
+		},
+	})
 
-  const acceptMutation = useMutation({
-    mutationFn: (orderId: string) =>
-      apiClient.post(`/api/market/accept?orderId=${orderId}`, ''),
-    onSuccess: (_, orderId) => {
-      setOrderErrors((prev) => {
-        const next = { ...prev }
-        delete next[orderId]
-        return next
-      })
-      void queryClient.invalidateQueries({ queryKey: ['market', gameId] })
-    },
-    onError: (err, orderId) => {
-      if (axios.isAxiosError(err)) {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: (err.response?.data as string) ?? 'Accept failed',
-        }))
-      }
-    },
-  })
+	const postOfferMutation = useMutation({
+		mutationFn: (values: PostOfferValues) => {
+			const request: CreateMarketOrderRequest = {
+				offeredResourceId: values.offeredResourceId,
+				offeredAmount: values.offeredAmount,
+				wantedResourceId: values.wantedResourceId,
+				wantedAmount: values.wantedAmount,
+			}
+			return apiClient.post('/api/market/post', request)
+		},
+		onSuccess: () => {
+			toast.success('Offer posted')
+			form.reset()
+			void queryClient.invalidateQueries({ queryKey: ['market', gameId] })
+		},
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Post failed')
+				: 'Post failed'
+			toast.error(msg)
+		},
+	})
 
-  const cancelMutation = useMutation({
-    mutationFn: (orderId: string) =>
-      apiClient.delete(`/api/market/cancel?orderId=${orderId}`),
-    onSuccess: (_, orderId) => {
-      setOrderErrors((prev) => {
-        const next = { ...prev }
-        delete next[orderId]
-        return next
-      })
-      void queryClient.invalidateQueries({ queryKey: ['market', gameId] })
-    },
-    onError: (err, orderId) => {
-      if (axios.isAxiosError(err)) {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: (err.response?.data as string) ?? 'Cancel failed',
-        }))
-      }
-    },
-  })
+	const acceptMutation = useMutation({
+		mutationFn: (orderId: string) =>
+			apiClient.post(`/api/market/accept?orderId=${orderId}`, ''),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: ['market', gameId] })
+		},
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Accept failed')
+				: 'Accept failed'
+			toast.error(msg)
+		},
+	})
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6" aria-hidden="true">
-        <SkeletonLine className="h-6 w-40" />
-        <div className="rounded-lg border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <tbody>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonRow key={i} cols={5} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    )
-  }
-  if (queryError) return <ApiError message="Failed to load market." onRetry={() => void refetch()} />
-  if (!data) return null
+	const cancelMutation = useMutation({
+		mutationFn: (orderId: string) =>
+			apiClient.delete(`/api/market/cancel?orderId=${orderId}`),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: ['market', gameId] })
+		},
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Cancel failed')
+				: 'Cancel failed'
+			toast.error(msg)
+		},
+	})
 
-  const myOrders = data.openOrders.filter((o) => o.sellerPlayerId === data.currentPlayerId)
-  const otherOrders = data.openOrders.filter((o) => o.sellerPlayerId !== data.currentPlayerId)
+	if (queryError) return <ApiError message="Failed to load market." onRetry={() => void refetch()} />
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Market</h1>
+	const myOrders = data?.openOrders.filter((o) => o.sellerPlayerId === data.currentPlayerId) ?? []
+	const otherOrders = data?.openOrders.filter((o) => o.sellerPlayerId !== data.currentPlayerId) ?? []
+	const resourceOptions = data?.resourceOptions ?? []
 
-      {/* Post Offer */}
-      <div className="rounded-lg border bg-card p-4 sm:p-5 max-w-lg">
-        <h2 className="font-semibold mb-4">Post Trade Offer</h2>
-        {postError && (
-          <div className="text-destructive text-sm mb-3">{postError}</div>
-        )}
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1">Offer resource</label>
-            <select
-              value={offerResourceId}
-              onChange={(e) => setOfferResourceId(e.target.value)}
-              className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-            >
-              <option value="">-- select resource --</option>
-              {data.resourceOptions.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1">Amount to offer</label>
-            <input
-              type="number"
-              min={1}
-              value={offerAmount}
-              onChange={(e) => setOfferAmount(Number(e.target.value))}
-              className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1">Want resource</label>
-            <select
-              value={wantResourceId}
-              onChange={(e) => setWantResourceId(e.target.value)}
-              className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-            >
-              <option value="">-- select resource --</option>
-              {data.resourceOptions.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1">Amount wanted</label>
-            <input
-              type="number"
-              min={1}
-              value={wantAmount}
-              onChange={(e) => setWantAmount(Number(e.target.value))}
-              className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-            />
-          </div>
-          <button
-            onClick={() => postOfferMutation.mutate()}
-            disabled={postOfferMutation.isPending}
-            className="rounded bg-primary min-h-[44px] px-4 py-2 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
-          >
-            Post Offer
-          </button>
-        </div>
-      </div>
+	const buyColumns: ColumnDef<MarketOrderViewModel, unknown>[] = [
+		{
+			id: 'player',
+			header: 'Player',
+			accessorFn: (o) => o.sellerPlayerName,
+		},
+		{
+			id: 'offering',
+			header: 'Offering',
+			cell: ({ row }) => `${row.original.offeredAmount} ${row.original.offeredResourceName}`,
+		},
+		{
+			id: 'wants',
+			header: 'Wants',
+			cell: ({ row }) => `${row.original.wantedAmount} ${row.original.wantedResourceName}`,
+		},
+		{
+			id: 'rate',
+			header: 'Rate',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{exchangeRate(row.original)}</span>
+			),
+		},
+		{
+			id: 'posted',
+			header: 'Posted',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">
+					{new Date(row.original.createdAt).toLocaleString()}
+				</span>
+			),
+		},
+		{
+			id: 'actions',
+			header: '',
+			cell: ({ row }) => {
+				const order = row.original
+				const isPending = acceptMutation.isPending
+				return (
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<span tabIndex={isPending ? 0 : undefined}>
+									<Button
+										variant="default"
+										size="sm"
+										disabled={isPending}
+										onClick={() => acceptMutation.mutate(order.orderId)}
+									>
+										Accept
+									</Button>
+								</span>
+							</TooltipTrigger>
+							{isPending && (
+								<TooltipContent>Accepting order…</TooltipContent>
+							)}
+						</Tooltip>
+					</TooltipProvider>
+				)
+			},
+		},
+	]
 
-      {/* My Orders */}
-      {myOrders.length > 0 && (
-        <div>
-          <h2 className="font-semibold mb-3">My Orders</h2>
-          <div className="overflow-x-auto">
-            <table className="responsive-table w-full text-sm">
-              <thead className="border-b">
-                <tr>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {myOrders.map((order) => (
-                  <tr key={order.orderId} className="border-b border-border bg-info/10">
-                    <td data-label="Offering" className="py-2 px-3">
-                      {order.offeredAmount} {order.offeredResourceName}
-                    </td>
-                    <td data-label="Wants" className="py-2 px-3">
-                      {order.wantedAmount} {order.wantedResourceName}
-                    </td>
-                    <td data-label="Rate" className="py-2 px-3 text-muted-foreground text-xs">
-                      {exchangeRate(order)}
-                    </td>
-                    <td data-label="Posted" className="py-2 px-3 text-xs text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </td>
-                    <td data-label="" className="py-2 px-3">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={async () => {
-                            const ok = await confirm({
-                              title: 'Cancel market order?',
-                              description: `Your ${order.offeredAmount} ${order.offeredResourceName} will be returned to your base.`,
-                              destructive: true,
-                              confirmLabel: 'Cancel order',
-                              cancelLabel: 'Keep order',
-                            })
-                            if (ok) cancelMutation.mutate(order.orderId)
-                          }}
-                          disabled={cancelMutation.isPending}
-                          className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                        {orderErrors[order.orderId] && (
-                          <span className="text-destructive text-xs">{orderErrors[order.orderId]}</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+	const myOrderColumns: ColumnDef<MarketOrderViewModel, unknown>[] = [
+		{
+			id: 'offering',
+			header: 'Offering',
+			cell: ({ row }) => `${row.original.offeredAmount} ${row.original.offeredResourceName}`,
+		},
+		{
+			id: 'wants',
+			header: 'Wants',
+			cell: ({ row }) => `${row.original.wantedAmount} ${row.original.wantedResourceName}`,
+		},
+		{
+			id: 'rate',
+			header: 'Rate',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{exchangeRate(row.original)}</span>
+			),
+		},
+		{
+			id: 'posted',
+			header: 'Posted',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">
+					{new Date(row.original.createdAt).toLocaleString()}
+				</span>
+			),
+		},
+		{
+			id: 'actions',
+			header: '',
+			cell: ({ row }) => {
+				const order = row.original
+				return (
+					<Button
+						variant="destructive"
+						size="sm"
+						disabled={cancelMutation.isPending}
+						onClick={async () => {
+							const ok = await confirm({
+								title: 'Cancel market order?',
+								description: `Your ${order.offeredAmount} ${order.offeredResourceName} will be returned to your base.`,
+								destructive: true,
+								confirmLabel: 'Cancel order',
+								cancelLabel: 'Keep order',
+							})
+							if (ok) cancelMutation.mutate(order.orderId)
+						}}
+					>
+						Cancel
+					</Button>
+				)
+			},
+		},
+	]
 
-      {/* Open Orders from others */}
-      <div>
-        <h2 className="font-semibold mb-3">Open Orders</h2>
-        {otherOrders.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No open orders from other players.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="responsive-table w-full text-sm">
-              <thead className="border-b">
-                <tr>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Seller</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Rate</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Posted</th>
-                  <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {otherOrders.map((order) => (
-                  <tr key={order.orderId} className="border-b border-border">
-                    <td data-label="Seller" className="py-2 px-3">{order.sellerPlayerName}</td>
-                    <td data-label="Offering" className="py-2 px-3">
-                      {order.offeredAmount} {order.offeredResourceName}
-                    </td>
-                    <td data-label="Wants" className="py-2 px-3">
-                      {order.wantedAmount} {order.wantedResourceName}
-                    </td>
-                    <td data-label="Rate" className="py-2 px-3 text-muted-foreground text-xs">
-                      {exchangeRate(order)}
-                    </td>
-                    <td data-label="Posted" className="py-2 px-3 text-xs text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </td>
-                    <td data-label="" className="py-2 px-3">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => acceptMutation.mutate(order.orderId)}
-                          disabled={acceptMutation.isPending}
-                          className="rounded bg-success min-h-[36px] px-3 py-1.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
-                        >
-                          Accept
-                        </button>
-                        {orderErrors[order.orderId] && (
-                          <span className="text-destructive text-xs">{orderErrors[order.orderId]}</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  )
+	const onSubmit = (values: PostOfferValues) => {
+		postOfferMutation.mutate(values)
+	}
+
+	return (
+		<div className="space-y-6">
+			<PageHeader
+				title="Market"
+				description="Post or accept resource trades with other players."
+			/>
+
+			<Tabs defaultValue="buy">
+				<TabsList>
+					<TabsTrigger value="buy">Buy</TabsTrigger>
+					<TabsTrigger value="sell">Sell</TabsTrigger>
+					<TabsTrigger value="convert">Convert</TabsTrigger>
+				</TabsList>
+
+				<TabsContent value="buy" className="mt-4">
+					<DataTable
+						columns={buyColumns}
+						rows={isLoading ? undefined : otherOrders}
+						loading={isLoading}
+						empty="No open orders from other players."
+						getRowId={(o) => o.orderId}
+					/>
+				</TabsContent>
+
+				<TabsContent value="sell" className="mt-4 space-y-6">
+					<Section title="My offers">
+						<DataTable
+							columns={myOrderColumns}
+							rows={isLoading ? undefined : myOrders}
+							loading={isLoading}
+							empty="You have no open offers."
+							getRowId={(o) => o.orderId}
+						/>
+					</Section>
+
+					<Section title="Post a new offer">
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-lg">
+							<div className="grid grid-cols-2 gap-4">
+								<Field
+									label="Offering resource"
+									htmlFor="offeredResourceId"
+									error={form.formState.errors.offeredResourceId?.message}
+								>
+									<Select
+										value={form.watch('offeredResourceId')}
+										onValueChange={(v) => form.setValue('offeredResourceId', v, { shouldValidate: true })}
+									>
+										<SelectTrigger id="offeredResourceId" className="w-full">
+											<SelectValue placeholder="Select resource" />
+										</SelectTrigger>
+										<SelectContent>
+											{resourceOptions.map((r) => (
+												<SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</Field>
+
+								<Field
+									label="Amount to offer"
+									htmlFor="offeredAmount"
+									error={form.formState.errors.offeredAmount?.message}
+								>
+									<Input
+										id="offeredAmount"
+										type="number"
+										min={1}
+										{...form.register('offeredAmount', { valueAsNumber: true })}
+									/>
+								</Field>
+
+								<Field
+									label="Wanting resource"
+									htmlFor="wantedResourceId"
+									error={form.formState.errors.wantedResourceId?.message}
+								>
+									<Select
+										value={form.watch('wantedResourceId')}
+										onValueChange={(v) => form.setValue('wantedResourceId', v, { shouldValidate: true })}
+									>
+										<SelectTrigger id="wantedResourceId" className="w-full">
+											<SelectValue placeholder="Select resource" />
+										</SelectTrigger>
+										<SelectContent>
+											{resourceOptions.map((r) => (
+												<SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</Field>
+
+								<Field
+									label="Amount wanted"
+									htmlFor="wantedAmount"
+									error={form.formState.errors.wantedAmount?.message}
+								>
+									<Input
+										id="wantedAmount"
+										type="number"
+										min={1}
+										{...form.register('wantedAmount', { valueAsNumber: true })}
+									/>
+								</Field>
+							</div>
+
+							<Button type="submit" disabled={postOfferMutation.isPending}>
+								{postOfferMutation.isPending ? 'Posting…' : 'Post offer'}
+							</Button>
+						</form>
+					</Section>
+				</TabsContent>
+
+				<TabsContent value="convert" className="mt-4">
+					<ConvertResourceForm gameId={gameId} />
+				</TabsContent>
+			</Tabs>
+		</div>
+	)
 }
