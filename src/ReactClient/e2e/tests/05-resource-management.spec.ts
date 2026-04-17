@@ -38,7 +38,7 @@ test.describe('Resource management — worker assignment', () => {
 		// Ensure we have at least some WBF workers so the component is meaningful
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=3`, { data: {} })
 
-		await page.goto(`/games/${gameId}/base`)
+		await page.goto(`/games/${gameId}/base?tab=economy`)
 		await expect(page.getByRole('heading', { name: /base/i })).toBeVisible()
 
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
@@ -55,7 +55,7 @@ test.describe('Resource management — worker assignment', () => {
 		// Build some workers so assignment is possible
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
 
-		await page.goto(`/games/${gameId}/base`)
+		await page.goto(`/games/${gameId}/base?tab=economy`)
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 
 		await expect(page.getByLabel('Mineral Workers')).toBeVisible()
@@ -76,7 +76,7 @@ test.describe('Resource management — worker assignment', () => {
 		expect([200, 204]).toContain(assignRes.status())
 
 		// Navigate to base and confirm the assignment is reflected
-		await page.goto(`/games/${gameId}/base`)
+		await page.goto(`/games/${gameId}/base?tab=economy`)
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 
 		await expect(page.getByLabel('Mineral Workers')).toHaveValue('2')
@@ -90,7 +90,7 @@ test.describe('Resource management — worker assignment', () => {
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
 		await page.request.post(`${baseURL}/api/workers/assign?mineralWorkers=1&gasWorkers=1`, { data: {} })
 
-		await page.goto(`/games/${gameId}/base`)
+		await page.goto(`/games/${gameId}/base?tab=economy`)
 		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
 
 		// Set a new value for mineral workers; wait for the assign API call to complete

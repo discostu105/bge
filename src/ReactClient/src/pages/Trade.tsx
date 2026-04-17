@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowRightLeftIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type {
@@ -12,30 +15,58 @@ import type {
 	PaginatedResponse,
 } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
-import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { useConfirm } from '@/contexts/ConfirmContext'
+import { PageHeader } from '@/components/ui/page-header'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { DataTable, type ColumnDef } from '@/components/ui/data-table'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Field } from '@/components/ui/field'
+import { Badge } from '@/components/ui/badge'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from '@/components/ui/dialog'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select'
 
 interface TradeProps {
 	gameId: string
 }
 
+const proposeSchema = z.object({
+	targetPlayerId: z.string().min(1, 'Select a player'),
+	offeredResourceId: z.string().min(1, 'Select a resource to offer'),
+	offeredAmount: z.number().int().min(1, 'Must be at least 1'),
+	wantedResourceId: z.string().min(1, 'Select a resource to want'),
+	wantedAmount: z.number().int().min(1, 'Must be at least 1'),
+	note: z.string().max(200, 'Max 200 characters').optional(),
+})
+type ProposeValues = z.infer<typeof proposeSchema>
+
+function statusBadgeVariant(status: string): 'default' | 'destructive' | 'secondary' | 'outline' {
+	if (status === 'Accepted') return 'default'
+	if (status === 'Declined') return 'destructive'
+	if (status === 'Cancelled') return 'secondary'
+	return 'outline'
+}
+
 export function Trade({ gameId }: TradeProps) {
 	const queryClient = useQueryClient()
 	const confirm = useConfirm()
-	const [error, setError] = useState<string | null>(null)
-	const [success, setSuccess] = useState<string | null>(null)
-
-	// Form state
-	const [targetPlayerId, setTargetPlayerId] = useState('')
-	const [offeredResourceId, setOfferedResourceId] = useState('')
-	const [offeredAmount, setOfferedAmount] = useState(100)
-	const [wantedResourceId, setWantedResourceId] = useState('')
-	const [wantedAmount, setWantedAmount] = useState(100)
-	const [note, setNote] = useState('')
+	const [dialogOpen, setDialogOpen] = useState(false)
 
 	// Fetch resource options from market endpoint
-	const { data: marketData, isLoading: marketLoading, error: marketError, refetch: refetchMarket } = useQuery<MarketViewModel>({
+	const { data: marketData, error: marketError, refetch: refetchMarket } = useQuery<MarketViewModel>({
 		queryKey: ['market', gameId],
 		queryFn: () => apiClient.get('/api/market').then((r) => r.data),
 	})
@@ -45,7 +76,6 @@ export function Trade({ gameId }: TradeProps) {
 		queryKey: ['players-for-trade', gameId],
 		queryFn: () => apiClient.get('/api/playerranking', { params: { pageSize: 100 } }).then((r) => r.data),
 	})
-	const players = playersResp?.items
 
 	// Incoming offers
 	const { data: incoming, isLoading: incomingLoading } = useQuery<TradeOfferViewModel[]>({
@@ -62,7 +92,7 @@ export function Trade({ gameId }: TradeProps) {
 	})
 
 	// Trade history
-	const { data: history } = useQuery<TradeHistoryItemViewModel[]>({
+	const { data: history, isLoading: historyLoading } = useQuery<TradeHistoryItemViewModel[]>({
 		queryKey: ['trade-history', gameId],
 		queryFn: () => apiClient.get('/api/trade/history?skip=0&take=20').then((r) => r.data),
 		refetchInterval: 30_000,
@@ -74,315 +104,419 @@ export function Trade({ gameId }: TradeProps) {
 		void queryClient.invalidateQueries({ queryKey: ['trade-history', gameId] })
 	}
 
-	function handleError(err: unknown) {
-		if (axios.isAxiosError(err)) setError((err.response?.data as string) ?? 'Request failed')
-		else setError('Request failed')
-	}
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const form = useForm<ProposeValues>({
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		resolver: zodResolver(proposeSchema) as any,
+		defaultValues: {
+			targetPlayerId: '',
+			offeredResourceId: '',
+			offeredAmount: 100,
+			wantedResourceId: '',
+			wantedAmount: 100,
+			note: '',
+		},
+	})
 
-	// Create offer mutation
-	const createMut = useMutation({
-		mutationFn: () => {
+	// Send offer mutation
+	const sendMutation = useMutation({
+		mutationFn: (values: ProposeValues) => {
 			const request: CreateTradeOfferRequest = {
-				targetPlayerId,
-				offeredResourceId,
-				offeredAmount,
-				wantedResourceId,
-				wantedAmount,
-				note: note.trim() || null,
+				targetPlayerId: values.targetPlayerId,
+				offeredResourceId: values.offeredResourceId,
+				offeredAmount: values.offeredAmount,
+				wantedResourceId: values.wantedResourceId,
+				wantedAmount: values.wantedAmount,
+				note: values.note?.trim() || null,
 			}
 			return apiClient.post('/api/trade/offer', request)
 		},
 		onSuccess: () => {
-			setSuccess('Trade offer sent!')
-			setError(null)
-			setTargetPlayerId('')
-			setOfferedAmount(100)
-			setWantedAmount(100)
-			setNote('')
+			toast.success('Trade offer sent')
+			setDialogOpen(false)
+			form.reset()
 			invalidateAll()
 		},
-		onError: handleError,
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Request failed')
+				: 'Request failed'
+			toast.error(msg)
+		},
 	})
 
 	// Accept mutation
-	const acceptMut = useMutation({
+	const acceptMutation = useMutation({
 		mutationFn: (offerId: string) =>
 			apiClient.post(`/api/trade/offers/${offerId}/accept`),
-		onSuccess: () => { setSuccess('Trade accepted!'); setError(null); invalidateAll() },
-		onError: handleError,
+		onSuccess: () => { toast.success('Trade accepted'); invalidateAll() },
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Request failed')
+				: 'Request failed'
+			toast.error(msg)
+		},
 	})
 
 	// Decline mutation
-	const declineMut = useMutation({
+	const declineMutation = useMutation({
 		mutationFn: (offerId: string) =>
 			apiClient.post(`/api/trade/offers/${offerId}/decline`),
-		onSuccess: () => { setSuccess('Trade declined.'); setError(null); invalidateAll() },
-		onError: handleError,
+		onSuccess: () => { toast.success('Trade declined'); invalidateAll() },
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Request failed')
+				: 'Request failed'
+			toast.error(msg)
+		},
 	})
 
 	// Cancel mutation
-	const cancelMut = useMutation({
+	const cancelMutation = useMutation({
 		mutationFn: (offerId: string) =>
 			apiClient.delete(`/api/trade/offers/${offerId}`),
-		onSuccess: () => { setSuccess('Trade cancelled.'); setError(null); invalidateAll() },
-		onError: handleError,
+		onSuccess: () => { toast.success('Trade cancelled'); invalidateAll() },
+		onError: (err) => {
+			const msg = axios.isAxiosError(err)
+				? ((err.response?.data as string) ?? 'Request failed')
+				: 'Request failed'
+			toast.error(msg)
+		},
 	})
 
-	if (marketLoading || incomingLoading || sentLoading) return <PageLoader message="Loading trade..." />
 	if (marketError) return <ApiError message="Failed to load trade data." onRetry={() => void refetchMarket()} />
 
 	const resourceOptions = marketData?.resourceOptions ?? []
 	const currentPlayerId = marketData?.currentPlayerId ?? ''
-
-	// Filter out current player from target list
-	const otherPlayers = (players ?? []).filter((p) => p.playerId !== currentPlayerId)
+	const players = playersResp?.items ?? []
+	const otherPlayers = players.filter((p) => p.playerId !== currentPlayerId)
 
 	function resourceName(resId: string): string {
 		return resourceOptions.find((r) => r.id === resId)?.name ?? resId
 	}
 
+	const incomingColumns: ColumnDef<TradeOfferViewModel, unknown>[] = [
+		{
+			id: 'from',
+			header: 'From',
+			accessorFn: (o) => o.fromPlayerName,
+		},
+		{
+			id: 'offering',
+			header: 'Offering',
+			cell: ({ row }) => `${row.original.offeredAmount} ${resourceName(row.original.offeredResourceId)}`,
+		},
+		{
+			id: 'wants',
+			header: 'Wants',
+			cell: ({ row }) => `${row.original.wantedAmount} ${resourceName(row.original.wantedResourceId)}`,
+		},
+		{
+			id: 'sent',
+			header: 'Sent',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{relativeTime(row.original.sentAt)}</span>
+			),
+		},
+		{
+			id: 'note',
+			header: 'Note',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{row.original.note ?? '—'}</span>
+			),
+		},
+		{
+			id: 'actions',
+			header: '',
+			cell: ({ row }) => {
+				const offer = row.original
+				return (
+					<div className="flex gap-2">
+						<Button
+							variant="default"
+							size="sm"
+							disabled={acceptMutation.isPending}
+							onClick={() => acceptMutation.mutate(offer.offerId)}
+						>
+							Accept
+						</Button>
+						<Button
+							variant="destructive"
+							size="sm"
+							disabled={declineMutation.isPending}
+							onClick={() => declineMutation.mutate(offer.offerId)}
+						>
+							Decline
+						</Button>
+					</div>
+				)
+			},
+		},
+	]
+
+	const sentColumns: ColumnDef<TradeOfferViewModel, unknown>[] = [
+		{
+			id: 'to',
+			header: 'To',
+			accessorFn: (o) => o.toPlayerName,
+		},
+		{
+			id: 'offering',
+			header: 'Offering',
+			cell: ({ row }) => `${row.original.offeredAmount} ${resourceName(row.original.offeredResourceId)}`,
+		},
+		{
+			id: 'wants',
+			header: 'Wants',
+			cell: ({ row }) => `${row.original.wantedAmount} ${resourceName(row.original.wantedResourceId)}`,
+		},
+		{
+			id: 'sent',
+			header: 'Sent',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{relativeTime(row.original.sentAt)}</span>
+			),
+		},
+		{
+			id: 'note',
+			header: 'Note',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{row.original.note ?? '—'}</span>
+			),
+		},
+		{
+			id: 'actions',
+			header: '',
+			cell: ({ row }) => {
+				const offer = row.original
+				return (
+					<Button
+						variant="destructive"
+						size="sm"
+						disabled={cancelMutation.isPending}
+						onClick={async () => {
+							const ok = await confirm({
+								title: 'Cancel trade offer?',
+								description: 'The offer will be withdrawn and the recipient can no longer accept it.',
+								destructive: true,
+								confirmLabel: 'Cancel offer',
+								cancelLabel: 'Keep offer',
+							})
+							if (ok) cancelMutation.mutate(offer.offerId)
+						}}
+					>
+						Cancel
+					</Button>
+				)
+			},
+		},
+	]
+
+	const historyColumns: ColumnDef<TradeHistoryItemViewModel, unknown>[] = [
+		{
+			id: 'counterparty',
+			header: 'Counterparty',
+			accessorFn: (o) => o.withPlayerName,
+		},
+		{
+			id: 'offering',
+			header: 'Offering',
+			cell: ({ row }) => `${row.original.gaveAmount} ${resourceName(row.original.gaveResourceId)}`,
+		},
+		{
+			id: 'wants',
+			header: 'Wants',
+			cell: ({ row }) => `${row.original.receivedAmount} ${resourceName(row.original.receivedResourceId)}`,
+		},
+		{
+			id: 'status',
+			header: 'Status',
+			cell: ({ row }) => (
+				<Badge variant={statusBadgeVariant(row.original.status)}>
+					{row.original.status}
+				</Badge>
+			),
+		},
+		{
+			id: 'settled',
+			header: 'Settled',
+			cell: ({ row }) => (
+				<span className="text-xs text-muted-foreground">{relativeTime(row.original.completedAt)}</span>
+			),
+		},
+	]
+
+	const onSubmit = (values: ProposeValues) => {
+		sendMutation.mutate(values)
+	}
+
 	return (
 		<div className="space-y-6">
-			<h1 className="text-2xl font-bold flex items-center gap-2">
-				<ArrowRightLeftIcon className="h-6 w-6 text-primary" />
-				Trade
-			</h1>
+			<PageHeader
+				title="Trade"
+				description="Propose direct trades with other players."
+				actions={
+					<Button onClick={() => setDialogOpen(true)}>Propose trade</Button>
+				}
+			/>
 
-			{error && <div className="text-destructive text-sm">{error}</div>}
-			{success && <div className="text-green-400 text-sm">{success}</div>}
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+				<DialogContent className="sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>Propose Trade</DialogTitle>
+					</DialogHeader>
 
-			{/* Create Trade Offer */}
-			<div className="rounded-lg border bg-card p-5 max-w-lg">
-				<h2 className="font-semibold mb-4">Send Trade Offer</h2>
-				<div className="space-y-3">
-					<div>
-						<label className="block text-sm text-muted-foreground mb-1">Target Player</label>
-						<select
-							value={targetPlayerId}
-							onChange={(e) => setTargetPlayerId(e.target.value)}
-							className="w-full rounded border bg-input px-2 py-1.5 text-sm"
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<Field
+							label="Target Player"
+							htmlFor="targetPlayerId"
+							error={form.formState.errors.targetPlayerId?.message}
 						>
-							<option value="">-- select player --</option>
-							{otherPlayers.map((p) => (
-								<option key={p.playerId ?? ''} value={p.playerId ?? ''}>
-									{p.playerName}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className="grid grid-cols-2 gap-3">
-						<div>
-							<label className="block text-sm text-muted-foreground mb-1">Offer resource</label>
-							<select
-								value={offeredResourceId}
-								onChange={(e) => setOfferedResourceId(e.target.value)}
-								className="w-full rounded border bg-input px-2 py-1.5 text-sm"
+							<Select
+								value={form.watch('targetPlayerId')}
+								onValueChange={(v) => form.setValue('targetPlayerId', v, { shouldValidate: true })}
 							>
-								<option value="">-- select --</option>
-								{resourceOptions.map((r) => (
-									<option key={r.id} value={r.id}>{r.name}</option>
-								))}
-							</select>
-						</div>
-						<div>
-							<label className="block text-sm text-muted-foreground mb-1">Amount</label>
-							<input
-								type="number"
-								min={1}
-								value={offeredAmount}
-								onChange={(e) => setOfferedAmount(Number(e.target.value))}
-								className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-							/>
-						</div>
-					</div>
-					<div className="grid grid-cols-2 gap-3">
-						<div>
-							<label className="block text-sm text-muted-foreground mb-1">Want resource</label>
-							<select
-								value={wantedResourceId}
-								onChange={(e) => setWantedResourceId(e.target.value)}
-								className="w-full rounded border bg-input px-2 py-1.5 text-sm"
+								<SelectTrigger id="targetPlayerId" className="w-full">
+									<SelectValue placeholder="Select player" />
+								</SelectTrigger>
+								<SelectContent>
+									{otherPlayers.map((p) => (
+										<SelectItem key={p.playerId ?? ''} value={p.playerId ?? ''}>
+											{p.playerName}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
+
+						<div className="grid grid-cols-2 gap-4">
+							<Field
+								label="Offer resource"
+								htmlFor="offeredResourceId"
+								error={form.formState.errors.offeredResourceId?.message}
 							>
-								<option value="">-- select --</option>
-								{resourceOptions.map((r) => (
-									<option key={r.id} value={r.id}>{r.name}</option>
-								))}
-							</select>
+								<Select
+									value={form.watch('offeredResourceId')}
+									onValueChange={(v) => form.setValue('offeredResourceId', v, { shouldValidate: true })}
+								>
+									<SelectTrigger id="offeredResourceId" className="w-full">
+										<SelectValue placeholder="Select resource" />
+									</SelectTrigger>
+									<SelectContent>
+										{resourceOptions.map((r) => (
+											<SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+
+							<Field
+								label="Amount"
+								htmlFor="offeredAmount"
+								error={form.formState.errors.offeredAmount?.message}
+							>
+								<Input
+									id="offeredAmount"
+									type="number"
+									min={1}
+									{...form.register('offeredAmount', { valueAsNumber: true })}
+								/>
+							</Field>
+
+							<Field
+								label="Want resource"
+								htmlFor="wantedResourceId"
+								error={form.formState.errors.wantedResourceId?.message}
+							>
+								<Select
+									value={form.watch('wantedResourceId')}
+									onValueChange={(v) => form.setValue('wantedResourceId', v, { shouldValidate: true })}
+								>
+									<SelectTrigger id="wantedResourceId" className="w-full">
+										<SelectValue placeholder="Select resource" />
+									</SelectTrigger>
+									<SelectContent>
+										{resourceOptions.map((r) => (
+											<SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+
+							<Field
+								label="Amount"
+								htmlFor="wantedAmount"
+								error={form.formState.errors.wantedAmount?.message}
+							>
+								<Input
+									id="wantedAmount"
+									type="number"
+									min={1}
+									{...form.register('wantedAmount', { valueAsNumber: true })}
+								/>
+							</Field>
 						</div>
-						<div>
-							<label className="block text-sm text-muted-foreground mb-1">Amount</label>
-							<input
-								type="number"
-								min={1}
-								value={wantedAmount}
-								onChange={(e) => setWantedAmount(Number(e.target.value))}
-								className="w-full rounded border bg-input px-2 py-1.5 text-sm"
+
+						<Field
+							label="Note (optional)"
+							htmlFor="note"
+							error={form.formState.errors.note?.message}
+						>
+							<Input
+								id="note"
+								type="text"
+								maxLength={200}
+								placeholder="Add a note..."
+								{...form.register('note')}
 							/>
-						</div>
-					</div>
-					<div>
-						<label className="block text-sm text-muted-foreground mb-1">Note (optional)</label>
-						<input
-							type="text"
-							value={note}
-							onChange={(e) => setNote(e.target.value)}
-							maxLength={200}
-							placeholder="Add a note..."
-							className="w-full rounded border bg-input px-2 py-1.5 text-sm"
-						/>
-					</div>
-					<button
-						onClick={() => createMut.mutate()}
-						disabled={createMut.isPending || !targetPlayerId || !offeredResourceId || !wantedResourceId}
-						className="rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 disabled:opacity-50"
-					>
-						{createMut.isPending ? 'Sending...' : 'Send Offer'}
-					</button>
-				</div>
-			</div>
+						</Field>
 
-			{/* Incoming Offers */}
-			<div>
-				<h2 className="font-semibold mb-3">Incoming Offers</h2>
-				{!incoming || incoming.length === 0 ? (
-					<p className="text-muted-foreground text-sm">No incoming trade offers.</p>
-				) : (
-					<div className="overflow-x-auto">
-						<table className="w-full text-sm">
-							<thead className="border-b">
-								<tr>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">From</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Note</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Sent</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
-								</tr>
-							</thead>
-							<tbody>
-								{incoming.map((offer) => (
-									<tr key={offer.offerId} className="border-b border-border">
-										<td className="py-2 px-3 font-medium">{offer.fromPlayerName}</td>
-										<td className="py-2 px-3">{offer.offeredAmount} {resourceName(offer.offeredResourceId)}</td>
-										<td className="py-2 px-3">{offer.wantedAmount} {resourceName(offer.wantedResourceId)}</td>
-										<td className="py-2 px-3 text-xs text-muted-foreground">{offer.note ?? '—'}</td>
-										<td className="py-2 px-3 text-xs text-muted-foreground">{relativeTime(offer.sentAt)}</td>
-										<td className="py-2 px-3">
-											<div className="flex gap-2">
-												<button
-													onClick={() => acceptMut.mutate(offer.offerId)}
-													disabled={acceptMut.isPending}
-													className="rounded bg-green-600 px-2 py-0.5 text-xs text-white hover:opacity-90 disabled:opacity-50"
-												>
-													Accept
-												</button>
-												<button
-													onClick={() => declineMut.mutate(offer.offerId)}
-													disabled={declineMut.isPending}
-													className="rounded bg-destructive px-2 py-0.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
-												>
-													Decline
-												</button>
-											</div>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</div>
+						<DialogFooter>
+							<Button type="submit" disabled={sendMutation.isPending}>
+								{sendMutation.isPending ? 'Sending…' : 'Send offer'}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 
-			{/* Sent Offers */}
-			<div>
-				<h2 className="font-semibold mb-3">Sent Offers</h2>
-				{!sent || sent.length === 0 ? (
-					<p className="text-muted-foreground text-sm">No pending sent offers.</p>
-				) : (
-					<div className="overflow-x-auto">
-						<table className="w-full text-sm">
-							<thead className="border-b">
-								<tr>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">To</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Offering</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Wants</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Note</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Sent</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground"></th>
-								</tr>
-							</thead>
-							<tbody>
-								{sent.map((offer) => (
-									<tr key={offer.offerId} className="border-b border-border bg-blue-900/10">
-										<td className="py-2 px-3 font-medium">{offer.toPlayerName}</td>
-										<td className="py-2 px-3">{offer.offeredAmount} {resourceName(offer.offeredResourceId)}</td>
-										<td className="py-2 px-3">{offer.wantedAmount} {resourceName(offer.wantedResourceId)}</td>
-										<td className="py-2 px-3 text-xs text-muted-foreground">{offer.note ?? '—'}</td>
-										<td className="py-2 px-3 text-xs text-muted-foreground">{relativeTime(offer.sentAt)}</td>
-										<td className="py-2 px-3">
-											<button
-												onClick={async () => {
-													const ok = await confirm({
-														title: 'Cancel trade offer?',
-														description: 'The offer will be withdrawn and the recipient can no longer accept it.',
-														destructive: true,
-														confirmLabel: 'Cancel offer',
-														cancelLabel: 'Keep offer',
-													})
-													if (ok) cancelMut.mutate(offer.offerId)
-												}}
-												disabled={cancelMut.isPending}
-												className="rounded bg-destructive px-2 py-0.5 text-xs text-destructive-foreground hover:opacity-90 disabled:opacity-50"
-											>
-												Cancel
-											</button>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</div>
+			<Tabs defaultValue="incoming">
+				<TabsList>
+					<TabsTrigger value="incoming">Incoming</TabsTrigger>
+					<TabsTrigger value="sent">Sent</TabsTrigger>
+					<TabsTrigger value="history">History</TabsTrigger>
+				</TabsList>
 
-			{/* Trade History */}
-			{history && history.length > 0 && (
-				<div>
-					<h2 className="font-semibold mb-3">Trade History</h2>
-					<div className="overflow-x-auto">
-						<table className="w-full text-sm">
-							<thead className="border-b">
-								<tr>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">With</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Gave</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Received</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Status</th>
-									<th className="py-2 px-3 text-left font-medium text-muted-foreground">Date</th>
-								</tr>
-							</thead>
-							<tbody>
-								{history.map((item) => (
-									<tr key={item.offerId} className="border-b border-border">
-										<td className="py-2 px-3 font-medium">{item.withPlayerName}</td>
-										<td className="py-2 px-3">{item.gaveAmount} {resourceName(item.gaveResourceId)}</td>
-										<td className="py-2 px-3">{item.receivedAmount} {resourceName(item.receivedResourceId)}</td>
-										<td className="py-2 px-3">
-											<span className={
-												item.status === 'Accepted' ? 'text-green-400 text-xs' :
-												item.status === 'Declined' ? 'text-red-400 text-xs' :
-												'text-muted-foreground text-xs'
-											}>
-												{item.status}
-											</span>
-										</td>
-										<td className="py-2 px-3 text-xs text-muted-foreground">{relativeTime(item.completedAt)}</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			)}
+				<TabsContent value="incoming" className="mt-4">
+					<DataTable
+						columns={incomingColumns}
+						rows={incomingLoading ? undefined : (incoming ?? [])}
+						loading={incomingLoading}
+						empty="No incoming trade offers."
+						getRowId={(o) => o.offerId}
+					/>
+				</TabsContent>
+
+				<TabsContent value="sent" className="mt-4">
+					<DataTable
+						columns={sentColumns}
+						rows={sentLoading ? undefined : (sent ?? [])}
+						loading={sentLoading}
+						empty="No pending sent offers."
+						getRowId={(o) => o.offerId}
+					/>
+				</TabsContent>
+
+				<TabsContent value="history" className="mt-4">
+					<DataTable
+						columns={historyColumns}
+						rows={historyLoading ? undefined : (history ?? [])}
+						loading={historyLoading}
+						empty="No trade history."
+						getRowId={(o) => o.offerId}
+					/>
+				</TabsContent>
+			</Tabs>
 		</div>
 	)
 }
