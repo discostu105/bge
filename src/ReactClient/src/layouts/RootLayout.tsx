@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 import { ConfirmProvider } from '@/contexts/ConfirmContext'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { PageLoader } from '@/components/PageLoader'
+import { Toaster } from '@/components/ui/sonner'
 
 export function RootLayout() {
   return (
@@ -16,6 +17,7 @@ export function RootLayout() {
               <Outlet />
             </Suspense>
           </ConfirmProvider>
+          <Toaster richColors position="top-right" />
         </CurrentUserProvider>
       </ThemeProvider>
     </ErrorBoundary>
