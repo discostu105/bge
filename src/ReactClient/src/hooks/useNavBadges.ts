@@ -17,7 +17,7 @@ export function bucketBadges(
     if (n.isRead) continue
     if (n.kind === 'MessageReceived') out.messages += 1
     else if (n.kind === 'AllianceRequest') out.alliances += 1
-    else if (n.kind === 'AttackReceived') out.diplomacy += 1
+    // Diplomacy stays 0 until a diplomacy-specific NotificationKind exists.
   }
   return out
 }

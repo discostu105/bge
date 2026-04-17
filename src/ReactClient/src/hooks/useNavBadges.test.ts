@@ -11,10 +11,10 @@ describe('bucketBadges', () => {
       { kind: 'MessageReceived', isRead: false },
       { kind: 'MessageReceived', isRead: false },
       { kind: 'AllianceRequest', isRead: false },
-      { kind: 'AttackReceived', isRead: false },
       { kind: 'MessageReceived', isRead: true }, // read — excluded
       { kind: 'Info', isRead: false }, // unrelated — excluded
+      { kind: 'AttackReceived', isRead: false }, // not bucketed in foundation PR
     ])
-    expect(got).toEqual({ messages: 2, alliances: 1, diplomacy: 1 })
+    expect(got).toEqual({ messages: 2, alliances: 1, diplomacy: 0 })
   })
 })
