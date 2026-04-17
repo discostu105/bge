@@ -42,13 +42,22 @@ test.describe('Unit build — army visibility', () => {
 		await page.goto(`/games/${gameId}/units`)
 		await expect(page.getByRole('heading', { name: 'Units' })).toBeVisible()
 
-		// The units page should report at least 3 total units
-		const countLine = page.getByText(/units in \d+ stack/)
-		await expect(countLine).toBeVisible({ timeout: 10_000 })
+		// The units page should show the "Total Units" stat (summary section only renders
+		// when units.length > 0) and at least one DataTable row for the built unit type.
+		await expect(page.getByText('Total Units')).toBeVisible({ timeout: 10_000 })
 
-		const text = await countLine.textContent()
-		const match = text?.match(/^(\d[\d,]*)/)
-		const total = parseInt((match?.[1] ?? '0').replace(',', ''), 10)
+		// Confirm the built unit appears in the Home Base DataTable.
+		// The unit definition name for 'wbf' is displayed in the Name column of the table.
+		const wbfRow = page.getByRole('row').filter({ hasText: /wbf/i })
+		await expect(wbfRow.first()).toBeVisible({ timeout: 10_000 })
+
+		// Read the count from the value span adjacent to the "Total Units" label.
+		// Stat renders: <span class="label">Total Units</span><span class="mono ...">N</span>
+		const totalValueSpan = page.locator('span.label', { hasText: 'Total Units' })
+			.locator('..') // parent div.flex-col
+			.locator('span.mono')
+		const totalText = await totalValueSpan.textContent()
+		const total = parseInt((totalText ?? '0').replace(/,/g, ''), 10)
 		expect(total).toBeGreaterThanOrEqual(3)
 	})
 
@@ -64,10 +73,10 @@ test.describe('Unit build — army visibility', () => {
 		await page.goto(`/games/${gameId}/units`)
 		await expect(page.getByRole('heading', { name: 'Units' })).toBeVisible()
 
-		// Empty state message should be shown
-		await expect(page.getByText('Build units from your base buildings')).toBeVisible({
-			timeout: 10_000,
-		})
+		// Empty state message from the Home Base DataTable
+		await expect(
+			page.getByText('No units at home base. All units are deployed, or you have not built any units yet.')
+		).toBeVisible({ timeout: 10_000 })
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 })
