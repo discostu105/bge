@@ -5,25 +5,22 @@ import type { PlayerNotificationViewModel } from '@/api/types'
 export interface NavBadges {
   messages: number
   alliances: number
-  diplomacy: number
 }
 
 /** Pure bucketing — exported for tests. */
 export function bucketBadges(
   items: Pick<PlayerNotificationViewModel, 'kind' | 'isRead'>[]
 ): NavBadges {
-  const out: NavBadges = { messages: 0, alliances: 0, diplomacy: 0 }
+  const out: NavBadges = { messages: 0, alliances: 0 }
   for (const n of items) {
     if (n.isRead) continue
     if (n.kind === 'MessageReceived') out.messages += 1
     else if (n.kind === 'AllianceRequest') out.alliances += 1
-    // Diplomacy stays 0 until a diplomacy-specific NotificationKind exists.
   }
   return out
 }
 
 export function useNavBadges(): NavBadges {
-  // Reuse the same key as useNotifications so they share a cache entry.
   const { data } = useQuery({
     queryKey: ['notifications'],
     queryFn: () =>

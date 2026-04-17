@@ -3,7 +3,7 @@ import { bucketBadges } from './useNavBadges'
 
 describe('bucketBadges', () => {
   it('returns zero counts on empty input', () => {
-    expect(bucketBadges([])).toEqual({ messages: 0, alliances: 0, diplomacy: 0 })
+    expect(bucketBadges([])).toEqual({ messages: 0, alliances: 0 })
   })
 
   it('groups notification kinds by nav section', () => {
@@ -15,6 +15,6 @@ describe('bucketBadges', () => {
       { kind: 'Info', isRead: false }, // unrelated — excluded
       { kind: 'AttackReceived', isRead: false }, // not bucketed in foundation PR
     ])
-    expect(got).toEqual({ messages: 2, alliances: 1, diplomacy: 0 })
+    expect(got).toEqual({ messages: 2, alliances: 1 })
   })
 })

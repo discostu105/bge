@@ -1,14 +1,12 @@
 import { NavLink } from 'react-router'
 import {
   LayersIcon, ShieldIcon, FlaskConicalIcon, ShoppingCartIcon, ArrowRightLeftIcon,
-  BarChart2Icon, FlagIcon, UsersIcon, MessageSquareIcon, MailIcon, TrophyIcon,
+  BarChart2Icon, UsersIcon, MessageSquareIcon, MailIcon, TrophyIcon,
   BookOpenIcon, HistoryIcon, HelpCircleIcon, RadioIcon, LineChartIcon, UserIcon,
-  StoreIcon, CoinsIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
 import { useNavBadges } from '@/hooks/useNavBadges'
-import { CurrencyBadge } from '@/components/CurrencyBadge'
 import { Badge } from '@/components/ui/badge'
 
 function NavItem({
@@ -73,7 +71,6 @@ export function NavMenu() {
         <NavItem to={g('help')} icon={HelpCircleIcon} label="Help" />
 
         <SectionLabel>Social</SectionLabel>
-        <NavItem to={g('diplomacy')} icon={FlagIcon} label="Diplomacy" badge={badges.diplomacy} />
         <NavItem to={g('alliances')} icon={UsersIcon} label="Alliances" badge={badges.alliances} />
         <NavItem to={g('allianceranking')} icon={TrophyIcon} label="Alliance Ranking" />
         <NavItem to={g('chat')} icon={MessageSquareIcon} label="Chat" />
@@ -83,15 +80,7 @@ export function NavMenu() {
         <NavItem to={g('history')} icon={HistoryIcon} label="History" />
         <NavItem to={g('stats')} icon={LineChartIcon} label="My Stats" />
         <NavItem to={g('profile')} icon={UserIcon} label="Profile" />
-
-        <SectionLabel>Economy</SectionLabel>
-        <NavItem to={g('shop')} icon={StoreIcon} label="Shop" />
-        <NavItem to={g('economy')} icon={CoinsIcon} label="My Economy" />
       </ul>
-
-      <div className="mt-4 px-4">
-        <CurrencyBadge />
-      </div>
     </nav>
   )
 }
