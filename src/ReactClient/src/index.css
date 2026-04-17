@@ -1,65 +1,67 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(222.2 84% 4.9%);
+  /* Dark — default */
+  --color-background: hsl(222 47% 6%);
   --color-foreground: hsl(210 40% 98%);
-  --color-card: hsl(222.2 84% 4.9%);
+  --color-card: hsl(222 47% 8%);
   --color-card-foreground: hsl(210 40% 98%);
-  --color-popover: hsl(222.2 84% 4.9%);
+  --color-popover: hsl(222 47% 8%);
   --color-popover-foreground: hsl(210 40% 98%);
-  --color-primary: hsl(217.2 91.2% 59.8%);
-  --color-primary-foreground: hsl(222.2 47.4% 11.2%);
-  --color-secondary: hsl(217.2 32.6% 17.5%);
+  --color-primary: hsl(38 92% 55%);
+  --color-primary-foreground: hsl(38 30% 10%);
+  --color-secondary: hsl(217 32% 17%);
   --color-secondary-foreground: hsl(210 40% 98%);
-  --color-muted: hsl(217.2 32.6% 17.5%);
-  --color-muted-foreground: hsl(215 20.2% 65.1%);
-  --color-accent: hsl(217.2 32.6% 17.5%);
-  --color-accent-foreground: hsl(210 40% 98%);
-  --color-destructive: hsl(0 62.8% 30.6%);
+  --color-muted: hsl(217 32% 14%);
+  --color-muted-foreground: hsl(215 20% 65%);
+  --color-accent: hsl(217 91% 60%);
+  --color-accent-foreground: hsl(217 47% 11%);
+  --color-destructive: hsl(0 62% 30%);
   --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(217.2 32.6% 17.5%);
-  --color-input: hsl(217.2 32.6% 17.5%);
-  --color-ring: hsl(224.3 76.3% 48%);
+  --color-border: hsl(217 32% 16%);
+  --color-input: hsl(217 32% 16%);
+  --color-ring: hsl(38 92% 55%);
   --radius: 0.5rem;
 
-  /* Game status colors */
+  /* Semantic */
   --color-success: hsl(142 71% 35%);
   --color-success-foreground: hsl(142 76% 90%);
-  --color-warning: hsl(38 92% 45%);
-  --color-warning-foreground: hsl(38 92% 90%);
+  --color-warning: hsl(48 95% 55%);
+  --color-warning-foreground: hsl(48 92% 12%);
   --color-danger: hsl(0 72% 45%);
-  --color-danger-foreground: hsl(0 72% 90%);
+  --color-danger-foreground: hsl(0 72% 92%);
   --color-info: hsl(217 91% 55%);
-  --color-info-foreground: hsl(217 91% 90%);
+  --color-info-foreground: hsl(217 91% 92%);
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
 }
 
-/* Light theme overrides — applied when html.light class is present */
 html.light {
   --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(222.2 84% 4.9%);
+  --color-foreground: hsl(222 47% 6%);
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222.2 84% 4.9%);
+  --color-card-foreground: hsl(222 47% 6%);
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222.2 84% 4.9%);
-  --color-primary: hsl(217.2 91.2% 45%);
-  --color-primary-foreground: hsl(210 40% 98%);
+  --color-popover-foreground: hsl(222 47% 6%);
+  --color-primary: hsl(38 92% 45%);
+  --color-primary-foreground: hsl(38 30% 98%);
   --color-secondary: hsl(210 40% 94%);
-  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --color-secondary-foreground: hsl(222 47% 11%);
   --color-muted: hsl(210 40% 94%);
   --color-muted-foreground: hsl(215 16% 40%);
-  --color-accent: hsl(210 40% 94%);
-  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --color-accent: hsl(217 91% 45%);
+  --color-accent-foreground: hsl(210 40% 98%);
   --color-destructive: hsl(0 72% 45%);
   --color-destructive-foreground: hsl(210 40% 98%);
   --color-border: hsl(214 32% 86%);
   --color-input: hsl(214 32% 86%);
-  --color-ring: hsl(217.2 91.2% 59.8%);
+  --color-ring: hsl(38 92% 45%);
 
-  /* Game status colors */
   --color-success: hsl(142 71% 30%);
   --color-success-foreground: hsl(142 76% 15%);
-  --color-warning: hsl(38 92% 38%);
-  --color-warning-foreground: hsl(38 92% 15%);
+  --color-warning: hsl(48 95% 42%);
+  --color-warning-foreground: hsl(48 95% 12%);
   --color-danger: hsl(0 72% 40%);
   --color-danger-foreground: hsl(0 72% 15%);
   --color-info: hsl(217 91% 45%);
@@ -73,13 +75,40 @@ html.light {
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-muted-foreground);
+  font-weight: 600;
+}
+
+.mono, .tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(hsl(217 32% 12%) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(217 32% 12%) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-position: -1px -1px;
+}
+
+html.light .bg-grid {
+  background-image:
+    linear-gradient(hsl(214 32% 92%) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(214 32% 92%) 1px, transparent 1px);
 }
 
 @keyframes page-fade-in {
   from { opacity: 0; }
-  to   { opacity: 1; }
+  to { opacity: 1; }
 }
 
 .page-enter {
@@ -87,80 +116,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-enter {
-    animation: none;
-  }
-}
-
-/*
- * Responsive table — at md+ renders as a normal table, below md
- * collapses into a stacked card-per-row layout with each cell
- * prefixed by its column label (via the data-label attribute).
- *
- * Usage:
- *   <table className="responsive-table">
- *     <thead> ... </thead>
- *     <tbody>
- *       <tr>
- *         <td data-label="Unit">Marine</td>
- *         <td data-label="Count">42</td>
- *       </tr>
- *     </tbody>
- *   </table>
- *
- * Cells may opt out of the label prefix with `data-label-hide` or by
- * omitting `data-label` (the ::before will be empty).
- */
-@media (max-width: 767px) {
-  .responsive-table {
-    display: block;
-  }
-  .responsive-table thead {
-    display: none;
-  }
-  .responsive-table tbody,
-  .responsive-table tr {
-    display: block;
-    width: 100%;
-  }
-  .responsive-table tr {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
-    background-color: var(--color-card);
-  }
-  .responsive-table td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.25rem 0 !important;
-    border: none !important;
-    text-align: right;
-  }
-  .responsive-table td[data-label]::before {
-    content: attr(data-label);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-muted-foreground);
-    text-align: left;
-    flex-shrink: 0;
-  }
-  /* A cell with data-label="" (or no data-label) takes the full row —
-     useful for action rows or primary titles. */
-  .responsive-table td[data-label=""],
-  .responsive-table td:not([data-label]) {
-    display: block;
-    text-align: left;
-    padding-top: 0.5rem !important;
-  }
-  .responsive-table td[data-label=""]::before,
-  .responsive-table td:not([data-label])::before {
-    content: none;
-  }
-  /* Opt out: hide this cell entirely on mobile. */
-  .responsive-table td[data-label-hide] {
-    display: none;
+  .page-enter { animation: none; }
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

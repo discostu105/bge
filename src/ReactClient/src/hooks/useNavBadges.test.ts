@@ -1,0 +1,20 @@
+import { describe, it, expect } from 'vitest'
+import { bucketBadges } from './useNavBadges'
+
+describe('bucketBadges', () => {
+  it('returns zero counts on empty input', () => {
+    expect(bucketBadges([])).toEqual({ messages: 0, alliances: 0 })
+  })
+
+  it('groups notification kinds by nav section', () => {
+    const got = bucketBadges([
+      { kind: 'MessageReceived', isRead: false },
+      { kind: 'MessageReceived', isRead: false },
+      { kind: 'AllianceRequest', isRead: false },
+      { kind: 'MessageReceived', isRead: true }, // read — excluded
+      { kind: 'Info', isRead: false }, // unrelated — excluded
+      { kind: 'AttackReceived', isRead: false }, // not bucketed in foundation PR
+    ])
+    expect(got).toEqual({ messages: 2, alliances: 1 })
+  })
+})

@@ -1,33 +1,21 @@
 import { NavLink } from 'react-router'
 import {
-  LayersIcon,
-  ShieldIcon,
-  FlaskConicalIcon,
-  ShoppingCartIcon,
-  ArrowRightLeftIcon,
-  BarChart2Icon,
-  UsersIcon,
-  MessageSquareIcon,
-  MailIcon,
-  TrophyIcon,
-  BookOpenIcon,
-  HistoryIcon,
-  HelpCircleIcon,
-  RadioIcon,
-  LineChartIcon,
-  UserIcon,
+  LayersIcon, ShieldIcon, FlaskConicalIcon, ShoppingCartIcon, ArrowRightLeftIcon,
+  BarChart2Icon, UsersIcon, MessageSquareIcon, MailIcon, TrophyIcon,
+  BookOpenIcon, HistoryIcon, HelpCircleIcon, RadioIcon, LineChartIcon, UserIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
+import { useNavBadges } from '@/hooks/useNavBadges'
+import { Badge } from '@/components/ui/badge'
 
 function NavItem({
-  to,
-  icon: Icon,
-  label,
+  to, icon: Icon, label, badge,
 }: {
   to: string
   icon: React.ComponentType<{ className?: string }>
   label: string
+  badge?: number
 }) {
   return (
     <li>
@@ -35,15 +23,18 @@ function NavItem({
         to={to}
         className={({ isActive }) =>
           cn(
-            'flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-colors min-h-[44px]',
+            'relative flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-r-md text-sm transition-colors min-h-[44px]',
             isActive
-              ? 'bg-primary/20 text-primary font-medium'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              ? 'text-foreground font-medium bg-primary/5 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-primary before:rounded-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
           )
         }
       >
-        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-        {label}
+        <Icon className="h-4 w-4 shrink-0" aria-hidden />
+        <span className="flex-1 truncate">{label}</span>
+        {badge != null && badge > 0 && (
+          <Badge variant="secondary" className="h-5 px-1.5 text-[10px] tabular-nums">{badge}</Badge>
+        )}
       </NavLink>
     </li>
   )
@@ -51,19 +42,16 @@ function NavItem({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <li className="px-3 pt-4 pb-1">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {children}
-      </span>
+    <li className="px-4 pt-4 pb-1">
+      <span className="label">{children}</span>
     </li>
   )
 }
 
 export function NavMenu() {
   const { gameId } = useCurrentGame()
-
+  const badges = useNavBadges()
   if (!gameId) return null
-
   const g = (path: string) => `/games/${gameId}/${path}`
 
   return (
@@ -83,20 +71,16 @@ export function NavMenu() {
         <NavItem to={g('help')} icon={HelpCircleIcon} label="Help" />
 
         <SectionLabel>Social</SectionLabel>
-        <NavItem to={g('alliances')} icon={UsersIcon} label="Alliances" />
+        <NavItem to={g('alliances')} icon={UsersIcon} label="Alliances" badge={badges.alliances} />
         <NavItem to={g('allianceranking')} icon={TrophyIcon} label="Alliance Ranking" />
         <NavItem to={g('chat')} icon={MessageSquareIcon} label="Chat" />
-        <NavItem to={g('messages')} icon={MailIcon} label="Messages" />
-      </ul>
+        <NavItem to={g('messages')} icon={MailIcon} label="Messages" badge={badges.messages} />
 
-      <div className="mt-6 px-3">
-        <ul className="space-y-0.5">
-          <SectionLabel>Account</SectionLabel>
-          <NavItem to={g('history')} icon={HistoryIcon} label="History" />
-          <NavItem to={g('stats')} icon={LineChartIcon} label="My Stats" />
-          <NavItem to={g('profile')} icon={UserIcon} label="Profile" />
-        </ul>
-      </div>
+        <SectionLabel>Account</SectionLabel>
+        <NavItem to={g('history')} icon={HistoryIcon} label="History" />
+        <NavItem to={g('stats')} icon={LineChartIcon} label="My Stats" />
+        <NavItem to={g('profile')} icon={UserIcon} label="Profile" />
+      </ul>
     </nav>
   )
 }
