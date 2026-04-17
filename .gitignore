@@ -351,3 +351,6 @@ MigrationBackup/
 
 # BGE
 src/BrowserGameEngine.FrontendServer/storage/
+
+# Superpowers brainstorming scratch (visual companion mockups, session state)
+.superpowers/
