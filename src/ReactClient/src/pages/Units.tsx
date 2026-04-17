@@ -1,13 +1,20 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import axios from 'axios'
+import type { ColumnDef } from '@tanstack/react-table'
 import apiClient from '@/api/client'
 import type { UnitsViewModel, UnitViewModel } from '@/api/types'
 import { BuildQueue } from '@/components/BuildQueue'
-import { ApiError } from '@/components/ApiError'
-import { SkeletonRow } from '@/components/Skeleton'
 import { AttackDialog } from '@/components/AttackDialog'
+import { PageHeader } from '@/components/ui/page-header'
+import { Section } from '@/components/ui/section'
+import { DataTable } from '@/components/ui/data-table'
+import { Stat } from '@/components/ui/stat'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { formatNumber } from '@/lib/formatters'
 
 interface UnitsProps {
   gameId: string
@@ -41,111 +48,38 @@ function SplitUnitForm({
   })
 
   return (
-    <div className="flex items-center gap-2 mt-1">
+    <div className="flex items-center gap-2 flex-wrap">
       {error && <span className="text-destructive text-xs">{error}</span>}
-      <input
+      <Input
         type="number"
         min={1}
         max={initCount - 1}
         value={splitCount}
         onChange={(e) => setSplitCount(Number(e.target.value))}
-        className="w-20 rounded border bg-input px-2 py-1 text-xs"
+        className="w-24 text-sm"
       />
-      <button
+      <Button
+        size="sm"
+        variant="secondary"
         onClick={() => splitMutation.mutate()}
         disabled={splitMutation.isPending}
-        className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
       >
-        Split
-      </button>
-      <button
-        onClick={onDone}
-        className="rounded min-h-[36px] px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-      >
+        Confirm Split
+      </Button>
+      <Button size="sm" variant="ghost" onClick={onDone}>
         Cancel
-      </button>
+      </Button>
     </div>
-  )
-}
-
-function UnitRow({
-  unit,
-  gameId,
-  onMerge,
-  onAttack,
-}: {
-  unit: UnitViewModel
-  gameId: string
-  onMerge: (defId: string) => void
-  onAttack: (unit: UnitViewModel) => void
-}) {
-  const [showSplit, setShowSplit] = useState(false)
-
-  return (
-    <tr className="border-b border-border">
-      <td data-label="Unit" className="py-2 px-3 font-medium">{unit.definition?.name}</td>
-      <td data-label="Count" className="py-2 px-3 text-right tabular-nums">{unit.count.toLocaleString()}</td>
-      <td data-label="Stats" className="py-2 px-3 text-xs text-muted-foreground">
-        ⚔️{unit.definition?.attack} 🛡️{unit.definition?.defense} ❤️{unit.definition?.hitpoints}
-      </td>
-      {unit.positionPlayerId && (
-        <td data-label="Location" className="py-2 px-3 text-xs">
-          <Link
-            to={`/games/${gameId}/enemybase/${encodeURIComponent(unit.positionPlayerId)}`}
-            className="text-primary hover:underline"
-          >
-            {unit.positionPlayerName ?? unit.positionPlayerId}
-          </Link>
-        </td>
-      )}
-      <td data-label="" className="py-2 px-3">
-        <div className="flex flex-wrap gap-1.5">
-          {!unit.positionPlayerId && (
-            <button
-              type="button"
-              onClick={() => onAttack(unit)}
-              className="rounded bg-destructive min-h-[36px] px-3 py-1.5 text-xs text-destructive-foreground hover:opacity-90"
-            >
-              Attack
-            </button>
-          )}
-          <button
-            onClick={() => onMerge(unit.definition.id)}
-            className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
-          >
-            Merge
-          </button>
-          {!unit.positionPlayerId && unit.count > 1 && (
-            <>
-              {!showSplit ? (
-                <button
-                  onClick={() => setShowSplit(true)}
-                  className="rounded bg-secondary min-h-[36px] px-3 py-1.5 text-xs text-secondary-foreground hover:opacity-90"
-                >
-                  Split
-                </button>
-              ) : (
-                <SplitUnitForm
-                  unitId={unit.unitId}
-                  initCount={unit.count}
-                  gameId={gameId}
-                  onDone={() => setShowSplit(false)}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
   )
 }
 
 export function Units({ gameId }: UnitsProps) {
   const queryClient = useQueryClient()
-  const [error, setError] = useState<string | null>(null)
+  const [mergeError, setMergeError] = useState<string | null>(null)
   const [attackUnit, setAttackUnit] = useState<UnitViewModel | null>(null)
+  const [splittingUnitId, setSplittingUnitId] = useState<string | null>(null)
 
-  const { data, isLoading, error: queryError, refetch } = useQuery<UnitsViewModel>({
+  const { data, isLoading, error: queryError } = useQuery<UnitsViewModel>({
     queryKey: ['units', gameId],
     queryFn: () => apiClient.get('/api/units').then((r) => r.data),
     refetchInterval: 10_000,
@@ -154,11 +88,11 @@ export function Units({ gameId }: UnitsProps) {
   const mergeAllMutation = useMutation({
     mutationFn: () => apiClient.post('/api/units/merge', null),
     onSuccess: () => {
-      setError(null)
+      setMergeError(null)
       void queryClient.invalidateQueries({ queryKey: ['units', gameId] })
     },
     onError: (err) => {
-      if (axios.isAxiosError(err)) setError((err.response?.data as string) ?? 'Merge failed')
+      if (axios.isAxiosError(err)) setMergeError((err.response?.data as string) ?? 'Merge failed')
     },
   })
 
@@ -166,147 +100,284 @@ export function Units({ gameId }: UnitsProps) {
     mutationFn: (unitDefId: string) =>
       apiClient.post(`/api/units/merge?unitDefId=${unitDefId}`, null),
     onSuccess: () => {
-      setError(null)
+      setMergeError(null)
       void queryClient.invalidateQueries({ queryKey: ['units', gameId] })
     },
     onError: (err) => {
-      if (axios.isAxiosError(err)) setError((err.response?.data as string) ?? 'Merge failed')
+      if (axios.isAxiosError(err)) setMergeError((err.response?.data as string) ?? 'Merge failed')
     },
   })
 
-  const deployed = data?.units.filter((u) => u.positionPlayerId != null) ?? []
-  const atHome = data?.units.filter((u) => u.positionPlayerId == null) ?? []
+  const deployed = useMemo(
+    () =>
+      (data?.units.filter((u) => u.positionPlayerId != null) ?? [])
+        .slice()
+        .sort((a, b) => b.count - a.count || a.definition.name.localeCompare(b.definition.name)),
+    [data],
+  )
+
+  const atHome = useMemo(
+    () =>
+      (data?.units.filter((u) => u.positionPlayerId == null) ?? [])
+        .slice()
+        .sort((a, b) => b.count - a.count || a.definition.name.localeCompare(b.definition.name)),
+    [data],
+  )
+
+  // canMerge: at least 2 stacks share the same unit definition
+  const canMerge = useMemo(() => {
+    if (!data) return false
+    const counts = new Map<string, number>()
+    for (const u of data.units) {
+      counts.set(u.definition.id, (counts.get(u.definition.id) ?? 0) + 1)
+    }
+    return [...counts.values()].some((c) => c >= 2)
+  }, [data])
 
   const totalUnits = data?.units.reduce((s, u) => s + u.count, 0) ?? 0
-  const stackCount = data?.units.length ?? 0
+  const deployedCount = deployed.reduce((s, u) => s + u.count, 0)
+  const atHomeCount = atHome.reduce((s, u) => s + u.count, 0)
+
+  const splittingUnit = splittingUnitId != null
+    ? atHome.find((u) => u.unitId === splittingUnitId) ?? null
+    : null
+
+  const homeColumns: ColumnDef<UnitViewModel, unknown>[] = [
+    {
+      id: 'name',
+      header: 'Unit',
+      accessorFn: (u) => u.definition.name,
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.definition.name}</span>
+      ),
+    },
+    {
+      id: 'count',
+      header: () => <span className="block text-right">Count</span>,
+      accessorFn: (u) => u.count,
+      cell: ({ row }) => (
+        <span className="block text-right mono tabular-nums">
+          {formatNumber(row.original.count)}
+        </span>
+      ),
+    },
+    {
+      id: 'attack',
+      header: 'Attack',
+      accessorFn: (u) => u.definition.attack,
+      cell: ({ row }) => (
+        <Stat label="Atk" value={row.original.definition.attack} />
+      ),
+    },
+    {
+      id: 'defense',
+      header: 'Defense',
+      accessorFn: (u) => u.definition.defense,
+      cell: ({ row }) => (
+        <Stat label="Def" value={row.original.definition.defense} />
+      ),
+    },
+    {
+      id: 'hp',
+      header: 'HP',
+      accessorFn: (u) => u.definition.hitpoints,
+      cell: ({ row }) => (
+        <Stat label="HP" value={row.original.definition.hitpoints} />
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const unit = row.original
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() => setAttackUnit(unit)}
+            >
+              Attack
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => mergeMutation.mutate(unit.definition.id)}
+              disabled={mergeMutation.isPending}
+            >
+              Merge
+            </Button>
+            {unit.count > 1 && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  setSplittingUnitId((prev) =>
+                    prev === unit.unitId ? null : unit.unitId,
+                  )
+                }
+              >
+                Split
+              </Button>
+            )}
+          </div>
+        )
+      },
+    },
+  ]
+
+  const deployedColumns: ColumnDef<UnitViewModel, unknown>[] = [
+    {
+      id: 'name',
+      header: 'Unit',
+      accessorFn: (u) => u.definition.name,
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.definition.name}</span>
+      ),
+    },
+    {
+      id: 'count',
+      header: () => <span className="block text-right">Count</span>,
+      accessorFn: (u) => u.count,
+      cell: ({ row }) => (
+        <span className="block text-right mono tabular-nums">
+          {formatNumber(row.original.count)}
+        </span>
+      ),
+    },
+    {
+      id: 'attack',
+      header: 'Attack',
+      accessorFn: (u) => u.definition.attack,
+      cell: ({ row }) => (
+        <Stat label="Atk" value={row.original.definition.attack} />
+      ),
+    },
+    {
+      id: 'defense',
+      header: 'Defense',
+      accessorFn: (u) => u.definition.defense,
+      cell: ({ row }) => (
+        <Stat label="Def" value={row.original.definition.defense} />
+      ),
+    },
+    {
+      id: 'hp',
+      header: 'HP',
+      accessorFn: (u) => u.definition.hitpoints,
+      cell: ({ row }) => (
+        <Stat label="HP" value={row.original.definition.hitpoints} />
+      ),
+    },
+    {
+      id: 'location',
+      header: 'Location',
+      cell: ({ row }) => {
+        const unit = row.original
+        return (
+          <Link
+            to={`/games/${gameId}/enemybase/${encodeURIComponent(unit.positionPlayerId!)}`}
+            className="text-primary hover:underline text-sm"
+          >
+            {unit.positionPlayerName ?? unit.positionPlayerId}
+          </Link>
+        )
+      },
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      cell: () => (
+        <Badge variant="destructive">In Combat</Badge>
+      ),
+    },
+  ]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Units</h1>
+      <PageHeader
+        title="Units"
+        actions={
+          <Button
+            variant="secondary"
+            onClick={() => mergeAllMutation.mutate()}
+            disabled={mergeAllMutation.isPending || !canMerge}
+            title="Combine all unit stacks of the same type into single stacks"
+          >
+            Merge All
+          </Button>
+        }
+      />
 
-      {error && <div className="text-destructive text-sm">{error}</div>}
+      {mergeError && <div className="text-destructive text-sm">{mergeError}</div>}
 
       <BuildQueue gameId={gameId} />
 
-      {isLoading ? (
-        <div className="rounded-lg border bg-card overflow-hidden" aria-hidden="true">
-          <table className="w-full text-sm">
-            <tbody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <SkeletonRow key={i} cols={5} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : queryError && !data ? (
-        <ApiError message="Failed to load units." onRetry={() => void refetch()} />
-      ) : !data || data.units.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <div className="text-4xl mb-3">🪖</div>
-          <div className="font-semibold mb-1">No units yet</div>
-          <div className="text-sm text-muted-foreground">
-            Build units from your base buildings to start training your army.
+      {/* Summary stats */}
+      {data && data.units.length > 0 && (
+        <Section boxed>
+          <div className="flex flex-wrap gap-6">
+            <Stat label="Total Units" value={formatNumber(totalUnits)} />
+            <Stat label="At Home" value={formatNumber(atHomeCount)} />
+            <Stat label="Deployed" value={formatNumber(deployedCount)} />
           </div>
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => mergeAllMutation.mutate()}
-              disabled={mergeAllMutation.isPending}
-              className="rounded bg-secondary min-h-[44px] px-4 py-2 text-sm text-secondary-foreground hover:opacity-90 disabled:opacity-50"
-              title="Combine all unit stacks of the same type into single stacks"
-            >
-              Merge All
-            </button>
-            <span className="text-sm text-muted-foreground">
-              {totalUnits.toLocaleString()} units in {stackCount} stacks
-            </span>
-          </div>
+        </Section>
+      )}
 
-          {deployed.length > 0 && (
-            <div className="rounded-lg border bg-card overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b bg-secondary/30">
-                <span className="font-semibold text-sm">
-                  Deployed ({deployed.reduce((s, u) => s + u.count, 0).toLocaleString()} units)
-                </span>
-                <span className="rounded-full bg-red-900/50 px-2 py-0.5 text-xs text-red-300">
-                  In Combat
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="responsive-table w-full text-sm">
-                  <thead className="border-b">
-                    <tr>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
-                      <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Location</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {deployed
-                      .slice()
-                      .sort((a, b) => b.count - a.count || a.definition.name.localeCompare(b.definition.name))
-                      .map((unit) => (
-                        <UnitRow
-                          key={unit.unitId}
-                          unit={unit}
-                          gameId={gameId}
-                          onMerge={(defId) => mergeMutation.mutate(defId)}
-                          onAttack={(u) => setAttackUnit(u)}
-                        />
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+      {/* Deployed units */}
+      {(isLoading || deployed.length > 0 || (data && data.units.length === 0)) && (
+        <Section
+          title={
+            deployed.length > 0
+              ? `Deployed (${formatNumber(deployedCount)} units)`
+              : 'Deployed'
+          }
+        >
+          <DataTable<UnitViewModel>
+            columns={deployedColumns}
+            rows={deployed}
+            loading={isLoading}
+            error={queryError && !data ? 'Failed to load units.' : undefined}
+            empty="No units are currently deployed."
+            sortable
+            getRowId={(u) => u.unitId}
+          />
+        </Section>
+      )}
 
-          <div className="rounded-lg border bg-card overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b bg-secondary/30">
-              <span className="font-semibold text-sm">
-                Home Base ({atHome.reduce((s, u) => s + u.count, 0).toLocaleString()} units)
-              </span>
-              <span className="rounded-full bg-green-900/50 px-2 py-0.5 text-xs text-green-300">
-                Defending
-              </span>
-            </div>
-            {atHome.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                All units are deployed.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="responsive-table w-full text-sm">
-                  <thead className="border-b">
-                    <tr>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Unit</th>
-                      <th scope="col" className="py-2 px-3 text-right font-medium text-muted-foreground">Count</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Stats</th>
-                      <th scope="col" className="py-2 px-3 text-left font-medium text-muted-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {atHome
-                      .slice()
-                      .sort((a, b) => b.count - a.count || a.definition.name.localeCompare(b.definition.name))
-                      .map((unit) => (
-                        <UnitRow
-                          key={unit.unitId}
-                          unit={unit}
-                          gameId={gameId}
-                          onMerge={(defId) => mergeMutation.mutate(defId)}
-                          onAttack={(u) => setAttackUnit(u)}
-                        />
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </>
+      {/* Home base units */}
+      <Section
+        title={
+          isLoading || !data
+            ? 'Home Base'
+            : `Home Base (${formatNumber(atHomeCount)} units)`
+        }
+        actions={undefined}
+      >
+        <DataTable<UnitViewModel>
+          columns={homeColumns}
+          rows={atHome}
+          loading={isLoading}
+          error={queryError && !data ? 'Failed to load units.' : undefined}
+          empty="No units at home base. All units are deployed, or you have not built any units yet."
+          sortable
+          getRowId={(u) => u.unitId}
+        />
+      </Section>
+
+      {/* Split form — renders below tables, keyed to the unit being split */}
+      {splittingUnit && (
+        <Section title={`Splitting: ${splittingUnit.definition.name} (${formatNumber(splittingUnit.count)})`}>
+          <SplitUnitForm
+            unitId={splittingUnit.unitId}
+            initCount={splittingUnit.count}
+            gameId={gameId}
+            onDone={() => setSplittingUnitId(null)}
+          />
+        </Section>
       )}
 
       <AttackDialog
