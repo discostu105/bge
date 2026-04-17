@@ -2,34 +2,36 @@ import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { PlayerResourcesViewModel } from '@/api/types'
 import { formatNumber } from '@/lib/formatters'
-
-function ResourceEntry({ name, value }: { name: string; value: number }) {
-  return (
-    <span className="flex items-center gap-1">
-      <strong className="capitalize text-xs">{name}</strong>
-      <span className="font-mono">{formatNumber(value)}</span>
-    </span>
-  )
-}
+import { Stat } from '@/components/ui/stat'
+import { ResourceIcon } from '@/components/ui/resource-icon'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export function PlayerResources({ gameId }: { gameId: string }) {
-  const { data: resources } = useQuery({
+  const { data } = useQuery({
     queryKey: ['resources', gameId],
-    queryFn: () =>
-      apiClient.get<PlayerResourcesViewModel>('/api/resources').then((r) => r.data),
-    refetchInterval: 30_000,
+    queryFn: () => apiClient.get<PlayerResourcesViewModel>('/api/resources').then((r) => r.data),
+    refetchInterval: 10_000,
   })
+  if (!data) return null
 
-  if (!resources) return null
+  const all = [
+    ...Object.entries(data.primaryResource.cost),
+    ...Object.entries(data.secondaryResources.cost),
+  ].filter(([, v]) => v !== undefined)
 
   return (
-    <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm whitespace-nowrap">
-      {Object.entries(resources.primaryResource.cost).map(([name, value]) => (
-        <ResourceEntry key={name} name={name} value={value} />
-      ))}
-      {Object.entries(resources.secondaryResources.cost).map(([name, value]) => (
-        <ResourceEntry key={name} name={name} value={value} />
-      ))}
-    </div>
+    <ScrollArea className="max-w-full">
+      <div className="flex items-center gap-4 px-1 py-0.5 whitespace-nowrap">
+        {all.map(([name, value]) => (
+          <Stat
+            key={name}
+            icon={<ResourceIcon name={name} className="h-4 w-4 text-muted-foreground" />}
+            label={<span className="capitalize">{name}</span>}
+            value={formatNumber(value)}
+          />
+        ))}
+      </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   )
 }
