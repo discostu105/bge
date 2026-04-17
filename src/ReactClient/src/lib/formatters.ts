@@ -35,3 +35,18 @@ export function rankBadgeClass(rank: number, players?: number): string {
   if (players != null && rank > players / 2) return 'bg-secondary text-secondary-foreground opacity-60'
   return 'bg-secondary text-secondary-foreground'
 }
+
+export function formatTicks(ticks: number, tickDurationMs: number): string {
+  const suffix = ticks === 1 ? 'tick' : 'ticks'
+  if (ticks <= 0) return `0 ticks`
+  const totalSec = Math.round((ticks * tickDurationMs) / 1000)
+  let approx: string
+  if (totalSec >= 3600) approx = `~${Math.round(totalSec / 3600)}h`
+  else if (totalSec >= 120) approx = `~${Math.round(totalSec / 60)}m`
+  else if (totalSec >= 60) {
+    const m = Math.floor(totalSec / 60)
+    const s = totalSec - m * 60
+    approx = s === 0 ? `~${m}m` : `~${m}m ${s}s`
+  } else approx = `~${totalSec}s`
+  return `${ticks} ${suffix} (${approx})`
+}
