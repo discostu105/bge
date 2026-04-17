@@ -27,7 +27,7 @@ export function GameStatusBanner({ game }: Props) {
     if (remaining > 0 && remaining <= 24 * 3_600_000) {
       const danger = remaining < 3_600_000
       return (
-        <div className={cn(
+        <div role="status" aria-live="polite" className={cn(
           'border-b px-4 py-2 text-sm flex items-center gap-2',
           danger ? 'bg-danger/15 border-danger/40' : 'bg-warning/10 border-warning/30',
         )}>
