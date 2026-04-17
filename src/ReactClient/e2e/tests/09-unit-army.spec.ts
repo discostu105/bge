@@ -40,7 +40,7 @@ test.describe('Unit build — army visibility', () => {
 		expect(buildRes.ok()).toBeTruthy()
 
 		await page.goto(`/games/${gameId}/units`)
-		await expect(page.getByRole('heading', { name: 'Units' })).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Units', exact: true })).toBeVisible()
 
 		// The units page should show the "Total Units" stat (summary section only renders
 		// when units.length > 0) and at least one DataTable row for the built unit type.
@@ -71,7 +71,7 @@ test.describe('Unit build — army visibility', () => {
 		const gameId = await createNavGame(page)
 
 		await page.goto(`/games/${gameId}/units`)
-		await expect(page.getByRole('heading', { name: 'Units' })).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Units', exact: true })).toBeVisible()
 
 		// Empty state message from the Home Base DataTable
 		await expect(
