@@ -34,9 +34,7 @@ const PlayerRanking = lazy(() => import('@/pages/PlayerRanking').then(m => ({ de
 const PlayerProfile = lazy(() => import('@/pages/PlayerProfile').then(m => ({ default: m.PlayerProfile })))
 const InGamePlayerProfile = lazy(() => import('@/pages/InGamePlayerProfile').then(m => ({ default: m.InGamePlayerProfile })))
 const Games = lazy(() => import('@/pages/Games').then(m => ({ default: m.Games })))
-const GameLobby = lazy(() => import('@/pages/GameLobby').then(m => ({ default: m.GameLobby })))
-const GameLobbyDetail = lazy(() => import('@/pages/GameLobbyDetail').then(m => ({ default: m.GameLobbyDetail })))
-const JoinGame = lazy(() => import('@/pages/JoinGame').then(m => ({ default: m.JoinGame })))
+const GameBriefing = lazy(() => import('@/pages/GameBriefing').then(m => ({ default: m.GameBriefing })))
 const GameSummary = lazy(() => import('@/pages/GameSummary').then(m => ({ default: m.GameSummary })))
 const GameResults = lazy(() => import('@/pages/GameResults').then(m => ({ default: m.GameResults })))
 const CreatePlayer = lazy(() => import('@/pages/CreatePlayer').then(m => ({ default: m.CreatePlayer })))
@@ -62,7 +60,6 @@ const PlayerStats = lazy(() => import('@/pages/PlayerStats').then(m => ({ defaul
 const TournamentResults = lazy(() => import('@/pages/TournamentResults').then(m => ({ default: m.TournamentResults })))
 const TournamentList = lazy(() => import('@/pages/TournamentList').then(m => ({ default: m.TournamentList })))
 const TournamentDetail = lazy(() => import('@/pages/TournamentDetail').then(m => ({ default: m.TournamentDetail })))
-const Spectator = lazy(() => import('@/pages/Spectator').then(m => ({ default: m.Spectator })))
 
 // Stub component for pages not yet implemented
 function TodoPage({ name }: { name: string }) {
@@ -148,11 +145,6 @@ function GameLiveViewPage() {
   if (!gameId) return null
   return <GameLiveView gameId={gameId} />
 }
-function SpectatorPage() {
-  const { gameId } = useParams<{ gameId: string }>()
-  if (!gameId) return null
-  return <Spectator gameId={gameId} />
-}
 
 const router = createBrowserRouter([
 	{
@@ -185,7 +177,7 @@ const router = createBrowserRouter([
 					{ path: 'enemybase/:enemyPlayerId', element: <RouteWithBoundary><EnemyBasePage /></RouteWithBoundary> },
 					{ path: 'battles/:reportId', element: <RouteWithBoundary><BattleReplayPage /></RouteWithBoundary> },
 					{ path: 'live', element: <RouteWithBoundary><GameLiveViewPage /></RouteWithBoundary> },
-					{ path: 'join', element: <RouteWithBoundary><JoinGame /></RouteWithBoundary> },
+					{ path: 'briefing', element: <RouteWithBoundary><GameBriefing /></RouteWithBoundary> },
 					{ path: 'summary', element: <RouteWithBoundary><GameSummary /></RouteWithBoundary> },
 					{ path: 'results', element: <RouteWithBoundary><GameResults /></RouteWithBoundary> },
 
@@ -204,8 +196,7 @@ const router = createBrowserRouter([
 			{ path: '/trade', element: <BareRouteRedirect path="trade" /> },
 
 			{ path: '/createplayer', element: <RouteWithBoundary><CreatePlayer /></RouteWithBoundary> },
-			{ path: '/lobby', element: <RouteWithBoundary><GameLobby /></RouteWithBoundary> },
-			{ path: '/lobby/:gameId', element: <RouteWithBoundary><GameLobbyDetail /></RouteWithBoundary> },
+
 			{ path: '/profile', element: <BareRouteRedirect path="profile" /> },
 			{ path: '/profile/:userId', element: <RouteWithBoundary><PublicProfile /></RouteWithBoundary> },
 			{ path: '/players', element: <RouteWithBoundary><PlayersList /></RouteWithBoundary> },
@@ -216,7 +207,7 @@ const router = createBrowserRouter([
 			{ path: '/tournaments', element: <RouteWithBoundary><TournamentList /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId', element: <RouteWithBoundary><TournamentDetail /></RouteWithBoundary> },
 			{ path: '/tournaments/:tournamentId/results', element: <RouteWithBoundary><TournamentResults /></RouteWithBoundary> },
-			{ path: '/games/:gameId/spectate', element: <RouteWithBoundary><SpectatorPage /></RouteWithBoundary> },
+
 			{ path: '/admin/games', element: <RouteWithBoundary><AdminGames /></RouteWithBoundary> },
 			{ path: '/admin/players', element: <RouteWithBoundary><AdminPlayers /></RouteWithBoundary> },
 			{ path: '/admin/ticks', element: <RouteWithBoundary><AdminTickControl /></RouteWithBoundary> },

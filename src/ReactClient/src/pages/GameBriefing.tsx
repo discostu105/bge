@@ -268,7 +268,7 @@ export function GameBriefing() {
 function RegisterForm({
   races, selectedRace, onRaceChange, playerName, onNameChange, submitLabel, onSubmit, busy, error,
 }: {
-  races: Race[]
+  races: readonly Race[]
   selectedRace: Race
   onRaceChange: (r: Race) => void
   playerName: string
