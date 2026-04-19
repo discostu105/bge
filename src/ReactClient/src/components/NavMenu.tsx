@@ -1,15 +1,15 @@
 import { NavLink } from 'react-router'
 import {
-  LayersIcon, ShieldIcon, FlaskConicalIcon, ShoppingCartIcon, ArrowRightLeftIcon,
-  BarChart2Icon, UsersIcon, MessageSquareIcon, MailIcon, TrophyIcon,
-  BookOpenIcon, HistoryIcon, HelpCircleIcon, RadioIcon, LineChartIcon, UserIcon,
+  LayersIcon, ShieldIcon, FlaskConicalIcon, ShoppingCartIcon,
+  RadioIcon, UsersIcon, BarChart2Icon, MessageSquareIcon, MailIcon,
+  BookOpenIcon, HelpCircleIcon, UserIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCurrentGame } from '@/contexts/CurrentGameContext'
 import { useNavBadges } from '@/hooks/useNavBadges'
 import { Badge } from '@/components/ui/badge'
 
-function NavItem({
+function PrimaryItem({
   to, icon: Icon, label, badge,
 }: {
   to: string
@@ -21,16 +21,14 @@ function NavItem({
     <li>
       <NavLink
         to={to}
-        className={({ isActive }) =>
-          cn(
-            'relative flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-r-md text-sm transition-colors min-h-[44px]',
-            isActive
-              ? 'text-foreground font-medium bg-primary/5 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-primary before:rounded-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-          )
-        }
+        className={({ isActive }) => cn(
+          'relative flex items-center gap-2 pl-4 pr-3 py-2.5 text-sm transition-colors min-h-[44px]',
+          isActive
+            ? 'text-foreground bg-[linear-gradient(90deg,var(--color-race-primary)_0%,transparent_100%)]/10 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-[color:var(--color-race-secondary)]'
+            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40',
+        )}
       >
-        <Icon className="h-4 w-4 shrink-0" aria-hidden />
+        <Icon className="h-4 w-4 shrink-0 text-race-secondary" aria-hidden />
         <span className="flex-1 truncate">{label}</span>
         {badge != null && badge > 0 && (
           <Badge variant="secondary" className="h-5 px-1.5 text-[10px] tabular-nums">{badge}</Badge>
@@ -40,11 +38,20 @@ function NavItem({
   )
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function UtilityLink({ to, icon: Icon, label, badge }: {
+  to: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  badge?: number
+}) {
   return (
-    <li className="px-4 pt-4 pb-1">
-      <span className="label">{children}</span>
-    </li>
+    <NavLink to={to} className={({ isActive }) => cn(
+      'inline-flex items-center gap-1.5 text-[11px] text-interactive hover:text-[color:var(--color-race-secondary)] py-1 pr-3',
+      isActive && 'text-foreground',
+    )}>
+      <Icon className="h-3 w-3" aria-hidden /> {label}
+      {badge != null && badge > 0 && <span className="ml-1 text-[10px] text-muted-foreground">({badge})</span>}
+    </NavLink>
   )
 }
 
@@ -55,32 +62,25 @@ export function NavMenu() {
   const g = (path: string) => `/games/${gameId}/${path}`
 
   return (
-    <nav aria-label="Game navigation">
-      <ul className="space-y-0.5">
-        <SectionLabel>Play</SectionLabel>
-        <NavItem to={g('base')} icon={LayersIcon} label="Base" />
-        <NavItem to={g('units')} icon={ShieldIcon} label="Units" />
-        <NavItem to={g('research')} icon={FlaskConicalIcon} label="Research" />
-        <NavItem to={g('market')} icon={ShoppingCartIcon} label="Market" />
-        <NavItem to={g('trade')} icon={ArrowRightLeftIcon} label="Trade" />
-
-        <SectionLabel>Info</SectionLabel>
-        <NavItem to={g('live')} icon={RadioIcon} label="Live View" />
-        <NavItem to={g('unitdefinitions')} icon={BookOpenIcon} label="Unit Types" />
-        <NavItem to={g('ranking')} icon={BarChart2Icon} label="Ranking" />
-        <NavItem to={g('help')} icon={HelpCircleIcon} label="Help" />
-
-        <SectionLabel>Social</SectionLabel>
-        <NavItem to={g('alliances')} icon={UsersIcon} label="Alliances" badge={badges.alliances} />
-        <NavItem to={g('allianceranking')} icon={TrophyIcon} label="Alliance Ranking" />
-        <NavItem to={g('chat')} icon={MessageSquareIcon} label="Chat" />
-        <NavItem to={g('messages')} icon={MailIcon} label="Messages" badge={badges.messages} />
-
-        <SectionLabel>Account</SectionLabel>
-        <NavItem to={g('history')} icon={HistoryIcon} label="History" />
-        <NavItem to={g('stats')} icon={LineChartIcon} label="My Stats" />
-        <NavItem to={g('profile')} icon={UserIcon} label="Profile" />
+    <nav aria-label="Game navigation" className="flex flex-col h-full">
+      <ul className="space-y-0.5 pt-2">
+        <PrimaryItem to={g('base')} icon={LayersIcon} label="Base" />
+        <PrimaryItem to={g('units')} icon={ShieldIcon} label="Units" />
+        <PrimaryItem to={g('research')} icon={FlaskConicalIcon} label="Research" />
+        <PrimaryItem to={g('market')} icon={ShoppingCartIcon} label="Market" />
+        <PrimaryItem to={g('live')} icon={RadioIcon} label="Live View" />
+        <PrimaryItem to={g('alliances')} icon={UsersIcon} label="Alliance" badge={badges.alliances} />
       </ul>
+      <div className="mt-auto border-t border-border px-4 pt-3 pb-4 text-[11px] leading-relaxed">
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          <UtilityLink to={g('ranking')} icon={BarChart2Icon} label="Ranking" />
+          <UtilityLink to={g('messages')} icon={MailIcon} label="Messages" badge={badges.messages} />
+          <UtilityLink to={g('chat')} icon={MessageSquareIcon} label="Chat" />
+          <UtilityLink to={g('unitdefinitions')} icon={BookOpenIcon} label="Codex" />
+          <UtilityLink to={g('profile')} icon={UserIcon} label="Profile" />
+          <UtilityLink to={g('help')} icon={HelpCircleIcon} label="Help" />
+        </div>
+      </div>
     </nav>
   )
 }
