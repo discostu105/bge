@@ -804,6 +804,11 @@ export interface GameLobbyViewModel {
   players: LobbyPlayerViewModel[]
   canJoin: boolean
   settings?: GameSettingsViewModel | null
+  isCurrentPlayerEnrolled: boolean
+  currentPlayerId: string | null
+  currentPlayerName: string | null
+  currentPlayerRace: string | null
+  currentPlayerRank: number | null
 }
 
 export interface LobbyPlayerViewModel {
