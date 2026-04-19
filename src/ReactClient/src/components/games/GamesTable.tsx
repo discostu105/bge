@@ -86,9 +86,9 @@ function fmtDate(iso: string | null): string {
 export function GamesTable({ section, games }: GamesTableProps) {
   if (games.length === 0) return null
   return (
-    <table className="w-full text-[12.5px]">
+    <table className="w-full text-[12.5px] border-collapse">
       <thead>
-        <tr className="text-left">
+        <tr className="text-left [&>th]:border-b [&>th]:border-border">
           <th className="label py-1.5 pr-3 w-[88px]">Status</th>
           <th className="label py-1.5 pr-3">Game</th>
           {section === 'active' && (
@@ -117,11 +117,18 @@ export function GamesTable({ section, games }: GamesTableProps) {
       <tbody>
         {games.map((g) => {
           const enrolled = g.isPlayerEnrolled
-          const rowClass = enrolled
-            ? 'border-b border-border bg-[color:var(--color-resource)]/4 border-l-2 border-l-[color:var(--color-resource)]'
-            : 'border-b border-border hover:bg-white/2'
+          // Tables use border-collapse; <tr> borders don't render cross-browser,
+          // so rules go on the cells instead. The enrolled-row green left-stripe
+          // goes on the first cell only.
+          const rowClass = cn(
+            '[&>td]:border-b [&>td]:border-border',
+            enrolled
+              ? 'bg-[color:var(--color-resource)]/5 [&>td:first-child]:border-l-2 [&>td:first-child]:border-l-[color:var(--color-resource)]'
+              : 'hover:bg-white/2',
+            section === 'finished' && 'opacity-75 hover:opacity-100',
+          )
           return (
-            <tr key={g.gameId} className={cn(rowClass, section === 'finished' && 'opacity-75 hover:opacity-100')}>
+            <tr key={g.gameId} className={rowClass}>
               <td className="py-2 pr-3"><StatusBadge section={section} /></td>
               <td className="py-2 pr-3"><NameCell game={g} section={section} /></td>
 
