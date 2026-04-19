@@ -924,3 +924,11 @@ export interface SpectatorSnapshotViewModel {
   tick: number
 }
 
+// Tick Info
+
+export interface TickInfoViewModel {
+  serverTime: string
+  nextTickAt: string
+  unreadMessageCount: number
+}
+
