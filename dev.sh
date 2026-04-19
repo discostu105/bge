@@ -69,7 +69,7 @@ if [ "$MODE" = "devauth" ]; then
     # DevAuth requires placeholder GitHub creds to pass startup validation
     export GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-dev-placeholder}"
     export GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-dev-placeholder}"
-    $DOCKER_COMPOSE_CMD up
+    $DOCKER_COMPOSE_CMD up --build
 else
     # GitHub OAuth mode
     if [ -z "$GITHUB_CLIENT_ID" ]; then
@@ -81,5 +81,5 @@ else
         exit 1
     fi
     echo "🚀 Starting BGE dev server with GitHub OAuth..."
-    $DOCKER_COMPOSE_CMD up
+    $DOCKER_COMPOSE_CMD up --build
 fi
