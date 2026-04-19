@@ -8,6 +8,7 @@ namespace BrowserGameEngine.Shared {
 	public record PlayerProfileViewModel {
 		public string? PlayerId { get; set; }
 		public string? PlayerName { get; set; }
+		public string? PlayerType { get; set; }
 		public decimal Land { get; set; }
 		public int ProtectionTicksRemaining { get; set; }
 		public bool IsOnline { get; set; }

@@ -354,3 +354,9 @@ src/BrowserGameEngine.FrontendServer/storage/
 
 # Superpowers brainstorming scratch (visual companion mockups, session state)
 .superpowers/
+
+# Claude Code — runtime / personal
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+.claude/projects/
+src/.claude/

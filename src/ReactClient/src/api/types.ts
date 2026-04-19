@@ -410,6 +410,7 @@ export interface TournamentResultsViewModel {
 export interface PlayerProfileViewModel {
   playerId: string | null
   playerName: string | null
+  playerType: string | null
   land: number
   protectionTicksRemaining: number
   isOnline: boolean
@@ -803,6 +804,11 @@ export interface GameLobbyViewModel {
   players: LobbyPlayerViewModel[]
   canJoin: boolean
   settings?: GameSettingsViewModel | null
+  isCurrentPlayerEnrolled: boolean
+  currentPlayerId: string | null
+  currentPlayerName: string | null
+  currentPlayerRace: string | null
+  currentPlayerRank: number | null
 }
 
 export interface LobbyPlayerViewModel {
@@ -906,20 +912,11 @@ export interface GameReplayViewModel {
   battleEvents: ReplayBattleEventViewModel[]
 }
 
-export interface SpectatorPlayerEntryViewModel {
-  rank: number
-  playerId: string
-  playerName: string
-  land: number
-  isOnline: boolean
-  isAgent: boolean
-}
+// Tick Info
 
-export interface SpectatorSnapshotViewModel {
-  gameId: string
-  gameName: string
-  gameStatus: string
-  topPlayers: SpectatorPlayerEntryViewModel[]
-  tick: number
+export interface TickInfoViewModel {
+  serverTime: string
+  nextTickAt: string
+  unreadMessageCount: number
 }
 

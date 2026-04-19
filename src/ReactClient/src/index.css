@@ -1,90 +1,87 @@
 @import "tailwindcss";
 
 @theme {
-  /* Dark — default */
-  --color-background: hsl(222 47% 6%);
-  --color-foreground: hsl(210 40% 98%);
-  --color-card: hsl(222 47% 8%);
-  --color-card-foreground: hsl(210 40% 98%);
-  --color-popover: hsl(222 47% 8%);
-  --color-popover-foreground: hsl(210 40% 98%);
-  --color-primary: hsl(38 92% 55%);
-  --color-primary-foreground: hsl(38 30% 10%);
-  --color-secondary: hsl(217 32% 17%);
-  --color-secondary-foreground: hsl(210 40% 98%);
-  --color-muted: hsl(217 32% 14%);
-  --color-muted-foreground: hsl(215 20% 65%);
-  --color-accent: hsl(217 91% 60%);
-  --color-accent-foreground: hsl(217 47% 11%);
-  --color-destructive: hsl(0 62% 30%);
-  --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(217 32% 16%);
-  --color-input: hsl(217 32% 16%);
-  --color-ring: hsl(38 92% 55%);
-  --radius: 0.5rem;
+  /* Neutral / surfaces */
+  --color-background: #050810;
+  --color-foreground: #F3F6FB;
+  --color-card: rgba(5, 10, 20, 0.75);
+  --color-card-foreground: #F3F6FB;
+  --color-popover: #0b1324;
+  --color-popover-foreground: #F3F6FB;
+  --color-muted: hsl(222 40% 12%);
+  --color-muted-foreground: #94a3b8;
+  --color-secondary: hsl(222 40% 14%);
+  --color-secondary-foreground: #F3F6FB;
+  --color-border: hsl(222 40% 15%);
+  --color-input: hsl(222 40% 13%);
+  --color-accent: #3B82F6;
+  --color-accent-foreground: #F3F6FB;
+  --color-destructive: #EF4444;
+  --color-destructive-foreground: #F3F6FB;
+  --color-ring: #F59E0B;
+  --radius: 0.25rem;
 
-  /* Semantic */
-  --color-success: hsl(142 71% 35%);
-  --color-success-foreground: hsl(142 76% 90%);
-  --color-warning: hsl(48 95% 55%);
-  --color-warning-foreground: hsl(48 92% 12%);
-  --color-danger: hsl(0 72% 45%);
-  --color-danger-foreground: hsl(0 72% 92%);
-  --color-info: hsl(217 91% 55%);
-  --color-info-foreground: hsl(217 91% 92%);
+  /* SCO semantic roles */
+  --color-resource: #22C55E;
+  --color-interactive: #3B82F6;
+  --color-prestige: #F59E0B;
+  --color-enemy: #fca5a5;
+  --color-success: #22C55E;
+  --color-success-foreground: #052e14;
+  --color-warning: #F59E0B;
+  --color-warning-foreground: #2a1902;
+  --color-danger: #EF4444;
+  --color-danger-foreground: #2a0606;
+  --color-info: #3B82F6;
+  --color-info-foreground: #06132a;
 
-  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Primary = prestige (amber). Interactive is the blue token, not primary. */
+  --color-primary: #F59E0B;
+  --color-primary-foreground: #2a1902;
+
+  /* Race defaults — overridden by [data-race="..."] on <html> */
+  --color-race-primary: #CBD5E1;
+  --color-race-secondary: #F59E0B;
+  --color-race-emblem-fill: #1f2937;
+
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
 }
 
-html.light {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(222 47% 6%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222 47% 6%);
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222 47% 6%);
-  --color-primary: hsl(38 92% 45%);
-  --color-primary-foreground: hsl(38 30% 98%);
-  --color-secondary: hsl(210 40% 94%);
-  --color-secondary-foreground: hsl(222 47% 11%);
-  --color-muted: hsl(210 40% 94%);
-  --color-muted-foreground: hsl(215 16% 40%);
-  --color-accent: hsl(217 91% 45%);
-  --color-accent-foreground: hsl(210 40% 98%);
-  --color-destructive: hsl(0 72% 45%);
-  --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(214 32% 86%);
-  --color-input: hsl(214 32% 86%);
-  --color-ring: hsl(38 92% 45%);
-
-  --color-success: hsl(142 71% 30%);
-  --color-success-foreground: hsl(142 76% 15%);
-  --color-warning: hsl(48 95% 42%);
-  --color-warning-foreground: hsl(48 95% 12%);
-  --color-danger: hsl(0 72% 40%);
-  --color-danger-foreground: hsl(0 72% 15%);
-  --color-info: hsl(217 91% 45%);
-  --color-info-foreground: hsl(217 91% 15%);
+/* Per-race overrides */
+html[data-race="terran"] {
+  --color-race-primary: #CBD5E1;
+  --color-race-secondary: #F59E0B;
+  --color-race-emblem-fill: #1f2937;
+}
+html[data-race="zerg"] {
+  --color-race-primary: #B45309;
+  --color-race-secondary: #ea580c;
+  --color-race-emblem-fill: #3a1a08;
+}
+html[data-race="protoss"] {
+  --color-race-primary: #FBBF24;
+  --color-race-secondary: #0e7490;
+  --color-race-emblem-fill: #0c1e2e;
 }
 
-* {
-  border-color: var(--color-border);
-}
+* { border-color: var(--color-border); }
 
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
   overflow-x: hidden;
 }
 
 .label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   color: var(--color-muted-foreground);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .mono, .tabular {
@@ -92,28 +89,30 @@ body {
   font-family: var(--font-mono);
 }
 
-.bg-grid {
+.text-resource { color: var(--color-resource); text-shadow: 0 0 6px rgba(34,197,94,0.35); }
+.text-interactive { color: var(--color-interactive); }
+.text-prestige { color: var(--color-prestige); }
+.text-race-primary { color: var(--color-race-primary); }
+.text-race-secondary { color: var(--color-race-secondary); }
+
+.bg-starfield {
+  background-color: #050810;
   background-image:
-    linear-gradient(hsl(217 32% 12%) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(217 32% 12%) 1px, transparent 1px);
-  background-size: 16px 16px;
-  background-position: -1px -1px;
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(220,220,255,0.7), transparent),
+    radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 10% 70%, rgba(200,220,255,0.7), transparent),
+    radial-gradient(1px 1px at 55% 10%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 30% 50%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 80% 85%, rgba(220,220,255,0.5), transparent),
+    radial-gradient(1px 1px at 15% 15%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 65% 40%, rgba(255,255,255,0.5), transparent);
+  background-size: 300px 300px, 200px 200px, 250px 250px, 280px 280px, 400px 400px, 350px 350px, 180px 180px, 320px 320px, 260px 260px, 220px 220px;
 }
 
-html.light .bg-grid {
-  background-image:
-    linear-gradient(hsl(214 32% 92%) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(214 32% 92%) 1px, transparent 1px);
-}
-
-@keyframes page-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.page-enter {
-  animation: page-fade-in 100ms ease-out;
-}
+@keyframes page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.page-enter { animation: page-fade-in 100ms ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .page-enter { animation: none; }
