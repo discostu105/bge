@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeRace, RACES, type Race } from '@/lib/race'
+import { normalizeRace, RACES } from '@/lib/race'
 
 describe('race helpers', () => {
   it('exposes the three canonical races', () => {
