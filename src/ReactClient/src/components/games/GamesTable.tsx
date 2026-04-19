@@ -12,8 +12,8 @@ interface GamesTableProps {
 }
 
 const BADGE_CLASSES: Record<Section, string> = {
-  active: 'text-resource border-l-2 border-[color:var(--color-resource)] bg-[color:var(--color-resource)]/15',
-  upcoming: 'text-prestige border-l-2 border-[color:var(--color-prestige)] bg-[color:var(--color-prestige)]/15',
+  active: 'text-resource border-l-2 border-resource bg-resource/15',
+  upcoming: 'text-prestige border-l-2 border-prestige bg-prestige/15',
   finished: 'text-muted-foreground border-l-2 border-muted-foreground bg-muted/10',
 }
 
@@ -123,8 +123,8 @@ export function GamesTable({ section, games }: GamesTableProps) {
           const rowClass = cn(
             '[&>td]:border-b [&>td]:border-border',
             enrolled
-              ? 'bg-[color:var(--color-resource)]/5 [&>td:first-child]:border-l-2 [&>td:first-child]:border-l-[color:var(--color-resource)]'
-              : 'hover:bg-white/2',
+              ? 'bg-resource/5 [&>td:first-child]:border-l-2 [&>td:first-child]:border-l-resource'
+              : 'hover:bg-white/5',
             section === 'finished' && 'opacity-75 hover:opacity-100',
           )
           return (
