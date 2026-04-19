@@ -2,82 +2,33 @@ import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import axios from 'axios'
+import { SwordsIcon, MergeIcon, SplitIcon, HammerIcon } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import apiClient from '@/api/client'
 import type { UnitsViewModel, UnitViewModel } from '@/api/types'
 import { BuildQueue } from '@/components/BuildQueue'
 import { AttackDialog } from '@/components/AttackDialog'
+import { TrainUnitsDialog } from '@/components/TrainUnitsDialog'
+import { SplitUnitDialog } from '@/components/SplitUnitDialog'
+import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/ui/page-header'
 import { Section } from '@/components/ui/section'
 import { DataTable } from '@/components/ui/data-table'
 import { Stat } from '@/components/ui/stat'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { formatNumber } from '@/lib/formatters'
 
 interface UnitsProps {
   gameId: string
 }
 
-function SplitUnitForm({
-  unitId,
-  initCount,
-  gameId,
-  onDone,
-}: {
-  unitId: string
-  initCount: number
-  gameId: string
-  onDone: () => void
-}) {
-  const queryClient = useQueryClient()
-  const [splitCount, setSplitCount] = useState(Math.max(1, Math.floor(initCount / 2)))
-  const [error, setError] = useState<string | null>(null)
-
-  const splitMutation = useMutation({
-    mutationFn: () =>
-      apiClient.post(`/api/units/split?unitId=${unitId}&count=${splitCount}`, ''),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['units', gameId] })
-      onDone()
-    },
-    onError: (err) => {
-      if (axios.isAxiosError(err)) setError((err.response?.data as string) ?? 'Split failed')
-    },
-  })
-
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {error && <span className="text-destructive text-xs">{error}</span>}
-      <Input
-        type="number"
-        min={1}
-        max={initCount - 1}
-        value={splitCount}
-        onChange={(e) => setSplitCount(Number(e.target.value))}
-        className="w-24 text-sm"
-      />
-      <Button
-        size="sm"
-        variant="secondary"
-        onClick={() => splitMutation.mutate()}
-        disabled={splitMutation.isPending}
-      >
-        Confirm Split
-      </Button>
-      <Button size="sm" variant="ghost" onClick={onDone}>
-        Cancel
-      </Button>
-    </div>
-  )
-}
-
 export function Units({ gameId }: UnitsProps) {
   const queryClient = useQueryClient()
   const [mergeError, setMergeError] = useState<string | null>(null)
   const [attackUnit, setAttackUnit] = useState<UnitViewModel | null>(null)
-  const [splittingUnitId, setSplittingUnitId] = useState<string | null>(null)
+  const [splitUnit, setSplitUnit] = useState<UnitViewModel | null>(null)
+  const [trainOpen, setTrainOpen] = useState(false)
 
   const { data, isLoading, error: queryError } = useQuery<UnitsViewModel>({
     queryKey: ['units', gameId],
@@ -96,7 +47,7 @@ export function Units({ gameId }: UnitsProps) {
     },
   })
 
-  const mergeMutation = useMutation({
+  const mergeTypeMutation = useMutation({
     mutationFn: (unitDefId: string) =>
       apiClient.post(`/api/units/merge?unitDefId=${unitDefId}`, null),
     onSuccess: () => {
@@ -124,23 +75,20 @@ export function Units({ gameId }: UnitsProps) {
     [data],
   )
 
-  // canMerge: at least 2 stacks share the same unit definition
-  const canMerge = useMemo(() => {
-    if (!data) return false
+  const stackCountByDefId = useMemo(() => {
     const counts = new Map<string, number>()
-    for (const u of data.units) {
-      counts.set(u.definition.id, (counts.get(u.definition.id) ?? 0) + 1)
-    }
-    return [...counts.values()].some((c) => c >= 2)
-  }, [data])
+    for (const u of atHome) counts.set(u.definition.id, (counts.get(u.definition.id) ?? 0) + 1)
+    return counts
+  }, [atHome])
+
+  const canMergeAny = useMemo(
+    () => [...stackCountByDefId.values()].some((c) => c >= 2),
+    [stackCountByDefId],
+  )
 
   const totalUnits = data?.units.reduce((s, u) => s + u.count, 0) ?? 0
   const deployedCount = deployed.reduce((s, u) => s + u.count, 0)
   const atHomeCount = atHome.reduce((s, u) => s + u.count, 0)
-
-  const splittingUnit = splittingUnitId != null
-    ? atHome.find((u) => u.unitId === splittingUnitId) ?? null
-    : null
 
   const homeColumns: ColumnDef<UnitViewModel, unknown>[] = [
     {
@@ -190,37 +138,42 @@ export function Units({ gameId }: UnitsProps) {
       header: 'Actions',
       cell: ({ row }) => {
         const unit = row.original
+        const canMergeType = (stackCountByDefId.get(unit.definition.id) ?? 0) >= 2
         return (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 justify-end">
             <Button
               type="button"
               variant="destructive"
               size="sm"
               onClick={() => setAttackUnit(unit)}
+              title="Attack an enemy with this stack"
             >
+              <SwordsIcon className="h-3.5 w-3.5" />
               Attack
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => mergeMutation.mutate(unit.definition.id)}
-              disabled={mergeMutation.isPending}
-            >
-              Merge
             </Button>
             {unit.count > 1 && (
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 size="sm"
-                onClick={() =>
-                  setSplittingUnitId((prev) =>
-                    prev === unit.unitId ? null : unit.unitId,
-                  )
-                }
+                onClick={() => setSplitUnit(unit)}
+                title="Split this stack"
               >
+                <SplitIcon className="h-3.5 w-3.5" />
                 Split
+              </Button>
+            )}
+            {canMergeType && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => mergeTypeMutation.mutate(unit.definition.id)}
+                disabled={mergeTypeMutation.isPending}
+                title={`Merge all ${unit.definition.name} stacks into one`}
+              >
+                <MergeIcon className="h-3.5 w-3.5" />
+                Merge
               </Button>
             )}
           </div>
@@ -296,27 +249,49 @@ export function Units({ gameId }: UnitsProps) {
     },
   ]
 
+  const hasAnyUnits = (data?.units.length ?? 0) > 0
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Units"
         actions={
-          <Button
-            variant="secondary"
-            onClick={() => mergeAllMutation.mutate()}
-            disabled={mergeAllMutation.isPending || !canMerge}
-            title="Combine all unit stacks of the same type into single stacks"
-          >
-            Merge All
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => mergeAllMutation.mutate()}
+              disabled={mergeAllMutation.isPending || !canMergeAny}
+              title={canMergeAny
+                ? 'Combine all stacks of the same type into single stacks'
+                : 'Nothing to merge — each unit type only has one stack'}
+            >
+              <MergeIcon className="h-4 w-4" />
+              Merge all
+            </Button>
+            <Button
+              onClick={() => setTrainOpen(true)}
+              title="Open the training panel"
+            >
+              <HammerIcon className="h-4 w-4" />
+              Train units
+            </Button>
+          </div>
         }
       />
 
       {mergeError && <div className="text-destructive text-sm">{mergeError}</div>}
 
-      <BuildQueue gameId={gameId} />
+      {!isLoading && !hasAnyUnits && (
+        <Section boxed>
+          <EmptyState
+            icon={<SwordsIcon />}
+            title="No units yet"
+            description="Train your first units to start building an army."
+            action={{ label: 'Train units', onClick: () => setTrainOpen(true) }}
+          />
+        </Section>
+      )}
 
-      {/* Summary stats */}
       {data && data.units.length > 0 && (
         <Section boxed>
           <div className="flex flex-wrap gap-6">
@@ -327,8 +302,9 @@ export function Units({ gameId }: UnitsProps) {
         </Section>
       )}
 
-      {/* Deployed units */}
-      {(isLoading || deployed.length > 0 || (data && data.units.length === 0)) && (
+      <BuildQueue gameId={gameId} />
+
+      {(isLoading || deployed.length > 0) && (
         <Section
           title={
             deployed.length > 0
@@ -348,38 +324,37 @@ export function Units({ gameId }: UnitsProps) {
         </Section>
       )}
 
-      {/* Home base units */}
-      <Section
-        title={
-          isLoading || !data
-            ? 'Home Base'
-            : `Home Base (${formatNumber(atHomeCount)} units)`
-        }
-        actions={undefined}
-      >
-        <DataTable<UnitViewModel>
-          columns={homeColumns}
-          rows={atHome}
-          loading={isLoading}
-          error={queryError && !data ? 'Failed to load units.' : undefined}
-          empty="No units at home base. All units are deployed, or you have not built any units yet."
-          sortable
-          getRowId={(u) => u.unitId}
-        />
-      </Section>
-
-      {/* Split form — renders below tables, keyed to the unit being split */}
-      {splittingUnit && (
-        <Section title={`Splitting: ${splittingUnit.definition.name} (${formatNumber(splittingUnit.count)})`}>
-          <SplitUnitForm
-            unitId={splittingUnit.unitId}
-            initCount={splittingUnit.count}
-            gameId={gameId}
-            onDone={() => setSplittingUnitId(null)}
+      {hasAnyUnits && (
+        <Section
+          title={
+            isLoading || !data
+              ? 'Home Base'
+              : `Home Base (${formatNumber(atHomeCount)} units)`
+          }
+        >
+          <DataTable<UnitViewModel>
+            columns={homeColumns}
+            rows={atHome}
+            loading={isLoading}
+            error={queryError && !data ? 'Failed to load units.' : undefined}
+            empty="All units are deployed."
+            sortable
+            getRowId={(u) => u.unitId}
           />
         </Section>
       )}
 
+      <TrainUnitsDialog
+        open={trainOpen}
+        onOpenChange={setTrainOpen}
+        gameId={gameId}
+      />
+      <SplitUnitDialog
+        open={splitUnit !== null}
+        onOpenChange={(open) => { if (!open) setSplitUnit(null) }}
+        gameId={gameId}
+        unit={splitUnit}
+      />
       <AttackDialog
         open={attackUnit !== null}
         onOpenChange={(open) => { if (!open) setAttackUnit(null) }}
