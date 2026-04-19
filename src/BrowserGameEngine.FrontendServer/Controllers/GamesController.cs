@@ -315,6 +315,36 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				);
 			}
 
+			// Current-player fields — populated only for authenticated callers whose player
+			// is one of the enrolled lobby players. Anonymous callers get the defaults.
+			bool isEnrolled = false;
+			string? currentPlayerId = null;
+			string? currentPlayerName = null;
+			string? currentPlayerRace = null;
+			int? currentPlayerRank = null;
+
+			if (currentUserContext.IsValid && currentUserContext.PlayerId != null) {
+				var myPlayerId = currentUserContext.PlayerId.Id;
+				var me = players.FirstOrDefault(p => p.PlayerId == myPlayerId);
+				if (me != null) {
+					isEnrolled = true;
+					currentPlayerId = me.PlayerId;
+					currentPlayerName = me.PlayerName;
+					currentPlayerRace = me.PlayerType;
+
+					if (record.Status == GameStatus.Active && instance != null) {
+						var myPid = currentUserContext.PlayerId;
+						var instanceResRepo = new ResourceRepository(instance.WorldStateAccessor, instance.GameDef);
+						var allByLand = instance.GetLobbyPlayers()
+							.Select(p => (p.PlayerId, land: instanceResRepo.GetLand(p.PlayerId)))
+							.OrderByDescending(x => x.land)
+							.ToList();
+						int idx = allByLand.FindIndex(x => x.PlayerId == myPid);
+						if (idx >= 0) currentPlayerRank = idx + 1;
+					}
+				}
+			}
+
 			return Ok(new GameLobbyViewModel(
 				GameId: record.GameId.Id,
 				GameName: record.Name,
@@ -324,7 +354,12 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				EndTime: record.EndTime,
 				Players: players,
 				CanJoin: canJoin,
-				Settings: settingsVm
+				Settings: settingsVm,
+				IsCurrentPlayerEnrolled: isEnrolled,
+				CurrentPlayerId: currentPlayerId,
+				CurrentPlayerName: currentPlayerName,
+				CurrentPlayerRace: currentPlayerRace,
+				CurrentPlayerRank: currentPlayerRank
 			));
 		}
 
