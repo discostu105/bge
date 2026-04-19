@@ -1,7 +1,7 @@
 import { Suspense, useState, useCallback, useEffect, useRef } from 'react'
-import { Outlet, useParams, Navigate, useLocation, useNavigate } from 'react-router'
+import { Outlet, useParams, Navigate, useLocation, useNavigate, NavLink } from 'react-router'
 import {
-  LogOutIcon, MenuIcon, XIcon, UserIcon, HistoryIcon, LineChartIcon, Trophy,
+  LogOutIcon, MenuIcon, XIcon, UserIcon, HistoryIcon, LineChartIcon, Trophy, ArrowLeftIcon,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
@@ -117,6 +117,12 @@ function SidebarContent({ race }: { race: Race | null }) {
           <div className="text-[11px] text-muted-foreground truncate">{currentGame?.name ?? 'Game'}</div>
         </div>
       </div>
+      <NavLink
+        to="/games"
+        className="flex items-center gap-1.5 px-4 py-2 text-[11px] text-interactive hover:text-[color:var(--color-race-secondary)] border-b border-border"
+      >
+        <ArrowLeftIcon className="h-3 w-3" aria-hidden /> All Games
+      </NavLink>
       <NavMenu />
     </>
   )
