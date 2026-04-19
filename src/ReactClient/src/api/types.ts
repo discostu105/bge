@@ -410,6 +410,7 @@ export interface TournamentResultsViewModel {
 export interface PlayerProfileViewModel {
   playerId: string | null
   playerName: string | null
+  playerType: string | null
   land: number
   protectionTicksRemaining: number
   isOnline: boolean

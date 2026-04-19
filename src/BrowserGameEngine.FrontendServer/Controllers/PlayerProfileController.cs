@@ -52,6 +52,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new PlayerProfileViewModel {
 				PlayerId = player.PlayerId.Id,
 				PlayerName = player.Name,
+				PlayerType = player.PlayerType.Id,
 				Land = resourceRepository.GetLand(player.PlayerId),
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
 				IsOnline = onlineStatusRepository.IsOnline(player.PlayerId),
