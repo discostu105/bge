@@ -912,23 +912,6 @@ export interface GameReplayViewModel {
   battleEvents: ReplayBattleEventViewModel[]
 }
 
-export interface SpectatorPlayerEntryViewModel {
-  rank: number
-  playerId: string
-  playerName: string
-  land: number
-  isOnline: boolean
-  isAgent: boolean
-}
-
-export interface SpectatorSnapshotViewModel {
-  gameId: string
-  gameName: string
-  gameStatus: string
-  topPlayers: SpectatorPlayerEntryViewModel[]
-  tick: number
-}
-
 // Tick Info
 
 export interface TickInfoViewModel {
