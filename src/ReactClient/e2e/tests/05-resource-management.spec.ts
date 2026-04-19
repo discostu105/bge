@@ -32,37 +32,38 @@ async function createNavGame(page: import('@playwright/test').Page): Promise<str
 }
 
 test.describe('Resource management — worker assignment', () => {
-	test('base page renders WorkerAssignment component with correct structure', async ({ page }) => {
+	test('base page shows Workers stat card with Assign action', async ({ page }) => {
 		const gameId = await createNavGame(page)
 
-		// Ensure we have at least some WBF workers so the component is meaningful
+		// Ensure we have at least some WBF workers so the card is meaningful
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=3`, { data: {} })
 
-		await page.goto(`/games/${gameId}/base?tab=economy`)
+		await page.goto(`/games/${gameId}/base`)
 		await expect(page.getByRole('heading', { name: /base/i })).toBeVisible()
 
-		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
-		await expect(page.getByText('Total')).toBeVisible()
-		await expect(page.getByText(/Mining/)).toBeVisible()
-		// Use a label-specific locator to avoid matching unrelated 'Gas' occurrences on the page
-		await expect(page.getByText('Gas Workers')).toBeVisible()
+		// Workers stat card is in the economy strip, with an Assign button.
+		await expect(page.getByText('Workers', { exact: true })).toBeVisible()
+		await expect(page.getByRole('button', { name: 'Assign' })).toBeVisible()
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 
-	test('worker assignment inputs are present and accept numeric input', async ({ page }) => {
+	test('worker assignment dialog opens with count inputs', async ({ page }) => {
 		const gameId = await createNavGame(page)
 
 		// Build some workers so assignment is possible
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
 
-		await page.goto(`/games/${gameId}/base?tab=economy`)
-		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
+		await page.goto(`/games/${gameId}/base`)
+		await page.getByRole('button', { name: 'Assign' }).click()
 
-		await expect(page.getByLabel('Mineral Workers')).toBeVisible()
-		await expect(page.getByLabel('Gas Workers')).toBeVisible()
+		// Dialog title and both count inputs should appear.
+		await expect(page.getByRole('dialog')).toBeVisible()
+		await expect(page.getByRole('heading', { name: /assign workers/i })).toBeVisible()
+		const dialog = page.getByRole('dialog')
+		await expect(dialog.getByRole('spinbutton')).toHaveCount(2)
 	})
 
-	test('assigning workers via API is reflected in the base page UI', async ({ page }) => {
+	test('assigning workers via API is reflected in the worker dialog', async ({ page }) => {
 		const gameId = await createNavGame(page)
 
 		// Build workers so we have something to assign
@@ -75,34 +76,36 @@ test.describe('Resource management — worker assignment', () => {
 		)
 		expect([200, 204]).toContain(assignRes.status())
 
-		// Navigate to base and confirm the assignment is reflected
-		await page.goto(`/games/${gameId}/base?tab=economy`)
-		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
-
-		await expect(page.getByLabel('Mineral Workers')).toHaveValue('2')
-		await expect(page.getByLabel('Gas Workers')).toHaveValue('2')
+		// Open the dialog and verify the two count inputs reflect the server state.
+		await page.goto(`/games/${gameId}/base`)
+		await page.getByRole('button', { name: 'Assign' }).click()
+		await expect(page.getByRole('dialog')).toBeVisible()
+		const spinners = page.getByRole('dialog').getByRole('spinbutton')
+		await expect(spinners.nth(0)).toHaveValue('2')
+		await expect(spinners.nth(1)).toHaveValue('2')
 	})
 
-	test('changing worker assignment via the UI input sends an update', async ({ page }) => {
+	test('saving worker assignment from the dialog sends an update', async ({ page }) => {
 		const gameId = await createNavGame(page)
 
 		// Build workers and reset assignment to a known state
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
 		await page.request.post(`${baseURL}/api/workers/assign?mineralWorkers=1&gasWorkers=1`, { data: {} })
 
-		await page.goto(`/games/${gameId}/base?tab=economy`)
-		await expect(page.getByRole('heading', { name: 'Worker Assignment' })).toBeVisible()
+		await page.goto(`/games/${gameId}/base`)
+		await page.getByRole('button', { name: 'Assign' }).click()
+		await expect(page.getByRole('dialog')).toBeVisible()
 
-		// Set a new value for mineral workers; wait for the assign API call to complete
-		// before reading back the state (onChange fires immediately on fill).
-		const mineralInput = page.getByLabel('Mineral Workers')
+		// Set minerals to 3 via the first spinbutton, then save.
+		const spinners = page.getByRole('dialog').getByRole('spinbutton')
+		await spinners.nth(0).fill('3')
+
 		const assignPromise = page.waitForResponse(
 			(r) => r.url().includes('/api/workers/assign') && r.request().method() === 'POST'
 		)
-		await mineralInput.fill('3')
+		await page.getByRole('button', { name: /save assignment/i }).click()
 		await assignPromise
 
-		// Verify no error boundary was hit
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 
 		// Verify the API reflects the change
