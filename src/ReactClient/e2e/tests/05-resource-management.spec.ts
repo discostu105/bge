@@ -12,28 +12,9 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Resource Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	const game = await res.json()
-	// Enroll in the new game record so the game page loads properly
-	await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, { data: {} })
-	return game.gameId
-}
-
 test.describe('Resource management — worker auto-assignment', () => {
 	test('base page shows Workers stat card with Adjust action', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Ensure we have at least some WBF workers so the card is meaningful
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=3`, { data: {} })
@@ -48,7 +29,7 @@ test.describe('Resource management — worker auto-assignment', () => {
 	})
 
 	test('worker assignment dialog opens with a gas-percent slider', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build some workers so assignment is possible
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
@@ -64,7 +45,7 @@ test.describe('Resource management — worker auto-assignment', () => {
 	})
 
 	test('setting gas percent via API is reflected in the worker dialog', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build workers so we have something to assign
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
@@ -85,7 +66,7 @@ test.describe('Resource management — worker auto-assignment', () => {
 	})
 
 	test('saving worker assignment from the dialog sends an update', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build workers and reset assignment to a known state
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })

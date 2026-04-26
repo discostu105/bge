@@ -14,24 +14,6 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Battle Report Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	const game = await res.json()
-	await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, { data: {} })
-	return game.gameId
-}
-
 async function createFreshDefender(browser: import('@playwright/test').Browser): Promise<string> {
 	const freshUserId = `e2e-defender-br-${Date.now()}`
 	const context = await browser.newContext()
@@ -62,7 +44,7 @@ async function triggerBattle(page: import('@playwright/test').Page, defenderPlay
 
 test.describe('Battle report detail page', () => {
 	test('renders battle report with key stats after completing a battle', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const defenderPlayerId = await createFreshDefender(browser)
 		await triggerBattle(page, defenderPlayerId)
 
@@ -94,7 +76,7 @@ test.describe('Battle report detail page', () => {
 	})
 
 	test('shows error state for an unknown report ID', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const fakeReportId = '00000000-0000-0000-0000-000000000000'
 
 		await page.goto(`/games/${gameId}/battles/${fakeReportId}`)

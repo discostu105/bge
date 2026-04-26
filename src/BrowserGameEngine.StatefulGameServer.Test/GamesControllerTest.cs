@@ -88,7 +88,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				NullGameEventPublisher.Instance,
 				game.PlayerRepository,
 				game.ResourceRepository,
-				new UserRepository(globalState, game.World)
+				new UserRepository(globalState, game.Accessor)
 			);
 		}
 

@@ -22,7 +22,9 @@ namespace BrowserGameEngine.StatefulGameServer {
 			var defaultInstance = gameRegistry.GetDefaultInstance();
 			services.AddSingleton(gameRegistry);
 			services.AddSingleton(gameRegistry.GlobalState);
-			services.AddSingleton<IWorldStateAccessor>(defaultInstance.WorldStateAccessor);
+			// IWorldStateAccessor is registered by the host (FrontendServer registers
+			// HttpContextWorldStateAccessor so it can resolve the per-request game from
+			// the X-Game-Id header). Tests construct accessors per-instance directly.
 			services.AddSingleton(defaultInstance.WorldState);
 			services.AddSingleton(defaultInstance.GameDef);
 			services.AddSingleton(TimeProvider.System);

@@ -26,7 +26,9 @@ async function createActiveGame(page: import('@playwright/test').Page): Promise<
 	expect(res.ok()).toBeTruthy()
 	const game = await res.json()
 	// Join the game as admin player
-	await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, { data: {} })
+	const joinRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/join`, { data: { playerName: 'E2E Player', playerType: null } })
+	expect([200, 409]).toContain(joinRes.status())
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, { headers: { 'X-Game-Id': game.gameId } })
 	return game.gameId
 }
 
@@ -41,7 +43,8 @@ test.describe('Live game view page', () => {
 
 		// Main sections should render (actual section titles from GameLiveView component)
 		await expect(page.getByText('Live Leaderboard')).toBeVisible({ timeout: 10_000 })
-		await expect(page.getByText('Units at Base')).toBeVisible({ timeout: 10_000 })
+		// Strict-mode-tolerant: the layout has its own "Units at Base" element too.
+		await expect(page.getByText('Units at Base').first()).toBeVisible({ timeout: 10_000 })
 
 		// At least one data section or skeleton loaded
 		await expect(page.locator('.rounded-lg.border').first()).toBeVisible()
@@ -57,21 +60,31 @@ test.describe('Live game view page', () => {
 	})
 
 	test('shows finish-game notice for a completed game', async ({ page }) => {
-		// Create and immediately end a game by setting endTime in the past
+		// Create a game with a normal (future) endTime so the user can join, then
+		// finalize it via the API. Setting endTime in the past races with
+		// GameLifecycleService and risks a 400 from /join.
 		const now = new Date()
 		const res = await page.request.post(`${baseURL}/api/games`, {
 			data: {
 				name: `E2E Finished Game ${Date.now()}`,
 				gameDefType: 'sco',
-				startTime: new Date(now.getTime() - 7200_000).toISOString(),
-				endTime: new Date(now.getTime() - 3600_000).toISOString(),
+				startTime: new Date(now.getTime() - 60_000).toISOString(),
+				endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
 				tickDuration: '00:01:00',
 				discordWebhookUrl: null,
 			},
 		})
 		expect(res.ok()).toBeTruthy()
 		const game = await res.json()
-		await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, { data: {} })
+		const joinRes2 = await page.request.post(`${baseURL}/api/games/${game.gameId}/join`, {
+			data: { playerName: 'E2E Player', playerType: null },
+		})
+		expect([200, 409]).toContain(joinRes2.status())
+		await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, {
+			headers: { 'X-Game-Id': game.gameId },
+		})
+		const finalizeRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/finalize`)
+		expect([200, 400]).toContain(finalizeRes.status())
 
 		await page.goto(`/games/${game.gameId}/live`)
 

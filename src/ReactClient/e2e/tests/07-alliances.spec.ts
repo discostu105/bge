@@ -12,22 +12,6 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Alliance Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	return (await res.json()).gameId as string
-}
-
 /** Sign in a fresh user in a new browser context. Returns playerId = the signindev playerid param. */
 async function signInFreshUser(
 	browser: import('@playwright/test').Browser,
@@ -48,7 +32,7 @@ async function signInFreshUser(
 // ---------------------------------------------------------------------------
 test('create alliance via UI and see it in the list', async ({ browser }) => {
 	const { page, context } = await signInFreshUser(browser, 'creator')
-	const gameId = await createNavGame(page)
+	const gameId = 'default'
 	const allianceName = `TestAlliance-${Date.now()}`
 
 	await page.goto(`/games/${gameId}/alliances`)
@@ -89,7 +73,7 @@ test('player joins alliance with password and leader accepts via UI', async ({ b
 	expect(createRes.ok()).toBeTruthy()
 	const allianceId = await createRes.text()
 
-	const gameId = await createNavGame(leaderPage)
+	const gameId = 'default'
 
 	// Member: navigate to alliances page and join
 	await memberPage.goto(`/games/${gameId}/alliances`)
@@ -144,7 +128,7 @@ test('leader invites player and invitee accepts invite via UI', async ({ browser
 	expect([200, 204]).toContain(inviteRes.status())
 
 	// Invitee: navigate to alliances page and accept the pending invite
-	const gameId = await createNavGame(inviteePage)
+	const gameId = 'default'
 	await inviteePage.goto(`/games/${gameId}/alliances`)
 	await expect(inviteePage.getByRole('heading', { name: 'Alliances' })).toBeVisible()
 

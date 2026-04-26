@@ -10,27 +10,9 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Army Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	const game = await res.json()
-	await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, { data: {} })
-	return game.gameId as string
-}
-
 test.describe('Unit build — army visibility', () => {
 	test('units page renders heading and shows unit count after building', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build WBF units via API
 		const buildRes = await page.request.post(
@@ -68,7 +50,7 @@ test.describe('Unit build — army visibility', () => {
 			form: { playerid: freshUserId, returnUrl: '/' },
 		})
 
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		await page.goto(`/games/${gameId}/units`)
 		await expect(page.getByRole('heading', { name: 'Units', exact: true })).toBeVisible()

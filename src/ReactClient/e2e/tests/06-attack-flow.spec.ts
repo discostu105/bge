@@ -16,24 +16,6 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Attack Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	const game = await res.json()
-	await page.request.post(`${baseURL}/api/games/${game.gameId}/players`, { data: {} })
-	return game.gameId
-}
-
 /** Create a fresh defender user and return their PlayerId (same as their userId in devauth). */
 async function createFreshDefender(browser: import('@playwright/test').Browser): Promise<{ playerId: string; context: import('@playwright/test').BrowserContext }> {
 	const freshUserId = `e2e-defender-${Date.now()}`
@@ -53,7 +35,7 @@ async function createFreshDefender(browser: import('@playwright/test').Browser):
 
 test.describe('Attack flow', () => {
 	test('SelectEnemy page renders and shows attackable players', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const { playerId: defenderPlayerId } = await createFreshDefender(browser)
 
 		// Build a WBF unit for admin so the unit list is non-empty
@@ -80,7 +62,7 @@ test.describe('Attack flow', () => {
 	})
 
 	test('sends troops and navigates to EnemyBase page', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const { playerId: defenderPlayerId } = await createFreshDefender(browser)
 
 		// Build and retrieve unit
@@ -108,7 +90,7 @@ test.describe('Attack flow', () => {
 	})
 
 	test('attacks from EnemyBase page and shows battle report', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const { playerId: defenderPlayerId } = await createFreshDefender(browser)
 
 		// Build a unit and send it to the defender's base via API

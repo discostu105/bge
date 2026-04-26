@@ -6,11 +6,12 @@ using System.Linq;
 namespace BrowserGameEngine.StatefulGameServer {
 	public class UserRepository {
 		private readonly GlobalState globalState;
-		private readonly WorldState world;
+		private readonly IWorldStateAccessor worldStateAccessor;
+		private WorldState world => worldStateAccessor.WorldState;
 
-		public UserRepository(GlobalState globalState, WorldState world) {
+		public UserRepository(GlobalState globalState, IWorldStateAccessor worldStateAccessor) {
 			this.globalState = globalState;
-			this.world = world;
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public UserImmutable? GetByGithubId(string githubId) {
@@ -25,7 +26,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public IEnumerable<PlayerImmutable> GetPlayersForUser(string userId) {
-			// TODO Phase 3: replace with game-scoped player lookup via ICurrentGameContext
 			return world.Players.Values
 				.Where(p => p.UserId == userId)
 				.Select(p => p.ToImmutable());
