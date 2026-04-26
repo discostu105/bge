@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using BrowserGameEngine.Shared;
 using Xunit;
@@ -36,49 +37,107 @@ namespace BrowserGameEngine.StatefulGameServer.Test.Integration {
 			Assert.NotNull(vm);
 			Assert.Single(vm!.Players);
 			Assert.Equal("PMTestPlayer1", vm.Players[0].PlayerName);
+			Assert.Equal(0, vm.Players[0].ApiKeyCount);
 		}
 
 		[Fact]
-		public async Task GenerateApiKey_Unauthenticated_Returns401() {
+		public async Task CreateApiKey_Unauthenticated_Returns401() {
 			var client = CreateClient();
-			var response = await client.PostAsync("/api/player-management/some-player-id/apikey", null);
+			var response = await client.PostAsync("/api/player-management/some-player-id/apikeys", null);
 			Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 		}
 
 		[Fact]
-		public async Task GenerateApiKey_ForOwnPlayer_ReturnsToken() {
+		public async Task CreateApiKey_ForOwnPlayer_ReturnsTokenAndMetadata() {
 			var userId = "user-pm-apikey-1";
 			var playerId = await CreatePlayerAsync(userId, "APIKeyPlayer1");
 
 			var client = CreateClient(userId);
-			var response = await client.PostAsync($"/api/player-management/{playerId}/apikey", null);
+			var response = await client.PostAsJsonAsync(
+				$"/api/player-management/{playerId}/apikeys",
+				new CreateApiKeyRequest { Name = "my-bot" });
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-			var vm = await DeserializeAsync<ApiKeyViewModel>(response);
+			var vm = await DeserializeAsync<CreateApiKeyResponse>(response);
 			Assert.NotNull(vm);
 			Assert.False(string.IsNullOrEmpty(vm!.ApiKey));
+			Assert.False(string.IsNullOrEmpty(vm.KeyId));
+			Assert.Equal("my-bot", vm.Name);
+			Assert.StartsWith("bge_k_", vm.KeyPrefix);
 		}
 
 		[Fact]
-		public async Task GenerateApiKey_ThenUseAsBearer_Authenticates() {
+		public async Task ListApiKeys_AfterCreate_IncludesKey() {
+			var userId = "user-pm-apikey-list-1";
+			var playerId = await CreatePlayerAsync(userId, "ListKeyPlayer1");
+
+			var client = CreateClient(userId);
+			await client.PostAsJsonAsync($"/api/player-management/{playerId}/apikeys",
+				new CreateApiKeyRequest { Name = "first" });
+			await client.PostAsJsonAsync($"/api/player-management/{playerId}/apikeys",
+				new CreateApiKeyRequest { Name = "second" });
+
+			var listResp = await client.GetAsync($"/api/player-management/{playerId}/apikeys");
+			Assert.Equal(HttpStatusCode.OK, listResp.StatusCode);
+			var list = await DeserializeAsync<ApiKeyListViewModel>(listResp);
+			Assert.NotNull(list);
+			Assert.Equal(2, list!.Keys.Count);
+			Assert.Contains(list.Keys, k => k.Name == "first");
+			Assert.Contains(list.Keys, k => k.Name == "second");
+		}
+
+		[Fact]
+		public async Task RevokeApiKey_RemovesOnlyTargetedKey() {
+			var userId = "user-pm-revoke-1";
+			var playerId = await CreatePlayerAsync(userId, "RevokeKeyPlayer1");
+
+			var client = CreateClient(userId);
+			var first = await (await client.PostAsJsonAsync($"/api/player-management/{playerId}/apikeys",
+				new CreateApiKeyRequest { Name = "keep" })).Content.ReadFromJsonAsync<CreateApiKeyResponse>();
+			var second = await (await client.PostAsJsonAsync($"/api/player-management/{playerId}/apikeys",
+				new CreateApiKeyRequest { Name = "revoke-me" })).Content.ReadFromJsonAsync<CreateApiKeyResponse>();
+
+			var revokeResp = await client.DeleteAsync($"/api/player-management/{playerId}/apikeys/{second!.KeyId}");
+			Assert.Equal(HttpStatusCode.NoContent, revokeResp.StatusCode);
+
+			var list = await DeserializeAsync<ApiKeyListViewModel>(
+				await client.GetAsync($"/api/player-management/{playerId}/apikeys"));
+			Assert.Single(list!.Keys);
+			Assert.Equal(first!.KeyId, list.Keys[0].KeyId);
+		}
+
+		[Fact]
+		public async Task RevokeApiKey_UnknownKey_Returns404() {
+			var userId = "user-pm-revoke-404";
+			var playerId = await CreatePlayerAsync(userId, "Revoke404");
+
+			var client = CreateClient(userId);
+			var response = await client.DeleteAsync($"/api/player-management/{playerId}/apikeys/nonexistent-key-id");
+			Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+		}
+
+		[Fact]
+		public async Task CreateApiKey_ThenUseAsBearer_AuthenticatesAndUpdatesLastAccessed() {
 			var userId = "user-pm-apikey-bearer-1";
 			var playerId = await CreatePlayerAsync(userId, "BearerPlayer1");
 
-			// Generate the API key via cookie-authenticated client
 			var authClient = CreateClient(userId);
-			var genResponse = await authClient.PostAsync($"/api/player-management/{playerId}/apikey", null);
+			var genResponse = await authClient.PostAsJsonAsync(
+				$"/api/player-management/{playerId}/apikeys",
+				new CreateApiKeyRequest { Name = "bot" });
 			Assert.Equal(HttpStatusCode.OK, genResponse.StatusCode);
-			var vm = await DeserializeAsync<ApiKeyViewModel>(genResponse);
+			var vm = await DeserializeAsync<CreateApiKeyResponse>(genResponse);
 			Assert.NotNull(vm);
-			Assert.False(string.IsNullOrEmpty(vm!.ApiKey));
 
-			// Use the API key as a Bearer token on an unauthenticated client
-			var bearerClient = CreateClient(); // no cookie auth
+			var bearerClient = CreateClient();
 			bearerClient.DefaultRequestHeaders.Authorization =
-				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", vm.ApiKey);
+				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", vm!.ApiKey);
 
-			// Hit a protected endpoint — should succeed, not 401
 			var response = await bearerClient.GetAsync("/api/profile");
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+			var listAfter = await DeserializeAsync<ApiKeyListViewModel>(
+				await authClient.GetAsync($"/api/player-management/{playerId}/apikeys"));
+			Assert.NotNull(listAfter!.Keys[0].LastAccessedAt);
 		}
 
 		[Fact]

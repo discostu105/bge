@@ -57,7 +57,7 @@ public class SpectatorTickModule : IGameTickModule
 				playerName = p.Name,
 				land = p.State.Resources.TryGetValue(landResource, out var s) ? s : 0m,
 				isOnline = p.LastOnline.HasValue && DateTime.UtcNow - p.LastOnline.Value < TimeSpan.FromMinutes(8),
-				isAgent = p.ApiKeyHash != null,
+				isAgent = p.ApiKeys.Count > 0,
 			})
 			.OrderByDescending(p => p.land)
 			.Take(20)

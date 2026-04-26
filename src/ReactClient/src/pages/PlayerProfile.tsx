@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { TrophyIcon, SwordsIcon, StarIcon, KeyIcon, CopyIcon, CheckIcon, Trash2Icon } from 'lucide-react'
+import { TrophyIcon, SwordsIcon, StarIcon, KeyIcon, CopyIcon, CheckIcon, Trash2Icon, PlusIcon } from 'lucide-react'
 import apiClient from '@/api/client'
-import type { ProfileViewModel, PlayerHistoryViewModel, PlayerListViewModel, ApiKeyViewModel } from '@/api/types'
+import type {
+  ProfileViewModel,
+  PlayerHistoryViewModel,
+  PlayerListViewModel,
+  ApiKeyListViewModel,
+  CreateApiKeyResponse,
+} from '@/api/types'
 import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { relativeTime } from '@/lib/utils'
@@ -15,27 +21,44 @@ function ApiKeySection() {
   const confirm = useConfirm()
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [newKeyName, setNewKeyName] = useState('')
 
-  const { data: playerList, isLoading } = useQuery({
+  const { data: playerList, isLoading: isPlayersLoading } = useQuery({
     queryKey: ['my-players'],
     queryFn: () => apiClient.get<PlayerListViewModel>('/api/player-management').then(r => r.data),
   })
 
-  const generateMutation = useMutation({
-    mutationFn: (playerId: string) =>
-      apiClient.post<ApiKeyViewModel>(`/api/player-management/${playerId}/apikey`).then(r => r.data),
+  const player = playerList?.players?.[0]
+  const playerId = player?.playerId
+
+  const { data: keysData, isLoading: isKeysLoading } = useQuery({
+    queryKey: ['api-keys', playerId],
+    queryFn: () =>
+      apiClient.get<ApiKeyListViewModel>(`/api/player-management/${playerId}/apikeys`).then(r => r.data),
+    enabled: !!playerId,
+  })
+
+  const createMutation = useMutation({
+    mutationFn: ({ playerId, name }: { playerId: string; name: string }) =>
+      apiClient
+        .post<CreateApiKeyResponse>(`/api/player-management/${playerId}/apikeys`, {
+          name: name.trim() || null,
+        })
+        .then(r => r.data),
     onSuccess: (data) => {
       setNewKey(data.apiKey)
+      setNewKeyName('')
       void queryClient.invalidateQueries({ queryKey: ['my-players'] })
+      void queryClient.invalidateQueries({ queryKey: ['api-keys', playerId] })
     },
   })
 
   const revokeMutation = useMutation({
-    mutationFn: (playerId: string) =>
-      apiClient.delete(`/api/player-management/${playerId}/apikey`),
+    mutationFn: ({ playerId, keyId }: { playerId: string; keyId: string }) =>
+      apiClient.delete(`/api/player-management/${playerId}/apikeys/${keyId}`),
     onSuccess: () => {
-      setNewKey(null)
       void queryClient.invalidateQueries({ queryKey: ['my-players'] })
+      void queryClient.invalidateQueries({ queryKey: ['api-keys', playerId] })
     },
   })
 
@@ -46,19 +69,20 @@ function ApiKeySection() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  if (isLoading) return null
+  if (isPlayersLoading) return null
+  if (!player || !playerId) return null
 
-  const player = playerList?.players?.[0]
-  if (!player) return null
+  const keys = keysData?.keys ?? []
 
   return (
     <div className="rounded-lg border bg-card p-5 space-y-3">
       <strong className="text-sm flex items-center gap-1.5">
         <KeyIcon className="h-4 w-4 text-primary" />
-        Bot API Key
+        Bot API Keys
       </strong>
       <p className="text-xs text-muted-foreground">
-        Use an API key to control your player programmatically via the REST API.
+        Use an API key to control your player programmatically via the REST API. You can have
+        multiple keys; revoke any one individually without affecting the others.
       </p>
 
       {newKey && (
@@ -82,46 +106,82 @@ function ApiKeySection() {
       )}
 
       <div className="flex items-center gap-2">
-        {player.hasApiKey ? (
-          <>
-            <span className="text-xs text-muted-foreground">Active key configured</span>
-            <button
-              onClick={() => generateMutation.mutate(player.playerId)}
-              disabled={generateMutation.isPending}
-              className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
-            >
-              {generateMutation.isPending ? 'Regenerating...' : 'Regenerate'}
-            </button>
-            <button
-              onClick={async () => {
-                const ok = await confirm({
-                  title: 'Revoke API key?',
-                  description: 'Any bot or integration using this key will immediately stop working. You can generate a new one afterwards.',
-                  destructive: true,
-                  confirmLabel: 'Revoke key',
-                  cancelLabel: 'Keep key',
-                })
-                if (ok) revokeMutation.mutate(player.playerId)
-              }}
-              disabled={revokeMutation.isPending}
-              className="rounded border border-destructive/50 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-50 flex items-center gap-1"
-            >
-              <Trash2Icon className="h-3 w-3" />
-              {revokeMutation.isPending ? 'Revoking...' : 'Revoke'}
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => generateMutation.mutate(player.playerId)}
-            disabled={generateMutation.isPending}
-            className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50"
-          >
-            {generateMutation.isPending ? 'Generating...' : 'Generate API Key'}
-          </button>
-        )}
+        <input
+          type="text"
+          value={newKeyName}
+          onChange={(e) => setNewKeyName(e.target.value)}
+          placeholder="Key name (optional)"
+          maxLength={50}
+          className="flex-1 min-w-0 rounded border bg-background px-2 py-1.5 text-xs"
+          disabled={createMutation.isPending}
+        />
+        <button
+          onClick={() => createMutation.mutate({ playerId, name: newKeyName })}
+          disabled={createMutation.isPending}
+          className="shrink-0 rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+        >
+          <PlusIcon className="h-3 w-3" />
+          {createMutation.isPending ? 'Creating...' : 'Create key'}
+        </button>
       </div>
 
-      {(generateMutation.isError || revokeMutation.isError) && (
+      {isKeysLoading ? (
+        <div className="text-xs text-muted-foreground">Loading keys...</div>
+      ) : keys.length === 0 ? (
+        <div className="text-xs text-muted-foreground italic">No API keys yet.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs" aria-label="API keys">
+            <thead className="border-b">
+              <tr className="text-left text-muted-foreground">
+                <th scope="col" className="py-1.5 pr-2 font-medium">Name</th>
+                <th scope="col" className="py-1.5 px-2 font-medium">Identifier</th>
+                <th scope="col" className="py-1.5 px-2 font-medium">Created</th>
+                <th scope="col" className="py-1.5 px-2 font-medium">Last used</th>
+                <th scope="col" className="py-1.5 pl-2"><span className="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.map((k) => (
+                <tr key={k.keyId} className="border-b border-border last:border-0">
+                  <td className="py-2 pr-2">
+                    {k.name ?? <span className="text-muted-foreground italic">unnamed</span>}
+                  </td>
+                  <td className="py-2 px-2 font-mono text-muted-foreground">{k.keyPrefix}…</td>
+                  <td className="py-2 px-2 text-muted-foreground whitespace-nowrap">
+                    {relativeTime(k.createdAt)}
+                  </td>
+                  <td className="py-2 px-2 text-muted-foreground whitespace-nowrap">
+                    {k.lastAccessedAt ? relativeTime(k.lastAccessedAt) : <span className="italic">never</span>}
+                  </td>
+                  <td className="py-2 pl-2 text-right">
+                    <button
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Revoke API key?',
+                          description: `Any bot or integration using "${k.name ?? k.keyPrefix}" will immediately stop working. Other keys remain active.`,
+                          destructive: true,
+                          confirmLabel: 'Revoke key',
+                          cancelLabel: 'Keep key',
+                        })
+                        if (ok) revokeMutation.mutate({ playerId, keyId: k.keyId })
+                      }}
+                      disabled={revokeMutation.isPending}
+                      className="rounded border border-destructive/50 px-2 py-1 text-destructive hover:bg-destructive/10 disabled:opacity-50 inline-flex items-center gap-1"
+                      aria-label={`Revoke key ${k.name ?? k.keyPrefix}`}
+                    >
+                      <Trash2Icon className="h-3 w-3" />
+                      Revoke
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {(createMutation.isError || revokeMutation.isError) && (
         <p className="text-xs text-destructive">Something went wrong. Please try again.</p>
       )}
     </div>

@@ -32,8 +32,13 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public PlayerImmutable? GetPlayerByApiKeyHash(string apiKeyHash) {
-			var player = world.Players.Values.FirstOrDefault(p => p.ApiKeyHash == apiKeyHash);
+			var player = world.Players.Values.FirstOrDefault(p => p.ApiKeys.Any(k => k.KeyHash == apiKeyHash));
 			return player?.ToImmutable();
+		}
+
+		public IEnumerable<ApiKeyRecordImmutable> GetApiKeys(PlayerId playerId) {
+			if (!world.Players.TryGetValue(playerId, out var player)) return Enumerable.Empty<ApiKeyRecordImmutable>();
+			return player.ApiKeys.Select(k => k.ToImmutable()).ToList();
 		}
 
 		public UserImmutable? GetByUserId(string userId) {

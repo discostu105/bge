@@ -1,4 +1,4 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +11,7 @@ namespace BrowserGameEngine.GameModel {
 		DateTime Created,
 		PlayerStateImmutable State,
 		string? UserId = null,
-		string? ApiKeyHash = null,
+		IReadOnlyList<ApiKeyRecordImmutable>? ApiKeys = null,
 		DateTime? LastOnline = null,
 		AllianceId? AllianceId = null,
 		bool IsBanned = false

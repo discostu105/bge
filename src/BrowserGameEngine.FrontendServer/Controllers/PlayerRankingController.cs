@@ -87,7 +87,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				AllianceRole = allianceRole,
 				IsOnline = onlineStatusRepository.IsOnline(pid),
 				LastOnline = player.LastOnline,
-				IsAgent = player.ApiKeyHash != null,
+				IsAgent = player.ApiKeys != null && player.ApiKeys.Count > 0,
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
 				UserId = player.UserId,
 			};
