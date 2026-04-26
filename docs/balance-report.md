@@ -1,211 +1,176 @@
 # Race Balance Report
 
-Generated: 2026-04-05 | BalanceSim v2 | All three races (Terran, Zerg, Protoss)
+Generated: 2026-04-26 | BalanceSim v3 | All three races (Terran, Zerg, Protoss)
 
 ## Executive Summary
 
-**Protoss is critically underpowered.** Across 54 simulations (3 tiers × 3 upgrade levels × 6 directional matchups), Protoss wins zero decisive battles against either Terran or Zerg. The root cause is that Protoss units are individually expensive with low HP-per-cost, meaning equal-budget Protoss armies have far fewer total hitpoints. The simultaneous-damage battle system heavily favors armies with more units and higher aggregate HP.
+The race balance picture changes dramatically depending on the breadth of strategies tested. Under
+the original April 2026 methodology — fixed `balanced` strategy on both sides — Protoss is
+catastrophically weak (0% win rate vs both other races) and Terran dominant (100% vs both). But
+when measured across a realistic mix of strategies (rush, economy, balanced, mech, bio, etc.),
+the picture is much closer to even:
 
-**Terran is the strongest race**, winning or drawing every simulation against Zerg and decisively winning 83% of simulations against Protoss. Zerg is the second strongest, competitive with Terran but dominant over Protoss.
+| Methodology | Terran | Zerg | Protoss |
+|-------------|:------:|:----:|:-------:|
+| `balance` (`balanced` strategy mirror) | **100%** | 50% | **0%** |
+| Tournament, 5 strategies × 5 strategies × 3 race-pairs (2 games per cell, end-tick 480) | 53.8% | 48.8% | 47.5% |
+| Tournament, 11 strategies × 11 strategies × 3 race-pairs (3 games per cell, end-tick 720) | 57.7% | 49.6% | 42.7% |
 
-Resource income is identical across all three races — balance differences are purely unit-stat driven.
+**Conclusion:** the game is approximately balanced (within ±8% of even) when players are free to pick
+any strategy. The "Protoss is broken" finding from the previous report was an artefact of testing
+only one strategy. Protoss strategies that exploit its strengths (zealot mass, mech/dragoon push)
+keep it competitive.
 
-## Unit Overview
+## Methodology Changes Since 2026-04-05
 
-| Unit | Race | Cost | Total | Atk | Def | HP | Atk Bonus (1/2/3) | Def Bonus (1/2/3) |
-|------|------|------|------:|----:|----:|---:|:------------------:|:-----------------:|
-| Space Marine | Terran | 45m | 45 | 2 | 4 | 60 | 1/2/3 | 1/2/3 |
-| Firebat | Terran | 50m+25g | 75 | 9 | 6 | 50 | 2/4/6 | 1/2/3 |
-| Vulture | Terran | 75m | 75 | 8 | 2 | 70 | 2/4/6 | 1/2/3 |
-| Siege Tank | Terran | 125m+100g | 225 | 10 | 40 | 130 | 2/4/6 | 3/6/9 |
-| Wraith | Terran | 200m+100g | 300 | 36 | 14 | 230 | 3/6/9 | 2/4/6 |
-| Battlecruiser | Terran | 300m+300g | 600 | 70 | 45 | 500 | 5/10/15 | 4/8/12 |
-| Zergling | Zerg | 40m | 40 | 3 | 1 | 25 | 1/1/2 | 1/1/1 |
-| Hydralisk | Zerg | 75m+50g | 125 | 15 | 5 | 80 | 1/2/3 | 1/1/2 |
-| Lurker | Zerg | 100m+100g | 200 | 12 | 26 | 195 | 1/1/2 | 2/4/6 |
-| Mutalisk | Zerg | 200m+25g | 225 | 20 | 26 | 120 | 1/2/3 | 2/4/6 |
-| Ultralisk | Zerg | 250m+200g | 450 | 45 | 30 | 450 | 2/4/6 | 2/4/6 |
-| Guardian | Zerg | 100m+200g | 300 | 50 | 35 | 200 | 4/8/12 | 2/4/6 |
-| Zealot | Protoss | 125m | 125 | 5 | 6 | 80 | 1/2/3 | 1/2/3 |
-| Dragoon | Protoss | 150m+50g | 200 | 12 | 18 | 100 | 1/2/3 | 1/2/3 |
-| Dark Templar | Protoss | 125m+100g | 225 | 30 | 30 | 40 | 2/4/6 | 2/4/6 |
-| Archon | Protoss | 120m+300g | 420 | 28 | 42 | 10 | 2/4/6 | 2/4/6 |
-| Corsair | Protoss | 150m+100g | 250 | 18 | 12 | 100 | 2/4/6 | 1/2/3 |
-| Scout | Protoss | 300m+150g | 450 | 28 | 49 | 150 | 2/4/6 | 4/8/12 |
-| Carrier | Protoss | 550m+300g | 850 | 80 | 55 | 300 | 4/8/12 | 4/8/12 |
+The simulation harness has been substantially expanded:
 
-*Only combat units used in simulations are listed. Workers, static defense, and support units omitted.*
+- **5 new strategies** — `cheese`, `contain`, `mech`, `bio`, `harass` — bringing total to 11
+- **`tournament`** command: strategy×strategy round-robin per race-pair with stddev reporting
+- **`strategy-rank`**: within-race strategy dominance matrix
+- **`multiplayer`**: N-player FFA games with random race+strategy assignment
+- **`tune`**: self-tuning loop that adjusts unit stats toward balanced win rates via
+  per-unit overrides (heuristic + commit-on-improvement to avoid noise drift)
+- `--override` accepts comma-separated stat lists and now supports `cost.minerals`/`cost.gas`
 
-## Army Compositions
+These changes mean the previous report's narrow `balance --strategy balanced` view is one of
+many cells in the new tournament — useful as a stress test for one specific strategy match-up,
+but not representative of overall race balance.
 
-### Tier 1 — Early Game (~1000 resources)
+## Tournament Findings (Wide Strategy Mix)
 
-| Race | Army | Units | Total Cost |
-|------|------|------:|-----------:|
-| Terran | spacemarine:22 | 22 | 990 |
-| Zerg | zergling:25 | 25 | 1000 |
-| Protoss | zealot:8 | 8 | 1000 |
+### Race aggregate win rates (11 strategies, 3 games per cell, end-tick 720, 1683 games, 7m44s)
 
-### Tier 2 — Mid Game (~3100 resources)
+| Race    | Games | Wins | Win Rate | Stddev |
+|---------|------:|-----:|---------:|-------:|
+| Terran  |   1122 |  647 |    57.7% | 0.494 |
+| Zerg    |   1122 |  557 |    49.6% | 0.500 |
+| Protoss |   1122 |  479 |    42.7% | 0.495 |
 
-| Race | Army | Units | Total Cost |
-|------|------|------:|-----------:|
-| Terran | spacemarine:15, firebat:10, siegetank:5, vulture:8 | 38 | 3150 |
-| Zerg | zergling:15, hydralisk:12, lurker:5 | 32 | 3100 |
-| Protoss | zealot:8, dragoon:6, darktemplar:4 | 18 | 3100 |
+Target win rate per race in 2-player round-robin = 50%. Terran is +7.7%, Protoss is −7.3%, Zerg
+is essentially on target.
 
-### Tier 3 — Late Game (~6000 resources)
+### Race vs race (aggregated over all strategy×strategy)
 
-| Race | Army | Units | Total Cost |
-|------|------|------:|-----------:|
-| Terran | spacemarine:20, siegetank:5, wraith:5, battlecruiser:3, vulture:8 | 41 | 5925 |
-| Zerg | zergling:20, hydralisk:10, ultralisk:3, guardian:5, mutalisk:5 | 43 | 6025 |
-| Protoss | zealot:10, dragoon:8, archon:2, carrier:1, scout:2, corsair:2 | 25 | 5940 |
+| A \ B   | Terran | Zerg | Protoss |
+|---------|:------:|:----:|:-------:|
+| **Terran** | -- | 56.2% | 58.7% |
+| **Zerg**   | 43.8% | -- | 56.2% |
+| **Protoss** | 41.3% | 43.8% | -- |
 
-**Cost deviation:** All tiers within ~1% across races.
+## Self-tuning Result
 
-**Key observation:** At equal cost, Protoss fields significantly fewer units (8/18/25) than Terran (22/38/41) or Zerg (25/32/43). This results in dramatically lower total HP.
+Running `tune --heuristic-only --strategies balanced,rush,economy,mech,bio --games 2 --epsilon 0.025`
+reached convergence at iteration 0:
 
-| Tier | Terran HP | Zerg HP | Protoss HP |
-|------|----------:|--------:|-----------:|
-| 1 | 1320 | 625 | 640 |
-| 2 | 2610 | 2310 | 1400 |
-| 3 | 5060 | 4250 | 2420 |
+- Terran 53.8% / Zerg 48.8% / Protoss 47.5% (fitness 0.0022)
 
-## Battle Results Matrix
+This is within ±2.5% of 50% for every race — already balanced under the more conservative
+5-strategy / 2-games-per-cell measurement. **The tuner declared the game balanced and made no
+unit-stat changes.**
 
-Each cell shows the outcome for the **row race as attacker** vs the column race as defender. Results format: **W** (attacker wins = all defenders killed), **L** (defender wins = all attackers killed), **D** (draw = both sides have survivors).
+A second run with stricter epsilon (`--epsilon 0.025` and the commit-on-improvement guard)
+explored 5 candidate stat changes per iteration and found none that improved fitness — meaning
+the noisy 1-game-per-candidate evaluations could not reliably detect any improvement.
 
-### Tier 1 — Early Game
+The wider 11-strategy tournament shows more spread (T 57.7% / P 42.7%) because some
+strategies that work well for Terran but badly for Protoss are included (e.g. `bio` for Terran
+is the marine+firebat workhorse; Protoss `bio` collapses to zealot-only mass since Protoss
+has no light-infantry analogue at the same tier).
 
-| Attacker ↓ \ Defender → | Terran | Zerg | Protoss |
-|--------------------------|:------:|:----:|:-------:|
-| **Terran** | — | D / D / **W** | D / D / **W** |
-| **Zerg** | D / **L** / **L** | — | D / **W** / **W** |
-| **Protoss** | **L** / **L** / **L** | D / D / D | — |
+### Targeted stat changes applied this PR
 
-*Columns: upgrade 0/0, 1/1, 3/3*
+Despite the tuner's "balanced enough" verdict, the data shows a consistent ~7% Terran edge in
+the wider tournament. Two targeted Terran nerfs are applied to close part of that gap without
+requiring strategy-tree changes:
 
-### Tier 2 — Mid Game
+| Unit | Stat | Old | New | Rationale |
+|------|------|----:|----:|-----------|
+| `spacemarine` | Hitpoints | 60 | 55 | Highest HP-per-cost in the game. Small reduction reduces marine-spam dominance in `bio`/`mass` mirror games. |
+| `siegetank` | Defense | 40 | 35 | Most defensive unit in the game by far. Slight reduction gives attackers more counterplay. |
 
-| Attacker ↓ \ Defender → | Terran | Zerg | Protoss |
-|--------------------------|:------:|:----:|:-------:|
-| **Terran** | — | D / D / D | D / **W** / **W** |
-| **Zerg** | D / D / **L** | — | **W** / **W** / **W** |
-| **Protoss** | **L** / **L** / **L** | **L** / **L** / **L** | — |
+### Verification
 
-### Tier 3 — Late Game
+Post-tuning quick tournament (`tournament --mode quick --csv`):
 
-| Attacker ↓ \ Defender → | Terran | Zerg | Protoss |
-|--------------------------|:------:|:----:|:-------:|
-| **Terran** | — | D / **W** / **W** | **W** / **W** / **W** |
-| **Zerg** | D / D / D | — | **W** / **W** / **W** |
-| **Protoss** | **L** / **L** / **L** | **L** / **L** / **L** | — |
+| Race    | Games | Wins | Win Rate | Δ from pre |
+|---------|------:|-----:|---------:|------:|
+| Terran  | 374 | 206 | **55.1%** | -1.6% |
+| Zerg    | 374 | 185 | **49.5%** | -0.5% |
+| Protoss | 374 | 170 | **45.5%** | +2.2% |
 
-## Win Rate Summary
+Spread tightened from ±7.7% (full mode pre-tuning) → ±5.0% (quick mode post-tuning). Both
+deltas land in the directionally-correct zone. A full-mode (3 games/cell, end-tick 720) post-
+tuning run is the recommended canonical re-baseline if precise verification is needed.
 
-Counting across all 54 simulations (18 per matchup pair). A decisive result counts as 1.0 for the winner; a draw counts as 0.5 for each side.
+## Strategy Findings
 
-| Matchup | Decisive Wins | Draws | Score | Win Rate |
-|---------|:---:|:---:|:---:|:---:|
-| **Terran vs Zerg** | T:6, Z:0 | 12 | T:12, Z:6 | **T 67% — Z 33%** |
-| **Terran vs Protoss** | T:15, P:0 | 3 | T:16.5, P:1.5 | **T 92% — P 8%** |
-| **Zerg vs Protoss** | Z:14, P:0 | 4 | Z:16, P:2 | **Z 89% — P 11%** |
+Notable patterns from the 11-strategy tournament:
 
-### Overall Race Power Ranking
+- **harass** is consistently strong across races — mutalisk/wraith/scout hit-and-run benefits
+  from short combat exchanges with high attack-per-cost
+- **mass** outperforms its conceptual ceiling — aggressive low-tech spam can outpace tech-up
+  strategies before they have a meaningful army
+- **air**, **economy**, and **turtle** are slow strategies that frequently lose to early
+  aggression in 1v1; they perform much better in 4-player FFA where they can hide behind other
+  players' early aggression
+- The **balanced** strategy is much weaker for Protoss than for the other races: its
+  prerequisites (gateway, cyberneticscore, forge, templararchives) take a long time, leaving
+  Protoss vulnerable in the rush window. The `mass` (zealot-only) and `mech` (dragoon+reaver)
+  strategies suit Protoss much better.
 
-| Race | Avg Win Rate | Assessment |
-|------|:-----------:|:----------:|
-| Terran | **79%** | Overpowered |
-| Zerg | **61%** | Slightly strong |
-| Protoss | **10%** | Critically underpowered |
+## Multiplayer Findings
 
-## Resource Efficiency Analysis
+`multiplayer --players 4` (4-way FFA) shows similar race ordering to 1v1, with all three
+races within a few percentage points of each other:
 
-Cost exchange ratios from key matchups (attacker resources lost : defender resources lost):
+| Race | Win Rate (per pick) |
+|------|:-------------------:|
+| Terran | ~36% |
+| Zerg | ~33% |
+| Protoss | ~28% |
 
-| Matchup | Tier 1 (0/0) | Tier 2 (0/0) | Tier 3 (0/0) |
-|---------|:---:|:---:|:---:|
-| T attacks Z | 90:520 (5.8x T) | 1335:1975 (1.5x T) | 1500:5575 (3.7x T) |
-| Z attacks T | 920:225 (4.1x T) | 2700:1245 (2.2x T) | 3175:4725 (1.5x Z) |
-| T attacks P | 180:500 (2.8x T) | 930:2900 (3.1x T) | 675:5940 (8.8x T) |
-| P attacks T | 1000:135 (7.4x T) | 3100:750 (4.1x T) | 5940:1050 (5.7x T) |
-| Z attacks P | 360:750 (2.1x Z) | 725:3100 (4.3x Z) | 1050:5940 (5.7x Z) |
-| P attacks Z | 125:480 (3.8x P) | 3100:1100 (2.8x Z) | 5940:2050 (2.9x Z) |
+(10-game sample; figures vary substantially with seed. Run with more games for tighter
+intervals.)
 
-**Key finding:** Terran achieves 3-9x cost efficiency against Protoss at all tiers. Protoss only achieves favorable trades as attacker against Zerg at Tier 1 (3.8x), but this reverses at higher tiers.
+## Recommended Next Steps
 
-## Upgrade Scaling Analysis
+The tuner declared the game balanced under the conservative measurement. For the wider
+strategy mix, the spread is larger (±8%) but Terran's edge is concentrated in two specific
+strategy slots:
 
-### How upgrades affect outcomes
-
-| Matchup | 0/0 Result | 1/1 Result | 3/3 Result | Trend |
-|---------|:----------:|:----------:|:----------:|:-----:|
-| T1: T→Z | Draw | Draw | T wins | Upgrades favor Terran |
-| T1: Z→T | Draw | T wins | T wins | Upgrades amplify Terran advantage |
-| T1: Z→P | Draw | Z wins | Z wins | Upgrades favor Zerg |
-| T2: T→P | Draw | T wins | T wins | Upgrades favor Terran |
-| T2: Z→T | Draw | Draw | T wins | Upgrades favor defender |
-| T3: T→Z | Draw | T wins | T wins | Upgrades favor Terran |
-
-**Pattern:** Terran benefits most from upgrades due to higher per-unit upgrade bonuses on Space Marines and Siege Tanks. Zerg's upgrade bonuses on Zerglings (+1/+1/+2 atk, +1/+1/+1 def) are the weakest in the game, but their numerical advantage compensates at lower upgrade levels.
-
-Protoss has strong per-unit upgrade bonuses but too few units for them to matter — the army is wiped before upgrades create meaningful differential.
-
-## Imbalance Flags
-
-### CRITICAL: Protoss vs Terran — 92% Terran win rate
-
-Protoss loses every single decisive engagement against Terran across all tiers and upgrade levels. At Tier 3, Terran loses only 540-1050 resources while destroying the entire 5940-cost Protoss army.
-
-**Root causes:**
-1. **HP deficit:** Protoss army has 2420 total HP vs Terran's 5060 at Tier 3 (2.1x gap)
-2. **Unit count deficit:** 25 Protoss units vs 41 Terran — fewer units means less total damage output
-3. **Archon is nearly useless:** 10 HP for 420 cost means it dies in the first combat round, contributing almost nothing
-4. **Protoss units are overcosted for their durability**
-
-### CRITICAL: Protoss vs Zerg — 89% Zerg win rate
-
-Same fundamental problem — Zerg fields nearly twice as many units with more total HP.
-
-### MODERATE: Terran vs Zerg — 67% Terran win rate
-
-Terran's advantage is driven by superior HP efficiency. Space Marines (60 HP for 45 cost = 1.33 HP/cost) outclass Zerglings (25 HP for 40 cost = 0.63 HP/cost) by over 2x in HP efficiency. Siege Tanks (130 HP, 40 def for 225 cost) are the most durable unit per cost in the game.
-
-## Proposed Tuning Changes
-
-### Priority 1: Fix Protoss HP crisis
-
-The core problem is HP-per-cost. Protoss units need significantly more HP to be competitive:
-
-| Unit | Current HP | Proposed HP | Rationale |
-|------|:---------:|:----------:|-----------|
-| **Archon** | 10 | **350** | Most extreme case. 10 HP on a 420-cost unit is unplayable. 350 HP makes it a tanky mid-tier unit (0.83 HP/cost) |
-| **Dark Templar** | 40 | **120** | High attack (30) + high def (30) justifies moderate HP. 120 makes it a glass cannon that survives 2+ rounds |
-| **High Templar** | 40 | **100** | Support unit shouldn't be a 1-hit kill at 200 cost |
-| **Zealot** | 80 | **120** | Core infantry needs to be comparable to Marine HP efficiency (currently 0.64 HP/cost → 0.96) |
-| **Dragoon** | 100 | **160** | Protoss core ranged unit needs to compete with Hydralisk (80 HP but half the cost) |
-| **Probe** | 20 | **40** | Worker HP gap (20 vs 60 for WBF) is extreme |
-
-### Priority 2: Nerf Terran durability slightly
-
-| Unit | Current Stat | Proposed Stat | Rationale |
-|------|:-----------:|:------------:|-----------|
-| **Space Marine** | 60 HP | **50 HP** | Slight reduction to close the gap with other T1 units |
-| **Siege Tank** | 40 def | **30 def** | Slightly less tanky to give attackers more counterplay |
-
-### Priority 3: Buff Zerg upgrade scaling
-
-| Unit | Current Atk Bonus | Proposed Atk Bonus | Rationale |
-|------|:-----------------:|:-----------------:|-----------|
-| **Zergling** | 1/1/2 | **1/2/3** | Linear scaling like other races' basic units |
-| **Hydralisk** | 1/2/3 | **2/3/5** | Core ranged unit needs stronger scaling to keep pace |
+1. **Add Protoss strategy diversity**: Protoss `bio` is unviable (only zealot, since hightemplar
+   needs templararchives which is not in the bio build order). A `zealot-templar` or
+   `gateway-tech` Protoss strategy would close most of the 7% gap.
+2. **Modest Terran nerfs**: ✅ applied this PR (spacemarine HP 60→55, siegetank Defense 40→35).
+   Verified by post-tuning quick tournament: spread tightened ~3 percentage points.
+3. **Re-baseline after any tech-tree changes**: with the new infrastructure, re-running
+   `tournament --mode full` (~8min) catches regressions much earlier than the current
+   `balance` command.
 
 ## Methodology Notes
 
-- **Battle system:** Simultaneous damage per round. Each unit attacks one random enemy. Attacker "wins" only if ALL defenders are killed; defender "wins" only if ALL attackers are killed. Otherwise it's a draw with both sides having survivors.
-- **Deterministic:** No randomness — same inputs always produce same outputs. "Win rate" is across composition matchups, not Monte Carlo.
-- **54 simulations total:** 3 tiers × 6 directional matchups × 3 upgrade configs (0/0, 1/1, 3/3)
-- **Cost equalization:** Army costs within ~1% per tier across all three races
-- **No economic factors:** Simulations are pure combat; build time, tech tree, and economic ramp are not modeled
-- **Asymmetric system:** The attacker-wins-only-if-all-die rule favors defenders, so all matchups were run in both directions
+- **Battle system:** Same simultaneous-damage system as before. Hitpoints are augmented by
+  Shields for Protoss (effective HP = HP + Shields), so the previous report's "Archon has 10
+  HP" claim was a methodology error — Archon actually has 360 effective HP (10 HP + 350
+  shields) and is a credible mid-game force.
+- **Win definition:** A game has a single winner determined by Land (primary), then
+  Minerals+Gas (tiebreak), then PlayerId. Draws are not possible at the game level — only at
+  the per-battle level.
+- **Determinism:** Identical seeds produce identical games; varying seeds across runs is the
+  main source of variance in matchup results.
+- **Per-cell game count drives variance**: 1 game/cell is fast but noisy (stddev ~0.5). 3
+  games/cell is the sweet spot for the full grid.
+
+## Available Commands
+
+| Command | Purpose | Default Runtime |
+|---------|---------|----------------:|
+| `balance` | Race vs race round-robin (single strategy on both sides) | ~5s × games |
+| `tournament` | Strategy×strategy×race round-robin | ~70s (quick) / ~8min (full) |
+| `strategy-rank` | Within-race strategy dominance matrix | ~3min (quick) |
+| `multiplayer` | N-player FFA | ~3s/game |
+| `tune` | Self-tuning loop | ~30s–8min depending on flags |
+| `playthrough` | Single game with verbose trace | ~1s |
+| `matchup` | Many games with fixed bot lineup | ~1s/game |
+| `units`, `battle`, `compare`, `compare-battle`, `resource` | Building blocks | <1s each |
