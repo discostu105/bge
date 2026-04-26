@@ -174,4 +174,42 @@ public class SimGameTests {
 		Assert.True(endGas - startGas > 150,
 			$"{race}: expected gas income > 150 over 10 ticks (got {endGas - startGas}); workers not counted?");
 	}
+
+	// Regression: a Terran player with 243 minerals should be able to build the Barracks (Kaserne)
+	// since its only cost is 150 minerals. The user-reported failure was a CannotAffordException
+	// surfaced as the .NET default "Exception of type ..." string, with no indication of which
+	// resource was actually short — so we verify both that the build succeeds and that any future
+	// affordability failure produces a message naming the shortage.
+	[Fact]
+	public void Terran_with_243_minerals_can_build_barracks() {
+		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
+		var pid = sim.AddPlayer("kaserne-bug", "terran");
+
+		// Drain starting minerals down to 243 to mirror the bug report's exact balance.
+		var startMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
+		sim.ResourceRepositoryWrite.DeductCost(pid, Id.ResDef("minerals"), startMin - 243);
+		Assert.Equal(243, sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals")));
+
+		sim.AssetRepositoryWrite.BuildAsset(new BrowserGameEngine.StatefulGameServer.Commands.BuildAssetCommand(pid, Id.AssetDef("barracks")));
+
+		Assert.Equal(243 - 150, sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals")));
+	}
+
+	[Fact]
+	public void CannotAffordException_message_for_barracks_names_minerals_shortage() {
+		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
+		var pid = sim.AddPlayer("broke", "terran");
+
+		// Drain to 100 minerals — short of barracks' 150.
+		var startMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
+		sim.ResourceRepositoryWrite.DeductCost(pid, Id.ResDef("minerals"), startMin - 100);
+
+		var ex = Assert.Throws<CannotAffordException>(() =>
+			sim.AssetRepositoryWrite.BuildAsset(new BrowserGameEngine.StatefulGameServer.Commands.BuildAssetCommand(pid, Id.AssetDef("barracks"))));
+
+		Assert.Contains("minerals", ex.Message);
+		Assert.Contains("100", ex.Message);
+		Assert.Contains("150", ex.Message);
+		Assert.DoesNotContain("Exception of type", ex.Message);
+	}
 }
