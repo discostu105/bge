@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useParams } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { XIcon, ChevronRightIcon, ChevronLeftIcon, SkipForwardIcon } from 'lucide-react'
 import apiClient from '@/api/client'
@@ -51,19 +52,24 @@ const STEPS: TutorialStep[] = [
 
 export function TutorialOverlay() {
   const queryClient = useQueryClient()
+  const { gameId } = useParams<{ gameId: string }>()
   const [step, setStep] = useState(0)
   const [dismissed, setDismissed] = useState(false)
   const dialogRef = useRef<HTMLDivElement>(null)
 
+  // /api/playerprofile is scoped per-game via X-Game-Id, so the cache key
+  // must include gameId to avoid leaking another game's profile.
+  const tutorialQueryKey = ['player-profile-tutorial', gameId ?? null]
+
   const { data: profile } = useQuery<PlayerProfileViewModel>({
-    queryKey: ['player-profile-tutorial'],
+    queryKey: tutorialQueryKey,
     queryFn: () => apiClient.get('/api/playerprofile').then((r) => r.data),
   })
 
   const completeMut = useMutation({
     mutationFn: () => apiClient.post('/api/playerprofile/complete-tutorial'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['player-profile-tutorial'] })
+      queryClient.invalidateQueries({ queryKey: tutorialQueryKey })
     },
   })
 
