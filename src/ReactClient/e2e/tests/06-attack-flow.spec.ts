@@ -16,24 +16,11 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Attack Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	const game = await res.json()
-	const joinRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/join`, { data: { playerName: 'E2E Player', playerType: null } })
-	expect([200, 409]).toContain(joinRes.status())
-	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, { headers: { 'X-Game-Id': game.gameId } })
-	return game.gameId
+async function createNavGame(_page: import('@playwright/test').Page): Promise<string> {
+	// Use the long-lived 'default' game so page.request API calls (which don't send
+	// X-Game-Id) and React-side calls (which do) operate on the same world state.
+	// The signindev step in global-setup already enrolls e2e-test-admin in default.
+	return 'default'
 }
 
 /** Create a fresh defender user and return their PlayerId (same as their userId in devauth). */

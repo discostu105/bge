@@ -12,30 +12,12 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(page: import('@playwright/test').Page): Promise<string> {
-	const now = new Date()
-	const res = await page.request.post(`${baseURL}/api/games`, {
-		data: {
-			name: `E2E Alliance Game ${Date.now()}`,
-			gameDefType: 'sco',
-			startTime: new Date(now.getTime() - 60_000).toISOString(),
-			endTime: new Date(now.getTime() + 7 * 24 * 3600_000).toISOString(),
-			tickDuration: '00:01:00',
-			discordWebhookUrl: null,
-		},
-	})
-	expect(res.ok()).toBeTruthy()
-	const gameId = (await res.json()).gameId as string
-	// Join the new game so /games/:id/* pages can resolve the current player.
-	const joinRes = await page.request.post(`${baseURL}/api/games/${gameId}/join`, {
-		data: { playerName: 'E2E Alliance Player', playerType: null },
-	})
-	expect([200, 409]).toContain(joinRes.status())
-	// Dismiss tutorial for the per-game player too (signindev only dismisses the default-game tutorial).
-	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, {
-		headers: { 'X-Game-Id': gameId },
-	})
-	return gameId
+async function createNavGame(_page: import('@playwright/test').Page): Promise<string> {
+	// Alliance state lives in the default game world state, and signindev enrolls
+	// each fresh user into default. Use the default game's URL so React-side calls
+	// (which carry X-Game-Id from the URL) and page.request calls (which don't)
+	// hit the same world state.
+	return 'default'
 }
 
 /** Sign in a fresh user in a new browser context. Returns playerId = the signindev playerid param. */

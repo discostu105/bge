@@ -43,7 +43,8 @@ test.describe('Live game view page', () => {
 
 		// Main sections should render (actual section titles from GameLiveView component)
 		await expect(page.getByText('Live Leaderboard')).toBeVisible({ timeout: 10_000 })
-		await expect(page.getByText('Units at Base')).toBeVisible({ timeout: 10_000 })
+		// Strict-mode-tolerant: the layout has its own "Units at Base" element too.
+		await expect(page.getByText('Units at Base').first()).toBeVisible({ timeout: 10_000 })
 
 		// At least one data section or skeleton loaded
 		await expect(page.locator('.rounded-lg.border').first()).toBeVisible()
