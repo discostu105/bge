@@ -47,7 +47,7 @@ export function Games() {
   const visibleFinished = showAllFinished || finished.length <= 5 ? finished : finished.slice(0, 5)
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto p-3 sm:p-4">
       <h1 className="text-[22px] font-bold tracking-tight">Games</h1>
       <p className="text-[11.5px] text-muted-foreground mt-1 mb-4">
         Season schedule · live, upcoming, and finished seasons · {games.length} total
