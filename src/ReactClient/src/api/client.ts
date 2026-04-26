@@ -1,9 +1,18 @@
 import axios from 'axios'
+import { gameIdFromPath } from '@/lib/gameIdFromPath'
 
 const apiClient = axios.create({
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
   },
+})
+
+apiClient.interceptors.request.use((config) => {
+  const gameId = gameIdFromPath(window.location.pathname)
+  if (gameId) {
+    config.headers.set('X-Game-Id', gameId)
+  }
+  return config
 })
 
 apiClient.interceptors.response.use(
