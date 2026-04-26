@@ -38,6 +38,18 @@ try {
 		case "balance":
 			BalanceSimulation.Run(gameDef, options);
 			break;
+		case "tournament":
+			TournamentSimulation.Run(gameDef, options);
+			break;
+		case "strategy-rank":
+			StrategyRankSimulation.Run(gameDef, options);
+			break;
+		case "multiplayer":
+			MultiplayerSimulation.Run(gameDef, options);
+			break;
+		case "tune":
+			TuneSimulation.Run(gameDef, options);
+			break;
 		default:
 			Console.Error.WriteLine($"Unknown command: {command}");
 			PrintUsage();
@@ -65,11 +77,16 @@ static void PrintUsage() {
 		  playthrough       Run a single full game with bots and print a trace
 		  matchup           Run many games with the same bot lineup; report win rates
 		  balance           Run round-robin race vs race games for a strategy
+		  tournament        Strategy×strategy×race round-robin with stddev reporting
+		  strategy-rank     Within-race strategy strength matrix
+		  multiplayer       N-player FFA games with random race+strategy assignment
+		  tune              Self-tuning loop that adjusts unit stats toward 33/33/33
 
 		Playthrough/matchup options:
 		  --bots <spec>             Bot list (default: rush:terran,economy:zerg,balanced:protoss)
 		                            Format: strategy:race,strategy:race,...
-		                            Strategies: rush, economy, balanced, random
+		                            Strategies: rush, economy, balanced, turtle, air, mass,
+		                                        cheese, contain, mech, bio, harass, random
 		                            Races:      terran, zerg, protoss
 		  --end-tick <n>            Tick at which the game ends (default: 720)
 		  --protection-ticks <n>    Protection ticks for new players (default: 60)
@@ -108,8 +125,31 @@ static void PrintUsage() {
 		Units options:
 		  --race <race>             Race to list units for (default: all)
 
+		Tournament/strategy-rank options:
+		  --mode quick|full         Preset bundle (game count, end-tick). default: full
+		  --strategies <list>       Comma-separated strategies (default: all)
+		  --races <list>            Comma-separated races (default: terran,zerg,protoss)
+		  --games <n>               Games per cell (default: mode-dependent)
+
+		Multiplayer options:
+		  --players <n>             Players per FFA game (default: 4)
+		  --games <n>               Number of games (default: mode-dependent)
+
+		Tune options:
+		  --max-iterations <n>      Max tuning iterations (default: 25)
+		  --budget-seconds <n>      Wall-time budget (default: 540)
+		  --games <n>               Games per matchup cell during scoring (default: 2)
+		  --candidate-games <n>     Games per candidate during evaluation (default: 1)
+		  --epsilon <f>             Convergence threshold (default: 0.05)
+		  --lambda <f>              Regularization strength (default: 0.02)
+		  --step-percent <n>        Per-iteration delta step (default: 10)
+		  --strategies <list>       Strategies in iteration tournament
+		  --log <path>              Tuning log output (default: tuning-log.md)
+		  --out <path>              Final deltas JSON (default: proposed-stat-changes.json)
+
 		General options:
-		  --override <unit.stat=value>  Override a unit stat (e.g. zergling.attack=3)
+		  --override <list>             Override unit stats (comma-separated):
+		                                  unit.attack=3,zealot.hp=120,marine.cost.minerals=40
 		""");
 }
 

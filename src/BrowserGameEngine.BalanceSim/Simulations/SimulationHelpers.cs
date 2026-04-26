@@ -1,4 +1,5 @@
 using BrowserGameEngine.GameDefinition;
+using System.Collections.Frozen;
 
 namespace BrowserGameEngine.BalanceSim.Simulations;
 
@@ -60,39 +61,88 @@ public static class SimulationHelpers
 		return string.Join(" + ", cost.Where(c => c.Value > 0).Select(c => $"{c.Value:F0} {c.Key}"));
 	}
 
+	/// <summary>
+	/// Apply unit-stat overrides from CLI options. Supports a comma-separated list of overrides
+	/// passed as <c>--override unit.stat=value,unit.stat=value</c>.
+	/// Stats: attack, defense, hitpoints/hp, speed, cost.minerals, cost.gas.
+	/// </summary>
 	public static GameDef ApplyOverrides(GameDef gameDef, Dictionary<string, string> options) {
 		if (!options.TryGetValue("override", out var overrideSpec)) return gameDef;
+		var overrides = ParseOverrides(overrideSpec);
+		return ApplyOverrideMap(gameDef, overrides);
+	}
 
-		// Parse "unitname.stat=value"
-		var parts = overrideSpec.Split('=');
-		if (parts.Length != 2) throw new SimulationException($"Invalid override format '{overrideSpec}'. Expected 'unit.stat=value'.");
+	/// <summary>
+	/// Parse a comma-separated override spec (e.g. <c>"zealot.hp=120,marine.attack=3"</c>) into
+	/// a list of (unitId, stat, value) tuples.
+	/// </summary>
+	public static List<(string UnitId, string Stat, int Value)> ParseOverrides(string overrideSpec) {
+		var result = new List<(string, string, int)>();
+		foreach (var part in overrideSpec.Split(',', StringSplitOptions.RemoveEmptyEntries)) {
+			var eq = part.Split('=');
+			if (eq.Length != 2) throw new SimulationException($"Invalid override format '{part}'. Expected 'unit.stat=value'.");
+			var lhs = eq[0].Trim();
+			if (!int.TryParse(eq[1].Trim(), out int value)) throw new SimulationException($"Invalid override value '{eq[1]}'. Must be an integer.");
+			var dot = lhs.IndexOf('.');
+			if (dot <= 0 || dot == lhs.Length - 1) throw new SimulationException($"Invalid override target '{lhs}'. Expected 'unit.stat'.");
+			var unitId = lhs[..dot];
+			var stat = lhs[(dot + 1)..].ToLowerInvariant();
+			result.Add((unitId, stat, value));
+		}
+		return result;
+	}
 
-		var qualifiedName = parts[0].Split('.');
-		if (qualifiedName.Length != 2) throw new SimulationException($"Invalid override target '{parts[0]}'. Expected 'unit.stat'.");
+	/// <summary>
+	/// Apply a list of (unit, stat, value) overrides to the game definition. Unknown units or
+	/// stats raise <see cref="SimulationException"/>.
+	/// </summary>
+	public static GameDef ApplyOverrideMap(GameDef gameDef, IEnumerable<(string UnitId, string Stat, int Value)> overrides) {
+		var byUnit = overrides
+			.GroupBy(o => o.UnitId)
+			.ToDictionary(g => g.Key, g => g.Select(o => (o.Stat, o.Value)).ToList());
+		if (byUnit.Count == 0) return gameDef;
 
-		var unitId = new UnitDefId(qualifiedName[0]);
-		var stat = qualifiedName[1].ToLowerInvariant();
-		if (!int.TryParse(parts[1], out int value)) throw new SimulationException($"Invalid override value '{parts[1]}'. Must be an integer.");
+		var unitsList = gameDef.Units.ToList();
+		var newUnits = new List<UnitDef>(unitsList.Count);
+		foreach (var u in unitsList) {
+			if (!byUnit.TryGetValue(u.Id.Id, out var stats)) {
+				newUnits.Add(u);
+				continue;
+			}
+			var modified = u;
+			foreach (var (stat, value) in stats) {
+				modified = stat switch {
+					"attack" => modified with { Attack = value },
+					"defense" => modified with { Defense = value },
+					"hitpoints" or "hp" => modified with { Hitpoints = value },
+					"speed" => modified with { Speed = value },
+					"cost.minerals" or "cost.mineral" => modified with { Cost = WithResource(modified.Cost, "minerals", value) },
+					"cost.gas" => modified with { Cost = WithResource(modified.Cost, "gas", value) },
+					_ => throw new SimulationException($"Unknown stat '{stat}' for unit '{u.Id.Id}'. Valid: attack, defense, hitpoints, speed, cost.minerals, cost.gas.")
+				};
+			}
+			newUnits.Add(modified);
+		}
 
-		var existingUnit = gameDef.GetUnitDef(unitId)
-			?? throw new SimulationException($"Unknown unit '{unitId.Id}' in override.");
+		// Validate: every unit referenced in overrides must exist.
+		foreach (var name in byUnit.Keys) {
+			if (!unitsList.Any(u => u.Id.Id == name))
+				throw new SimulationException($"Unknown unit '{name}' in override.");
+		}
 
-		var modifiedUnit = stat switch {
-			"attack" => existingUnit with { Attack = value },
-			"defense" => existingUnit with { Defense = value },
-			"hitpoints" or "hp" => existingUnit with { Hitpoints = value },
-			"speed" => existingUnit with { Speed = value },
-			_ => throw new SimulationException($"Unknown stat '{stat}'. Valid: attack, defense, hitpoints, speed.")
-		};
-
-		var units = gameDef.Units.Select(u => u.Id.Equals(unitId) ? modifiedUnit : u).ToList();
 		return new GameDef {
 			PlayerTypes = gameDef.PlayerTypes,
-			Units = units,
+			Units = newUnits,
 			Assets = gameDef.Assets,
 			Resources = gameDef.Resources,
 			GameTickModules = gameDef.GameTickModules,
 			TickDuration = gameDef.TickDuration,
 		};
+	}
+
+	private static Cost WithResource(Cost current, string resourceId, int value) {
+		var dict = current.Resources.ToDictionary(kv => kv.Key, kv => kv.Value);
+		dict[new ResourceDefId(resourceId)] = value;
+		return new Cost(dict.ToFrozenDictionary());
 	}
 }

@@ -12,7 +12,7 @@ namespace BrowserGameEngine.BalanceSim.GameSim.Bots;
 /// silently cripples the strategy.
 /// </summary>
 public static class BotPresets {
-	public enum Strategy { Rush, Economy, Balanced, Turtle, Air, Mass }
+	public enum Strategy { Rush, Economy, Balanced, Turtle, Air, Mass, Cheese, Contain, Mech, Bio, Harass }
 
 	public static IBot Build(Strategy strategy, string race, int seed = 0) {
 		var config = ConfigFor(strategy, race);
@@ -27,10 +27,18 @@ public static class BotPresets {
 		Strategy.Turtle => TurtleConfig(race),
 		Strategy.Air => AirConfig(race),
 		Strategy.Mass => MassConfig(race),
+		Strategy.Cheese => CheeseConfig(race),
+		Strategy.Contain => ContainConfig(race),
+		Strategy.Mech => MechConfig(race),
+		Strategy.Bio => BioConfig(race),
+		Strategy.Harass => HarassConfig(race),
 		_ => throw new ArgumentOutOfRangeException(nameof(strategy))
 	};
 
-	public static IEnumerable<string> AllStrategies() => new[] { "rush", "balanced", "economy", "turtle", "air", "mass" };
+	public static IEnumerable<string> AllStrategies() => new[] {
+		"rush", "balanced", "economy", "turtle", "air", "mass",
+		"cheese", "contain", "mech", "bio", "harass"
+	};
 
 	public static Strategy ParseStrategy(string s) => s.ToLowerInvariant() switch {
 		"rush" => Strategy.Rush,
@@ -39,6 +47,11 @@ public static class BotPresets {
 		"turtle" => Strategy.Turtle,
 		"air" => Strategy.Air,
 		"mass" => Strategy.Mass,
+		"cheese" => Strategy.Cheese,
+		"contain" => Strategy.Contain,
+		"mech" => Strategy.Mech,
+		"bio" => Strategy.Bio,
+		"harass" => Strategy.Harass,
 		_ => throw new ArgumentException($"Unknown bot strategy '{s}'. Valid: {string.Join(", ", AllStrategies())}.")
 	};
 
@@ -135,6 +148,80 @@ public static class BotPresets {
 		GasReserve: 25
 	);
 
+	// Cheese: pre-tick-90 all-in. Tiny worker count, single tier-1 building, attack the moment
+	// any army exists. Wins fast against unprepared defenders or feeds the opponent's army.
+	private static BotConfig CheeseConfig(string race) => new(
+		BuildOrder: MassBuildOrder(race), // single t1 production building only
+		UnitMix: CheeseUnitMix(race),
+		WorkerTarget: 8,
+		GasShare: 0.0,
+		FirstAttackTick: 30,
+		AttackArmyStrengthThreshold: 50,
+		LandTarget: 60,
+		FirstUpgradeTick: 9999,
+		MineralReserve: 25,
+		GasReserve: 0
+	);
+
+	// Contain: heavy static defense backed by ranged poke. More aggressive than Turtle —
+	// walls up early, then transitions to a mid-game ranged push without committing all-in.
+	private static BotConfig ContainConfig(string race) => new(
+		BuildOrder: ContainBuildOrder(race),
+		UnitMix: ContainUnitMix(race),
+		WorkerTarget: 26,
+		GasShare: 0.35,
+		FirstAttackTick: 300,
+		AttackArmyStrengthThreshold: 1200,
+		LandTarget: 500,
+		FirstUpgradeTick: 240,
+		MineralReserve: 300,
+		GasReserve: 120
+	);
+
+	// Mech: ground-armor focus. Tanks/vultures for Terran; analogues for Zerg/Protoss.
+	private static BotConfig MechConfig(string race) => new(
+		BuildOrder: MechBuildOrder(race),
+		UnitMix: MechUnitMix(race),
+		WorkerTarget: 26,
+		GasShare: 0.45,
+		FirstAttackTick: 240,
+		AttackArmyStrengthThreshold: 900,
+		LandTarget: 300,
+		FirstUpgradeTick: 300,
+		MineralReserve: 250,
+		GasReserve: 150
+	);
+
+	// Bio: light infantry mass with academy/upgrades. Marines+firebats for Terran;
+	// pure light-infantry analogues for Zerg/Protoss.
+	private static BotConfig BioConfig(string race) => new(
+		BuildOrder: BioBuildOrder(race),
+		UnitMix: BioUnitMix(race),
+		WorkerTarget: 24,
+		GasShare: 0.20,
+		FirstAttackTick: 180,
+		AttackArmyStrengthThreshold: 600,
+		LandTarget: 250,
+		FirstUpgradeTick: 240,
+		MineralReserve: 150,
+		GasReserve: 50
+	);
+
+	// Harass: air-mobility focus. Mutalisk/wraith/scout hit-and-run.
+	private static BotConfig HarassConfig(string race) => new(
+		BuildOrder: HarassBuildOrder(race),
+		UnitMix: HarassUnitMix(race),
+		WorkerTarget: 24,
+		GasShare: 0.55,
+		FirstAttackTick: 240,
+		AttackArmyStrengthThreshold: 400,
+		AttackCooldownTicks: 30,
+		LandTarget: 200,
+		FirstUpgradeTick: 480,
+		MineralReserve: 200,
+		GasReserve: 100
+	);
+
 	// ---------------------------------------------------------------------
 	// Build orders (starter HQ omitted — SimGame grants it on join)
 	// ---------------------------------------------------------------------
@@ -181,6 +268,34 @@ public static class BotPresets {
 		_ => Array.Empty<string>()
 	};
 
+	private static IReadOnlyList<string> ContainBuildOrder(string race) => race switch {
+		"terran" => new[] { "barracks", "academy", "factory" },
+		"zerg" => new[] { "spawningpool", "evolutionchamber", "hydraliskden" },
+		"protoss" => new[] { "forge", "gateway", "cyberneticscore" },
+		_ => Array.Empty<string>()
+	};
+
+	private static IReadOnlyList<string> MechBuildOrder(string race) => race switch {
+		"terran" => new[] { "barracks", "factory", "armory" },
+		"zerg" => new[] { "spawningpool", "hydraliskden", "evolutionchamber" },
+		"protoss" => new[] { "gateway", "cyberneticscore", "roboticsfacility" },
+		_ => Array.Empty<string>()
+	};
+
+	private static IReadOnlyList<string> BioBuildOrder(string race) => race switch {
+		"terran" => new[] { "barracks", "academy" },
+		"zerg" => new[] { "spawningpool", "hydraliskden" },
+		"protoss" => new[] { "gateway" },
+		_ => Array.Empty<string>()
+	};
+
+	private static IReadOnlyList<string> HarassBuildOrder(string race) => race switch {
+		"terran" => new[] { "barracks", "factory", "spaceport" },
+		"zerg" => new[] { "spawningpool", "spire" },
+		"protoss" => new[] { "gateway", "forge", "cyberneticscore", "stargate" },
+		_ => Array.Empty<string>()
+	};
+
 	// ---------------------------------------------------------------------
 	// Unit mixes — each entry's prerequisite asset MUST be in the matching BuildOrder above.
 	// ---------------------------------------------------------------------
@@ -207,7 +322,6 @@ public static class BotPresets {
 	};
 
 	private static IReadOnlyDictionary<string, int> TurtleUnitMix(string race) => race switch {
-		// Heavy on immobile defenders + a small mobile reserve.
 		"terran" => new Dictionary<string, int> { ["missileturret"] = 4, ["spacemarine"] = 2, ["siegetank"] = 1 },
 		"zerg" => new Dictionary<string, int> { ["sunkencolony"] = 3, ["sporecolony"] = 2, ["hydralisk"] = 2 },
 		"protoss" => new Dictionary<string, int> { ["photoncannon"] = 4, ["zealot"] = 2, ["dragoon"] = 1 },
@@ -225,6 +339,41 @@ public static class BotPresets {
 		"terran" => new Dictionary<string, int> { ["spacemarine"] = 1 },
 		"zerg" => new Dictionary<string, int> { ["zergling"] = 1 },
 		"protoss" => new Dictionary<string, int> { ["zealot"] = 1 },
+		_ => new Dictionary<string, int>()
+	};
+
+	private static IReadOnlyDictionary<string, int> CheeseUnitMix(string race) => race switch {
+		"terran" => new Dictionary<string, int> { ["spacemarine"] = 1 },
+		"zerg" => new Dictionary<string, int> { ["zergling"] = 1 },
+		"protoss" => new Dictionary<string, int> { ["zealot"] = 1 },
+		_ => new Dictionary<string, int>()
+	};
+
+	private static IReadOnlyDictionary<string, int> ContainUnitMix(string race) => race switch {
+		"terran" => new Dictionary<string, int> { ["missileturret"] = 3, ["siegetank"] = 2, ["spacemarine"] = 2 },
+		"zerg" => new Dictionary<string, int> { ["sunkencolony"] = 3, ["lurker"] = 2, ["hydralisk"] = 3 },
+		"protoss" => new Dictionary<string, int> { ["photoncannon"] = 3, ["zealot"] = 2, ["dragoon"] = 2 },
+		_ => new Dictionary<string, int>()
+	};
+
+	private static IReadOnlyDictionary<string, int> MechUnitMix(string race) => race switch {
+		"terran" => new Dictionary<string, int> { ["siegetank"] = 3, ["vulture"] = 2 },
+		"zerg" => new Dictionary<string, int> { ["hydralisk"] = 3, ["lurker"] = 2 },
+		"protoss" => new Dictionary<string, int> { ["dragoon"] = 3, ["reaver"] = 2 },
+		_ => new Dictionary<string, int>()
+	};
+
+	private static IReadOnlyDictionary<string, int> BioUnitMix(string race) => race switch {
+		"terran" => new Dictionary<string, int> { ["spacemarine"] = 4, ["firebat"] = 2 },
+		"zerg" => new Dictionary<string, int> { ["zergling"] = 4, ["hydralisk"] = 2 },
+		"protoss" => new Dictionary<string, int> { ["zealot"] = 1 },
+		_ => new Dictionary<string, int>()
+	};
+
+	private static IReadOnlyDictionary<string, int> HarassUnitMix(string race) => race switch {
+		"terran" => new Dictionary<string, int> { ["wraith"] = 3 },
+		"zerg" => new Dictionary<string, int> { ["mutalisk"] = 3, ["scourge"] = 2 },
+		"protoss" => new Dictionary<string, int> { ["scout"] = 2, ["corsair"] = 2 },
 		_ => new Dictionary<string, int>()
 	};
 }
