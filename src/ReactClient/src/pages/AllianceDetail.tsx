@@ -27,7 +27,7 @@ import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 
 export function AllianceDetail() {
-	const { allianceId } = useParams<{ allianceId: string }>()
+	const { allianceId, gameId } = useParams<{ allianceId: string; gameId?: string }>()
 	const queryClient = useQueryClient()
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState<string | null>(null)
@@ -254,7 +254,7 @@ export function AllianceDetail() {
 		<div className="space-y-6 max-w-3xl">
 			{/* Header */}
 			<div>
-				<Link to="/alliances" className="text-xs text-muted-foreground hover:text-foreground">
+				<Link to={gameId ? `/games/${gameId}/alliances` : '/alliances'} className="text-xs text-muted-foreground hover:text-foreground">
 					← All Alliances
 				</Link>
 				<h1 className="text-2xl font-bold flex items-center gap-2 mt-1">

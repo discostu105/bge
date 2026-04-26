@@ -150,7 +150,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 						<div>
 							<div className="text-sm text-muted-foreground">Your Alliance</div>
 							<Link
-								to={`/alliances/${myStatus.allianceId}`}
+								to={`/games/${gameId}/alliances/${myStatus.allianceId}`}
 								className="text-lg font-semibold text-primary hover:underline"
 							>
 								{myStatus.allianceName}
@@ -296,7 +296,7 @@ export function Alliances({ gameId }: AlliancesProps) {
 									<tr key={a.allianceId} className="border-b border-border hover:bg-secondary/30">
 										<td className="py-2 px-3">
 											<Link
-												to={`/alliances/${a.allianceId}`}
+												to={`/games/${gameId}/alliances/${a.allianceId}`}
 												className="font-medium text-primary hover:underline flex items-center gap-1.5"
 											>
 												<ShieldIcon className="h-3.5 w-3.5" />
