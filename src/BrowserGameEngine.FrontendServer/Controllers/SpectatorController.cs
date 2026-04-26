@@ -70,7 +70,7 @@ public class SpectatorController : ControllerBase
 				PlayerName: x.Player.Name,
 				Land: x.Land,
 				IsOnline: _onlineStatusRepository.IsOnline(x.Player.PlayerId),
-				IsAgent: x.Player.ApiKeyHash != null
+				IsAgent: x.Player.ApiKeys.Count > 0
 			))
 			.ToList();
 

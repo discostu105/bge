@@ -143,7 +143,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				if (!world.PlayerExists(playerId)) return;
 				var player = world.Players[playerId];
-				player.ApiKeyHash = null;
+				player.ApiKeys.Clear();
 				world.Players.Remove(playerId);
 			}
 		}
