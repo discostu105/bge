@@ -25,7 +25,13 @@ async function createNavGame(page: import('@playwright/test').Page): Promise<str
 		},
 	})
 	expect(res.ok()).toBeTruthy()
-	return (await res.json()).gameId as string
+	const gameId = (await res.json()).gameId as string
+	// Join the new game so /games/:id/* pages can resolve the current player.
+	const joinRes = await page.request.post(`${baseURL}/api/games/${gameId}/join`, {
+		data: { playerName: 'E2E Alliance Player', playerType: null },
+	})
+	expect([200, 409]).toContain(joinRes.status())
+	return gameId
 }
 
 /** Sign in a fresh user in a new browser context. Returns playerId = the signindev playerid param. */
