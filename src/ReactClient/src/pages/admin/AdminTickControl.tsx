@@ -6,7 +6,7 @@ import apiClient from '@/api/client'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { AdminNav } from './AdminNav'
-import { AdminGameSwitcher, AdminGamePickerPage } from './AdminGamePicker'
+import { AdminGamePickerPage } from './AdminGamePicker'
 
 interface TickStatus {
   currentTick: number
@@ -114,7 +114,6 @@ export function AdminTickControl() {
     <div className="p-6 max-w-2xl mx-auto">
       <AdminNav currentGameId={gameId} />
       <h1 className="text-2xl font-bold mb-6">Game Tick Control</h1>
-      <AdminGameSwitcher section="ticks" currentGameId={gameId} />
 
       {actionError && (
         <div className="rounded border border-destructive/50 bg-destructive/10 p-3 text-destructive text-sm mb-4">

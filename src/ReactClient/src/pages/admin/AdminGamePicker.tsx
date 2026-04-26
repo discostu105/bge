@@ -1,9 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { GameListViewModel, GameSummaryViewModel } from '@/api/types'
+import { readRememberedAdminGameId, rememberAdminGameId } from './useAdminGameId'
 
-export type AdminGameSection = 'players' | 'ticks' | 'stats'
+export type AdminGameSection = 'players' | 'ticks' | 'stats' | 'metrics'
 
 function pickDefaultGame(games: GameSummaryViewModel[]): GameSummaryViewModel | null {
   return games.find((g) => g.status === 'Active')
@@ -12,50 +14,32 @@ function pickDefaultGame(games: GameSummaryViewModel[]): GameSummaryViewModel | 
     ?? null
 }
 
-interface PickerProps {
+interface PickerPageProps {
   section: AdminGameSection
-  currentGameId: string | null
+  title: string
+  /** When true, auto-redirects to the remembered game (or the default) so admins are not forced to re-pick on every navigation. */
+  autoSelect?: boolean
 }
 
-export function AdminGameSwitcher({ section, currentGameId }: PickerProps) {
+export function AdminGamePickerPage({ section, title, autoSelect = true }: PickerPageProps) {
   const navigate = useNavigate()
-  const { data } = useQuery<GameListViewModel>({
-    queryKey: ['admin-game-switcher'],
-    queryFn: () => apiClient.get('/api/games').then((r) => r.data),
-  })
-  const games = data?.games ?? []
-  const current = currentGameId ? games.find((g) => g.gameId === currentGameId) : null
-
-  return (
-    <div className="flex items-center gap-2 mb-4 text-sm">
-      <span className="text-muted-foreground">Game:</span>
-      <select
-        className="rounded border border-input bg-background px-2 py-1 text-sm"
-        value={currentGameId ?? ''}
-        onChange={(e) => {
-          const id = e.target.value
-          if (!id) return
-          navigate(`/admin/${section}/${id}`)
-        }}
-      >
-        {!current && <option value="">— select a game —</option>}
-        {games.map((g) => (
-          <option key={g.gameId} value={g.gameId}>
-            {g.name} ({g.status})
-          </option>
-        ))}
-      </select>
-    </div>
-  )
-}
-
-export function AdminGamePickerPage({ section, title }: { section: AdminGameSection; title: string }) {
   const { data, isLoading } = useQuery<GameListViewModel>({
     queryKey: ['admin-game-picker'],
     queryFn: () => apiClient.get('/api/games').then((r) => r.data),
   })
   const games = data?.games ?? []
   const defaultGame = pickDefaultGame(games)
+
+  useEffect(() => {
+    if (!autoSelect || isLoading) return
+    if (games.length === 0) return
+    const remembered = readRememberedAdminGameId()
+    const target =
+      (remembered && games.find((g) => g.gameId === remembered)) ?? defaultGame
+    if (target) {
+      navigate(`/admin/${section}/${target.gameId}`, { replace: true })
+    }
+  }, [autoSelect, isLoading, games, defaultGame, navigate, section])
 
   return (
     <div className="space-y-4">
@@ -99,12 +83,15 @@ export function AdminGamePickerPage({ section, title }: { section: AdminGameSect
                   </td>
                   <td className="px-3 py-2 text-right text-muted-foreground">{g.playerCount}</td>
                   <td className="px-3 py-2 text-right">
-                    <a
-                      href={`/admin/${section}/${g.gameId}`}
+                    <button
+                      onClick={() => {
+                        rememberAdminGameId(g.gameId)
+                        navigate(`/admin/${section}/${g.gameId}`)
+                      }}
                       className="px-2 py-1 rounded border border-border text-xs hover:bg-muted"
                     >
                       Open
-                    </a>
+                    </button>
                   </td>
                 </tr>
               ))}

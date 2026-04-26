@@ -222,6 +222,7 @@ const router = createBrowserRouter([
 			{ path: '/admin/stats', element: <RouteWithBoundary><AdminStats /></RouteWithBoundary> },
 			{ path: '/admin/stats/:gameId', element: <RouteWithBoundary><AdminStats /></RouteWithBoundary> },
 			{ path: '/admin/metrics', element: <RouteWithBoundary><AdminMetrics /></RouteWithBoundary> },
+			{ path: '/admin/metrics/:gameId', element: <RouteWithBoundary><AdminMetrics /></RouteWithBoundary> },
 			{ path: '/admin/audit', element: <RouteWithBoundary><AdminAuditLog /></RouteWithBoundary> },
 			{ path: '/admin/reports', element: <RouteWithBoundary><AdminReports /></RouteWithBoundary> },
 		],
