@@ -10,16 +10,9 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(_page: import('@playwright/test').Page): Promise<string> {
-	// Use the long-lived 'default' game so page.request API calls (which don't send
-	// X-Game-Id) and React-side calls (which do) operate on the same world state.
-	// The signindev step in global-setup already enrolls e2e-test-admin in default.
-	return 'default'
-}
-
 test.describe('Unit build — army visibility', () => {
 	test('units page renders heading and shows unit count after building', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build WBF units via API
 		const buildRes = await page.request.post(
@@ -57,7 +50,7 @@ test.describe('Unit build — army visibility', () => {
 			form: { playerid: freshUserId, returnUrl: '/' },
 		})
 
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		await page.goto(`/games/${gameId}/units`)
 		await expect(page.getByRole('heading', { name: 'Units', exact: true })).toBeVisible()

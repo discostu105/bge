@@ -16,13 +16,6 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(_page: import('@playwright/test').Page): Promise<string> {
-	// Use the long-lived 'default' game so page.request API calls (which don't send
-	// X-Game-Id) and React-side calls (which do) operate on the same world state.
-	// The signindev step in global-setup already enrolls e2e-test-admin in default.
-	return 'default'
-}
-
 /** Create a fresh defender user and return their PlayerId (same as their userId in devauth). */
 async function createFreshDefender(browser: import('@playwright/test').Browser): Promise<{ playerId: string; context: import('@playwright/test').BrowserContext }> {
 	const freshUserId = `e2e-defender-${Date.now()}`
@@ -42,7 +35,7 @@ async function createFreshDefender(browser: import('@playwright/test').Browser):
 
 test.describe('Attack flow', () => {
 	test('SelectEnemy page renders and shows attackable players', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const { playerId: defenderPlayerId } = await createFreshDefender(browser)
 
 		// Build a WBF unit for admin so the unit list is non-empty
@@ -69,7 +62,7 @@ test.describe('Attack flow', () => {
 	})
 
 	test('sends troops and navigates to EnemyBase page', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const { playerId: defenderPlayerId } = await createFreshDefender(browser)
 
 		// Build and retrieve unit
@@ -97,7 +90,7 @@ test.describe('Attack flow', () => {
 	})
 
 	test('attacks from EnemyBase page and shows battle report', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const { playerId: defenderPlayerId } = await createFreshDefender(browser)
 
 		// Build a unit and send it to the defender's base via API

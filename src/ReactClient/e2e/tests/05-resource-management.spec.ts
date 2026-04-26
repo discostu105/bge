@@ -12,16 +12,9 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(_page: import('@playwright/test').Page): Promise<string> {
-	// Use the long-lived 'default' game so page.request API calls (which don't send
-	// X-Game-Id) and React-side calls (which do) operate on the same world state.
-	// The signindev step in global-setup already enrolls e2e-test-admin in default.
-	return 'default'
-}
-
 test.describe('Resource management — worker auto-assignment', () => {
 	test('base page shows Workers stat card with Adjust action', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Ensure we have at least some WBF workers so the card is meaningful
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=3`, { data: {} })
@@ -36,7 +29,7 @@ test.describe('Resource management — worker auto-assignment', () => {
 	})
 
 	test('worker assignment dialog opens with a gas-percent slider', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build some workers so assignment is possible
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
@@ -52,7 +45,7 @@ test.describe('Resource management — worker auto-assignment', () => {
 	})
 
 	test('setting gas percent via API is reflected in the worker dialog', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build workers so we have something to assign
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })
@@ -73,7 +66,7 @@ test.describe('Resource management — worker auto-assignment', () => {
 	})
 
 	test('saving worker assignment from the dialog sends an update', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 
 		// Build workers and reset assignment to a known state
 		await page.request.post(`${baseURL}/api/units/build?unitDefId=wbf&count=5`, { data: {} })

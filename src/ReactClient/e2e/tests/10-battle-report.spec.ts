@@ -14,13 +14,6 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-async function createNavGame(_page: import('@playwright/test').Page): Promise<string> {
-	// Use the long-lived 'default' game so page.request API calls (which don't send
-	// X-Game-Id) and React-side calls (which do) operate on the same world state.
-	// The signindev step in global-setup already enrolls e2e-test-admin in default.
-	return 'default'
-}
-
 async function createFreshDefender(browser: import('@playwright/test').Browser): Promise<string> {
 	const freshUserId = `e2e-defender-br-${Date.now()}`
 	const context = await browser.newContext()
@@ -51,7 +44,7 @@ async function triggerBattle(page: import('@playwright/test').Page, defenderPlay
 
 test.describe('Battle report detail page', () => {
 	test('renders battle report with key stats after completing a battle', async ({ page, browser }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const defenderPlayerId = await createFreshDefender(browser)
 		await triggerBattle(page, defenderPlayerId)
 
@@ -83,7 +76,7 @@ test.describe('Battle report detail page', () => {
 	})
 
 	test('shows error state for an unknown report ID', async ({ page }) => {
-		const gameId = await createNavGame(page)
+		const gameId = 'default'
 		const fakeReportId = '00000000-0000-0000-0000-000000000000'
 
 		await page.goto(`/games/${gameId}/battles/${fakeReportId}`)
