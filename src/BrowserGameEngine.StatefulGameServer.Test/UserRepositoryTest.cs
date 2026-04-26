@@ -9,7 +9,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void CreateUser_NewGithubId_StoresUser() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("gh123", "octocat", "The Octocat");
@@ -24,7 +24,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetByGithubId_ExistingUser_ReturnsUser() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			userRepoWrite.CreateUser("gh456", "monalisa", "Mona Lisa");
@@ -37,7 +37,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetByGithubId_MissingUser_ReturnsNull() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 
 			var result = userRepo.GetByGithubId("nonexistent");
 			Assert.Null(result);
@@ -56,7 +56,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void GetPlayersForUser_AfterCreatePlayer_ReturnsPlayer() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("gh789", "devuser", "Dev User");
@@ -72,7 +72,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void SetApiKeyHash_AndLookup_FindsPlayer() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("ghapikey", "apiuser", "API User");
@@ -134,7 +134,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void RevokeApiKey_ClearsHash() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("ghrevoke", "revokeuser", "Revoke User");
