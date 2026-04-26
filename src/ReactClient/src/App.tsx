@@ -140,6 +140,11 @@ function AlliancesPage() {
   if (!gameId) return null
   return <Alliances gameId={gameId} />
 }
+function AllianceDetailPage() {
+  const { gameId } = useParams<{ gameId: string }>()
+  if (!gameId) return null
+  return <AllianceDetail />
+}
 function GameLiveViewPage() {
   const { gameId } = useParams<{ gameId: string }>()
   if (!gameId) return null
@@ -169,6 +174,7 @@ const router = createBrowserRouter([
 					{ path: 'messages', element: <RouteWithBoundary><MessagesPage /></RouteWithBoundary> },
 					{ path: 'ranking', element: <RouteWithBoundary><PlayerRankingPage /></RouteWithBoundary> },
 					{ path: 'alliances', element: <RouteWithBoundary><AlliancesPage /></RouteWithBoundary> },
+					{ path: 'alliances/:allianceId', element: <RouteWithBoundary><AllianceDetailPage /></RouteWithBoundary> },
 					{ path: 'allianceranking', element: <TodoPage name="Alliance Ranking" /> },
 					{ path: 'selectenemy/:unitId', element: <RouteWithBoundary><SelectEnemyPage /></RouteWithBoundary> },
 					{ path: 'unitdefinitions', element: <RouteWithBoundary><UnitDefinitions /></RouteWithBoundary> },
@@ -200,7 +206,7 @@ const router = createBrowserRouter([
 			{ path: '/profile', element: <BareRouteRedirect path="profile" /> },
 			{ path: '/profile/:userId', element: <RouteWithBoundary><PublicProfile /></RouteWithBoundary> },
 			{ path: '/players', element: <RouteWithBoundary><PlayersList /></RouteWithBoundary> },
-			{ path: '/alliances/:allianceId', element: <RouteWithBoundary><AllianceDetail /></RouteWithBoundary> },
+			{ path: '/alliances/:allianceId', element: <BareRouteRedirect path="alliances/:allianceId" /> },
 			{ path: '/history', element: <BareRouteRedirect path="history" /> },
 			{ path: '/replays/:gameId', element: <RouteWithBoundary><ReplayViewer /></RouteWithBoundary> },
 			{ path: '/stats', element: <BareRouteRedirect path="stats" /> },
