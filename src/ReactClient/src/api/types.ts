@@ -88,10 +88,19 @@ export interface AddToQueueRequest {
 
 // Resources
 
+export interface EconomyFormulaViewModel {
+  baseIncomePerTick: number
+  maxIncomePerWorker: number
+  mineralSweetSpotLandPerWorker: number
+  gasSweetSpotLandPerWorker: number
+  minEfficiency: number
+}
+
 export interface PlayerResourcesViewModel {
   primaryResource: CostViewModel
   secondaryResources: CostViewModel
   colonizationCostPerLand: number
+  formula: EconomyFormulaViewModel
 }
 
 export interface ColonizePreviewViewModel {
