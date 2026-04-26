@@ -73,10 +73,11 @@ test.describe('Unit build — army visibility', () => {
 		await page.goto(`/games/${gameId}/units`)
 		await expect(page.getByRole('heading', { name: 'Units', exact: true })).toBeVisible()
 
-		// Empty state message from the Home Base DataTable
+		// EmptyState renders when the player has no units at all
+		await expect(page.getByText('No units yet')).toBeVisible({ timeout: 10_000 })
 		await expect(
-			page.getByText('No units at home base. All units are deployed, or you have not built any units yet.')
-		).toBeVisible({ timeout: 10_000 })
+			page.getByText('Train your first units to start building an army.')
+		).toBeVisible()
 		await expect(page.getByText('Something went wrong')).not.toBeVisible()
 	})
 })
