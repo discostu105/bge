@@ -32,21 +32,16 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		// grants workers of this type. (Older single-worker config paths still work.)
 		private UnitDefId PrimaryWorkerUnit => workerUnits[0];
 
-		// Base income added every tick regardless of workers (spec 2.3)
-		private const decimal BaseIncomeMinerals = 10m;
-		private const decimal BaseIncomeGas = 10m;
-
-		// Per-worker base income before efficiency (spec 2.3)
-		private const decimal MineralsPerWorker = 4m;
-		private const decimal GasPerWorker = 4m;
-
-		// Efficiency factors (spec 2.3)
-		private const decimal MineralEfficiencyFactor = 0.03m;
-		private const decimal GasEfficiencyFactor = 0.06m;
-
-		// Efficiency clamp bounds (spec 2.3)
-		private const decimal EfficiencyMin = 0.2m;
-		private const decimal EfficiencyMax = 100m;
+		// Income formula constants live in ResourceGrowthScoFormula so the API layer
+		// can surface them to the client without duplicating values.
+		private const decimal BaseIncomeMinerals = ResourceGrowthScoFormula.BaseIncomePerTick;
+		private const decimal BaseIncomeGas = ResourceGrowthScoFormula.BaseIncomePerTick;
+		private const decimal MineralsPerWorker = ResourceGrowthScoFormula.MaxIncomePerWorker;
+		private const decimal GasPerWorker = ResourceGrowthScoFormula.MaxIncomePerWorker;
+		private const decimal MineralEfficiencyFactor = ResourceGrowthScoFormula.MineralEfficiencyFactor;
+		private const decimal GasEfficiencyFactor = ResourceGrowthScoFormula.GasEfficiencyFactor;
+		private const decimal EfficiencyMin = ResourceGrowthScoFormula.EfficiencyMin;
+		private const decimal EfficiencyMax = ResourceGrowthScoFormula.EfficiencyMax;
 
 		// Emergency respawn threshold (spec 2.5): auto-grant workers if resources below this
 		private const decimal EmergencyResourceThreshold = 50m;

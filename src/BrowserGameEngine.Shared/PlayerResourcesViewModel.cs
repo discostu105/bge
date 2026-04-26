@@ -9,5 +9,6 @@ namespace BrowserGameEngine.Shared {
 		public required CostViewModel PrimaryResource { get; init; }
 		public required CostViewModel SecondaryResources { get; init; }
 		public decimal ColonizationCostPerLand { get; init; }
+		public required EconomyFormulaViewModel Formula { get; init; }
 	}
 }

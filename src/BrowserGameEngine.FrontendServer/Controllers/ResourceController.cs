@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
 using BrowserGameEngine.GameModel;
@@ -45,7 +46,14 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			return new PlayerResourcesViewModel {
 				PrimaryResource = CostViewModel.Create(resourceRepository.GetLandResource(playerId)),
 				SecondaryResources = CostViewModel.Create(resourceRepository.GetNonLandResources(playerId)),
-				ColonizationCostPerLand = ColonizeRepositoryWrite.GetCostPerLand(currentLand)
+				ColonizationCostPerLand = ColonizeRepositoryWrite.GetCostPerLand(currentLand),
+				Formula = new EconomyFormulaViewModel {
+					BaseIncomePerTick = ResourceGrowthScoFormula.BaseIncomePerTick,
+					MaxIncomePerWorker = ResourceGrowthScoFormula.MaxIncomePerWorker,
+					MineralSweetSpotLandPerWorker = ResourceGrowthScoFormula.MineralSweetSpotLandPerWorker,
+					GasSweetSpotLandPerWorker = ResourceGrowthScoFormula.GasSweetSpotLandPerWorker,
+					MinEfficiency = ResourceGrowthScoFormula.MinEfficiencyNormalized,
+				},
 			};
 		}
 

@@ -22,7 +22,8 @@ import { WorkerAssignmentDialog } from '@/components/WorkerAssignmentDialog'
 import { ColonizeDialog } from '@/components/ColonizeDialog'
 import { AffordabilityChip } from '@/components/AffordabilityChip'
 import { relativeTime } from '@/lib/utils'
-import { formatNumber } from '@/lib/formatters'
+import { formatNumber, formatRatio } from '@/lib/formatters'
+import { landPerWorker } from '@/lib/economy'
 import { PageHeader } from '@/components/ui/page-header'
 import { Section } from '@/components/ui/section'
 import { Card, CardContent } from '@/components/ui/card'
@@ -206,7 +207,7 @@ function EconomyStat({
 	label: string
 	value: ReactNode
 	detail?: ReactNode
-	action?: { label: string; onClick: () => void; disabled?: boolean }
+	action?: { label: string; onClick: () => void; disabled?: boolean; title?: string }
 	iconClassName?: string
 	valueClassName?: string
 }) {
@@ -222,7 +223,14 @@ function EconomyStat({
 					{detail && <div className="text-xs text-muted-foreground mt-0.5">{detail}</div>}
 				</div>
 				{action && (
-					<Button size="sm" variant="outline" onClick={action.onClick} disabled={action.disabled} className="shrink-0">
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={action.onClick}
+						disabled={action.disabled}
+						title={action.title}
+						className="shrink-0"
+					>
 						{action.label}
 					</Button>
 				)}
@@ -358,6 +366,8 @@ export function Base({ gameId }: BaseProps) {
 	const queueCount = queueData?.entries.length ?? 0
 	const gasPercent = workers?.gasPercent ?? 0
 	const totalWorkers = workers?.totalWorkers ?? 0
+	const mineralWorkers = workers?.mineralWorkers ?? 0
+	const gasWorkers = workers?.gasWorkers ?? 0
 	// Land can be either the primary or secondary resource depending on the game definition;
 	// merge both to be robust across rulesets.
 	const land =
@@ -420,12 +430,19 @@ export function Base({ gameId }: BaseProps) {
 						resources
 							? (
 								<>
-									<span className="text-blue-400">{formatNumber(resources.colonizationCostPerLand)} minerals</span> per new tile
+									<span className="text-blue-400">{formatRatio(landPerWorker(mineralWorkers, land))}</span>
+									/mineral worker · <span className="text-green-400">{formatRatio(landPerWorker(gasWorkers, land))}</span>
+									/gas worker · sweet {formatRatio(resources.formula.mineralSweetSpotLandPerWorker)} / {formatRatio(resources.formula.gasSweetSpotLandPerWorker)}
 								</>
 							)
 							: undefined
 					}
-					action={{ label: 'Colonize', onClick: () => setColonizeOpen(true), disabled: isFinished }}
+					action={{
+						label: 'Colonize',
+						onClick: () => setColonizeOpen(true),
+						disabled: isFinished,
+						title: resources ? `${formatNumber(resources.colonizationCostPerLand)} minerals per new tile` : undefined,
+					}}
 				/>
 				<EconomyStat
 					icon={<HammerIcon className="h-5 w-5" />}

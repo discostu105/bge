@@ -20,6 +20,12 @@ export function formatNumber(value: number): string {
   return Math.floor(value).toLocaleString()
 }
 
+/** Compact one-decimal ratio used for land/worker readouts. */
+export function formatRatio(value: number): string {
+  if (!isFinite(value)) return '—'
+  return value.toFixed(1)
+}
+
 export function formatDate(d: string): string {
   return new Date(d).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
