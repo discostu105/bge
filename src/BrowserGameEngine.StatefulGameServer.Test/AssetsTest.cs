@@ -83,5 +83,26 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			Assert.Equal(299, g.ResourceRepository.GetAmount(g.WorldStateFactory.Player1, Id.ResDef("res2")));
 			Assert.Throws<CannotAffordException>(() => g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset2"))));
 		}
+
+		// Regression: a user reported "CannotAffordException even though I have enough minerals"
+		// when building Kaserne (Barracks). The visible failure was the .NET default
+		// "Exception of type ..." fallback because CannotAffordException(Cost) never set a
+		// message — masking which resource (if any) was actually short. Verify the message now
+		// names the shortage so the UI can surface it.
+		[Fact]
+		public void CannotAffordException_Message_NamesShortResource() {
+			var g = new TestGame();
+			// Drain res2 below asset2's 300 requirement.
+			g.ResourceRepositoryWrite.DeductCost(g.WorldStateFactory.Player1, Id.ResDef("res2"), 1900);
+			Assert.Equal(100, g.ResourceRepository.GetAmount(g.WorldStateFactory.Player1, Id.ResDef("res2")));
+
+			var ex = Assert.Throws<CannotAffordException>(() =>
+				g.AssetRepositoryWrite.BuildAsset(new Commands.BuildAssetCommand(g.WorldStateFactory.Player1, Id.AssetDef("asset2"))));
+
+			Assert.Contains("res2", ex.Message);
+			Assert.Contains("100", ex.Message);
+			Assert.Contains("300", ex.Message);
+			Assert.DoesNotContain("Exception of type", ex.Message);
+		}
 	}
 }

@@ -27,7 +27,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public void DeductCost(PlayerId playerId, Cost cost) {
 			var state = world.GetPlayer(playerId).State;
 			lock (state.StateLock) {
-				if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost);
+				if (!resourceRepository.CanAfford(playerId, cost)) throw new CannotAffordException(cost, SnapshotResources(state));
 				foreach (var res in cost.Resources) {
 					DeductResourceUnchecked(state, res.Key, res.Value);
 				}
@@ -36,8 +36,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 		private void DeductResourceUnchecked(PlayerState state, ResourceDefId resourceDefId, decimal value) {
 			if (value < 0) throw new InvalidGameDefException("Resource cost cannot be negative.");
-			if (!state.Resources.ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value));
+			if (!state.Resources.ContainsKey(resourceDefId)) throw new CannotAffordException(Cost.FromSingle(resourceDefId, value), SnapshotResources(state));
 			state.Resources[resourceDefId] -= value;
+		}
+
+		private static Cost SnapshotResources(PlayerState state) {
+			return Cost.FromList(state.Resources);
 		}
 
 		public decimal AddResources(PlayerId playerId, ResourceDefId resourceDefId, decimal value) {
@@ -67,7 +71,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 
 			var state = world.GetPlayer(cmd.PlayerId).State;
 			lock (state.StateLock) {
-				if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost);
+				if (!resourceRepository.CanAfford(cmd.PlayerId, cost)) throw new CannotAffordException(cost, SnapshotResources(state));
 
 				DeductResourceUnchecked(state, cmd.FromResource, 2m * cmd.Amount);
 				if (!state.Resources.ContainsKey(toResource)) {
