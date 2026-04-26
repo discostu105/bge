@@ -35,7 +35,7 @@ public class RandomBot : IBot {
 		if (available.Count == 0) return;
 		var pick = available[rng.Next(available.Count)];
 		ctx.Game.BuildQueueRepositoryWrite.AddToQueue(
-			new AddToQueueCommand(ctx.PlayerId, BuildQueueEntryConstants.TypeUnit, pick.Id.Id, Count: 1));
+			new AddToQueueCommand(ctx.PlayerId, SimGame.BuildQueueTypeUnit, pick.Id.Id, Count: 1));
 	}
 
 	private void TryQueueBuilding(BotContext ctx) {
@@ -47,6 +47,6 @@ public class RandomBot : IBot {
 		if (candidates.Count == 0) return;
 		var pick = candidates[rng.Next(candidates.Count)];
 		ctx.Game.BuildQueueRepositoryWrite.AddToQueue(
-			new AddToQueueCommand(ctx.PlayerId, BuildQueueEntryConstants.TypeAsset, pick.Id.Id, Count: 1));
+			new AddToQueueCommand(ctx.PlayerId, SimGame.BuildQueueTypeAsset, pick.Id.Id, Count: 1));
 	}
 }

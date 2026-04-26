@@ -13,6 +13,7 @@ using BrowserGameEngine.StatefulGameServer.GameRegistry;
 using BrowserGameEngine.StatefulGameServer.GameTicks;
 using BrowserGameEngine.StatefulGameServer.GameTicks.Modules;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace BrowserGameEngine.BalanceSim.GameSim;
@@ -51,7 +52,8 @@ public class SimGame {
 	private readonly List<PlayerId> playerOrder = new();
 	public IReadOnlyList<PlayerId> Players => playerOrder;
 
-	public int CurrentTick => Accessor.WorldState.GameTickState.CurrentGameTick.Tick;
+	private int currentTick;
+	public int CurrentTick => currentTick;
 
 	public SimGame(GameDef? gameDef = null, GameSettings? settings = null) {
 		GameDef = StripFinalizationModule(gameDef ?? new StarcraftOnlineGameDefFactory().CreateGameDef());
@@ -68,8 +70,9 @@ public class SimGame {
 		var mutable = initial.ToMutable();
 
 		// Use GameInstance to assign GameSettings (internal field) via its public constructor.
+		var gameId = new GameId("sim");
 		var record = new GameRecordImmutable(
-			GameId: mutable.GameId,
+			GameId: gameId,
 			Name: "sim",
 			GameDefType: "sco",
 			Status: GameStatus.Active,
@@ -140,7 +143,8 @@ public class SimGame {
 	/// </summary>
 	public void AdvanceTicks(int ticks) {
 		for (int i = 0; i < ticks; i++) {
-			TickEngine.IncrementWorldTick();
+			var newTick = TickEngine.IncrementWorldTick();
+			currentTick = newTick.Tick;
 			TickEngine.CheckAllTicks();
 		}
 	}
