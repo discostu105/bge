@@ -119,9 +119,9 @@ export interface ResourceHistoryViewModel {
 
 export interface WorkerAssignmentViewModel {
   totalWorkers: number
+  gasPercent: number
   mineralWorkers: number
   gasWorkers: number
-  idleWorkers: number
 }
 
 // Research / Upgrades

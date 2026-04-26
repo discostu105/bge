@@ -65,15 +65,12 @@ public class ConfigurableBot : IBot {
 	};
 
 	private void AdjustWorkers(BotContext ctx) {
-		int total = ctx.Game.UnitRepository.CountByUnitDefId(ctx.PlayerId, Id.UnitDef(WorkerUnit()));
-		if (total <= 0) return;
-		int gas = (int)Math.Round(total * Config.GasShare);
-		int minerals = total - gas;
+		int gasPercent = (int)Math.Round(Config.GasShare * 100);
+		gasPercent = Math.Clamp(gasPercent, 0, 100);
 		try {
-			ctx.Game.PlayerRepositoryWrite.AssignWorkers(
-				new AssignWorkersCommand(ctx.PlayerId, MineralWorkers: minerals, GasWorkers: gas),
-				totalWorkers: total);
-		} catch (ArgumentOutOfRangeException) { /* total changed concurrently; retry next tick */ }
+			ctx.Game.PlayerRepositoryWrite.SetWorkerGasPercent(
+				new SetWorkerGasPercentCommand(ctx.PlayerId, gasPercent));
+		} catch (ArgumentOutOfRangeException) { /* shouldn't happen — clamped above */ }
 	}
 
 	private void TrainWorkers(BotContext ctx) {

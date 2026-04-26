@@ -13,8 +13,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public IDictionary<ResourceDefId, decimal> Resources { get; set; } = new Dictionary<ResourceDefId, decimal>();
 		public ISet<Asset> Assets { get; set; } = new HashSet<Asset>();
 		public List<Unit> Units { get; set; } = new List<Unit>();
-		public int MineralWorkers { get; set; }
-		public int GasWorkers { get; set; }
+		public int GasPercent { get; set; } = 30;
 		public int ProtectionTicksRemaining { get; set; }
 		public List<Message> Messages { get; set; } = new List<Message>();
 		public int AttackUpgradeLevel { get; set; }
@@ -37,8 +36,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 					Resources: new Dictionary<ResourceDefId, decimal>(playerState.Resources),
 					Assets: playerState.Assets.Select(x => x.ToImmutable()).ToHashSet(),
 					Units: playerState.Units.Select(x => x.ToImmutable()).ToList(),
-					MineralWorkers: playerState.MineralWorkers,
-					GasWorkers: playerState.GasWorkers,
+					GasPercent: playerState.GasPercent,
 					ProtectionTicksRemaining: playerState.ProtectionTicksRemaining,
 					Messages: playerState.Messages.Select(x => x.ToImmutable()).ToList(),
 					AttackUpgradeLevel: playerState.AttackUpgradeLevel,
@@ -61,8 +59,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Resources = new Dictionary<ResourceDefId, decimal>(playerStateImmutable.Resources),
 				Assets = playerStateImmutable.Assets.Select(x => x.ToMutable()).ToHashSet(),
 				Units = playerStateImmutable.Units.Select(x => x.ToMutable()).ToList(),
-				MineralWorkers = playerStateImmutable.MineralWorkers,
-				GasWorkers = playerStateImmutable.GasWorkers,
+				GasPercent = playerStateImmutable.GasPercent,
 				ProtectionTicksRemaining = playerStateImmutable.ProtectionTicksRemaining,
 				Messages = (playerStateImmutable.Messages ?? new List<MessageImmutable>()).Select(x => x.ToMutable()).ToList(),
 				AttackUpgradeLevel = playerStateImmutable.AttackUpgradeLevel,

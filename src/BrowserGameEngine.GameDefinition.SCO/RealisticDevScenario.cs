@@ -57,7 +57,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 			var resources = new Dictionary<ResourceDefId, decimal>();
 			var assets = new HashSet<AssetImmutable>();
 			var units = new List<UnitImmutable>();
-			int mineralWorkers, gasWorkers;
 
 			if (Elite.Contains(i)) {
 				resources[Id.ResDef("minerals")] = 80_000m;
@@ -72,7 +71,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("siegetank"), 25, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("wraith"), 15, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("battlecruiser"), 4, null));
-				mineralWorkers = 20; gasWorkers = 12;
 			} else if (Strong.Contains(i)) {
 				resources[Id.ResDef("minerals")] = 40_000m;
 				resources[Id.ResDef("gas")] = 20_000m;
@@ -85,7 +83,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("spacemarine"), 70, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("siegetank"), 10, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("wraith"), 6, null));
-				mineralWorkers = 14; gasWorkers = 8;
 			} else if (Average.Contains(i)) {
 				resources[Id.ResDef("minerals")] = 15_000m;
 				resources[Id.ResDef("gas")] = 8_000m;
@@ -96,7 +93,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("wbf"), 15, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("spacemarine"), 35, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("siegetank"), 3, null));
-				mineralWorkers = 8; gasWorkers = 4;
 			} else {
 				resources[Id.ResDef("minerals")] = 3_000m;
 				resources[Id.ResDef("gas")] = 1_000m;
@@ -104,7 +100,6 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				assets.Add(new AssetImmutable(Id.AssetDef("commandcenter"), 1));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("wbf"), 8, null));
 				units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("spacemarine"), 12, null));
-				mineralWorkers = 4; gasWorkers = 2;
 			}
 
 			if (i == 0) units.Add(new UnitImmutable(Id.NewUnitId(), Id.UnitDef("siegetank"), 8, Pid(5), ReturnTimer: 4));
@@ -122,8 +117,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					Resources: resources,
 					Assets: assets,
 					Units: units,
-					MineralWorkers: mineralWorkers,
-					GasWorkers: gasWorkers
+					GasPercent: 35
 				),
 				LastOnline: Now - TimeSpan.FromMinutes(i * 3),
 				AllianceId: AllianceFor(i)
