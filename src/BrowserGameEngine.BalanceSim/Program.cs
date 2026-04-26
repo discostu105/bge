@@ -29,6 +29,15 @@ try {
 		case "units":
 			PrintUnits(gameDef, options);
 			break;
+		case "playthrough":
+			PlaythroughSimulation.Run(gameDef, options);
+			break;
+		case "matchup":
+			MatchupSimulation.Run(gameDef, options);
+			break;
+		case "balance":
+			BalanceSimulation.Run(gameDef, options);
+			break;
 		default:
 			Console.Error.WriteLine($"Unknown command: {command}");
 			PrintUsage();
@@ -53,6 +62,25 @@ static void PrintUsage() {
 		  compare           Compare resource income across races
 		  compare-battle    Compare two armies with cost-efficiency analysis
 		  units             List available units for a race
+		  playthrough       Run a single full game with bots and print a trace
+		  matchup           Run many games with the same bot lineup; report win rates
+		  balance           Run round-robin race vs race games for a strategy
+
+		Playthrough/matchup options:
+		  --bots <spec>             Bot list (default: rush:terran,economy:zerg,balanced:protoss)
+		                            Format: strategy:race,strategy:race,...
+		                            Strategies: rush, economy, balanced, random
+		                            Races:      terran, zerg, protoss
+		  --end-tick <n>            Tick at which the game ends (default: 720)
+		  --protection-ticks <n>    Protection ticks for new players (default: 60)
+		  --seed <n>                Base random seed (default: 1)
+		  --snapshot-every <n>      Tick interval for timeline snapshots (playthrough only, default: 60)
+		  --quiet                   Suppress per-event log lines
+		  --csv                     Output as CSV instead of markdown
+		  --games <n>               Number of games to run (matchup/balance, default: 20/10)
+
+		Balance options:
+		  --strategy <name>         Strategy used by both sides (default: balanced)
 
 		Resource options:
 		  --mineral-workers <n>   Number of mineral workers (default: 10)
@@ -87,10 +115,12 @@ static void PrintUsage() {
 
 static Dictionary<string, string> ParseOptions(string[] args) {
 	var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+	// Flags don't take a value — they're set to "true" if present.
+	var flagKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "csv", "quiet" };
 	for (int i = 0; i < args.Length; i++) {
 		if (args[i].StartsWith("--")) {
 			var key = args[i][2..];
-			if (key == "csv") {
+			if (flagKeys.Contains(key)) {
 				options[key] = "true";
 			} else if (i + 1 < args.Length) {
 				options[key] = args[i + 1];

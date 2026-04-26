@@ -30,6 +30,7 @@
     <ProjectReference Include="..\BrowserGameEngine.GameDefinition.SCO\BrowserGameEngine.GameDefinition.SCO.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.StatefulGameServer\BrowserGameEngine.StatefulGameServer.csproj" />
     <ProjectReference Include="..\BrowserGameEngine.FrontendServer\BrowserGameEngine.FrontendServer.csproj" />
+    <ProjectReference Include="..\BrowserGameEngine.BalanceSim\BrowserGameEngine.BalanceSim.csproj" />
   </ItemGroup>
 
 </Project>
