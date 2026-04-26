@@ -29,6 +29,9 @@ public static class PlaythroughSimulation {
 		);
 
 		var snapshots = new List<(int Tick, IReadOnlyList<PlayerSnapshot> Ranking)>();
+		bool breakdown = options.GetBool("breakdown");
+		var unitBreakdowns = new List<(int Tick, PlayerId Player, IReadOnlyDictionary<string, int> UnitCounts)>();
+
 		var runner = new PlaythroughRunner {
 			GameDefOverride = gameDef,
 			Settings = settings,
@@ -36,6 +39,15 @@ public static class PlaythroughSimulation {
 			OnTick = (tick, game) => {
 				if (snapshotEvery > 0 && tick % snapshotEvery == 0) {
 					snapshots.Add((tick, game.Ranking()));
+					if (breakdown) {
+						foreach (var pid in game.Players) {
+							var p = game.PlayerRepository.Get(pid);
+							var counts = p.State.Units
+								.GroupBy(u => u.UnitDefId.Id)
+								.ToDictionary(g => g.Key, g => g.Sum(u => u.Count));
+							unitBreakdowns.Add((tick, pid, counts));
+						}
+					}
 				}
 			}
 		};
@@ -44,6 +56,10 @@ public static class PlaythroughSimulation {
 
 		Console.WriteLine();
 		PrintTimeline(result, snapshots, csv);
+		if (breakdown) {
+			Console.WriteLine();
+			PrintBreakdown(result, unitBreakdowns);
+		}
 		Console.WriteLine();
 		PrintFinalRanking(result, csv);
 		Console.WriteLine();
@@ -89,6 +105,18 @@ public static class PlaythroughSimulation {
 			foreach (var snap in ranking) {
 				var name = result.BotNamesByPlayer[snap.PlayerId];
 				Console.WriteLine($"| {tick,4} | {name,-21} | {snap.Land,4} | {snap.Minerals + snap.Gas,6} | {snap.UnitCount,5} | {snap.ArmyStrength,8} |");
+			}
+		}
+	}
+
+	private static void PrintBreakdown(PlaythroughResult result, List<(int Tick, PlayerId Player, IReadOnlyDictionary<string, int> UnitCounts)> rows) {
+		Console.WriteLine("Unit composition:");
+		foreach (var grouping in rows.GroupBy(r => r.Tick).OrderBy(g => g.Key)) {
+			Console.WriteLine($"  tick {grouping.Key}:");
+			foreach (var (_, player, counts) in grouping) {
+				var name = result.BotNamesByPlayer[player];
+				var listing = string.Join(", ", counts.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Key}={kv.Value}"));
+				Console.WriteLine($"    {name,-20} {listing}");
 			}
 		}
 	}

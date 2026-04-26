@@ -28,7 +28,10 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 				GameTickModules = new List<GameTickModuleDef> {
 					new GameTickModuleDef("actionqueue:1", new Dictionary<string, string> { }.ToFrozenDictionary()),
 					new GameTickModuleDef("resource-growth-sco:1", new Dictionary<string, string> {
-						{ "worker-units", "wbf" },
+						// Comma-separated: one worker unit per playable race. Without this,
+						// only Terran (wbf) generates income — Zerg (drone) and Protoss (probe)
+						// are stuck on the 10 m / 10 g base income and can't compete economically.
+						{ "worker-units", "wbf,drone,probe" },
 						{ "growth-resource", "minerals" },
 						{ "gas-resource", "gas" },
 						{ "constraint-resource", "land" },

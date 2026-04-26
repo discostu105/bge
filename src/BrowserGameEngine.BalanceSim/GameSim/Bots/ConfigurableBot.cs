@@ -30,6 +30,11 @@ public class ConfigurableBot : IBot {
 	/// hoard hundreds of pending units behind it.</summary>
 	public int MaxQueueLength { get; init; } = 4;
 
+	/// <summary>Max units per queue entry (engine BuildUnit accepts Count). Larger batches
+	/// match how real players queue (a stack of 10 at a time) and avoid a 1-unit-per-tick
+	/// throughput cap from the build-queue tick module.</summary>
+	public int BatchSize { get; init; } = 10;
+
 	private readonly Dictionary<string, int> lastAttackTickByOpponent = new();
 	private int unitMixCursor;
 
@@ -75,9 +80,13 @@ public class ConfigurableBot : IBot {
 		var worker = WorkerUnit();
 		int have = ctx.Game.UnitRepository.CountByUnitDefId(ctx.PlayerId, Id.UnitDef(worker));
 		int queued = CountQueued(ctx, worker);
-		if (have + queued >= Config.WorkerTarget) return;
+		int needed = Config.WorkerTarget - have - queued;
+		if (needed <= 0) return;
 		if (QueueLength(ctx) >= MaxQueueLength) return;
-		Enqueue(ctx, SimGame.BuildQueueTypeUnit, worker, count: 1);
+		// Batch up to BatchSize, capped by what we can afford and what's still needed.
+		int batch = Math.Min(needed, AffordableUnitCount(ctx, worker, BatchSize));
+		if (batch <= 0) return;
+		Enqueue(ctx, SimGame.BuildQueueTypeUnit, worker, count: batch);
 	}
 
 	private void QueueNextBuilding(BotContext ctx) {
@@ -86,9 +95,16 @@ public class ConfigurableBot : IBot {
 			if (ctx.Game.AssetRepository.HasAsset(ctx.PlayerId, assetDefId)) continue;
 			if (ctx.Game.AssetRepository.IsBuildQueued(ctx.PlayerId, assetDefId)) return;
 			if (IsAssetQueuedInBuildQueue(ctx, assetId)) return;
+			if (!CanAffordAsset(ctx, assetId)) return; // avoid head-blocking the queue
 			Enqueue(ctx, SimGame.BuildQueueTypeAsset, assetId, count: 1);
 			return;
 		}
+	}
+
+	private static bool CanAffordAsset(BotContext ctx, string assetDefId) {
+		var def = ctx.Game.GameDef.GetAssetDef(Id.AssetDef(assetDefId));
+		if (def == null) return false;
+		return ctx.Game.ResourceRepository.CanAfford(ctx.PlayerId, def.Cost);
 	}
 
 	private void Colonize(BotContext ctx) {
@@ -128,12 +144,40 @@ public class ConfigurableBot : IBot {
 		if (QueueLength(ctx) >= MaxQueueLength) return;
 		var mix = Config.UnitMix ?? BotConfig.DefaultUnitMixFor(Race);
 		if (mix.Count == 0) return;
-		var available = mix.Where(kv => CanBuildUnit(ctx, kv.Key)).ToList();
+		// Filter to units we can both build (prerequisites met) AND afford at least one of
+		// right now. Head-of-queue blocking means a queued unit we can't afford stalls the
+		// whole queue.
+		var available = mix.Where(kv => CanBuildUnit(ctx, kv.Key) && CanAffordUnit(ctx, kv.Key)).ToList();
 		if (available.Count == 0) return;
 		var flat = available.SelectMany(kv => Enumerable.Repeat(kv.Key, kv.Value)).ToList();
 		if (flat.Count == 0) return;
 		var unit = flat[unitMixCursor++ % flat.Count];
-		Enqueue(ctx, SimGame.BuildQueueTypeUnit, unit, count: 1);
+		// Batch by how many we can afford up to BatchSize. The engine's BuildUnit handles
+		// Count > 1 atomically, so this matches what a real player would do (queue a stack
+		// of 10 marines instead of 1).
+		int batch = AffordableUnitCount(ctx, unit, BatchSize);
+		if (batch <= 0) return;
+		Enqueue(ctx, SimGame.BuildQueueTypeUnit, unit, count: batch);
+	}
+
+	private static bool CanAffordUnit(BotContext ctx, string unitDefId) {
+		var def = ctx.Game.GameDef.GetUnitDef(Id.UnitDef(unitDefId));
+		if (def == null) return false;
+		return ctx.Game.ResourceRepository.CanAfford(ctx.PlayerId, def.Cost);
+	}
+
+	/// <summary>How many of a unit can we afford right now, capped at <paramref name="cap"/>?</summary>
+	private static int AffordableUnitCount(BotContext ctx, string unitDefId, int cap) {
+		var def = ctx.Game.GameDef.GetUnitDef(Id.UnitDef(unitDefId));
+		if (def == null) return 0;
+		int max = cap;
+		foreach (var (resId, perUnit) in def.Cost.Resources) {
+			if (perUnit <= 0) continue;
+			var have = ctx.Game.ResourceRepository.GetAmount(ctx.PlayerId, resId);
+			int affordable = (int)(have / perUnit);
+			if (affordable < max) max = affordable;
+		}
+		return Math.Max(0, max);
 	}
 
 	private void MaybeAttack(BotContext ctx) {

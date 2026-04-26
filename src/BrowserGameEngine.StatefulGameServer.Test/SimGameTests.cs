@@ -143,4 +143,35 @@ public class SimGameTests {
 	public void ParseStrategy_throws_on_unknown_name() {
 		Assert.Throws<System.ArgumentException>(() => BotPresets.ParseStrategy("nonexistent"));
 	}
+
+	// Regression test for the SCO race-balance bug: the resource-growth-sco tick module used
+	// to recognize only one worker unit (wbf), so Zerg drones and Protoss probes generated no
+	// income — both races were stuck on the 10 m / 10 g/tick base income. Now that worker-units
+	// is comma-separated, every race's worker should grow income proportionally.
+	[Theory]
+	[InlineData("terran", "wbf")]
+	[InlineData("zerg", "drone")]
+	[InlineData("protoss", "probe")]
+	public void Worker_income_is_generated_for_every_race(string race, string workerUnitId) {
+		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
+		var pid = sim.AddPlayer("p", race);
+		// Grant 10 workers and assign 5 mineral / 5 gas so income should be well above base.
+		sim.UnitRepositoryWrite.GrantUnits(pid, Id.UnitDef(workerUnitId), 10);
+		sim.PlayerRepositoryWrite.AssignWorkers(
+			new BrowserGameEngine.StatefulGameServer.Commands.AssignWorkersCommand(pid, MineralWorkers: 5, GasWorkers: 5),
+			totalWorkers: 10);
+
+		var startMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
+		var startGas = sim.ResourceRepository.GetAmount(pid, Id.ResDef("gas"));
+		sim.AdvanceTicks(10);
+		var endMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
+		var endGas = sim.ResourceRepository.GetAmount(pid, Id.ResDef("gas"));
+
+		// Base income alone over 10 ticks = 100 m + 100 g. Worker income on top should push
+		// well past that. Assert at least 50% above base to leave room for efficiency clamping.
+		Assert.True(endMin - startMin > 150,
+			$"{race}: expected mineral income > 150 over 10 ticks (got {endMin - startMin}); workers not counted?");
+		Assert.True(endGas - startGas > 150,
+			$"{race}: expected gas income > 150 over 10 ticks (got {endGas - startGas}); workers not counted?");
+	}
 }
