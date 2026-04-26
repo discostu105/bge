@@ -86,10 +86,11 @@ function fmtDate(iso: string | null): string {
 export function GamesTable({ section, games }: GamesTableProps) {
   if (games.length === 0) return null
   return (
-    <table className="w-full text-[12.5px] border-collapse">
+    <div className="overflow-x-auto -mx-3 sm:mx-0">
+    <table className="w-full text-[12.5px] border-collapse min-w-[640px]">
       <thead>
         <tr className="text-left [&>th]:border-b [&>th]:border-border">
-          <th className="label py-1.5 pr-3 w-[88px]">Status</th>
+          <th className="label py-1.5 pr-3 w-[88px] pl-3 sm:pl-0">Status</th>
           <th className="label py-1.5 pr-3">Game</th>
           {section === 'active' && (
             <>
@@ -129,7 +130,7 @@ export function GamesTable({ section, games }: GamesTableProps) {
           )
           return (
             <tr key={g.gameId} className={rowClass}>
-              <td className="py-2 pr-3"><StatusBadge section={section} /></td>
+              <td className="py-2 pr-3 pl-3 sm:pl-0"><StatusBadge section={section} /></td>
               <td className="py-2 pr-3"><NameCell game={g} section={section} /></td>
 
               {section === 'active' && (
@@ -163,11 +164,12 @@ export function GamesTable({ section, games }: GamesTableProps) {
                 </>
               )}
 
-              <td className="py-2 text-right whitespace-nowrap"><Actions game={g} section={section} /></td>
+              <td className="py-2 pr-3 sm:pr-0 text-right whitespace-nowrap"><Actions game={g} section={section} /></td>
             </tr>
           )
         })}
       </tbody>
     </table>
+    </div>
   )
 }
