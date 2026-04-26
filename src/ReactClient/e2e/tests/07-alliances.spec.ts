@@ -31,6 +31,10 @@ async function createNavGame(page: import('@playwright/test').Page): Promise<str
 		data: { playerName: 'E2E Alliance Player', playerType: null },
 	})
 	expect([200, 409]).toContain(joinRes.status())
+	// Dismiss tutorial for the per-game player too (signindev only dismisses the default-game tutorial).
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, {
+		headers: { 'X-Game-Id': gameId },
+	})
 	return gameId
 }
 

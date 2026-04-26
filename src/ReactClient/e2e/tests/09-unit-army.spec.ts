@@ -26,6 +26,7 @@ async function createNavGame(page: import('@playwright/test').Page): Promise<str
 	const game = await res.json()
 	const joinRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/join`, { data: { playerName: 'E2E Player', playerType: null } })
 	expect([200, 409]).toContain(joinRes.status())
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, { headers: { 'X-Game-Id': game.gameId } })
 	return game.gameId as string
 }
 

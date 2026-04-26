@@ -28,6 +28,7 @@ async function createActiveGame(page: import('@playwright/test').Page): Promise<
 	// Join the game as admin player
 	const joinRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/join`, { data: { playerName: 'E2E Player', playerType: null } })
 	expect([200, 409]).toContain(joinRes.status())
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, { headers: { 'X-Game-Id': game.gameId } })
 	return game.gameId
 }
 
@@ -78,6 +79,9 @@ test.describe('Live game view page', () => {
 			data: { playerName: 'E2E Player', playerType: null },
 		})
 		expect([200, 409]).toContain(joinRes2.status())
+		await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, {
+			headers: { 'X-Game-Id': game.gameId },
+		})
 		const finalizeRes = await page.request.post(`${baseURL}/api/games/${game.gameId}/finalize`)
 		expect([200, 400]).toContain(finalizeRes.status())
 

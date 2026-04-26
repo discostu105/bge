@@ -27,6 +27,7 @@ async function createAndJoinGame(page: import('@playwright/test').Page): Promise
 	})
 	// 200 (joined) or 409 (already enrolled) are both fine
 	expect([200, 409]).toContain(joinRes.status())
+	await page.request.post(`${baseURL}/api/playerprofile/complete-tutorial`, { headers: { 'X-Game-Id': game.gameId } })
 
 	return game.gameId
 }
