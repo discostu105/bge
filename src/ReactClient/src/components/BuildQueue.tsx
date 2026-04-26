@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { HammerIcon } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 import apiClient from '@/api/client'
 import type { BuildQueueViewModel } from '@/api/types'
-import { EmptyState } from '@/components/EmptyState'
 import { useConfirm } from '@/contexts/ConfirmContext'
 
 interface BuildQueueProps {
@@ -13,7 +12,7 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
   const queryClient = useQueryClient()
   const confirm = useConfirm()
 
-  const { data, isLoading } = useQuery<BuildQueueViewModel>({
+  const { data } = useQuery<BuildQueueViewModel>({
     queryKey: ['buildqueue', gameId],
     queryFn: () => apiClient.get('/api/buildqueue').then((r) => r.data),
     refetchInterval: 10_000,
@@ -27,45 +26,29 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
     },
   })
 
-  if (isLoading) {
-    return <div className="text-muted-foreground text-sm">Loading build queue...</div>
-  }
-
   if (!data || data.entries.length === 0) {
-    return (
-      <div className="rounded-lg border bg-card p-4">
-        <h3 className="font-semibold mb-2">Build Queue</h3>
-        <EmptyState
-          icon={<HammerIcon />}
-          title="Queue is empty"
-          description="Queue buildings or units to start constructing."
-        />
-      </div>
-    )
+    return null
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <h3 className="font-semibold mb-3">Build Queue</h3>
-      <div className="space-y-2">
+    <div>
+      <div className="label mb-1.5">
+        Build Queue <span className="text-muted-foreground">({data.entries.length})</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
         {data.entries
           .slice()
           .sort((a, b) => a.priority - b.priority)
           .map((entry) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between rounded border bg-secondary px-3 py-2 text-sm"
+              className="inline-flex items-center gap-1.5 rounded-full border bg-secondary/50 px-2.5 py-1 text-xs"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground font-mono text-xs">#{entry.priority}</span>
-                <span className="font-medium">{entry.name}</span>
-                {entry.count > 1 && (
-                  <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-xs text-primary">
-                    ×{entry.count}
-                  </span>
-                )}
-                <span className="text-xs text-muted-foreground capitalize">{entry.type}</span>
-              </div>
+              <span className="font-mono text-muted-foreground">#{entry.priority}</span>
+              <span className="font-medium">{entry.name}</span>
+              {entry.count > 1 && (
+                <span className="text-primary">×{entry.count}</span>
+              )}
               <button
                 onClick={async () => {
                   const ok = await confirm({
@@ -77,9 +60,10 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
                   })
                   if (ok) removeMutation.mutate(entry.id)
                 }}
-                className="rounded min-h-[36px] px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10"
+                className="ml-0.5 rounded-full p-0.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                aria-label={`Remove ${entry.name}`}
               >
-                Remove
+                <XIcon className="h-3 w-3" />
               </button>
             </div>
           ))}
