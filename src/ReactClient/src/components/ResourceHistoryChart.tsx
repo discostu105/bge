@@ -12,8 +12,9 @@ import {
   CartesianGrid,
   Area,
   AreaChart,
-  type TooltipProps,
 } from 'recharts'
+import type { TooltipContentProps } from 'recharts'
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import { resourceHex } from '@/lib/resource-colors'
 
 interface ResourceHistoryChartProps {
@@ -28,7 +29,7 @@ function formatCompact(value: number): string {
   return Math.round(value).toString()
 }
 
-function ChartTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function ChartTooltip({ active, payload, label }: TooltipContentProps<ValueType, NameType>) {
   if (!active || !payload || payload.length === 0) return null
   return (
     <div className="rounded-md border bg-popover/95 backdrop-blur-sm px-3 py-2 text-xs shadow-md">
@@ -147,7 +148,7 @@ export function ResourceHistoryChart({ gameId }: ResourceHistoryChartProps) {
                 width={48}
                 tickFormatter={formatCompact}
               />
-              <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'currentColor', strokeOpacity: 0.2 }} />
+              <Tooltip content={ChartTooltip} cursor={{ stroke: 'currentColor', strokeOpacity: 0.2 }} />
               <Area
                 type="monotone"
                 dataKey="minerals"
@@ -207,7 +208,7 @@ export function ResourceHistoryChart({ gameId }: ResourceHistoryChartProps) {
                 tickFormatter={formatCompact}
                 allowDecimals={false}
               />
-              <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'currentColor', strokeOpacity: 0.2 }} />
+              <Tooltip content={ChartTooltip} cursor={{ stroke: 'currentColor', strokeOpacity: 0.2 }} />
               <Legend wrapperStyle={{ display: 'none' }} />
               <Line
                 type="monotone"
