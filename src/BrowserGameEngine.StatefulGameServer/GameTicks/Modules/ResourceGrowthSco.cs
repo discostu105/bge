@@ -22,10 +22,16 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 		private readonly IActionLogger actionLogger;
 
-		private UnitDefId workerUnit = null!;
+		// Multiple worker unit ids supported via comma-separated property — one per playable
+		// race. The module sums counts across all listed worker units when computing income.
+		private System.Collections.Generic.List<UnitDefId> workerUnits = new();
 		private ResourceDefId mineralResource = null!;
 		private ResourceDefId? gasResource; // null = gas income disabled
 		private ResourceDefId constraintResource = null!;
+		// First entry is used as the "canonical" worker for emergency respawns. Per the spec
+		// this only matters when a player has zero workers AND zero income — emergency respawn
+		// grants workers of this type. (Older single-worker config paths still work.)
+		private UnitDefId PrimaryWorkerUnit => workerUnits[0];
 
 		// Base income added every tick regardless of workers (spec 2.3)
 		private const decimal BaseIncomeMinerals = 10m;
@@ -70,8 +76,16 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		public void SetProperty(string name, string value) {
 			switch(name) {
 				case "worker-units":
-					workerUnit = new UnitDefId(value);
-					gameDef.ValidateUnitDefId(workerUnit, $"{Name}.{name}");
+					// Comma-separated list — one worker unit id per playable race (e.g.
+					// "wbf,drone,probe"). Single-value strings still work for back-compat.
+					workerUnits.Clear();
+					foreach (var raw in value.Split(',', StringSplitOptions.RemoveEmptyEntries)) {
+						var id = new UnitDefId(raw.Trim());
+						gameDef.ValidateUnitDefId(id, $"{Name}.{name}");
+						workerUnits.Add(id);
+					}
+					if (workerUnits.Count == 0)
+						throw new InvalidGameDefException($"{Name}.{name} must list at least one worker unit id.");
 					break;
 				case "growth-resource":
 					mineralResource = new ResourceDefId(value);
@@ -91,7 +105,11 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		}
 
 		public void CalculateTick(PlayerId playerId) {
-			int totalWorkers = unitRepository.CountByUnitDefId(playerId, workerUnit);
+			// Sum worker counts across all configured worker unit types. This lets a single SCO
+			// game definition describe race-specific workers (wbf/drone/probe) and have a Zerg
+			// or Protoss player's workers actually count toward income.
+			int totalWorkers = 0;
+			foreach (var w in workerUnits) totalWorkers += unitRepository.CountByUnitDefId(playerId, w);
 			int mineralWorkers = playerRepository.GetMineralWorkers(playerId);
 			int gasWorkers = playerRepository.GetGasWorkers(playerId);
 
@@ -111,7 +129,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 					lowResources = lowResources && gas < EmergencyResourceThreshold;
 				}
 				if (lowResources) {
-					unitRepositoryWrite.GrantUnits(playerId, workerUnit, 2);
+					unitRepositoryWrite.GrantUnits(playerId, PrimaryWorkerUnit, 2);
 					playerRepositoryWrite.GrantEmergencyWorkers(playerId);
 					mineralWorkers = 1;
 					gasWorkers = 1;
