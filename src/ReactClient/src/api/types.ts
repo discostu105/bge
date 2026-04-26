@@ -94,6 +94,14 @@ export interface PlayerResourcesViewModel {
   colonizationCostPerLand: number
 }
 
+export interface ColonizePreviewViewModel {
+  amount: number
+  totalCost: number
+  firstTileCost: number
+  lastTileCost: number
+  maxAffordable: number
+}
+
 // Resource History
 
 export interface ResourceSnapshotViewModel {
