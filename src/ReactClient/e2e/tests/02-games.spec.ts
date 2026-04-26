@@ -7,10 +7,10 @@ import { test, expect } from '@playwright/test'
 test.describe('Games list', () => {
 	test('games page renders with season schedule', async ({ page }) => {
 		await page.goto('/games')
-		await expect(page.getByRole('heading', { name: 'Season Schedule' })).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Games', exact: true })).toBeVisible()
 		// At least the Active and Upcoming sections are present
-		await expect(page.getByRole('heading', { name: 'Active' })).toBeVisible()
-		await expect(page.getByRole('heading', { name: 'Upcoming' })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /Active/ })).toBeVisible()
+		await expect(page.getByRole('heading', { name: /Upcoming/ })).toBeVisible()
 	})
 })
 

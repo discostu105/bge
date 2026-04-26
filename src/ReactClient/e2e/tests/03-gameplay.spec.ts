@@ -9,15 +9,16 @@ import { test, expect } from '@playwright/test'
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:8080'
 
-/** Create an active (already-started) game via the REST API and return its gameId. */
-async function createActiveGame(page: import('@playwright/test').Page): Promise<string> {
+/** Create an active (already-started) game via the REST API and return its gameId and name. */
+async function createActiveGame(page: import('@playwright/test').Page): Promise<{ gameId: string; name: string }> {
 	const now = new Date()
 	const startTime = new Date(now.getTime() - 60_000).toISOString() // started 1 min ago
 	const endTime = new Date(now.getTime() + 7 * 24 * 3600_000).toISOString() // ends in 7 days
 
+	const name = `E2E Gameplay Game ${Date.now()}`
 	const res = await page.request.post(`${baseURL}/api/games`, {
 		data: {
-			name: `E2E Gameplay Game ${Date.now()}`,
+			name,
 			gameDefType: 'sco',
 			startTime,
 			endTime,
@@ -27,11 +28,12 @@ async function createActiveGame(page: import('@playwright/test').Page): Promise<
 	})
 	expect(res.ok()).toBeTruthy()
 	const game = await res.json()
-	return game.gameId
+	return { gameId: game.gameId, name }
 }
 
 test.describe('Join game and navigate in-game pages', () => {
 	let gameId: string
+	let gameName: string
 
 	test.beforeAll(async ({ browser }) => {
 		// Create an active game once for all tests in this describe block
@@ -39,30 +41,26 @@ test.describe('Join game and navigate in-game pages', () => {
 			storageState: 'e2e/.auth/state.json',
 		})
 		const page = await context.newPage()
-		gameId = await createActiveGame(page)
+		const created = await createActiveGame(page)
+		gameId = created.gameId
+		gameName = created.name
 		await context.close()
 	})
 
 	test('join a game and land on base page', async ({ page }) => {
+		// Pre-enroll the admin user in the active game so the Games page shows the
+		// "Enter →" action that navigates straight to the base page.
+		await page.request.post(`${baseURL}/api/games/${gameId}/players`, { data: {} })
+
 		await page.goto('/games')
-		await expect(page.getByRole('heading', { name: 'Season Schedule' })).toBeVisible()
+		await expect(page.getByRole('heading', { name: 'Games', exact: true })).toBeVisible()
 
-		// The game we created should be listed as Active
-		await page.waitForFunction(() => {
-			return document.querySelector('body')?.textContent?.includes('LIVE')
-		}, { timeout: 10_000 })
+		// Locate our game's row in the table by its unique name.
+		const gameRow = page.getByRole('row').filter({ hasText: gameName })
+		await expect(gameRow).toBeVisible({ timeout: 10_000 })
 
-		// Click "Play Now" or "Join" for our game
-		// Prefer "Play Now" if already enrolled, otherwise "Join"
-		const gameCard = page.locator('.rounded-lg').filter({ hasText: 'LIVE' }).first()
-		const playNow = gameCard.getByRole('link', { name: 'Play Now' })
-		const joinBtn = gameCard.getByRole('button', { name: 'Join' })
-
-		if (await playNow.isVisible()) {
-			await playNow.click()
-		} else {
-			await joinBtn.click()
-		}
+		// Click "Enter →" on the active game row — enrolled players land on /base directly.
+		await gameRow.getByRole('link', { name: /Enter/ }).click()
 
 		// Should land on base page inside the game
 		await expect(page).toHaveURL(/\/games\/[^/]+\/base/, { timeout: 10_000 })
