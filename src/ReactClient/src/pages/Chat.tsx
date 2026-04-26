@@ -38,11 +38,17 @@ function GameChat({ gameId, signalR }: { gameId: string; signalR: ReturnType<typ
 
   // Initial load
   useEffect(() => {
-    apiClient.get<ChatMessagesViewModel>('/api/chat').then((r) => {
-      setAllMessages(r.data.messages)
-      const msgs = r.data.messages
-      if (msgs.length > 0) setLastMessageId(msgs[msgs.length - 1].messageId)
-    })
+    apiClient
+      .get<ChatMessagesViewModel>('/api/chat')
+      .then((r) => {
+        const msgs = r.data?.messages ?? []
+        setAllMessages(msgs)
+        if (msgs.length > 0) setLastMessageId(msgs[msgs.length - 1].messageId)
+      })
+      .catch(() => {
+        setAllMessages([])
+        setError('Failed to load chat messages.')
+      })
   }, [gameId])
 
   // Listen for real-time chat messages via SignalR
@@ -70,14 +76,14 @@ function GameChat({ gameId, signalR }: { gameId: string; signalR: ReturnType<typ
     queryFn: async () => {
       const url = lastMessageId ? `/api/chat?after=${lastMessageId}` : '/api/chat'
       const r = await apiClient.get<ChatMessagesViewModel>(url)
-      if (r.data.messages.length > 0) {
+      const newFromServer = r.data?.messages ?? []
+      if (newFromServer.length > 0) {
         setAllMessages((prev) => {
           const ids = new Set(prev.map((m) => m.messageId))
-          const newMsgs = r.data.messages.filter((m) => !ids.has(m.messageId))
+          const newMsgs = newFromServer.filter((m) => !ids.has(m.messageId))
           return newMsgs.length > 0 ? [...prev, ...newMsgs] : prev
         })
-        const last = r.data.messages[r.data.messages.length - 1]
-        setLastMessageId(last.messageId)
+        setLastMessageId(newFromServer[newFromServer.length - 1].messageId)
       }
       return r.data
     },
@@ -188,10 +194,17 @@ function AllianceChat({ allianceId, signalR }: { allianceId: string; signalR: Re
 
   // Initial load
   useEffect(() => {
-    apiClient.get<AllianceChatPostViewModel[]>(`/api/alliances/${allianceId}/posts`).then((r) => {
-      setAllPosts(r.data)
-      setLoaded(true)
-    })
+    apiClient
+      .get<AllianceChatPostViewModel[]>(`/api/alliances/${allianceId}/posts`)
+      .then((r) => {
+        setAllPosts(Array.isArray(r.data) ? r.data : [])
+        setLoaded(true)
+      })
+      .catch(() => {
+        setAllPosts([])
+        setLoaded(true)
+        setError('Failed to load alliance messages.')
+      })
   }, [allianceId])
 
   // Listen for real-time alliance chat messages via SignalR
@@ -217,8 +230,9 @@ function AllianceChat({ allianceId, signalR }: { allianceId: string; signalR: Re
     queryKey: ['alliance-chat-poll', allianceId],
     queryFn: async () => {
       const r = await apiClient.get<AllianceChatPostViewModel[]>(`/api/alliances/${allianceId}/posts`)
-      setAllPosts(r.data)
-      return r.data
+      const posts = Array.isArray(r.data) ? r.data : []
+      setAllPosts(posts)
+      return posts
     },
     refetchInterval: isRealTime ? false : 5_000,
     enabled: !isRealTime && loaded,
