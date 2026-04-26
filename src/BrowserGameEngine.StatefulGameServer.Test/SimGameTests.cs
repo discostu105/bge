@@ -152,7 +152,119 @@ public class SimGameTests {
 	[InlineData("terran", "wbf")]
 	[InlineData("zerg", "drone")]
 	[InlineData("protoss", "probe")]
-	public void Worker_income_is_generated_for_every_race(string race, string workerUnitId) {
+	public void Worker_income_is_generated_for_every_race(string race, string workerUnitId) =>
+		AssertWorkerProducesIncome(race, workerUnitId);
+
+	[Fact]
+	public void Worker_income_with_zero_workers_falls_back_to_base_only() {
+		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
+		var pid = sim.AddPlayer("p", "zerg");
+		var startMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
+		sim.AdvanceTicks(5);
+		var endMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
+		// 5 ticks * 10 base income = 50, plus possible emergency-respawn workers if resources
+		// were low (they aren't — Zerg starts with 5000 m). So pure base income.
+		Assert.Equal(50, (int)(endMin - startMin));
+	}
+
+	[Fact]
+	public void Bot_filters_unaffordable_units_to_avoid_queue_stall() {
+		// Sets up a Zerg player with prerequisites for hydralisk (gas-heavy) but no gas.
+		// The bot's mix lists both zergling (mineral-only) and hydralisk; without the
+		// affordability filter, the bot would enqueue hydralisk and stall the head of queue.
+		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
+		var pid = sim.AddPlayer("z", "zerg");
+		// Grant hydraliskden so hydralisk is technically buildable. Drop gas to 0 so it isn't
+		// affordable. Keep enough minerals to build zerglings.
+		sim.AssetRepositoryWrite.GrantBuilding(pid, Id.AssetDef("spawningpool"));
+		sim.AssetRepositoryWrite.GrantBuilding(pid, Id.AssetDef("hydraliskden"));
+		sim.ResourceRepositoryWrite.AddResources(pid, Id.ResDef("gas"), -3000); // strip gas
+
+		var bot = new ConfigurableBot("test", "zerg", new BotConfig(
+			BuildOrder: System.Array.Empty<string>(),
+			UnitMix: new System.Collections.Generic.Dictionary<string, int> {
+				["zergling"] = 1, ["hydralisk"] = 1
+			},
+			WorkerTarget: 0,
+			LandTarget: 0,
+			FirstUpgradeTick: 9999
+		));
+		var ctx = new BotContext(sim, pid);
+		for (int i = 0; i < 20; i++) {
+			sim.AdvanceTicks(1);
+			bot.OnTick(ctx);
+		}
+		// Should have produced at least some zerglings — the queue isn't stalled by hydralisks.
+		int zerglings = sim.UnitRepository.CountByUnitDefId(pid, Id.UnitDef("zergling"));
+		Assert.True(zerglings > 0, $"expected > 0 zerglings, got {zerglings} (queue probably stalled on unaffordable hydralisk)");
+	}
+
+	[Fact]
+	public void MatchupSimulation_runs_without_error() {
+		var gameDef = new GameDefinition.SCO.StarcraftOnlineGameDefFactory().CreateGameDef();
+		var options = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase) {
+			["bots"] = "rush:terran,rush:zerg",
+			["games"] = "2",
+			["end-tick"] = "60",
+			["protection-ticks"] = "0",
+		};
+		// Smoke test: should print to stdout and not throw.
+		var sw = new System.IO.StringWriter();
+		var prev = System.Console.Out;
+		System.Console.SetOut(sw);
+		try {
+			BalanceSim.Simulations.MatchupSimulation.Run(gameDef, options);
+		} finally {
+			System.Console.SetOut(prev);
+		}
+		Assert.Contains("Matchup over", sw.ToString());
+	}
+
+	[Fact]
+	public void BalanceSimulation_runs_round_robin_without_error() {
+		var gameDef = new GameDefinition.SCO.StarcraftOnlineGameDefFactory().CreateGameDef();
+		var options = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase) {
+			["strategy"] = "rush",
+			["games"] = "2",
+			["end-tick"] = "60",
+			["protection-ticks"] = "0",
+		};
+		var sw = new System.IO.StringWriter();
+		var prev = System.Console.Out;
+		System.Console.SetOut(sw);
+		try {
+			BalanceSim.Simulations.BalanceSimulation.Run(gameDef, options);
+		} finally {
+			System.Console.SetOut(prev);
+		}
+		Assert.Contains("Balance matrix", sw.ToString());
+	}
+
+	[Fact]
+	public void PlaythroughSimulation_runs_with_breakdown() {
+		var gameDef = new GameDefinition.SCO.StarcraftOnlineGameDefFactory().CreateGameDef();
+		var options = new System.Collections.Generic.Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase) {
+			["bots"] = "rush:terran,rush:zerg",
+			["end-tick"] = "60",
+			["protection-ticks"] = "0",
+			["snapshot-every"] = "30",
+			["breakdown"] = "true",
+			["quiet"] = "true",
+		};
+		var sw = new System.IO.StringWriter();
+		var prev = System.Console.Out;
+		System.Console.SetOut(sw);
+		try {
+			BalanceSim.Simulations.PlaythroughSimulation.Run(gameDef, options);
+		} finally {
+			System.Console.SetOut(prev);
+		}
+		var output = sw.ToString();
+		Assert.Contains("Final ranking", output);
+		Assert.Contains("Unit composition", output);
+	}
+
+	private static void AssertWorkerProducesIncome(string race, string workerUnitId) {
 		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
 		var pid = sim.AddPlayer("p", race);
 		// Grant 10 workers and assign 5 mineral / 5 gas so income should be well above base.
