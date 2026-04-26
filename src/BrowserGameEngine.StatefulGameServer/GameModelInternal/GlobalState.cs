@@ -27,6 +27,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 			lock (_gamesLock) return _games.ToList();
 		}
 
+		public bool GameExists(string gameId) {
+			lock (_gamesLock) return _games.Any(g => g.GameId.Id == gameId);
+		}
+
 		public void AddGame(GameRecordImmutable record) {
 			lock (_gamesLock) _games.Add(record);
 		}
