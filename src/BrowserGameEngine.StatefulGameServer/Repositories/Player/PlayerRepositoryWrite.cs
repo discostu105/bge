@@ -51,16 +51,18 @@ namespace BrowserGameEngine.StatefulGameServer {
 		}
 
 		public void ResetPlayer(PlayerId playerId) {
-			var state = world.GetPlayer(playerId).State;
+			var player = world.GetPlayer(playerId);
+			var state = player.State;
+			var settings = world.GameSettings;
 			lock (state.StateLock) {
 				state.Resources = new Dictionary<ResourceDefId, decimal> {
-					{ Id.ResDef("land"), 50 },
-					{ Id.ResDef("minerals"), 5000 },
-					{ Id.ResDef("gas"), 3000 }
+					{ Id.ResDef("land"), settings.StartingLand },
+					{ Id.ResDef("minerals"), settings.StartingMinerals },
+					{ Id.ResDef("gas"), settings.StartingGas }
 				};
 				state.Assets = new HashSet<Asset> {
 					new Asset {
-						AssetDefId = Id.AssetDef("commandcenter"),
+						AssetDefId = GetStarterHqForPlayerType(player.PlayerType),
 						Level = 1
 					}
 				};
@@ -68,6 +70,14 @@ namespace BrowserGameEngine.StatefulGameServer {
 				state.CurrentGameTick = world.GameTickState.CurrentGameTick;
 				state.LastGameTickUpdate = timeProvider.GetLocalNow().DateTime;
 			}
+		}
+
+		private static AssetDefId GetStarterHqForPlayerType(PlayerTypeDefId playerType) {
+			return playerType.Id switch {
+				"zerg" => Id.AssetDef("hive"),
+				"protoss" => Id.AssetDef("nexus"),
+				_ => Id.AssetDef("commandcenter")
+			};
 		}
 
 		public void UpdateLastOnline(PlayerId playerId, DateTime time) {
@@ -115,7 +125,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 					},
 					Assets = new HashSet<Asset> {
 						new Asset {
-							AssetDefId = Id.AssetDef("commandcenter"),
+							AssetDefId = GetStarterHqForPlayerType(Id.PlayerType(playerType)),
 							Level = 1
 						},
 					},
