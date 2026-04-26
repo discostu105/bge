@@ -165,6 +165,50 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
+		public void AddToQueue_Asset_AlreadyInQueue_Throws() {
+			var g = new TestGame();
+			g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "asset", "asset2", 1));
+
+			Assert.Throws<AssetAlreadyQueuedException>(() =>
+				g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "asset", "asset2", 1)));
+
+			Assert.Single(g.BuildQueueRepository.GetQueue(g.Player1));
+		}
+
+		[Fact]
+		public void AddToQueue_Asset_AlreadyBuilt_Throws() {
+			var g = new TestGame();
+			Assert.True(g.AssetRepository.HasAsset(g.Player1, Id.AssetDef("asset1")));
+
+			Assert.Throws<AssetAlreadyBuiltException>(() =>
+				g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "asset", "asset1", 1)));
+
+			Assert.Empty(g.BuildQueueRepository.GetQueue(g.Player1));
+		}
+
+		[Fact]
+		public void AddToQueue_Asset_AlreadyBuilding_Throws() {
+			var g = new TestGame();
+			// Move the entry from BuildQueue into the ActionQueue (currently building)
+			g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "asset", "asset2", 1));
+			g.BuildQueueRepositoryWrite.TryExecuteAndDequeueFirst(g.Player1);
+			Assert.True(g.AssetRepository.IsBuildQueued(g.Player1, Id.AssetDef("asset2")));
+
+			Assert.Throws<AssetAlreadyQueuedException>(() =>
+				g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "asset", "asset2", 1)));
+		}
+
+		[Fact]
+		public void AddToQueue_Unit_DuplicatesAllowed() {
+			var g = new TestGame();
+			g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "unit", "unit1", 5));
+			g.BuildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(g.Player1, "unit", "unit1", 3));
+
+			var queue = g.BuildQueueRepository.GetQueue(g.Player1);
+			Assert.Equal(2, queue.Count);
+		}
+
+		[Fact]
 		public void TryExecuteAndDequeueFirst_ExecutesFrontEntry_LeavesRestInQueue() {
 			var g = new TestGame();
 			// Queue two units; player can afford both but TryExecuteAndDequeueFirst only processes the front

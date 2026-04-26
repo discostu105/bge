@@ -45,6 +45,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 		public void AddToQueue(AddToQueueCommand command) {
 			var state = world.GetPlayer(command.PlayerId).State;
 			lock (state.StateLock) {
+				if (command.Type == BuildQueueEntryConstants.TypeAsset) {
+					var assetDefId = Id.AssetDef(command.DefId);
+					if (assetRepository.HasAsset(command.PlayerId, assetDefId)) throw new AssetAlreadyBuiltException(assetDefId);
+					if (assetRepository.IsBuildQueued(command.PlayerId, assetDefId)) throw new AssetAlreadyQueuedException(assetDefId);
+					if (state.BuildQueue.Any(x => x.Type == BuildQueueEntryConstants.TypeAsset && x.DefId == command.DefId)) throw new AssetAlreadyQueuedException(assetDefId);
+				}
 				var priority = buildQueueRepository.GetNextPriority(command.PlayerId);
 				state.BuildQueue.Add(new BuildQueueEntry {
 					Id = Guid.NewGuid(),
