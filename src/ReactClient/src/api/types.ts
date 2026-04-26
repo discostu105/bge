@@ -119,9 +119,9 @@ export interface ResourceHistoryViewModel {
 
 export interface WorkerAssignmentViewModel {
   totalWorkers: number
+  gasPercent: number
   mineralWorkers: number
   gasWorkers: number
-  idleWorkers: number
 }
 
 // Research / Upgrades
@@ -782,15 +782,35 @@ export interface AllTimePlayerListViewModel {
 export interface PlayerSummaryViewModel {
   playerId: string
   playerName: string
-  hasApiKey: boolean
+  apiKeyCount: number
 }
 
 export interface PlayerListViewModel {
   players: PlayerSummaryViewModel[]
 }
 
-export interface ApiKeyViewModel {
+export interface ApiKeyInfoViewModel {
+  keyId: string
+  name: string | null
+  keyPrefix: string
+  createdAt: string
+  lastAccessedAt: string | null
+}
+
+export interface ApiKeyListViewModel {
+  keys: ApiKeyInfoViewModel[]
+}
+
+export interface CreateApiKeyRequest {
+  name?: string | null
+}
+
+export interface CreateApiKeyResponse {
+  keyId: string
   apiKey: string
+  name: string | null
+  keyPrefix: string
+  createdAt: string
 }
 
 // Create Player

@@ -19,7 +19,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 				Land = resourceRepository.GetLand(player.PlayerId),
 				ProtectionTicksRemaining = player.State.ProtectionTicksRemaining,
 				UserDisplayName = player.UserId != null ? userRepository.GetDisplayNameByUserId(player.UserId) : null,
-				IsAgent = player.ApiKeyHash != null,
+				IsAgent = player.ApiKeys != null && player.ApiKeys.Count > 0,
 				LastOnline = player.LastOnline,
 				IsOnline = onlineStatusRepository.IsOnline(player.PlayerId)
 			};

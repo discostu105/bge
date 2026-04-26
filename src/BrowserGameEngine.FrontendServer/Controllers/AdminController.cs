@@ -295,8 +295,7 @@ public class AdminController : ControllerBase
 			assetCount = player.State.Assets.Count,
 			currentTick = player.State.CurrentGameTick.Tick,
 			protectionTicksRemaining = player.State.ProtectionTicksRemaining,
-			mineralWorkers = player.State.MineralWorkers,
-			gasWorkers = player.State.GasWorkers,
+			gasPercent = player.State.GasPercent,
 		});
 	}
 

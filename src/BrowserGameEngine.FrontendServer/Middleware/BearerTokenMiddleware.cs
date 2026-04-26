@@ -20,7 +20,7 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 			_next = next;
 		}
 
-		public async Task InvokeAsync(HttpContext context, UserRepository userRepository) {
+		public async Task InvokeAsync(HttpContext context, UserRepository userRepository, UserRepositoryWrite userRepositoryWrite) {
 			var authHeader = context.Request.Headers[HeaderNames.Authorization].FirstOrDefault();
 			if (authHeader != null && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
 				var token = authHeader["Bearer ".Length..].Trim();
@@ -29,6 +29,7 @@ namespace BrowserGameEngine.FrontendServer.Middleware {
 					context.Items["ApiKeyHash"] = hash;
 					var player = userRepository.GetPlayerByApiKeyHash(hash);
 					if (player != null) {
+						userRepositoryWrite.TouchApiKey(hash);
 						context.Items["BearerPlayerId"] = player.PlayerId.Id;
 						var claims = new[] {
 							new Claim(ClaimTypes.NameIdentifier, player.PlayerId.Id),

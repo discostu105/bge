@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Threading.Tasks;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
@@ -36,7 +35,8 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			this.gameDef = gameDef;
 		}
 
-		/// <summary>Returns the current worker assignment: total workers and how many are assigned to minerals vs gas.</summary>
+		/// <summary>Returns the current worker auto-assignment: total workers, the gas percentage,
+		/// and the resulting mineral/gas split.</summary>
 		[HttpGet]
 		[ProducesResponseType(typeof(WorkerAssignmentViewModel), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -45,30 +45,28 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			var playerId = currentUserContext.PlayerId!;
 			var workerUnit = Id.UnitDef("wbf");
 			int totalWorkers = unitRepository.CountByUnitDefId(playerId, workerUnit);
+			int gasPercent = playerRepository.GetGasPercent(playerId);
+			var (mineralWorkers, gasWorkers) = playerRepository.GetWorkerAssignment(playerId, totalWorkers);
 			return new WorkerAssignmentViewModel {
 				TotalWorkers = totalWorkers,
-				MineralWorkers = playerRepository.GetMineralWorkers(playerId),
-				GasWorkers = playerRepository.GetGasWorkers(playerId)
+				GasPercent = gasPercent,
+				MineralWorkers = mineralWorkers,
+				GasWorkers = gasWorkers
 			};
 		}
 
-		/// <summary>Reassigns workers between mineral and gas gathering. Total must not exceed available workers.</summary>
-		/// <param name="mineralWorkers">Workers to assign to mineral harvesting.</param>
-		/// <param name="gasWorkers">Workers to assign to gas harvesting.</param>
+		/// <summary>Sets the percentage of workers that auto-assign to gas (0–100). The rest go
+		/// to minerals. The split is recomputed every tick from the current worker count.</summary>
+		/// <param name="gasPercent">Percentage of workers gathering gas (0–100).</param>
 		[HttpPost]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public async Task<ActionResult> Assign([FromQuery] int mineralWorkers, [FromQuery] int gasWorkers) {
+		public ActionResult Assign([FromQuery] int gasPercent) {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			try {
 				var playerId = currentUserContext.PlayerId!;
-				var workerUnit = Id.UnitDef("wbf");
-				int totalWorkers = unitRepository.CountByUnitDefId(playerId, workerUnit);
-				playerRepositoryWrite.AssignWorkers(
-					new AssignWorkersCommand(playerId, mineralWorkers, gasWorkers),
-					totalWorkers
-				);
+				playerRepositoryWrite.SetWorkerGasPercent(new SetWorkerGasPercentCommand(playerId, gasPercent));
 				return Ok();
 			} catch (ArgumentOutOfRangeException e) {
 				return BadRequest(e.Message);

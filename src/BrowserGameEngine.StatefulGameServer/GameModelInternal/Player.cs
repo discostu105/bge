@@ -1,7 +1,8 @@
-﻿using BrowserGameEngine.GameDefinition;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
@@ -12,7 +13,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 		public DateTime Created { get; init; }
 		public required PlayerState State { get; init; }
 		public string? UserId { get; set; }
-		public string? ApiKeyHash { get; set; }
+		public List<ApiKeyRecord> ApiKeys { get; set; } = new();
 		public DateTime? LastOnline { get; set; }
 		public AllianceId? AllianceId { get; set; }
 		public bool IsBanned { get; set; }
@@ -27,7 +28,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Created: player.Created,
 				State: player.State.ToImmutable(),
 				UserId: player.UserId,
-				ApiKeyHash: player.ApiKeyHash,
+				ApiKeys: player.ApiKeys.Select(k => k.ToImmutable()).ToList(),
 				LastOnline: player.LastOnline,
 				AllianceId: player.AllianceId,
 				IsBanned: player.IsBanned
@@ -42,7 +43,7 @@ namespace BrowserGameEngine.StatefulGameServer.GameModelInternal {
 				Created = playerImmutable.Created,
 				State = playerImmutable.State.ToMutable(),
 				UserId = playerImmutable.UserId,
-				ApiKeyHash = playerImmutable.ApiKeyHash,
+				ApiKeys = playerImmutable.ApiKeys?.Select(k => k.ToMutable()).ToList() ?? new(),
 				LastOnline = playerImmutable.LastOnline,
 				AllianceId = playerImmutable.AllianceId,
 				IsBanned = playerImmutable.IsBanned

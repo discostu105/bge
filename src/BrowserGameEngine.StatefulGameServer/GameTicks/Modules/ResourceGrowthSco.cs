@@ -17,7 +17,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 		private readonly ResourceRepository resourceRepository;
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
-		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly UnitRepository unitRepository;
 		private readonly UnitRepositoryWrite unitRepositoryWrite;
 		private readonly IActionLogger actionLogger;
@@ -57,7 +56,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				, ResourceRepository resourceRepository
 				, ResourceRepositoryWrite resourceRepositoryWrite
 				, PlayerRepository playerRepository
-				, PlayerRepositoryWrite playerRepositoryWrite
 				, UnitRepository unitRepository
 				, UnitRepositoryWrite unitRepositoryWrite
 				, IActionLogger actionLogger
@@ -67,7 +65,6 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			this.resourceRepository = resourceRepository;
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 			this.playerRepository = playerRepository;
-			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.unitRepository = unitRepository;
 			this.unitRepositoryWrite = unitRepositoryWrite;
 			this.actionLogger = actionLogger;
@@ -110,17 +107,9 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 			// or Protoss player's workers actually count toward income.
 			int totalWorkers = 0;
 			foreach (var w in workerUnits) totalWorkers += unitRepository.CountByUnitDefId(playerId, w);
-			int mineralWorkers = playerRepository.GetMineralWorkers(playerId);
-			int gasWorkers = playerRepository.GetGasWorkers(playerId);
 
-			// Clamp assigned workers to available total (defensive, shouldn't happen normally)
-			if (mineralWorkers + gasWorkers > totalWorkers) {
-				mineralWorkers = 0;
-				gasWorkers = 0;
-				playerRepositoryWrite.GrantEmergencyWorkers(playerId);
-			}
-
-			// Emergency respawn (spec 2.5): 0 workers + low resources → grant 1 mineral + 1 gas worker
+			// Emergency respawn (spec 2.5): 0 workers + low resources → grant 2 worker units.
+			// Auto-assignment then splits them according to the player's gas percent.
 			if (totalWorkers == 0) {
 				decimal minerals = resourceRepository.GetAmount(playerId, mineralResource);
 				bool lowResources = minerals < EmergencyResourceThreshold;
@@ -130,12 +119,12 @@ namespace BrowserGameEngine.StatefulGameServer.GameTicks.Modules {
 				}
 				if (lowResources) {
 					unitRepositoryWrite.GrantUnits(playerId, PrimaryWorkerUnit, 2);
-					playerRepositoryWrite.GrantEmergencyWorkers(playerId);
-					mineralWorkers = 1;
-					gasWorkers = 1;
-					logger.LogInformation("Emergency respawn: granted 1 mineral + 1 gas worker to player {PlayerId}", playerId);
+					totalWorkers = 2;
+					logger.LogInformation("Emergency respawn: granted 2 worker units to player {PlayerId}", playerId);
 				}
 			}
+
+			var (mineralWorkers, gasWorkers) = playerRepository.GetWorkerAssignment(playerId, totalWorkers);
 
 			decimal land = resourceRepository.GetAmount(playerId, constraintResource);
 

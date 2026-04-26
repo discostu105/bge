@@ -70,7 +70,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void SetApiKeyHash_AndLookup_FindsPlayer() {
+		public void AddApiKey_AndLookup_FindsPlayer() {
 			var game = new TestGame();
 			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
@@ -80,11 +80,51 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			game.PlayerRepositoryWrite.CreatePlayer(playerId, user.UserId);
 
 			const string testHash = "abc123hash";
-			userRepoWrite.SetApiKeyHash(playerId, testHash);
+			var added = userRepoWrite.AddApiKey(playerId, testHash, "bge_k_abc12345", "primary");
+
+			Assert.NotNull(added);
+			Assert.Equal("primary", added.Name);
+			Assert.Equal("bge_k_abc12345", added.KeyPrefix);
 
 			var found = userRepo.GetPlayerByApiKeyHash(testHash);
 			Assert.NotNull(found);
 			Assert.Equal(playerId, found!.PlayerId);
+			Assert.Single(found.ApiKeys!);
+		}
+
+		[Fact]
+		public void AddApiKey_MultipleKeys_AllResolveToSamePlayer() {
+			var game = new TestGame();
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
+
+			var user = userRepoWrite.CreateUser("ghmultikey", "multi", "Multi");
+			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
+			game.PlayerRepositoryWrite.CreatePlayer(playerId, user.UserId);
+
+			userRepoWrite.AddApiKey(playerId, "hash-a", "bge_k_aaaa", "key-a");
+			userRepoWrite.AddApiKey(playerId, "hash-b", "bge_k_bbbb", "key-b");
+
+			Assert.Equal(playerId, userRepo.GetPlayerByApiKeyHash("hash-a")!.PlayerId);
+			Assert.Equal(playerId, userRepo.GetPlayerByApiKeyHash("hash-b")!.PlayerId);
+			Assert.Equal(2, userRepo.GetApiKeys(playerId).Count());
+		}
+
+		[Fact]
+		public void TouchApiKey_UpdatesLastAccessedAt() {
+			var game = new TestGame();
+			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
+
+			var user = userRepoWrite.CreateUser("ghtouch", "touchuser", "Touch User");
+			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
+			game.PlayerRepositoryWrite.CreatePlayer(playerId, user.UserId);
+
+			userRepoWrite.AddApiKey(playerId, "touch-hash", "bge_k_touch123", null);
+			Assert.Null(userRepo.GetApiKeys(playerId).Single().LastAccessedAt);
+
+			userRepoWrite.TouchApiKey("touch-hash");
+			Assert.NotNull(userRepo.GetApiKeys(playerId).Single().LastAccessedAt);
 		}
 
 		[Fact]
@@ -132,7 +172,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		}
 
 		[Fact]
-		public void RevokeApiKey_ClearsHash() {
+		public void RemoveApiKey_RemovesOnlyTheTargetedKey() {
 			var game = new TestGame();
 			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
@@ -141,11 +181,28 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
 			game.PlayerRepositoryWrite.CreatePlayer(playerId, user.UserId);
 
-			userRepoWrite.SetApiKeyHash(playerId, "somehash");
-			userRepoWrite.SetApiKeyHash(playerId, null);
+			var key1 = userRepoWrite.AddApiKey(playerId, "hash-1", "bge_k_1111", "k1");
+			var key2 = userRepoWrite.AddApiKey(playerId, "hash-2", "bge_k_2222", "k2");
 
-			var found = userRepo.GetPlayerByApiKeyHash("somehash");
-			Assert.Null(found);
+			var removed = userRepoWrite.RemoveApiKey(playerId, key1.KeyId);
+
+			Assert.True(removed);
+			Assert.Null(userRepo.GetPlayerByApiKeyHash("hash-1"));
+			Assert.NotNull(userRepo.GetPlayerByApiKeyHash("hash-2"));
+			Assert.Single(userRepo.GetApiKeys(playerId));
+		}
+
+		[Fact]
+		public void RemoveApiKey_UnknownKey_ReturnsFalse() {
+			var game = new TestGame();
+			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
+
+			var user = userRepoWrite.CreateUser("ghrevoke2", "revokeuser2", "Revoke2");
+			var playerId = PlayerIdFactory.Create(Guid.NewGuid().ToString());
+			game.PlayerRepositoryWrite.CreatePlayer(playerId, user.UserId);
+
+			var removed = userRepoWrite.RemoveApiKey(playerId, "nonexistent");
+			Assert.False(removed);
 		}
 	}
 }

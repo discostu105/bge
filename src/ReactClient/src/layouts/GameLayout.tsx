@@ -143,7 +143,13 @@ function GameLayoutInner() {
   const { data: tickInfo } = useQuery<TickInfoViewModel>({
     queryKey: ['tickinfo', gameId],
     queryFn: () => apiClient.get('/api/game/tick-info').then((r) => r.data),
-    refetchInterval: 30_000,
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (!data) return 30_000
+      const remaining = new Date(data.nextTickAt).getTime() - Date.now()
+      if (remaining <= 0) return 1_000
+      return Math.min(30_000, remaining + 500)
+    },
     enabled: !!gameId && !isFinished,
   })
 

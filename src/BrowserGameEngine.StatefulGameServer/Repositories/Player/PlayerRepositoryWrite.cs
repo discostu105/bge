@@ -33,34 +33,12 @@ namespace BrowserGameEngine.StatefulGameServer {
 			}
 		}
 
-		public void AssignWorkers(AssignWorkersCommand command, int totalWorkers) {
-			if (command.MineralWorkers < 0 || command.GasWorkers < 0)
-				throw new ArgumentOutOfRangeException("Worker counts cannot be negative.");
-			if (command.MineralWorkers + command.GasWorkers > totalWorkers)
-				throw new ArgumentOutOfRangeException($"Cannot assign {command.MineralWorkers + command.GasWorkers} workers: only {totalWorkers} available.");
+		public void SetWorkerGasPercent(SetWorkerGasPercentCommand command) {
+			if (command.GasPercent < 0 || command.GasPercent > 100)
+				throw new ArgumentOutOfRangeException(nameof(command.GasPercent), $"Gas percent must be between 0 and 100, got {command.GasPercent}.");
 			var state = world.GetPlayer(command.PlayerId).State;
 			lock (state.StateLock) {
-				state.MineralWorkers = command.MineralWorkers;
-				state.GasWorkers = command.GasWorkers;
-			}
-		}
-
-		public void GrantEmergencyWorkers(PlayerId playerId) {
-			var state = world.GetPlayer(playerId).State;
-			lock (state.StateLock) {
-				state.MineralWorkers = 1;
-				state.GasWorkers = 1;
-			}
-		}
-
-		public void CaptureWorkers(PlayerId playerId, int count) {
-			var state = world.GetPlayer(playerId).State;
-			lock (state.StateLock) {
-				int mineralRemoved = Math.Min(count, state.MineralWorkers);
-				state.MineralWorkers -= mineralRemoved;
-				int remaining = count - mineralRemoved;
-				int gasRemoved = Math.Min(remaining, state.GasWorkers);
-				state.GasWorkers -= gasRemoved;
+				state.GasPercent = command.GasPercent;
 			}
 		}
 
@@ -165,7 +143,7 @@ namespace BrowserGameEngine.StatefulGameServer {
 			lock (_lock) {
 				if (!world.PlayerExists(playerId)) return;
 				var player = world.Players[playerId];
-				player.ApiKeyHash = null;
+				player.ApiKeys.Clear();
 				world.Players.Remove(playerId);
 			}
 		}

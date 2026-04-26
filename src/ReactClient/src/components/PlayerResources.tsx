@@ -2,6 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { PlayerResourcesViewModel } from '@/api/types'
 import { formatNumber } from '@/lib/formatters'
+import { ResourceIcon } from '@/components/ui/resource-icon'
+import { resourceHex, resourceTextClass } from '@/lib/resource-colors'
+
+const GLOWS: Record<string, string> = {
+  minerals: '0 0 6px rgba(96,165,250,0.45)',
+  gas: '0 0 6px rgba(74,222,128,0.45)',
+  land: '0 0 6px rgba(184,128,74,0.45)',
+}
 
 export function PlayerResources({ gameId }: { gameId: string }) {
   const { data } = useQuery({
@@ -19,13 +27,14 @@ export function PlayerResources({ gameId }: { gameId: string }) {
   return (
     <div className="flex items-center gap-4 whitespace-nowrap">
       {all.map(([name, value]) => {
-        const isLand = name.toLowerCase() === 'land'
+        const key = name.toLowerCase()
         return (
           <div key={name} className="flex items-baseline gap-1.5">
-            <span className="label text-[9px]">{name}</span>
+            <ResourceIcon name={name} className="self-center" />
+            <span className={`label text-[9px] ${resourceTextClass(name)}`}>{name}</span>
             <span
-              className={`mono text-[13px] font-semibold ${isLand ? 'text-interactive' : 'text-resource'}`}
-              style={isLand ? undefined : { textShadow: '0 0 6px rgba(34,197,94,0.35)' }}
+              className={`mono text-[13px] font-semibold ${resourceTextClass(name)}`}
+              style={{ color: resourceHex(name), textShadow: GLOWS[key] }}
             >
               {formatNumber(value)}
             </span>

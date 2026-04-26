@@ -5,6 +5,7 @@ import type { GameResultsViewModel } from '@/api/types'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { formatDuration } from '@/lib/formatters'
+import { ResourceIcon } from '@/components/ui/resource-icon'
 
 export function GameResults() {
   const { gameId } = useParams<{ gameId: string }>()
@@ -57,14 +58,18 @@ export function GameResults() {
               <div className="rounded-lg border border-border text-center p-4 w-36">
                 <div className="text-2xl">🥈</div>
                 <div className="font-bold text-sm">{second.playerName}</div>
-                <div className="text-muted-foreground text-xs">{second.land.toLocaleString()}</div>
+                <div className="text-xs text-[#b8804a] inline-flex items-center justify-center gap-1">
+                  <ResourceIcon name="land" /> {second.land.toLocaleString()}
+                </div>
               </div>
             )}
             {first && (
               <div className="rounded-lg border border-warning/50 text-center p-4 w-40">
                 <div className="text-3xl">🏆</div>
                 <div className="font-bold">{first.playerName}</div>
-                <div className="text-muted-foreground text-sm">{first.land.toLocaleString()}</div>
+                <div className="text-sm text-[#b8804a] inline-flex items-center justify-center gap-1">
+                  <ResourceIcon name="land" /> {first.land.toLocaleString()}
+                </div>
                 <span className="text-xs px-2 py-0.5 rounded bg-warning text-warning-foreground mt-1 inline-block">Winner</span>
               </div>
             )}
@@ -72,7 +77,9 @@ export function GameResults() {
               <div className="rounded-lg border border-border text-center p-4 w-36">
                 <div className="text-2xl">🥉</div>
                 <div className="font-bold text-sm">{third.playerName}</div>
-                <div className="text-muted-foreground text-xs">{third.land.toLocaleString()}</div>
+                <div className="text-xs text-[#b8804a] inline-flex items-center justify-center gap-1">
+                  <ResourceIcon name="land" /> {third.land.toLocaleString()}
+                </div>
               </div>
             )}
           </div>
@@ -83,7 +90,11 @@ export function GameResults() {
               <tr className="border-b border-border text-left text-muted-foreground">
                 <th scope="col" className="py-2 pr-4">Rank</th>
                 <th scope="col" className="py-2 pr-4">Player</th>
-                <th scope="col" className="py-2">Land</th>
+                <th scope="col" className="py-2">
+                  <span className="inline-flex items-center gap-1 text-[#b8804a]">
+                    <ResourceIcon name="land" /> Land
+                  </span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -108,7 +119,7 @@ export function GameResults() {
                         <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-warning text-warning-foreground">Winner</span>
                       )}
                     </td>
-                    <td className="py-2">{entry.land.toLocaleString()}</td>
+                    <td className="py-2 text-[#b8804a]">{entry.land.toLocaleString()}</td>
                   </tr>
                 )
               })}

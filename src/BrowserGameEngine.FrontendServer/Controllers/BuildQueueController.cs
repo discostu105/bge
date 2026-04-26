@@ -57,13 +57,19 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			}
 			if (request.Count <= 0) return BadRequest("Count must be greater than 0.");
 			if (request.Count > 10000) return BadRequest("Count must be 10,000 or less.");
-			buildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(
-				currentUserContext.PlayerId!,
-				request.Type,
-				request.DefId,
-				request.Count
-			));
-			return Ok();
+			try {
+				buildQueueRepositoryWrite.AddToQueue(new AddToQueueCommand(
+					currentUserContext.PlayerId!,
+					request.Type,
+					request.DefId,
+					request.Count
+				));
+				return Ok();
+			} catch (AssetAlreadyBuiltException e) {
+				return BadRequest(e.Message);
+			} catch (AssetAlreadyQueuedException e) {
+				return BadRequest(e.Message);
+			}
 		}
 
 		/// <summary>Removes an entry from the build queue by its ID.</summary>

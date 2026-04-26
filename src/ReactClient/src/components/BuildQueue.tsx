@@ -32,8 +32,13 @@ export function BuildQueue({ gameId }: BuildQueueProps) {
 
   return (
     <div>
-      <div className="label mb-1.5">
-        Build Queue <span className="text-muted-foreground">({data.entries.length})</span>
+      <div className="mb-1.5">
+        <div className="label">
+          Build Queue <span className="text-muted-foreground">({data.entries.length})</span>
+        </div>
+        <div className="text-xs text-muted-foreground mt-0.5">
+          Items start one after another in this order. Resources are deducted when each build begins.
+        </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {data.entries

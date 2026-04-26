@@ -80,7 +80,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			UnitRepository = new UnitRepository(Accessor, GameDef, PlayerRepository, AssetRepository);
 			BattleBehavior = new BattleBehaviorScoOriginal(LoggerFactory.CreateLogger<IBattleBehavior>());
 			UpgradeRepository = new UpgradeRepository(Accessor);
-			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, BattleBehavior, UpgradeRepository);
+			UnitRepositoryWrite = new UnitRepositoryWrite(LoggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, BattleBehavior, UpgradeRepository);
 			MessageRepository = new MessageRepository(Accessor);
 			MessageRepositoryWrite = new MessageRepositoryWrite(Accessor, TimeProvider.System, NullNotificationService.Instance);
 			BuildQueueRepository = new BuildQueueRepository(Accessor);
@@ -93,7 +93,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var services = new ServiceCollection();
 			services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
-			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger()));
+			services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(LoggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, UnitRepository, UnitRepositoryWrite, new ActionLogger()));
 			services.AddSingleton<IGameTickModule>(new ResourceHistoryModule(ResourceRepository, ResourceHistoryRepositoryWrite, Accessor));
 			GameTickModuleRegistry = new GameTickModuleRegistry(LoggerFactory.CreateLogger<GameTickModuleRegistry>(), services.BuildServiceProvider(), GameDef);
 			TickEngine = new GameTickEngine(LoggerFactory.CreateLogger<GameTickEngine>(), Accessor, GameDef, GameTickModuleRegistry, PlayerRepositoryWrite, TimeProvider.System, NullGameEventPublisher.Instance);

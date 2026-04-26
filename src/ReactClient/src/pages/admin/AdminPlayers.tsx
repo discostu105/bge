@@ -23,8 +23,7 @@ interface AdminPlayerDetail extends AdminPlayerEntry {
   resources: Record<string, number>
   currentTick: number
   protectionTicksRemaining: number
-  mineralWorkers: number
-  gasWorkers: number
+  gasPercent: number
 }
 
 export function AdminPlayers() {
@@ -230,8 +229,8 @@ export function AdminPlayers() {
                             <div>{detail.protectionTicksRemaining}</div>
                           </div>
                           <div>
-                            <div className="text-xs text-muted-foreground">Workers (M/G)</div>
-                            <div>{detail.mineralWorkers} / {detail.gasWorkers}</div>
+                            <div className="text-xs text-muted-foreground">Gas %</div>
+                            <div>{detail.gasPercent}%</div>
                           </div>
                           <div>
                             <div className="text-xs text-muted-foreground">Assets</div>

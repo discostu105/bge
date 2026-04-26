@@ -18,7 +18,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 		private readonly ResourceRepositoryWrite resourceRepositoryWrite;
 		private readonly ResourceRepository resourceRepository;
 		private readonly PlayerRepository playerRepository;
-		private readonly PlayerRepositoryWrite playerRepositoryWrite;
 		private readonly IBattleBehavior battleBehavior;
 		private readonly UpgradeRepository upgradeRepository;
 
@@ -29,7 +28,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 				, ResourceRepositoryWrite resourceRepositoryWrite
 				, ResourceRepository resourceRepository
 				, PlayerRepository playerRepository
-				, PlayerRepositoryWrite playerRepositoryWrite
 				, IBattleBehavior battleBehavior
 				, UpgradeRepository upgradeRepository
 			) {
@@ -40,7 +38,6 @@ namespace BrowserGameEngine.StatefulGameServer {
 			this.resourceRepositoryWrite = resourceRepositoryWrite;
 			this.resourceRepository = resourceRepository;
 			this.playerRepository = playerRepository;
-			this.playerRepositoryWrite = playerRepositoryWrite;
 			this.battleBehavior = battleBehavior;
 			this.upgradeRepository = upgradeRepository;
 		}
@@ -181,13 +178,45 @@ namespace BrowserGameEngine.StatefulGameServer {
 			resourceRepositoryWrite.AddResources(battleResult.Defender, Id.ResDef("land"), -landToTransfer);
 			resourceRepositoryWrite.AddResources(battleResult.Attacker, Id.ResDef("land"), landToTransfer);
 
-			var defenderState = world.GetPlayer(battleResult.Defender).State;
-			int totalWorkers = defenderState.MineralWorkers + defenderState.GasWorkers;
+			// Capture half of the proportional share of the defender's worker units. Workers are
+			// auto-assigned by percentage now, so reducing the actual unit count is the only way
+			// to dent the defender's income.
+			int totalWorkers = CountAllWorkers(battleResult.Defender);
 			int workersToCapture = (int)Math.Round(totalWorkers * percent / 100 / 2);
-			playerRepositoryWrite.CaptureWorkers(battleResult.Defender, workersToCapture);
+			int actuallyCaptured = RemoveWorkers(battleResult.Defender, workersToCapture);
 
 			battleResult.BtlResult.LandTransferred = landToTransfer;
-			battleResult.BtlResult.WorkersCaptured = workersToCapture;
+			battleResult.BtlResult.WorkersCaptured = actuallyCaptured;
+		}
+
+		private static readonly UnitDefId[] WorkerUnitIds = new[] {
+			Id.UnitDef("wbf"), Id.UnitDef("drone"), Id.UnitDef("probe")
+		};
+
+		private int CountAllWorkers(PlayerId playerId) {
+			int total = 0;
+			foreach (var w in WorkerUnitIds) total += unitRepository.CountByUnitDefId(playerId, w);
+			return total;
+		}
+
+		private int RemoveWorkers(PlayerId playerId, int count) {
+			if (count <= 0) return 0;
+			var state = world.GetPlayer(playerId).State;
+			lock (state.StateLock) {
+				int remaining = count;
+				foreach (var workerId in WorkerUnitIds) {
+					if (remaining <= 0) break;
+					var matching = state.Units.Where(u => u.UnitDefId.Equals(workerId) && u.IsHome()).ToList();
+					foreach (var unit in matching) {
+						if (remaining <= 0) break;
+						int take = Math.Min(remaining, unit.Count);
+						unit.Count -= take;
+						remaining -= take;
+					}
+				}
+				state.Units.RemoveAll(u => u.Count <= 0);
+				return count - remaining;
+			}
 		}
 
 		private void StealResources(BattleResult battleResult) {

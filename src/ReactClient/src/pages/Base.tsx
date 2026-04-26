@@ -137,32 +137,50 @@ function AssetCard({
 				)}
 
 				{state === 'ready' && (
-					<div className="space-y-2">
-						<AffordabilityChip cost={asset.cost} affordable={asset.canAfford} block />
-						<div className="flex gap-1.5">
-							<Button
-								size="sm"
-								onClick={() => onBuild(asset.definition.id)}
-								disabled={disabled || !asset.canAfford}
-								className="flex-1"
-								title={asset.canAfford ? 'Build now' : 'Not enough resources — try Queue instead'}
-							>
-								<HammerIcon className="h-3.5 w-3.5" />
-								Build
-							</Button>
+					queueEntryId ? (
+						<div className="space-y-2">
+							<div className="text-xs text-muted-foreground">
+								Waiting in build queue · resources will be deducted when the build starts.
+							</div>
 							<Button
 								size="sm"
 								variant="outline"
-								onClick={() => onQueue(asset.definition.id)}
+								className="w-full"
+								onClick={() => onCancelQueue(queueEntryId)}
 								disabled={disabled}
-								className="flex-1"
-								title="Add to build queue; resources are reserved when the build starts"
 							>
-								<PlusCircleIcon className="h-3.5 w-3.5" />
-								Queue
+								<XIcon className="h-3.5 w-3.5" />
+								Remove from queue
 							</Button>
 						</div>
-					</div>
+					) : (
+						<div className="space-y-2">
+							<AffordabilityChip cost={asset.cost} affordable={asset.canAfford} block />
+							<div className="flex gap-1.5">
+								<Button
+									size="sm"
+									onClick={() => onBuild(asset.definition.id)}
+									disabled={disabled || !asset.canAfford}
+									className="flex-1"
+									title={asset.canAfford ? 'Build now' : 'Not enough resources — add to queue and it will start when you can afford it'}
+								>
+									<HammerIcon className="h-3.5 w-3.5" />
+									Build now
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => onQueue(asset.definition.id)}
+									disabled={disabled}
+									className="flex-1"
+									title="Add to build queue — starts after the items above it; resources are deducted when the build begins"
+								>
+									<PlusCircleIcon className="h-3.5 w-3.5" />
+									Add to queue
+								</Button>
+							</div>
+						</div>
+					)
 				)}
 
 				{state === 'locked' && asset.prerequisites && (
@@ -181,22 +199,26 @@ function EconomyStat({
 	value,
 	detail,
 	action,
+	iconClassName,
+	valueClassName,
 }: {
 	icon: ReactNode
 	label: string
 	value: ReactNode
 	detail?: ReactNode
 	action?: { label: string; onClick: () => void; disabled?: boolean }
+	iconClassName?: string
+	valueClassName?: string
 }) {
 	return (
 		<Card className="py-3 gap-2">
 			<CardContent className="px-4 flex items-center gap-3">
-				<div className="shrink-0 rounded-md bg-primary/10 p-2 text-primary">
+				<div className={`shrink-0 rounded-md p-2 ${iconClassName ?? 'bg-primary/10 text-primary'}`}>
 					{icon}
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="label">{label}</div>
-					<div className="mono text-xl font-semibold leading-tight truncate">{value}</div>
+					<div className={`mono text-xl font-semibold leading-tight truncate ${valueClassName ?? ''}`}>{value}</div>
 					{detail && <div className="text-xs text-muted-foreground mt-0.5">{detail}</div>}
 				</div>
 				{action && (
@@ -334,7 +356,7 @@ export function Base({ gameId }: BaseProps) {
 	}
 
 	const queueCount = queueData?.entries.length ?? 0
-	const idleWorkers = workers?.idleWorkers ?? 0
+	const gasPercent = workers?.gasPercent ?? 0
 	const totalWorkers = workers?.totalWorkers ?? 0
 	// Land can be either the primary or secondary resource depending on the game definition;
 	// merge both to be robust across rulesets.
@@ -380,19 +402,27 @@ export function Base({ gameId }: BaseProps) {
 					detail={
 						totalWorkers === 0
 							? 'Train WBFs / drones / probes to gather resources.'
-							: idleWorkers > 0
-								? `${formatNumber(idleWorkers)} idle — click Assign`
-								: 'All workers assigned'
+							: (
+								<>
+									Auto-assigned · <span className="text-blue-400">{100 - gasPercent}% minerals</span> / <span className="text-green-400">{gasPercent}% gas</span>
+								</>
+							)
 					}
-					action={{ label: 'Assign', onClick: () => setWorkersOpen(true), disabled: isFinished }}
+					action={{ label: 'Adjust', onClick: () => setWorkersOpen(true), disabled: isFinished }}
 				/>
 				<EconomyStat
 					icon={<MountainIcon className="h-5 w-5" />}
 					label="Land"
 					value={formatNumber(land)}
+					iconClassName="bg-[#b8804a]/15 text-[#b8804a]"
+					valueClassName="text-[#b8804a]"
 					detail={
 						resources
-							? `${formatNumber(resources.colonizationCostPerLand)} minerals per new tile`
+							? (
+								<>
+									<span className="text-blue-400">{formatNumber(resources.colonizationCostPerLand)} minerals</span> per new tile
+								</>
+							)
 							: undefined
 					}
 					action={{ label: 'Colonize', onClick: () => setColonizeOpen(true), disabled: isFinished }}

@@ -98,14 +98,14 @@ public class SimGame {
 		UpgradeRepository = new UpgradeRepository(Accessor);
 		UpgradeRepositoryWrite = new UpgradeRepositoryWrite(Accessor, ResourceRepository, ResourceRepositoryWrite);
 		var battleBehavior = new BattleBehaviorScoOriginal(loggerFactory.CreateLogger<IBattleBehavior>());
-		UnitRepositoryWrite = new UnitRepositoryWrite(loggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, PlayerRepositoryWrite, battleBehavior, UpgradeRepository);
+		UnitRepositoryWrite = new UnitRepositoryWrite(loggerFactory.CreateLogger<UnitRepositoryWrite>(), Accessor, GameDef, UnitRepository, ResourceRepositoryWrite, ResourceRepository, PlayerRepository, battleBehavior, UpgradeRepository);
 		BuildQueueRepository = new BuildQueueRepository(Accessor);
 		BuildQueueRepositoryWrite = new BuildQueueRepositoryWrite(loggerFactory.CreateLogger<BuildQueueRepositoryWrite>(), Accessor, BuildQueueRepository, AssetRepository, AssetRepositoryWrite, UnitRepository, UnitRepositoryWrite, ResourceRepository, GameDef);
 		var resourceHistoryRepositoryWrite = new ResourceHistoryRepositoryWrite(Accessor);
 
 		var services = new ServiceCollection();
 		services.AddSingleton<IGameTickModule>(new ActionQueueExecutor(AssetRepositoryWrite));
-		services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(loggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, PlayerRepositoryWrite, UnitRepository, UnitRepositoryWrite, new ActionLogger()));
+		services.AddSingleton<IGameTickModule>(new ResourceGrowthSco(loggerFactory.CreateLogger<ResourceGrowthSco>(), GameDef, ResourceRepository, ResourceRepositoryWrite, PlayerRepository, UnitRepository, UnitRepositoryWrite, new ActionLogger()));
 		services.AddSingleton<IGameTickModule>(new ResourceHistoryModule(ResourceRepository, resourceHistoryRepositoryWrite, Accessor));
 		services.AddSingleton<IGameTickModule>(new NewPlayerProtectionModule(Accessor.WorldState));
 		services.AddSingleton<IGameTickModule>(new UpgradeTimer(UpgradeRepositoryWrite));
