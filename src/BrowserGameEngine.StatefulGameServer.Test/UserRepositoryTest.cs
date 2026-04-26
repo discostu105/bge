@@ -95,7 +95,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void AddApiKey_MultipleKeys_AllResolveToSamePlayer() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("ghmultikey", "multi", "Multi");
@@ -113,7 +113,7 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		[Fact]
 		public void TouchApiKey_UpdatesLastAccessedAt() {
 			var game = new TestGame();
-			var userRepo = new UserRepository(game.GlobalState, game.World);
+			var userRepo = new UserRepository(game.GlobalState, game.Accessor);
 			var userRepoWrite = new UserRepositoryWrite(game.GlobalState, game.World, TimeProvider.System);
 
 			var user = userRepoWrite.CreateUser("ghtouch", "touchuser", "Touch User");
