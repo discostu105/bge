@@ -160,6 +160,10 @@ if (!string.IsNullOrEmpty(s3BucketForDp)) {
 
 await ConfigureGameServices(builder.Services);
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<BrowserGameEngine.StatefulGameServer.IWorldStateAccessor,
+	BrowserGameEngine.FrontendServer.HttpContextWorldStateAccessor>();
+
 /*
 /* Configure the HTTP request pipeline.
  */
@@ -221,6 +225,7 @@ app.UseAuthentication();
 app.UseMiddleware<RequestDurationMiddleware>();
 app.UseMiddleware<BearerTokenMiddleware>();
 app.UseRateLimiter();
+app.UseMiddleware<BrowserGameEngine.FrontendServer.Middleware.CurrentGameMiddleware>();
 app.UseMiddleware<CurrentUserMiddleware>();
 app.UseAuthorization();
 
