@@ -1,5 +1,6 @@
 using BrowserGameEngine.BalanceSim.GameSim;
 using BrowserGameEngine.BalanceSim.GameSim.Bots;
+using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using Xunit;
 
@@ -91,5 +92,55 @@ public class SimGameTests {
 		var ranking = sim.Ranking();
 		Assert.Equal(a, ranking[0].PlayerId);
 		Assert.Equal(b, ranking[1].PlayerId);
+	}
+
+	// Verify every (strategy, race) preset produces a coherent BotConfig — every unit in the
+	// UnitMix has its prerequisite asset in the BuildOrder (or is the granted starter HQ).
+	// Catches the bot bug where rush-terran's mix referenced siegetank but the build order
+	// didn't include factory.
+	[Theory]
+	[InlineData(BotPresets.Strategy.Rush)]
+	[InlineData(BotPresets.Strategy.Balanced)]
+	[InlineData(BotPresets.Strategy.Economy)]
+	[InlineData(BotPresets.Strategy.Turtle)]
+	[InlineData(BotPresets.Strategy.Air)]
+	[InlineData(BotPresets.Strategy.Mass)]
+	public void Every_preset_unitmix_is_buildable_by_buildorder(BotPresets.Strategy strategy) {
+		var gameDef = new GameDefinition.SCO.StarcraftOnlineGameDefFactory().CreateGameDef();
+		string[] grantedStarters = { "commandcenter", "hive", "nexus" };
+		foreach (var race in new[] { "terran", "zerg", "protoss" }) {
+			var cfg = BotPresets.ConfigFor(strategy, race);
+			var available = new System.Collections.Generic.HashSet<string>(cfg.BuildOrder);
+			foreach (var s in grantedStarters) available.Add(s);
+			Assert.NotNull(cfg.UnitMix);
+			foreach (var unitId in cfg.UnitMix!.Keys) {
+				var unitDef = gameDef.GetUnitDef(Id.UnitDef(unitId));
+				Assert.NotNull(unitDef);
+				foreach (var prereq in unitDef!.Prerequisites) {
+					Assert.True(available.Contains(prereq.Id),
+						$"{strategy}-{race}: unit '{unitId}' needs '{prereq.Id}' but it's not in the BuildOrder.");
+				}
+			}
+		}
+	}
+
+	[Theory]
+	[InlineData("rush")]
+	[InlineData("balanced")]
+	[InlineData("economy")]
+	[InlineData("turtle")]
+	[InlineData("air")]
+	[InlineData("mass")]
+	public void ParseStrategy_accepts_all_canonical_names(string name) {
+		var strategy = BotPresets.ParseStrategy(name);
+		// Round-trip via Build() to confirm the strategy is wired up to a config + bot.
+		var bot = BotPresets.Build(strategy, "terran");
+		Assert.NotNull(bot);
+		Assert.Equal($"{name}-terran", bot.Name);
+	}
+
+	[Fact]
+	public void ParseStrategy_throws_on_unknown_name() {
+		Assert.Throws<System.ArgumentException>(() => BotPresets.ParseStrategy("nonexistent"));
 	}
 }

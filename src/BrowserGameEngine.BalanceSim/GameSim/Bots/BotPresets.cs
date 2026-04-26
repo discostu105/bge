@@ -156,7 +156,7 @@ public static class BotPresets {
 	private static IReadOnlyList<string> EconomyBuildOrder(string race) => race switch {
 		"terran" => new[] { "barracks", "factory", "academy", "armory", "spaceport", "sciencefacility" },
 		"zerg" => new[] { "spawningpool", "hydraliskden", "evolutionchamber", "queensnest", "spire", "ultraliskcavern" },
-		"protoss" => new[] { "gateway", "cyberneticscore", "forge", "roboticsfacility", "templararchives", "stargate" },
+		"protoss" => new[] { "gateway", "cyberneticscore", "forge", "roboticsfacility", "templararchives", "stargate", "fleetbeacon" },
 		_ => Array.Empty<string>()
 	};
 
