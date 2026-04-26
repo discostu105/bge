@@ -47,9 +47,9 @@ test.describe('Unit build — army visibility', () => {
 		await expect(page.getByText('Total Units')).toBeVisible({ timeout: 10_000 })
 
 		// Confirm the built unit appears in the Home Base DataTable.
-		// The unit definition name for 'wbf' is displayed in the Name column of the table.
-		const wbfRow = page.getByRole('row').filter({ hasText: /wbf/i })
-		await expect(wbfRow.first()).toBeVisible({ timeout: 10_000 })
+		// The unit definition name for 'wbf' (display name "SCV") is shown in the Name column.
+		const scvRow = page.getByRole('row').filter({ hasText: /scv/i })
+		await expect(scvRow.first()).toBeVisible({ timeout: 10_000 })
 
 		// Read the count from the value span adjacent to the "Total Units" label.
 		// Stat renders: <span class="label">Total Units</span><span class="mono ...">N</span>
