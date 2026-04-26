@@ -17,14 +17,17 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly ILogger<ColonizeController> logger;
 		private readonly CurrentUserContext currentUserContext;
 		private readonly ColonizeRepositoryWrite colonizeRepositoryWrite;
+		private readonly ResourceRepository resourceRepository;
 
 		public ColonizeController(ILogger<ColonizeController> logger
 				, CurrentUserContext currentUserContext
 				, ColonizeRepositoryWrite colonizeRepositoryWrite
+				, ResourceRepository resourceRepository
 			) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.colonizeRepositoryWrite = colonizeRepositoryWrite;
+			this.resourceRepository = resourceRepository;
 		}
 
 		/// <summary>Colonizes additional land by spending the required resources.</summary>
@@ -45,6 +48,35 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 			} catch (CannotAffordException e) {
 				return BadRequest(e.Message);
 			}
+		}
+
+		/// <summary>Previews the cost of colonizing a given amount of land tiles.</summary>
+		/// <param name="amount">Number of land tiles to preview.</param>
+		[HttpGet]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public ActionResult<ColonizePreviewViewModel> Preview([FromQuery] int amount) {
+			if (!currentUserContext.IsValid) return Unauthorized();
+			if (amount < 1) return BadRequest("Amount must be at least 1.");
+			if (amount > 100000) return BadRequest("Amount must be 100,000 or less.");
+
+			var playerId = currentUserContext.PlayerId!;
+			var currentLand = resourceRepository.GetAmount(playerId, Id.ResDef("land"));
+			var minerals = resourceRepository.GetAmount(playerId, Id.ResDef("minerals"));
+
+			var totalCost = ColonizeRepositoryWrite.GetCostForTiles(currentLand, amount);
+			var firstTileCost = ColonizeRepositoryWrite.GetCostPerLand(currentLand);
+			var lastTileCost = ColonizeRepositoryWrite.GetCostPerLand(currentLand + amount - 1);
+			var maxAffordable = ColonizeRepositoryWrite.GetMaxAffordable(currentLand, minerals);
+
+			return Ok(new ColonizePreviewViewModel {
+				Amount = amount,
+				TotalCost = totalCost,
+				FirstTileCost = firstTileCost,
+				LastTileCost = lastTileCost,
+				MaxAffordable = maxAffordable,
+			});
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
+using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
 
 namespace BrowserGameEngine.BalanceSim.GameSim.Bots;
@@ -94,11 +95,14 @@ public class ConfigurableBot : IBot {
 		var me = ctx.Me;
 		if (me.Land >= Config.LandTarget) return;
 		decimal currentLand = me.Land;
-		decimal costPerLand = Math.Max(1m, currentLand / 4m);
-		int amount = Math.Max(1, me.Minerals / Math.Max(1, (int)costPerLand) / 4);
-		amount = Math.Clamp(amount, 1, 24);
-		decimal totalCost = amount * costPerLand;
-		if (me.Minerals < totalCost + Config.MineralReserve) return;
+		decimal mineralsAvailable = me.Minerals - Config.MineralReserve;
+		if (mineralsAvailable <= 0) return;
+
+		int affordable = ColonizeRepositoryWrite.GetMaxAffordable(currentLand, mineralsAvailable);
+		int needed = Config.LandTarget - me.Land;
+		int amount = Math.Min(affordable, needed);
+		if (amount < 1) return;
+
 		try {
 			ctx.Game.ColonizeRepositoryWrite.Colonize(new ColonizeCommand(ctx.PlayerId, amount));
 		} catch (Exception) { /* retry next tick */ }
