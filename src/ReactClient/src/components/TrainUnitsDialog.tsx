@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { HammerIcon, PlusCircleIcon, SwordsIcon } from 'lucide-react'
+import { HammerIcon, PlusCircleIcon, SwordsIcon, LockIcon, CheckCircle2Icon, BuildingIcon } from 'lucide-react'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import type {
@@ -17,7 +17,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { NumberStepper } from '@/components/ui/number-stepper'
 import { Stat } from '@/components/ui/stat'
-import { AffordabilityChip } from '@/components/AffordabilityChip'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { CostBadge } from '@/components/CostBadge'
 import { ResourceIcon } from '@/components/ui/resource-icon'
 import { cn } from '@/lib/utils'
 
@@ -25,8 +26,13 @@ interface TrainUnitsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   gameId: string
-  /** If provided, pre-selects this building. Otherwise, a picker is shown for built production buildings. */
+  /** If provided, focuses the dialog on this building. Otherwise, browses all units across all production buildings. */
   asset?: AssetViewModel | null
+}
+
+interface UnitWithBuilding {
+  unit: UnitDefinitionViewModel
+  building: AssetViewModel
 }
 
 const PRESETS = [1, 5, 10, 25, 50]
@@ -68,16 +74,15 @@ function combineHaves(resources: PlayerResourcesViewModel | undefined): Record<s
 
 export function TrainUnitsDialog({ open, onOpenChange, gameId, asset }: TrainUnitsDialogProps) {
   const queryClient = useQueryClient()
-  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(asset?.definition.id ?? null)
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
   const [count, setCount] = useState(1)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch all assets when opened in "picker" mode, so the user can choose a building.
+  // Always fetch assets so we can show the catalog (and look up building info even in focused mode).
   const { data: assetsData } = useQuery<AssetsViewModel>({
     queryKey: ['assets', gameId],
     queryFn: () => apiClient.get('/api/assets').then((r) => r.data),
-    enabled: open && !asset,
+    enabled: open,
   })
 
   const { data: resources } = useQuery<PlayerResourcesViewModel>({
@@ -87,49 +92,60 @@ export function TrainUnitsDialog({ open, onOpenChange, gameId, asset }: TrainUni
     refetchInterval: open ? 10_000 : false,
   })
 
-  const builtProducers = useMemo<AssetViewModel[]>(() => {
-    if (asset) return [asset]
-    if (!assetsData) return []
-    return assetsData.assets.filter((a) => a.built && a.availableUnits.length > 0)
+  // Production buildings — those that train any unit. Built ones first, then unbuilt (so users see what's locked).
+  const productionBuildings = useMemo<AssetViewModel[]>(() => {
+    const source = asset ? [asset] : (assetsData?.assets ?? [])
+    return source
+      .filter((a) => a.availableUnits.length > 0)
+      .slice()
+      .sort((a, b) => {
+        if (a.built !== b.built) return a.built ? -1 : 1
+        return a.definition.name.localeCompare(b.definition.name)
+      })
   }, [asset, assetsData])
 
-  const selectedAsset: AssetViewModel | undefined = useMemo(() => {
-    if (asset) return asset
-    return builtProducers.find((a) => a.definition.id === selectedAssetId) ?? builtProducers[0]
-  }, [asset, builtProducers, selectedAssetId])
+  // Flat catalog: all units across all production buildings, each tagged with its required building.
+  const catalog = useMemo<UnitWithBuilding[]>(() => {
+    const result: UnitWithBuilding[] = []
+    for (const b of productionBuildings) {
+      for (const u of b.availableUnits) result.push({ unit: u, building: b })
+    }
+    return result
+  }, [productionBuildings])
 
-  const availableUnits: UnitDefinitionViewModel[] = selectedAsset?.availableUnits ?? []
+  const selectedEntry = useMemo<UnitWithBuilding | undefined>(() => {
+    if (catalog.length === 0) return undefined
+    const found = catalog.find(({ unit }) => unit.id === selectedUnitId)
+    if (found) return found
+    // Default: first trainable unit (building built + prereqs met), else first.
+    return catalog.find(({ unit, building }) => building.built && unit.prerequisitesMet) ?? catalog[0]
+  }, [catalog, selectedUnitId])
 
-  const selectedUnit = useMemo<UnitDefinitionViewModel | undefined>(() => {
-    if (availableUnits.length === 0) return undefined
-    return availableUnits.find((u) => u.id === selectedUnitId) ?? availableUnits[0]
-  }, [availableUnits, selectedUnitId])
+  const selectedUnit = selectedEntry?.unit
+  const selectedBuilding = selectedEntry?.building
 
-  // Reset state when dialog opens / asset changes.
+  // Reset state when dialog opens or asset changes.
   useEffect(() => {
     if (!open) {
       setError(null)
       setCount(1)
       return
     }
-    setSelectedAssetId(asset?.definition.id ?? builtProducers[0]?.definition.id ?? null)
-  }, [open, asset, builtProducers])
-
-  useEffect(() => {
-    if (availableUnits.length === 0) {
-      setSelectedUnitId(null)
-      return
-    }
-    if (!selectedUnitId || !availableUnits.find((u) => u.id === selectedUnitId)) {
-      setSelectedUnitId(availableUnits[0].id)
-    }
-  }, [availableUnits, selectedUnitId])
+    setSelectedUnitId(null)
+    setCount(1)
+    setError(null)
+  }, [open, asset])
 
   const haves = combineHaves(resources)
   const perUnitCost = selectedUnit?.cost
   const total = useMemo(() => totalCost(perUnitCost, count), [perUnitCost, count])
   const affordable = useMemo(() => canAffordTotal(total, haves), [total, haves])
   const maxCount = useMemo(() => Math.max(1, maxAffordable(perUnitCost, haves)), [perUnitCost, haves])
+
+  const trainableNow = !!selectedUnit
+    && !!selectedBuilding?.built
+    && !!selectedUnit.prerequisitesMet
+    && affordable
 
   const trainMutation = useMutation({
     mutationFn: () => {
@@ -170,142 +186,111 @@ export function TrainUnitsDialog({ open, onOpenChange, gameId, asset }: TrainUni
 
   const working = trainMutation.isPending || queueMutation.isPending
 
+  const description = asset
+    ? `Build units at your ${asset.definition.name}.`
+    : 'Pick any unit. The required building is shown beside each one.'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <SwordsIcon className="h-5 w-5 text-primary" aria-hidden /> Train units
           </DialogTitle>
-          <DialogDescription>
-            {asset
-              ? `Build units at your ${selectedAsset?.definition.name ?? 'building'}.`
-              : 'Pick a production building and a unit type.'}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        {/* Building picker (only if no asset was pre-selected) */}
-        {!asset && (
-          builtProducers.length === 0 ? (
-            <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
-              You have no production buildings yet. Build a Barracks, Gateway, or similar to start training units.
-            </div>
-          ) : builtProducers.length > 1 ? (
-            <div>
-              <div className="label mb-1.5">Building</div>
-              <div className="flex flex-wrap gap-1.5">
-                {builtProducers.map((a) => (
-                  <Button
-                    key={a.definition.id}
-                    type="button"
-                    size="sm"
-                    variant={selectedAssetId === a.definition.id ? 'default' : 'outline'}
-                    onClick={() => { setSelectedAssetId(a.definition.id); setSelectedUnitId(null) }}
-                  >
-                    {a.definition.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          ) : null
-        )}
-
-        {selectedAsset && availableUnits.length === 0 && (
+        {/* Catalog */}
+        {productionBuildings.length === 0 ? (
           <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
-            {selectedAsset.definition.name} does not train any units directly.
+            No production buildings are defined for your race.
           </div>
-        )}
-
-        {/* Unit picker */}
-        {selectedAsset && availableUnits.length > 0 && (
-          <div>
-            <div className="label mb-1.5">Unit</div>
-            <div className="flex flex-wrap gap-1.5">
-              {availableUnits.map((u) => (
-                <Button
-                  key={u.id}
-                  type="button"
-                  size="sm"
-                  variant={selectedUnit?.id === u.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedUnitId(u.id)}
-                  disabled={!u.prerequisitesMet}
-                  title={!u.prerequisitesMet ? 'Prerequisites not met' : undefined}
-                >
-                  {u.name}
-                </Button>
+        ) : (
+          <ScrollArea className="max-h-[42vh] -mx-1 px-1">
+            <div className="space-y-3">
+              {productionBuildings.map((b) => (
+                <BuildingGroup
+                  key={b.definition.id}
+                  building={b}
+                  selectedUnitId={selectedEntry?.unit.id ?? null}
+                  haves={haves}
+                  onSelect={(id) => setSelectedUnitId(id)}
+                />
               ))}
             </div>
-          </div>
+          </ScrollArea>
         )}
 
-        {/* Selected unit stats + per-unit cost */}
-        {selectedUnit && (
-          <div className="rounded-md border bg-card p-3">
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <Stat label="Atk" value={selectedUnit.attack} />
-              <Stat label="Def" value={selectedUnit.defense} />
-              <Stat label="HP" value={selectedUnit.hitpoints} />
-              <Stat label="Speed" value={selectedUnit.speed} />
+        {/* Selected unit details + count + actions */}
+        {selectedUnit && selectedBuilding && (
+          <div className="space-y-3 border-t pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">{selectedUnit.name}</span>
+                <BuildingPill building={selectedBuilding} />
+              </div>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+                <Stat label="Atk" value={selectedUnit.attack} />
+                <Stat label="Def" value={selectedUnit.defense} />
+                <Stat label="HP" value={selectedUnit.hitpoints} />
+                <Stat label="Speed" value={selectedUnit.speed} />
+              </div>
             </div>
-            <div className="mt-2 flex items-center justify-between gap-2 text-xs">
-              <span className="text-muted-foreground">Per unit</span>
-              <AffordabilityChip cost={selectedUnit.cost} affordable={canAffordTotal(totalCost(selectedUnit.cost, 1), haves)} />
-            </div>
-            {!selectedUnit.prerequisitesMet && (
-              <div className="mt-2 text-xs text-warning">
-                Prerequisites not met. Unit can be queued; it will train once requirements are satisfied.
+
+            {!selectedBuilding.built && (
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-2 text-xs">
+                <span className="font-medium">{selectedBuilding.definition.name}</span> is not built yet.
+                You can still queue this unit; it will train once the building is ready.
               </div>
             )}
-          </div>
-        )}
+            {selectedBuilding.built && !selectedUnit.prerequisitesMet && (
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-2 text-xs">
+                Prerequisites for {selectedUnit.name} are not met. The unit can be queued; it will train once
+                requirements are satisfied.
+              </div>
+            )}
 
-        {/* Count + presets */}
-        {selectedUnit && (
-          <div>
-            <div className="label mb-1.5">Count</div>
-            <NumberStepper
-              value={count}
-              onChange={setCount}
-              min={1}
-              max={10000}
-              presets={PRESETS}
-              showMax={maxCount > 0 && Number.isFinite(maxCount)}
-              // Replace showMax max handling via injecting "max" preset manually;
-              // stepper's showMax uses the raw max which is 10000. Use presets to embed max-affordable.
-            />
-            <div className="mt-2 flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                onClick={() => setCount(Math.max(1, maxCount))}
-                title="Fill to maximum your resources allow"
-              >
-                Max affordable ({formatNumber(Math.max(1, maxCount))})
-              </Button>
+            <div>
+              <div className="label mb-1.5">Count</div>
+              <NumberStepper
+                value={count}
+                onChange={setCount}
+                min={1}
+                max={10000}
+                presets={PRESETS}
+              />
+              <div className="mt-2 flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => setCount(Math.max(1, maxCount))}
+                  title="Fill to maximum your resources allow"
+                  disabled={maxCount <= 0 || !Number.isFinite(maxCount)}
+                >
+                  Max affordable ({formatNumber(Math.max(1, maxCount))})
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Total cost preview */}
-        {selectedUnit && (
-          <div className={cn(
-            'rounded-md border px-3 py-2 flex items-center justify-between gap-3',
-            affordable ? 'border-success/40 bg-success/5' : 'border-destructive/40 bg-destructive/5',
-          )}>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Total</span>
-              <span className="flex flex-wrap items-center gap-3 mono">
-                {Object.entries(total).filter(([, v]) => v > 0).map(([k, v]) => (
-                  <span key={k} className="inline-flex items-center gap-1">
-                    <ResourceIcon name={k} /> {formatNumber(v)}
-                  </span>
-                ))}
-              </span>
+            <div className={cn(
+              'rounded-md border px-3 py-2 flex items-center justify-between gap-3',
+              affordable ? 'border-success/40 bg-success/5' : 'border-destructive/40 bg-destructive/5',
+            )}>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Total</span>
+                <span className="flex flex-wrap items-center gap-3 mono">
+                  {Object.entries(total).filter(([, v]) => v > 0).map(([k, v]) => (
+                    <span key={k} className="inline-flex items-center gap-1">
+                      <ResourceIcon name={k} /> {formatNumber(v)}
+                    </span>
+                  ))}
+                </span>
+              </div>
+              <Badge variant={affordable ? 'secondary' : 'destructive'}>
+                {affordable ? 'Affordable' : 'Short on resources'}
+              </Badge>
             </div>
-            <Badge variant={affordable ? 'secondary' : 'destructive'}>
-              {affordable ? 'Affordable' : 'Short on resources'}
-            </Badge>
           </div>
         )}
 
@@ -319,13 +304,20 @@ export function TrainUnitsDialog({ open, onOpenChange, gameId, asset }: TrainUni
             variant="secondary"
             onClick={() => queueMutation.mutate()}
             disabled={!selectedUnit || count < 1 || working}
+            title="Queue this unit; it will train when prerequisites and resources are available."
           >
             <PlusCircleIcon className="h-4 w-4" /> Add to queue
           </Button>
           <Button
             onClick={() => trainMutation.mutate()}
-            disabled={!selectedUnit || count < 1 || !affordable || working}
-            title={!affordable ? 'Not enough resources — try "Add to queue" instead' : 'Train now'}
+            disabled={!trainableNow || count < 1 || working}
+            title={
+              !selectedUnit ? 'Select a unit'
+                : !selectedBuilding?.built ? `Build a ${selectedBuilding?.definition.name} first — try "Add to queue"`
+                : !selectedUnit.prerequisitesMet ? 'Prerequisites not met — try "Add to queue"'
+                : !affordable ? 'Not enough resources — try "Add to queue"'
+                : 'Train now'
+            }
           >
             <HammerIcon className="h-4 w-4" />
             {working ? 'Training…' : `Train ${formatNumber(count)}`}
@@ -333,5 +325,126 @@ export function TrainUnitsDialog({ open, onOpenChange, gameId, asset }: TrainUni
         </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function BuildingGroup({
+  building,
+  selectedUnitId,
+  haves,
+  onSelect,
+}: {
+  building: AssetViewModel
+  selectedUnitId: string | null
+  haves: Record<string, number>
+  onSelect: (unitId: string) => void
+}) {
+  return (
+    <div className="rounded-md border bg-card">
+      <div className="flex items-center justify-between gap-2 border-b px-3 py-1.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <BuildingIcon className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
+          <span className="font-medium truncate">{building.definition.name}</span>
+        </div>
+        {building.built ? (
+          <Badge variant="secondary" className="gap-1">
+            <CheckCircle2Icon className="h-3 w-3" /> Built
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="gap-1 text-warning border-warning/40">
+            <LockIcon className="h-3 w-3" /> Build to unlock
+          </Badge>
+        )}
+      </div>
+      <div className="grid gap-1.5 p-2 sm:grid-cols-2">
+        {building.availableUnits.map((u) => (
+          <UnitCard
+            key={u.id}
+            unit={u}
+            building={building}
+            selected={selectedUnitId === u.id}
+            affordable={canAffordTotal(totalCost(u.cost, 1), haves)}
+            onSelect={() => onSelect(u.id)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function UnitCard({
+  unit,
+  building,
+  selected,
+  affordable,
+  onSelect,
+}: {
+  unit: UnitDefinitionViewModel
+  building: AssetViewModel
+  selected: boolean
+  affordable: boolean
+  onSelect: () => void
+}) {
+  const buildable = building.built && unit.prerequisitesMet
+  const blockedReason = !building.built
+    ? `Requires ${building.definition.name}`
+    : !unit.prerequisitesMet
+      ? 'Prerequisites not met'
+      : null
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        'flex flex-col gap-1 rounded-md border px-2.5 py-2 text-left transition-colors',
+        'hover:bg-accent hover:text-accent-foreground',
+        selected ? 'border-primary ring-1 ring-primary bg-accent/30' : 'border-border',
+        !buildable && !selected && 'opacity-90',
+      )}
+      title={blockedReason ?? `Train ${unit.name}`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-medium truncate">{unit.name}</span>
+        {!buildable && (
+          <LockIcon className="h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground mono">
+        <span>Atk {unit.attack}</span>
+        <span>Def {unit.defense}</span>
+        <span>HP {unit.hitpoints}</span>
+      </div>
+      <div className="flex items-center justify-between gap-2 mt-0.5">
+        <CostBadge
+          cost={unit.cost}
+          className={cn('text-xs', !affordable && 'text-destructive')}
+        />
+      </div>
+      {blockedReason && (
+        <span className="text-xs text-warning">{blockedReason}</span>
+      )}
+    </button>
+  )
+}
+
+function BuildingPill({ building }: { building: AssetViewModel }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs',
+        building.built
+          ? 'border-success/40 bg-success/10 text-foreground'
+          : 'border-warning/40 bg-warning/10 text-foreground',
+      )}
+      title={building.built ? `${building.definition.name} is built` : `${building.definition.name} not built`}
+    >
+      <BuildingIcon className="h-3 w-3" aria-hidden />
+      {building.definition.name}
+      {building.built ? (
+        <CheckCircle2Icon className="h-3 w-3 text-success" aria-hidden />
+      ) : (
+        <LockIcon className="h-3 w-3 text-warning" aria-hidden />
+      )}
+    </span>
   )
 }
