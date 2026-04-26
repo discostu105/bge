@@ -5,7 +5,7 @@ import apiClient from '@/api/client'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { AdminNav } from './AdminNav'
-import { AdminGameSwitcher, AdminGamePickerPage } from './AdminGamePicker'
+import { AdminGamePickerPage } from './AdminGamePicker'
 
 interface LiveStats {
   totalPlayers: number
@@ -62,7 +62,6 @@ export function AdminStats() {
     <div className="p-6 max-w-4xl mx-auto">
       <AdminNav currentGameId={gameId} />
       <h1 className="text-2xl font-bold mb-6">Live Stats</h1>
-      <AdminGameSwitcher section="stats" currentGameId={gameId} />
 
       {isLoading || !stats ? (
         <PageLoader message="Loading stats..." />

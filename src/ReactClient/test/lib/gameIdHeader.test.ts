@@ -16,6 +16,15 @@ describe('gameIdFromPath', () => {
 		expect(gameIdFromPath('/games/')).toBeNull()
 		expect(gameIdFromPath('/profile')).toBeNull()
 		expect(gameIdFromPath('/admin/games')).toBeNull()
+		expect(gameIdFromPath('/admin/players')).toBeNull()
+		expect(gameIdFromPath('/admin/audit')).toBeNull()
+	})
+
+	it('extracts gameId from a per-game admin path', () => {
+		expect(gameIdFromPath('/admin/players/abc123')).toBe('abc123')
+		expect(gameIdFromPath('/admin/ticks/abc123')).toBe('abc123')
+		expect(gameIdFromPath('/admin/stats/abc123')).toBe('abc123')
+		expect(gameIdFromPath('/admin/metrics/abc123')).toBe('abc123')
 	})
 })
 
