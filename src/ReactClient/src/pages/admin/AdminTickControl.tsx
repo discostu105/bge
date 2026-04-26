@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useParams } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { AdminNav } from './AdminNav'
+import { AdminGameSwitcher, AdminGamePickerPage } from './AdminGamePicker'
 
 interface TickStatus {
   currentTick: number
@@ -14,6 +16,7 @@ interface TickStatus {
 }
 
 export function AdminTickControl() {
+  const { gameId } = useParams<{ gameId: string }>()
   const queryClient = useQueryClient()
   const [tickCount, setTickCount] = useState(1)
   const [tickDuration, setTickDuration] = useState('')
@@ -21,9 +24,10 @@ export function AdminTickControl() {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null)
 
   const { data: status, isLoading, error, refetch } = useQuery<TickStatus>({
-    queryKey: ['admin-tick-status'],
+    queryKey: ['admin-tick-status', gameId ?? null],
     queryFn: () => apiClient.get('/api/admin/tick-status').then((r) => r.data),
     refetchInterval: 5000,
+    enabled: !!gameId,
   })
 
   const pauseMutation = useMutation({
@@ -79,6 +83,7 @@ export function AdminTickControl() {
     if (axios.isAxiosError(error) && error.response?.status === 403) {
       return (
         <div className="p-6 max-w-2xl mx-auto">
+          <AdminNav currentGameId={gameId ?? null} />
           <h1 className="text-2xl font-bold mb-4">Game Tick Control</h1>
           <div className="rounded border border-warning/50 bg-warning/10 p-4 text-warning-foreground">
             You are not authorized to view the admin panel.
@@ -88,16 +93,28 @@ export function AdminTickControl() {
     }
     return (
       <div className="p-6 max-w-2xl mx-auto">
+        <AdminNav currentGameId={gameId ?? null} />
         <h1 className="text-2xl font-bold mb-4">Game Tick Control</h1>
         <ApiError message="Failed to load tick status." onRetry={() => void refetch()} />
       </div>
     )
   }
 
+  if (!gameId) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <AdminNav />
+        <h1 className="text-2xl font-bold mb-6">Game Tick Control</h1>
+        <AdminGamePickerPage section="ticks" title="Tick controls" />
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <AdminNav />
+      <AdminNav currentGameId={gameId} />
       <h1 className="text-2xl font-bold mb-6">Game Tick Control</h1>
+      <AdminGameSwitcher section="ticks" currentGameId={gameId} />
 
       {actionError && (
         <div className="rounded border border-destructive/50 bg-destructive/10 p-3 text-destructive text-sm mb-4">
