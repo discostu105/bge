@@ -360,3 +360,4 @@ src/BrowserGameEngine.FrontendServer/storage/
 .claude/settings.local.json
 .claude/projects/
 src/.claude/
+src/coverage/
