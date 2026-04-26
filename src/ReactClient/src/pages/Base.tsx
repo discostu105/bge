@@ -137,32 +137,50 @@ function AssetCard({
 				)}
 
 				{state === 'ready' && (
-					<div className="space-y-2">
-						<AffordabilityChip cost={asset.cost} affordable={asset.canAfford} block />
-						<div className="flex gap-1.5">
-							<Button
-								size="sm"
-								onClick={() => onBuild(asset.definition.id)}
-								disabled={disabled || !asset.canAfford}
-								className="flex-1"
-								title={asset.canAfford ? 'Build now' : 'Not enough resources — try Queue instead'}
-							>
-								<HammerIcon className="h-3.5 w-3.5" />
-								Build
-							</Button>
+					queueEntryId ? (
+						<div className="space-y-2">
+							<div className="text-xs text-muted-foreground">
+								Waiting in build queue · resources will be deducted when the build starts.
+							</div>
 							<Button
 								size="sm"
 								variant="outline"
-								onClick={() => onQueue(asset.definition.id)}
+								className="w-full"
+								onClick={() => onCancelQueue(queueEntryId)}
 								disabled={disabled}
-								className="flex-1"
-								title="Add to build queue; resources are reserved when the build starts"
 							>
-								<PlusCircleIcon className="h-3.5 w-3.5" />
-								Queue
+								<XIcon className="h-3.5 w-3.5" />
+								Remove from queue
 							</Button>
 						</div>
-					</div>
+					) : (
+						<div className="space-y-2">
+							<AffordabilityChip cost={asset.cost} affordable={asset.canAfford} block />
+							<div className="flex gap-1.5">
+								<Button
+									size="sm"
+									onClick={() => onBuild(asset.definition.id)}
+									disabled={disabled || !asset.canAfford}
+									className="flex-1"
+									title={asset.canAfford ? 'Build now' : 'Not enough resources — add to queue and it will start when you can afford it'}
+								>
+									<HammerIcon className="h-3.5 w-3.5" />
+									Build now
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => onQueue(asset.definition.id)}
+									disabled={disabled}
+									className="flex-1"
+									title="Add to build queue — starts after the items above it; resources are deducted when the build begins"
+								>
+									<PlusCircleIcon className="h-3.5 w-3.5" />
+									Add to queue
+								</Button>
+							</div>
+						</div>
+					)
 				)}
 
 				{state === 'locked' && asset.prerequisites && (
