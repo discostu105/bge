@@ -50,7 +50,10 @@ test.describe('Join game and navigate in-game pages', () => {
 	test('join a game and land on base page', async ({ page }) => {
 		// Pre-enroll the admin user in the active game so the Games page shows the
 		// "Enter →" action that navigates straight to the base page.
-		await page.request.post(`${baseURL}/api/games/${gameId}/players`, { data: {} })
+		const joinRes = await page.request.post(`${baseURL}/api/games/${gameId}/join`, {
+			data: { playerName: 'E2E Admin' },
+		})
+		expect(joinRes.ok()).toBeTruthy()
 
 		await page.goto('/games')
 		await expect(page.getByRole('heading', { name: 'Games', exact: true })).toBeVisible()
