@@ -243,7 +243,7 @@ export function AdminGames() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Starting Minerals</label>
-                <input type="number" min={0} placeholder="5000 (default)"
+                <input type="number" min={0} placeholder="1500 (default)"
                   className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
                   value={createStartingMinerals ?? ''}
                   onChange={(e) => setCreateStartingMinerals(e.target.value ? Number(e.target.value) : undefined)}
@@ -251,7 +251,7 @@ export function AdminGames() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Starting Gas</label>
-                <input type="number" min={0} placeholder="3000 (default)"
+                <input type="number" min={0} placeholder="300 (default)"
                   className="w-full rounded border border-input bg-background px-3 py-2 text-sm"
                   value={createStartingGas ?? ''}
                   onChange={(e) => setCreateStartingGas(e.target.value ? Number(e.target.value) : undefined)}
