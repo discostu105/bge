@@ -138,11 +138,13 @@ function GameLayoutInner() {
   const gameFinalizedHandlerRef = useRef<((...args: unknown[]) => void) | null>(null)
   const race = usePlayerRace()
 
+  const isFinished = currentGame?.status === 'Finished'
+
   const { data: tickInfo } = useQuery<TickInfoViewModel>({
     queryKey: ['tickinfo', gameId],
     queryFn: () => apiClient.get('/api/game/tick-info').then((r) => r.data),
     refetchInterval: 30_000,
-    enabled: !!gameId,
+    enabled: !!gameId && !isFinished,
   })
 
   const onRealTimeNotification = useCallback(
@@ -196,7 +198,7 @@ function GameLayoutInner() {
                 <MenuIcon className="h-5 w-5" />
               </Button>
               <UserMenu race={race} />
-              {tickInfo && <TimerRing to={tickInfo.nextTickAt} />}
+              {tickInfo && !isFinished && <TimerRing to={tickInfo.nextTickAt} />}
             </div>
             <div className="flex items-center gap-3 sm:gap-4 min-w-0">
               <div className="hidden md:block"><PlayerResources gameId={gameId} /></div>

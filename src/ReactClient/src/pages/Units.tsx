@@ -6,6 +6,7 @@ import { SwordsIcon, MergeIcon, SplitIcon, HammerIcon } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import apiClient from '@/api/client'
 import type { UnitsViewModel, UnitViewModel } from '@/api/types'
+import { useCurrentGame } from '@/contexts/CurrentGameContext'
 import { BuildQueue } from '@/components/BuildQueue'
 import { AttackDialog } from '@/components/AttackDialog'
 import { TrainUnitsDialog } from '@/components/TrainUnitsDialog'
@@ -25,6 +26,8 @@ interface UnitsProps {
 
 export function Units({ gameId }: UnitsProps) {
   const queryClient = useQueryClient()
+  const { currentGame } = useCurrentGame()
+  const isFinished = currentGame?.status === 'Finished'
   const [mergeError, setMergeError] = useState<string | null>(null)
   const [attackUnit, setAttackUnit] = useState<UnitViewModel | null>(null)
   const [splitUnit, setSplitUnit] = useState<UnitViewModel | null>(null)
@@ -146,6 +149,7 @@ export function Units({ gameId }: UnitsProps) {
               variant="destructive"
               size="sm"
               onClick={() => setAttackUnit(unit)}
+              disabled={isFinished}
               title="Attack an enemy with this stack"
             >
               <SwordsIcon className="h-3.5 w-3.5" />
@@ -157,6 +161,7 @@ export function Units({ gameId }: UnitsProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setSplitUnit(unit)}
+                disabled={isFinished}
                 title="Split this stack"
               >
                 <SplitIcon className="h-3.5 w-3.5" />
@@ -169,7 +174,7 @@ export function Units({ gameId }: UnitsProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => mergeTypeMutation.mutate(unit.definition.id)}
-                disabled={mergeTypeMutation.isPending}
+                disabled={isFinished || mergeTypeMutation.isPending}
                 title={`Merge all ${unit.definition.name} stacks into one`}
               >
                 <MergeIcon className="h-3.5 w-3.5" />
@@ -260,7 +265,7 @@ export function Units({ gameId }: UnitsProps) {
             <Button
               variant="outline"
               onClick={() => mergeAllMutation.mutate()}
-              disabled={mergeAllMutation.isPending || !canMergeAny}
+              disabled={isFinished || mergeAllMutation.isPending || !canMergeAny}
               title={canMergeAny
                 ? 'Combine all stacks of the same type into single stacks'
                 : 'Nothing to merge — each unit type only has one stack'}
@@ -270,6 +275,7 @@ export function Units({ gameId }: UnitsProps) {
             </Button>
             <Button
               onClick={() => setTrainOpen(true)}
+              disabled={isFinished}
               title="Open the training panel"
             >
               <HammerIcon className="h-4 w-4" />

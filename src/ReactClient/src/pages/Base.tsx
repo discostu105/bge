@@ -63,6 +63,7 @@ function AssetCard({
 	asset,
 	state,
 	queueEntryId,
+	disabled = false,
 	onBuild,
 	onQueue,
 	onTrainUnits,
@@ -71,6 +72,7 @@ function AssetCard({
 	asset: AssetViewModel
 	state: AssetState
 	queueEntryId?: string
+	disabled?: boolean
 	onBuild: (defId: string) => void
 	onQueue: (defId: string) => void
 	onTrainUnits: (asset: AssetViewModel) => void
@@ -104,6 +106,7 @@ function AssetCard({
 							size="sm"
 							className="w-full"
 							onClick={() => onTrainUnits(asset)}
+							disabled={disabled}
 						>
 							<SwordsIcon className="h-3.5 w-3.5" />
 							Train units
@@ -124,6 +127,7 @@ function AssetCard({
 								variant="outline"
 								className="w-full"
 								onClick={() => onCancelQueue(queueEntryId)}
+								disabled={disabled}
 							>
 								<XIcon className="h-3.5 w-3.5" />
 								Cancel
@@ -139,7 +143,7 @@ function AssetCard({
 							<Button
 								size="sm"
 								onClick={() => onBuild(asset.definition.id)}
-								disabled={!asset.canAfford}
+								disabled={disabled || !asset.canAfford}
 								className="flex-1"
 								title={asset.canAfford ? 'Build now' : 'Not enough resources — try Queue instead'}
 							>
@@ -150,6 +154,7 @@ function AssetCard({
 								size="sm"
 								variant="outline"
 								onClick={() => onQueue(asset.definition.id)}
+								disabled={disabled}
 								className="flex-1"
 								title="Add to build queue; resources are reserved when the build starts"
 							>
@@ -181,7 +186,7 @@ function EconomyStat({
 	label: string
 	value: ReactNode
 	detail?: ReactNode
-	action?: { label: string; onClick: () => void }
+	action?: { label: string; onClick: () => void; disabled?: boolean }
 }) {
 	return (
 		<Card className="py-3 gap-2">
@@ -195,7 +200,7 @@ function EconomyStat({
 					{detail && <div className="text-xs text-muted-foreground mt-0.5">{detail}</div>}
 				</div>
 				{action && (
-					<Button size="sm" variant="outline" onClick={action.onClick} className="shrink-0">
+					<Button size="sm" variant="outline" onClick={action.onClick} disabled={action.disabled} className="shrink-0">
 						{action.label}
 					</Button>
 				)}
@@ -379,7 +384,7 @@ export function Base({ gameId }: BaseProps) {
 								? `${formatNumber(idleWorkers)} idle — click Assign`
 								: 'All workers assigned'
 					}
-					action={{ label: 'Assign', onClick: () => setWorkersOpen(true) }}
+					action={{ label: 'Assign', onClick: () => setWorkersOpen(true), disabled: isFinished }}
 				/>
 				<EconomyStat
 					icon={<MountainIcon className="h-5 w-5" />}
@@ -390,7 +395,7 @@ export function Base({ gameId }: BaseProps) {
 							? `${formatNumber(resources.colonizationCostPerLand)} minerals per new tile`
 							: undefined
 					}
-					action={{ label: 'Colonize', onClick: () => setColonizeOpen(true) }}
+					action={{ label: 'Colonize', onClick: () => setColonizeOpen(true), disabled: isFinished }}
 				/>
 				<EconomyStat
 					icon={<HammerIcon className="h-5 w-5" />}
@@ -431,6 +436,7 @@ export function Base({ gameId }: BaseProps) {
 						<AssetGroup
 							title="Built"
 							assets={grouped.built}
+							disabled={isFinished}
 							onBuild={buildMutation.mutate}
 							onQueue={queueAssetMutation.mutate}
 							onTrainUnits={openTrain}
@@ -441,6 +447,7 @@ export function Base({ gameId }: BaseProps) {
 						<AssetGroup
 							title="Building"
 							assets={grouped.queued}
+							disabled={isFinished}
 							onBuild={buildMutation.mutate}
 							onQueue={queueAssetMutation.mutate}
 							onTrainUnits={openTrain}
@@ -451,6 +458,7 @@ export function Base({ gameId }: BaseProps) {
 						<AssetGroup
 							title="Ready to build"
 							assets={grouped.ready}
+							disabled={isFinished}
 							onBuild={buildMutation.mutate}
 							onQueue={queueAssetMutation.mutate}
 							onTrainUnits={openTrain}
@@ -461,6 +469,7 @@ export function Base({ gameId }: BaseProps) {
 						<AssetGroup
 							title="Locked"
 							assets={grouped.locked}
+							disabled={isFinished}
 							onBuild={buildMutation.mutate}
 							onQueue={queueAssetMutation.mutate}
 							onTrainUnits={openTrain}
@@ -557,6 +566,7 @@ export function Base({ gameId }: BaseProps) {
 function AssetGroup({
 	title,
 	assets,
+	disabled = false,
 	onBuild,
 	onQueue,
 	onTrainUnits,
@@ -567,6 +577,7 @@ function AssetGroup({
 }: {
 	title: string
 	assets: AssetViewModel[]
+	disabled?: boolean
 	onBuild: (defId: string) => void
 	onQueue: (defId: string) => void
 	onTrainUnits: (asset: AssetViewModel) => void
@@ -594,6 +605,7 @@ function AssetGroup({
 						asset={a}
 						state={assetState(a)}
 						queueEntryId={queueEntriesByDefId.get(a.definition.id)}
+						disabled={disabled}
 						onBuild={onBuild}
 						onQueue={onQueue}
 						onTrainUnits={onTrainUnits}
