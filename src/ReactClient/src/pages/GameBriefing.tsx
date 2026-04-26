@@ -186,8 +186,17 @@ export function GameBriefing() {
         <>
           <SectionHeader label="Rules" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-            <Stat label="Starting resources" value={`${lobby.settings.startingMinerals.toLocaleString()}m / ${lobby.settings.startingGas.toLocaleString()}g`} />
-            <Stat label="Starting land" value={lobby.settings.startingLand} />
+            <Stat
+              label="Starting resources"
+              value={
+                <>
+                  <span className="text-blue-400">{lobby.settings.startingMinerals.toLocaleString()}m</span>
+                  {' / '}
+                  <span className="text-green-400">{lobby.settings.startingGas.toLocaleString()}g</span>
+                </>
+              }
+            />
+            <Stat label="Starting land" value={<span className="text-[#b8804a]">{lobby.settings.startingLand}</span>} />
             <Stat label="End tick" value={lobby.settings.endTick.toLocaleString()} />
             <Stat label="Protection" value={`${lobby.settings.protectionTicks} ticks`} />
           </div>

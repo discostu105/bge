@@ -8,6 +8,7 @@ import type { InGamePlayerProfileViewModel } from '@/api/types'
 import { relativeTime } from '@/lib/utils'
 import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
+import { ResourceIcon } from '@/components/ui/resource-icon'
 
 interface InGamePlayerProfileProps {
   gameId: string
@@ -164,8 +165,10 @@ export function InGamePlayerProfile({ gameId }: InGamePlayerProfileProps) {
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded border bg-secondary/20 p-3">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Land</div>
-            <div className="text-2xl font-bold">{Math.floor(player.land).toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1 inline-flex items-center gap-1">
+              <ResourceIcon name="land" /> Land
+            </div>
+            <div className="text-2xl font-bold text-[#b8804a]">{Math.floor(player.land).toLocaleString()}</div>
           </div>
           <div className="rounded border bg-secondary/20 p-3">
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Rank</div>

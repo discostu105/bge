@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/api/client'
 import type { ResourceHistoryViewModel } from '@/api/types'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { resourceHex } from '@/lib/resource-colors'
 
 interface ResourceHistoryChartProps {
   gameId: string
@@ -47,9 +48,9 @@ export function ResourceHistoryChart({ gameId }: ResourceHistoryChartProps) {
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="minerals" stroke="#3b82f6" name="Minerals" dot={false} />
-          <Line type="monotone" dataKey="gas" stroke="#22c55e" name="Gas" dot={false} />
-          <Line type="monotone" dataKey="land" stroke="#f59e0b" name="Land" dot={false} />
+          <Line type="monotone" dataKey="minerals" stroke={resourceHex('minerals')} name="Minerals" dot={false} />
+          <Line type="monotone" dataKey="gas" stroke={resourceHex('gas')} name="Gas" dot={false} />
+          <Line type="monotone" dataKey="land" stroke={resourceHex('land')} name="Land" dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

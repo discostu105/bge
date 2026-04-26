@@ -8,6 +8,7 @@ import { ApiError } from '@/components/ApiError'
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton'
 import { relativeTime } from '@/lib/utils'
 import { useConfirm } from '@/contexts/ConfirmContext'
+import { ResourceIcon } from '@/components/ui/resource-icon'
 
 function ApiKeySection() {
   const queryClient = useQueryClient()
@@ -235,16 +236,22 @@ export function PlayerProfile() {
 
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded border bg-secondary/20 p-3">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Land</div>
-                <div className="text-lg font-semibold">{Math.floor(profile.land).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1 inline-flex items-center gap-1">
+                  <ResourceIcon name="land" /> Land
+                </div>
+                <div className="text-lg font-semibold text-[#b8804a]">{Math.floor(profile.land).toLocaleString()}</div>
               </div>
               <div className="rounded border bg-secondary/20 p-3">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Minerals</div>
-                <div className="text-lg font-semibold">{Math.floor(profile.minerals).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1 inline-flex items-center gap-1">
+                  <ResourceIcon name="minerals" /> Minerals
+                </div>
+                <div className="text-lg font-semibold text-blue-400">{Math.floor(profile.minerals).toLocaleString()}</div>
               </div>
               <div className="rounded border bg-secondary/20 p-3">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Gas</div>
-                <div className="text-lg font-semibold">{Math.floor(profile.gas).toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1 inline-flex items-center gap-1">
+                  <ResourceIcon name="gas" /> Gas
+                </div>
+                <div className="text-lg font-semibold text-green-400">{Math.floor(profile.gas).toLocaleString()}</div>
               </div>
             </div>
 

@@ -199,22 +199,26 @@ function EconomyStat({
 	value,
 	detail,
 	action,
+	iconClassName,
+	valueClassName,
 }: {
 	icon: ReactNode
 	label: string
 	value: ReactNode
 	detail?: ReactNode
 	action?: { label: string; onClick: () => void; disabled?: boolean }
+	iconClassName?: string
+	valueClassName?: string
 }) {
 	return (
 		<Card className="py-3 gap-2">
 			<CardContent className="px-4 flex items-center gap-3">
-				<div className="shrink-0 rounded-md bg-primary/10 p-2 text-primary">
+				<div className={`shrink-0 rounded-md p-2 ${iconClassName ?? 'bg-primary/10 text-primary'}`}>
 					{icon}
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="label">{label}</div>
-					<div className="mono text-xl font-semibold leading-tight truncate">{value}</div>
+					<div className={`mono text-xl font-semibold leading-tight truncate ${valueClassName ?? ''}`}>{value}</div>
 					{detail && <div className="text-xs text-muted-foreground mt-0.5">{detail}</div>}
 				</div>
 				{action && (
@@ -398,7 +402,11 @@ export function Base({ gameId }: BaseProps) {
 					detail={
 						totalWorkers === 0
 							? 'Train WBFs / drones / probes to gather resources.'
-							: `Auto-assigned · ${100 - gasPercent}% minerals / ${gasPercent}% gas`
+							: (
+								<>
+									Auto-assigned · <span className="text-blue-400">{100 - gasPercent}% minerals</span> / <span className="text-green-400">{gasPercent}% gas</span>
+								</>
+							)
 					}
 					action={{ label: 'Adjust', onClick: () => setWorkersOpen(true), disabled: isFinished }}
 				/>
@@ -406,9 +414,15 @@ export function Base({ gameId }: BaseProps) {
 					icon={<MountainIcon className="h-5 w-5" />}
 					label="Land"
 					value={formatNumber(land)}
+					iconClassName="bg-[#b8804a]/15 text-[#b8804a]"
+					valueClassName="text-[#b8804a]"
 					detail={
 						resources
-							? `${formatNumber(resources.colonizationCostPerLand)} minerals per new tile`
+							? (
+								<>
+									<span className="text-blue-400">{formatNumber(resources.colonizationCostPerLand)} minerals</span> per new tile
+								</>
+							)
 							: undefined
 					}
 					action={{ label: 'Colonize', onClick: () => setColonizeOpen(true), disabled: isFinished }}
