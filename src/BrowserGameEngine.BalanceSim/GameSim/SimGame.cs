@@ -123,16 +123,6 @@ public class SimGame {
 	public PlayerId AddPlayer(string name, string race) {
 		var id = PlayerIdFactory.Create($"sim_{playerOrder.Count}_{name}");
 		PlayerRepositoryWrite.CreatePlayer(id, userId: null, playerType: race, protectionTicks: Settings.ProtectionTicks);
-		// CreatePlayer always grants "commandcenter" (a Terran building). For Zerg/Protoss,
-		// also grant their race-appropriate HQ so a bot can actually start producing workers.
-		var starterHq = race switch {
-			"zerg" => "hive",
-			"protoss" => "nexus",
-			_ => null
-		};
-		if (starterHq != null) {
-			AssetRepositoryWrite.GrantBuilding(id, Id.AssetDef(starterHq));
-		}
 		playerOrder.Add(id);
 		return id;
 	}
