@@ -352,7 +352,7 @@ export function Base({ gameId }: BaseProps) {
 	}
 
 	const queueCount = queueData?.entries.length ?? 0
-	const idleWorkers = workers?.idleWorkers ?? 0
+	const gasPercent = workers?.gasPercent ?? 0
 	const totalWorkers = workers?.totalWorkers ?? 0
 	// Land can be either the primary or secondary resource depending on the game definition;
 	// merge both to be robust across rulesets.
@@ -398,11 +398,9 @@ export function Base({ gameId }: BaseProps) {
 					detail={
 						totalWorkers === 0
 							? 'Train WBFs / drones / probes to gather resources.'
-							: idleWorkers > 0
-								? `${formatNumber(idleWorkers)} idle — click Assign`
-								: 'All workers assigned'
+							: `Auto-assigned · ${100 - gasPercent}% minerals / ${gasPercent}% gas`
 					}
-					action={{ label: 'Assign', onClick: () => setWorkersOpen(true), disabled: isFinished }}
+					action={{ label: 'Adjust', onClick: () => setWorkersOpen(true), disabled: isFinished }}
 				/>
 				<EconomyStat
 					icon={<MountainIcon className="h-5 w-5" />}

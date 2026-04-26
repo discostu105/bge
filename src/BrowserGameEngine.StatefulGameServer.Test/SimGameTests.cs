@@ -155,11 +155,10 @@ public class SimGameTests {
 	public void Worker_income_is_generated_for_every_race(string race, string workerUnitId) {
 		var sim = new SimGame(settings: new GameSettings(EndTick: 100, ProtectionTicks: 0));
 		var pid = sim.AddPlayer("p", race);
-		// Grant 10 workers and assign 5 mineral / 5 gas so income should be well above base.
+		// Grant 10 workers and configure 50/50 mineral/gas split so income should be well above base.
 		sim.UnitRepositoryWrite.GrantUnits(pid, Id.UnitDef(workerUnitId), 10);
-		sim.PlayerRepositoryWrite.AssignWorkers(
-			new BrowserGameEngine.StatefulGameServer.Commands.AssignWorkersCommand(pid, MineralWorkers: 5, GasWorkers: 5),
-			totalWorkers: 10);
+		sim.PlayerRepositoryWrite.SetWorkerGasPercent(
+			new BrowserGameEngine.StatefulGameServer.Commands.SetWorkerGasPercentCommand(pid, GasPercent: 50));
 
 		var startMin = sim.ResourceRepository.GetAmount(pid, Id.ResDef("minerals"));
 		var startGas = sim.ResourceRepository.GetAmount(pid, Id.ResDef("gas"));

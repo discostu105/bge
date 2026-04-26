@@ -38,7 +38,7 @@ namespace BrowserGameEngine.StatefulGameServer.Commands {
 	public record MergeAllUnitsCommand(PlayerId PlayerId) : ICommand;
 	public record ChangePlayerNameCommand(PlayerId PlayerId, string NewName) : ICommand;
 	public record HarvestResourceCommand(PlayerId PlayerId, string ResourceId, int Count) : ICommand;
-	public record AssignWorkersCommand(PlayerId PlayerId, int MineralWorkers, int GasWorkers) : ICommand;
+	public record SetWorkerGasPercentCommand(PlayerId PlayerId, int GasPercent) : ICommand;
 	public record ColonizeCommand(PlayerId PlayerId, int Amount) : ICommand;
 	public record ResearchUpgradeCommand(PlayerId PlayerId, UpgradeType UpgradeType) : ICommand;
 	public record SendMessageCommand(PlayerId SenderId, PlayerId RecipientId, string Subject, string Body) : ICommand;

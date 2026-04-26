@@ -56,15 +56,18 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 		[Fact]
 		public void EmergencyRespawn_GrantsWorkers_WhenNoWorkersAndLowResources() {
-			// 0 workers, minerals=10 (<50), gas absent (=0 <50) → should grant 1 mineral + 1 gas worker
+			// 0 workers, minerals=10 (<50), gas absent (=0 <50) → should grant 2 worker units.
+			// Auto-assignment then splits them by the player's gas percent (default 30%):
+			// round(2 * 0.30) = 1 gas, 1 mineral.
 			var g = new TestGame(CreateState(unit1Count: 0, minerals: 10m));
 
 			g.TickEngine.IncrementWorldTick(1);
 			g.TickEngine.CheckAllTicks();
 
 			Assert.Equal(2, g.UnitRepository.CountByUnitDefId(Player1, Id.UnitDef("unit1")));
-			Assert.Equal(1, g.PlayerRepository.GetMineralWorkers(Player1));
-			Assert.Equal(1, g.PlayerRepository.GetGasWorkers(Player1));
+			var (minerals, gas) = g.PlayerRepository.GetWorkerAssignment(Player1, 2);
+			Assert.Equal(1, minerals);
+			Assert.Equal(1, gas);
 		}
 
 		[Fact]
@@ -87,8 +90,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			g.TickEngine.CheckAllTicks();
 
 			Assert.Equal(0, g.UnitRepository.CountByUnitDefId(Player1, Id.UnitDef("unit1")));
-			Assert.Equal(0, g.PlayerRepository.GetMineralWorkers(Player1));
-			Assert.Equal(0, g.PlayerRepository.GetGasWorkers(Player1));
 		}
 
 		[Fact]
@@ -100,8 +101,6 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 			g.TickEngine.CheckAllTicks();
 
 			Assert.Equal(0, g.UnitRepository.CountByUnitDefId(Player1, Id.UnitDef("unit1")));
-			Assert.Equal(0, g.PlayerRepository.GetMineralWorkers(Player1));
-			Assert.Equal(0, g.PlayerRepository.GetGasWorkers(Player1));
 		}
 
 		[Fact]

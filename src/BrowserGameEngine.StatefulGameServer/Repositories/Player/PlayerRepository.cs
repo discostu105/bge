@@ -71,7 +71,19 @@ namespace BrowserGameEngine.StatefulGameServer {
 			return world.PlayerExists(playerId);
 		}
 
-		public int GetMineralWorkers(PlayerId playerId) => world.GetPlayer(playerId).State.MineralWorkers;
-		public int GetGasWorkers(PlayerId playerId) => world.GetPlayer(playerId).State.GasWorkers;
+		public int GetGasPercent(PlayerId playerId) => world.GetPlayer(playerId).State.GasPercent;
+
+		/// <summary>
+		/// Splits <paramref name="totalWorkers"/> across minerals and gas using the player's
+		/// configured gas percentage. The split is computed on the fly — we no longer track
+		/// absolute mineral/gas worker counts.
+		/// </summary>
+		public (int MineralWorkers, int GasWorkers) GetWorkerAssignment(PlayerId playerId, int totalWorkers) {
+			int gasPercent = Math.Clamp(GetGasPercent(playerId), 0, 100);
+			int gas = (int)Math.Round(totalWorkers * gasPercent / 100.0, MidpointRounding.AwayFromZero);
+			gas = Math.Clamp(gas, 0, totalWorkers);
+			int minerals = totalWorkers - gas;
+			return (minerals, gas);
+		}
 	}
 }
