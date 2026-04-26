@@ -1,9 +1,11 @@
+import { useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { AdminNav } from './AdminNav'
+import { AdminGameSwitcher, AdminGamePickerPage } from './AdminGamePicker'
 
 interface LiveStats {
   totalPlayers: number
@@ -17,16 +19,19 @@ interface LiveStats {
 }
 
 export function AdminStats() {
+  const { gameId } = useParams<{ gameId: string }>()
   const { data: stats, isLoading, error, refetch } = useQuery<LiveStats>({
-    queryKey: ['admin-live-stats'],
+    queryKey: ['admin-live-stats', gameId ?? null],
     queryFn: () => apiClient.get('/api/admin/live-stats').then((r) => r.data),
     refetchInterval: 10000,
+    enabled: !!gameId,
   })
 
   if (error) {
     if (axios.isAxiosError(error) && error.response?.status === 403) {
       return (
         <div className="p-6 max-w-2xl mx-auto">
+          <AdminNav currentGameId={gameId ?? null} />
           <h1 className="text-2xl font-bold mb-4">Live Stats</h1>
           <div className="rounded border border-warning/50 bg-warning/10 p-4 text-warning-foreground">
             You are not authorized to view the admin panel.
@@ -36,16 +41,28 @@ export function AdminStats() {
     }
     return (
       <div className="p-6 max-w-2xl mx-auto">
+        <AdminNav currentGameId={gameId ?? null} />
         <h1 className="text-2xl font-bold mb-4">Live Stats</h1>
         <ApiError message="Failed to load live stats." onRetry={() => void refetch()} />
       </div>
     )
   }
 
+  if (!gameId) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <AdminNav />
+        <h1 className="text-2xl font-bold mb-6">Live Stats</h1>
+        <AdminGamePickerPage section="stats" title="Live stats" />
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <AdminNav />
+      <AdminNav currentGameId={gameId} />
       <h1 className="text-2xl font-bold mb-6">Live Stats</h1>
+      <AdminGameSwitcher section="stats" currentGameId={gameId} />
 
       {isLoading || !stats ? (
         <PageLoader message="Loading stats..." />

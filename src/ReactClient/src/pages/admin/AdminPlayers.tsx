@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useParams } from 'react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import apiClient from '@/api/client'
 import { PageLoader } from '@/components/PageLoader'
 import { ApiError } from '@/components/ApiError'
 import { AdminNav } from './AdminNav'
+import { AdminGameSwitcher, AdminGamePickerPage } from './AdminGamePicker'
 
 interface AdminPlayerEntry {
   playerId: string
@@ -27,20 +29,22 @@ interface AdminPlayerDetail extends AdminPlayerEntry {
 }
 
 export function AdminPlayers() {
+  const { gameId } = useParams<{ gameId: string }>()
   const queryClient = useQueryClient()
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   const { data: players, isLoading, error, refetch } = useQuery<AdminPlayerEntry[]>({
-    queryKey: ['admin-players'],
+    queryKey: ['admin-players', gameId ?? null],
     queryFn: () => apiClient.get('/api/admin/players-detail').then((r) => r.data),
+    enabled: !!gameId,
   })
 
   const { data: detail } = useQuery<AdminPlayerDetail>({
-    queryKey: ['admin-player-detail', selectedPlayer],
+    queryKey: ['admin-player-detail', gameId ?? null, selectedPlayer],
     queryFn: () => apiClient.get(`/api/admin/players/${selectedPlayer}`).then((r) => r.data),
-    enabled: !!selectedPlayer,
+    enabled: !!gameId && !!selectedPlayer,
   })
 
   const banMutation = useMutation({
@@ -83,6 +87,7 @@ export function AdminPlayers() {
     if (axios.isAxiosError(error) && error.response?.status === 403) {
       return (
         <div className="p-6 max-w-2xl mx-auto">
+          <AdminNav currentGameId={gameId ?? null} />
           <h1 className="text-2xl font-bold mb-4">Player Moderation</h1>
           <div className="rounded border border-warning/50 bg-warning/10 p-4 text-warning-foreground">
             You are not authorized to view the admin panel.
@@ -92,16 +97,28 @@ export function AdminPlayers() {
     }
     return (
       <div className="p-6 max-w-2xl mx-auto">
+        <AdminNav currentGameId={gameId ?? null} />
         <h1 className="text-2xl font-bold mb-4">Player Moderation</h1>
         <ApiError message="Failed to load players." onRetry={() => void refetch()} />
       </div>
     )
   }
 
+  if (!gameId) {
+    return (
+      <div className="p-6 max-w-6xl mx-auto">
+        <AdminNav />
+        <h1 className="text-2xl font-bold mb-6">Player Moderation</h1>
+        <AdminGamePickerPage section="players" title="Players" />
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <AdminNav />
+      <AdminNav currentGameId={gameId} />
       <h1 className="text-2xl font-bold mb-6">Player Moderation</h1>
+      <AdminGameSwitcher section="players" currentGameId={gameId} />
 
       <div className="mb-4">
         <input

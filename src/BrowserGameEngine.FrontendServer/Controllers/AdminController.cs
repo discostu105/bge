@@ -32,7 +32,8 @@ public class AdminController : ControllerBase
 	private readonly UnitRepositoryWrite unitRepositoryWrite;
 	private readonly ActionQueueRepository actionQueueRepository;
 	private readonly GameTickEngine gameTickEngine;
-	private readonly WorldState worldState;
+	private readonly IWorldStateAccessor worldStateAccessor;
+	private WorldState worldState => worldStateAccessor.WorldState;
 	private readonly GameStateJsonSerializer serializer;
 	private readonly IBlobStorage storage;
 	private readonly IActionLogger actionLogger;
@@ -53,7 +54,7 @@ public class AdminController : ControllerBase
 		UnitRepositoryWrite unitRepositoryWrite,
 		ActionQueueRepository actionQueueRepository,
 		GameTickEngine gameTickEngine,
-		WorldState worldState,
+		IWorldStateAccessor worldStateAccessor,
 		GameStateJsonSerializer serializer,
 		IBlobStorage storage,
 		IActionLogger actionLogger,
@@ -74,7 +75,7 @@ public class AdminController : ControllerBase
 		this.unitRepositoryWrite = unitRepositoryWrite;
 		this.actionQueueRepository = actionQueueRepository;
 		this.gameTickEngine = gameTickEngine;
-		this.worldState = worldState;
+		this.worldStateAccessor = worldStateAccessor;
 		this.serializer = serializer;
 		this.storage = storage;
 		this.actionLogger = actionLogger;
