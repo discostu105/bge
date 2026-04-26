@@ -241,7 +241,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status409Conflict)]
 		public ActionResult Join(string gameId, [FromBody] JoinGameRequest request) {
-			if (!currentUserContext.IsValid) return Unauthorized();
+			// Use UserId (not IsValid) — a user joining a game they're not yet a
+			// player of has UserId set but IsValid=false in the per-game-scoped
+			// world state. TryCreatePlayer below enforces "one player per user".
+			if (currentUserContext.UserId == null) return Unauthorized();
 			if (string.IsNullOrWhiteSpace(request.PlayerName)) return BadRequest("Player name is required");
 			if (request.PlayerName.Length > 50) return BadRequest("Player name must be 50 characters or fewer.");
 
