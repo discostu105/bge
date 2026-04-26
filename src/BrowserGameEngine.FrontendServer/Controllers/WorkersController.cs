@@ -43,8 +43,10 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		public ActionResult<WorkerAssignmentViewModel> Get() {
 			if (!currentUserContext.IsValid) return Unauthorized();
 			var playerId = currentUserContext.PlayerId!;
-			var workerUnit = Id.UnitDef("wbf");
-			int totalWorkers = unitRepository.CountByUnitDefId(playerId, workerUnit);
+			// Sum across every configured worker unit so Zerg (drone) and Protoss (probe)
+			// players see their workers, not just Terran (wbf).
+			int totalWorkers = 0;
+			foreach (var w in gameDef.GetWorkerUnitIds()) totalWorkers += unitRepository.CountByUnitDefId(playerId, w);
 			int gasPercent = playerRepository.GetGasPercent(playerId);
 			var (mineralWorkers, gasWorkers) = playerRepository.GetWorkerAssignment(playerId, totalWorkers);
 			return new WorkerAssignmentViewModel {

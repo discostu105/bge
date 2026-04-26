@@ -35,6 +35,19 @@ namespace BrowserGameEngine.GameDefinition {
 			return gameDef.Units.Where(x => x.PlayerTypeRestriction.Equals(playerTypeId));
 		}
 
+		// Worker unit ids, sourced from the resource-growth-sco:1 module's "worker-units" property.
+		// Returns empty if the module or property isn't configured. The order matches the configured
+		// list (first entry is the canonical "primary" worker used by emergency respawn).
+		public static IEnumerable<UnitDefId> GetWorkerUnitIds(this GameDef gameDef) {
+			var module = gameDef.GameTickModules.FirstOrDefault(m => m.Name == "resource-growth-sco:1");
+			if (module == null) return Enumerable.Empty<UnitDefId>();
+			if (!module.Properties.TryGetValue("worker-units", out var raw)) return Enumerable.Empty<UnitDefId>();
+			return raw
+				.Split(',', StringSplitOptions.RemoveEmptyEntries)
+				.Select(x => new UnitDefId(x.Trim()))
+				.ToList();
+		}
+
 		public static IEnumerable<string> GetAssetNames(this GameDef gameDef, IList<AssetDefId> assetDefIds) {
 			return assetDefIds.Select(x => gameDef.GetAssetDef(x)).Where(x => x != null).Select(x => x!.Name);
 		}
