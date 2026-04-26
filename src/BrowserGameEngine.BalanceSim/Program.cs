@@ -156,7 +156,7 @@ static void PrintUsage() {
 static Dictionary<string, string> ParseOptions(string[] args) {
 	var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 	// Flags don't take a value — they're set to "true" if present.
-	var flagKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "csv", "quiet", "breakdown" };
+	var flagKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "csv", "quiet", "breakdown", "heuristic-only" };
 	for (int i = 0; i < args.Length; i++) {
 		if (args[i].StartsWith("--")) {
 			var key = args[i][2..];

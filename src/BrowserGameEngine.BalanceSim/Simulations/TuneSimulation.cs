@@ -47,6 +47,11 @@ public static class TuneSimulation {
 		// In a 2-player round-robin tournament, the fair win rate for each race is 1/playerCount = 1/2.
 		// Override --target to target a different rate (e.g. 0.333 for 3-player FFA semantics).
 		double target = (double)options.GetDecimal("target", 0.5m);
+		// Heuristic mode: skip per-candidate evaluation (which is the dominant cost) and just
+		// commit the heuristic-best candidate each iteration. The next iteration's measurement
+		// validates whether it improved things; if not, the search backtracks via picking a
+		// different race/unit on the next round. Trades search quality for ~10x speedup.
+		bool heuristicOnly = options.GetBool("heuristic-only");
 		double lambda = (double)options.GetDecimal("lambda", (decimal)DefaultLambda);
 		int stepPercent = options.GetInt("step-percent", 10);
 		var logPath = options.GetString("log", "tuning-log.md");
@@ -105,21 +110,45 @@ public static class TuneSimulation {
 				break;
 			}
 
-			(Candidate cand, IReadOnlyDictionary<string, double> rates, double fit) bestPick = (candidates[0], bestRates, double.PositiveInfinity);
-			foreach (var c in candidates) {
-				var trial = deltaState.Clone();
-				trial.Apply(c);
-				var (rates, fit) = MeasureFitness(trial, settings, strategies, gamesPerCandidate, baseSeed + iter * 13, lambda, target);
-				if (fit < bestPick.fit) bestPick = (c, rates, fit);
+			Candidate? pickedCandidate = null;
+			if (heuristicOnly) {
+				// In heuristic mode: pick the top heuristic candidate but only commit if it
+				// actually improves fitness. Otherwise try the next-best, and so on. This stops
+				// the tuner from accumulating noise-driven changes.
+				var ordered = HeuristicOrder(deltaState, candidates, underpowered);
+				bool committed = false;
+				foreach (var c in ordered.Take(5)) {
+					var trial = deltaState.Clone();
+					trial.Apply(c);
+					var (_, trialFit) = MeasureFitness(trial, settings, strategies, gamesPerScore, baseSeed + iter * 13, lambda, target);
+					if (trialFit < bestFit - 0.0005) {
+						deltaState.Apply(c);
+						pickedCandidate = c;
+						committed = true;
+						break;
+					}
+				}
+				if (!committed) {
+					log.AppendLine($"_Iter {iter}: no improving heuristic candidate; skipping._");
+					Console.WriteLine($"[iter {iter}] no improving candidate (top 5 tried, target={targetRace})");
+					continue;
+				}
+				pickedCandidate ??= ordered.First();
+			} else {
+				(Candidate cand, double fit) bestPick = (candidates[0], double.PositiveInfinity);
+				foreach (var c in candidates) {
+					var trial = deltaState.Clone();
+					trial.Apply(c);
+					var (_, fit) = MeasureFitness(trial, settings, strategies, gamesPerCandidate, baseSeed + iter * 13, lambda, target);
+					if (fit < bestPick.fit) bestPick = (c, fit);
+				}
+				pickedCandidate = bestPick.cand;
+				deltaState.Apply(pickedCandidate);
 			}
-
-			// Always commit the best candidate even if it doesn't strictly improve fitness — this
-			// keeps the search moving and avoids getting stuck on noisy local minima. The full
-			// re-measurement after commit gives a more reliable fitness number.
-			deltaState.Apply(bestPick.cand);
+			var bestPickCand = pickedCandidate!;
 			var (postRates, postFit) = MeasureFitness(deltaState, settings, strategies, gamesPerScore, baseSeed + iter * 7, lambda, target);
-			LogIteration(log, iter, postRates, postFit, bestPick.cand.Describe(), deltaState);
-			Console.WriteLine($"[iter {iter}] applied {bestPick.cand.Describe()} → {FormatRates(postRates)} fitness={postFit:F4}");
+			LogIteration(log, iter, postRates, postFit, bestPickCand.Describe(), deltaState);
+			Console.WriteLine($"[iter {iter}] applied {bestPickCand.Describe()} → {FormatRates(postRates)} fitness={postFit:F4}");
 
 			bestRates = postRates;
 			bestFit = postFit;
@@ -168,6 +197,69 @@ public static class TuneSimulation {
 
 	private static bool HasConverged(IReadOnlyDictionary<string, double> rates, double eps, double target) {
 		return rates.Values.All(v => Math.Abs(v - target) <= eps);
+	}
+
+	// -- heuristic --------------------------------------------------------
+
+	/// <summary>
+	/// Score-based pick: prefer (a) HP changes on the highest-HP-cost-efficiency unit (for
+	/// overpowered race) or lowest-efficiency unit (for underpowered), (b) attack changes on
+	/// the highest/lowest attack-per-cost unit, (c) cost changes last. Falls back to first.
+	/// </summary>
+	private static IReadOnlyList<Candidate> HeuristicOrder(TuningState state, IReadOnlyList<Candidate> candidates, bool underpowered) {
+		double Score(Candidate c) {
+			var u = state.GameDef.Units.First(x => x.Id.Id == c.UnitId);
+			var minerals = (double)u.Cost.Resources.FirstOrDefault(r => r.Key.Id == "minerals").Value;
+			var gas = (double)u.Cost.Resources.FirstOrDefault(r => r.Key.Id == "gas").Value;
+			double cost = minerals + gas * 1.5;
+			if (cost <= 0) cost = 1;
+			double hpEff = u.Hitpoints / cost;
+			double atkEff = u.Attack / cost;
+			double primary = c.Stat switch {
+				"hitpoints" or "hp" => hpEff,
+				"attack" => atkEff,
+				_ => hpEff
+			};
+			return underpowered ? -primary : primary;
+		}
+		double TypeBonus(Candidate c) => c.Stat switch {
+			"hitpoints" or "hp" => 0.3,
+			"attack" => 0.2,
+			_ => 0.0
+		};
+		return candidates
+			.OrderByDescending(c => Score(c) + TypeBonus(c))
+			.ToList();
+	}
+
+	private static Candidate HeuristicPick(TuningState state, IReadOnlyList<Candidate> candidates, bool underpowered) {
+		// Compute per-unit HP-per-cost-mineral.
+		double Score(Candidate c) {
+			var u = state.GameDef.Units.First(x => x.Id.Id == c.UnitId);
+			var minerals = u.Cost.Resources.FirstOrDefault(r => r.Key.Id == "minerals").Value;
+			double cost = (double)minerals + (double)u.Cost.Resources.FirstOrDefault(r => r.Key.Id == "gas").Value * 1.5;
+			if (cost <= 0) cost = 1;
+			double hpEff = u.Hitpoints / cost;
+			double atkEff = u.Attack / cost;
+			double primary = c.Stat switch {
+				"hitpoints" or "hp" => hpEff,
+				"attack" => atkEff,
+				_ => hpEff
+			};
+			// Underpowered: boost weakest unit (smallest efficiency wins).
+			// Overpowered: nerf strongest unit (largest efficiency wins).
+			return underpowered ? -primary : primary;
+		}
+
+		double TypeBonus(Candidate c) => c.Stat switch {
+			"hitpoints" or "hp" => 0.3,
+			"attack" => 0.2,
+			_ => 0.0
+		};
+
+		return candidates
+			.OrderByDescending(c => Score(c) + TypeBonus(c))
+			.First();
 	}
 
 	// -- candidates -------------------------------------------------------
