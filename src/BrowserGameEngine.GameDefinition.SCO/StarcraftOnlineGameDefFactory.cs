@@ -12,14 +12,14 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 			var gameDefinition = new GameDef() {
 
 				PlayerTypes = new List<PlayerTypeDef> {
-					new PlayerTypeDef(Id.PlayerType("terran"), "Terraner"),
+					new PlayerTypeDef(Id.PlayerType("terran"), "Terran"),
 					new PlayerTypeDef(Id.PlayerType("protoss"), "Protoss"),
 					new PlayerTypeDef(Id.PlayerType("zerg"), "Zerg")
 				},
 
 				Resources = new List<ResourceDef> {
 					new ResourceDef(Id.ResDef("land"), "Land") { IsTradeable = false },
-					new ResourceDef(Id.ResDef("minerals"), "Mineralien"),
+					new ResourceDef(Id.ResDef("minerals"), "Minerals"),
 					new ResourceDef(Id.ResDef("gas"), "Gas")
 				},
 
@@ -48,7 +48,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					// Terran buildings
 					new AssetDef {
 						Id = Id.AssetDef("commandcenter"),
-						Name = "Kommandozentrale",
+						Name = "Command Center",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 400)),
 						Attack = 0,
@@ -59,7 +59,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new AssetDef {
 						Id = Id.AssetDef("barracks"),
-						Name = "Kaserne",
+						Name = "Barracks",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 150)),
 						Attack = 0,
@@ -70,7 +70,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new AssetDef {
 						Id = Id.AssetDef("factory"),
-						Name = "Fabrik",
+						Name = "Factory",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 200), ("gas", 100)),
 						Attack = 0,
@@ -81,7 +81,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new AssetDef {
 						Id = Id.AssetDef("armory"),
-						Name = "Waffenfabrik",
+						Name = "Armory",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 100), ("gas", 50)),
 						Attack = 0,
@@ -92,7 +92,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new AssetDef {
 						Id = Id.AssetDef("spaceport"),
-						Name = "Raumhafen",
+						Name = "Starport",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 150), ("gas", 100)),
 						Attack = 0,
@@ -103,7 +103,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new AssetDef {
 						Id = Id.AssetDef("academy"),
-						Name = "Akademie",
+						Name = "Academy",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 150),("gas", 0)),
 						Attack = 0,
@@ -114,7 +114,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new AssetDef {
 						Id = Id.AssetDef("sciencefacility"),
-						Name = "Wissenschaftliches Institut",
+						Name = "Science Facility",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 100),("gas", 150)),
 						Attack = 0,
@@ -353,7 +353,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					// Terran units
 					new UnitDef {
 						Id = Id.UnitDef("wbf"),
-						Name = "WBF",
+						Name = "SCV",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(( "minerals", 50 )),
 						Attack = 0,
@@ -379,7 +379,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("firebat"),
-						Name = "Feuerfresser",
+						Name = "Firebat",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 50), ("gas", 25)),
 						Attack = 9,
@@ -392,7 +392,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("siegetank"),
-						Name = "Belagerungspanzer",
+						Name = "Siege Tank",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 125), ("gas", 100)),
 						Attack = 10,
@@ -416,7 +416,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					//},
 					new UnitDef {
 						Id = Id.UnitDef("vulture"),
-						Name = "Adler",
+						Name = "Vulture",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(( "minerals", 75 )),
 						Attack = 8,
@@ -440,7 +440,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					//},
 					new UnitDef {
 						Id = Id.UnitDef("wraith"),
-						Name = "Raumjäger",
+						Name = "Wraith",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 200), ("gas", 100 )),
 						Attack = 36,
@@ -453,7 +453,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("battlecruiser"),
-						Name = "Schwerer Kreuzer",
+						Name = "Battlecruiser",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 300 ), ("gas", 300)),
 						Attack = 70,
@@ -466,7 +466,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("missileturret"),
-						Name = "Raketenturm",
+						Name = "Missile Turret",
 						PlayerTypeRestriction = Id.PlayerType("terran"),
 						Cost = CostHelper.Create(("minerals", 100)),
 						Attack = 0,
@@ -480,7 +480,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					// Zerg units
 					new UnitDef {
 						Id = Id.UnitDef("drone"),
-						Name = "Drohne",
+						Name = "Drone",
 						PlayerTypeRestriction = Id.PlayerType("zerg"),
 						Cost = CostHelper.Create(("minerals", 50)),
 						Attack = 0,
@@ -653,7 +653,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					// Protoss units (all Protoss units have shields as a race differentiator)
 					new UnitDef {
 						Id = Id.UnitDef("probe"),
-						Name = "Sonde",
+						Name = "Probe",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 50)),
 						Attack = 0,
@@ -667,7 +667,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("zealot"),
-						Name = "Zelot",
+						Name = "Zealot",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 125)),
 						Attack = 5,
@@ -681,7 +681,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("dragoon"),
-						Name = "Dragoner",
+						Name = "Dragoon",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 150), ("gas", 50)),
 						Attack = 12,
@@ -695,7 +695,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("hightemplar"),
-						Name = "Hoher Templer",
+						Name = "High Templar",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 50), ("gas", 150)),
 						Attack = 6,
@@ -723,7 +723,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("darktemplar"),
-						Name = "Dunkler Templer",
+						Name = "Dark Templar",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 125), ("gas", 100)),
 						Attack = 30,
@@ -807,7 +807,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("carrier"),
-						Name = "Träger",
+						Name = "Carrier",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 550), ("gas", 300)),
 						Attack = 80,
@@ -821,7 +821,7 @@ namespace BrowserGameEngine.GameDefinition.SCO {
 					},
 					new UnitDef {
 						Id = Id.UnitDef("photoncannon"),
-						Name = "Photonenkanone",
+						Name = "Photon Cannon",
 						PlayerTypeRestriction = Id.PlayerType("protoss"),
 						Cost = CostHelper.Create(("minerals", 150)),
 						Attack = 0,
