@@ -69,8 +69,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			var player = game.PlayerRepository.Get(playerId);
 			Assert.Equal(50m, player.State.Resources[Id.ResDef("land")]);
-			Assert.Equal(500m, player.State.Resources[Id.ResDef("minerals")]);
-			Assert.Equal(100m, player.State.Resources[Id.ResDef("gas")]);
+			Assert.Equal(1500m, player.State.Resources[Id.ResDef("minerals")]);
+			Assert.Equal(300m, player.State.Resources[Id.ResDef("gas")]);
 			Assert.Equal(480, player.State.ProtectionTicksRemaining);
 		}
 
@@ -78,8 +78,8 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 		public void GameSettings_Default_HasExpectedValues() {
 			var defaults = GameSettings.Default;
 			Assert.Equal(50, defaults.StartingLand);
-			Assert.Equal(500, defaults.StartingMinerals);
-			Assert.Equal(100, defaults.StartingGas);
+			Assert.Equal(1500, defaults.StartingMinerals);
+			Assert.Equal(300, defaults.StartingGas);
 			Assert.Equal(480, defaults.ProtectionTicks);
 			Assert.Equal(2880, defaults.EndTick);
 			Assert.Equal(0, defaults.MaxPlayers);
