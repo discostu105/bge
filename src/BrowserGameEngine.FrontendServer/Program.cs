@@ -13,7 +13,6 @@ using BrowserGameEngine.Persistence;
 using BrowserGameEngine.Persistence.S3;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
-using BrowserGameEngine.StatefulGameServer.GameTicks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -169,11 +168,10 @@ builder.Services.AddSingleton<BrowserGameEngine.StatefulGameServer.IWorldStateAc
  */
 var app = builder.Build();
 
-// Wire tick engine into game instances (Phase 1: single game)
-var tickEngine = app.Services.GetRequiredService<GameTickEngine>();
-foreach (var instance in app.Services.GetRequiredService<BrowserGameEngine.StatefulGameServer.GameRegistry.GameRegistry>().GetAllInstances()) {
-	instance.SetTickEngine(tickEngine);
-}
+// Tick orchestration is owned by GameTickTimerService — no per-instance
+// wiring required here. The hosted service iterates GameRegistry and pushes
+// each instance's WorldState as the ambient override before invoking the
+// shared GameTickEngine, so newly-created games tick automatically.
 
 var forwardedHeadersOptions = new ForwardedHeadersOptions {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto

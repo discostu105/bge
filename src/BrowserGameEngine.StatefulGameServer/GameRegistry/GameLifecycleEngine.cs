@@ -128,8 +128,10 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				return;
 			}
 
-			// Pause the tick engine so no more ticks run during finalization
-			instance.TickEngine?.PauseTicks();
+			// Pause this instance so no more ticks run during finalization.
+			// Per-instance (not engine-wide) so pausing one game doesn't freeze
+			// every other game on the server.
+			instance.Pause();
 
 			// Compute rankings: land desc, then minerals+gas desc, then by player id (stable tiebreaker)
 			var landRes = BrowserGameEngine.GameModel.Id.ResDef("land");
