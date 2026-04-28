@@ -1,7 +1,6 @@
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
-using BrowserGameEngine.StatefulGameServer.GameTicks;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,7 +10,15 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 		public WorldState WorldState { get; }
 		public IWorldStateAccessor WorldStateAccessor { get; }
 		public GameDef GameDef { get; }
-		public GameTickEngine? TickEngine { get; private set; }
+
+		// Per-instance pause flag honored by GameTickTimerService. Set during
+		// finalization (and any other time we need to freeze a single game)
+		// without affecting the shared GameTickEngine — pre-fix, pausing one
+		// game paused them all.
+		private volatile bool isPaused;
+		public bool IsPaused => isPaused;
+		public void Pause() => isPaused = true;
+		public void Resume() => isPaused = false;
 
 		public GameInstance(GameRecordImmutable record, WorldState worldState, GameDef gameDef) {
 			Record = record;
@@ -41,7 +48,5 @@ namespace BrowserGameEngine.StatefulGameServer.GameRegistry {
 				.Where(p => !p.IsBanned)
 				.Select(p => p.ToImmutable())
 				.ToList();
-
-		public void SetTickEngine(GameTickEngine tickEngine) { TickEngine = tickEngine; }
 	}
 }

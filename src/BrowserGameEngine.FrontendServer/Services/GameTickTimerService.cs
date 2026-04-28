@@ -1,4 +1,6 @@
-﻿using BrowserGameEngine.StatefulGameServer.GameRegistry;
+using BrowserGameEngine.StatefulGameServer;
+using BrowserGameEngine.StatefulGameServer.GameRegistry;
+using BrowserGameEngine.StatefulGameServer.GameTicks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,16 +9,37 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace BrowserGameEngine.FrontendServer {
+	/// <summary>
+	/// Drives <see cref="GameTickEngine"/> for every registered game.
+	///
+	/// The tick engine and its modules are singletons that resolve the current
+	/// <see cref="BrowserGameEngine.StatefulGameServer.GameModelInternal.WorldState"/>
+	/// via <see cref="IWorldStateAccessor"/>. In an HTTP request the accessor
+	/// reads the per-game world from the X-Game-Id header; outside an HTTP
+	/// request (i.e. here) it falls back to the default world. So before
+	/// ticking a given instance we explicitly push that instance's WorldState
+	/// as the ambient override — otherwise every iteration would tick the same
+	/// default world and per-game progress would freeze (BGE: build queues
+	/// stuck at "ready in Nt" forever on non-default games).
+	/// </summary>
 	public class GameTickTimerService : IHostedService, IDisposable {
 		private int executionCount = 0;
 		private int isactive = 0;
 		private readonly ILogger<GameTickTimerService> logger;
 		private readonly GameRegistry gameRegistry;
+		private readonly GameTickEngine tickEngine;
+		private readonly IWorldStateAccessor worldStateAccessor;
 		private Timer? timer;
 
-		public GameTickTimerService(ILogger<GameTickTimerService> logger, GameRegistry gameRegistry) {
+		public GameTickTimerService(
+			ILogger<GameTickTimerService> logger,
+			GameRegistry gameRegistry,
+			GameTickEngine tickEngine,
+			IWorldStateAccessor worldStateAccessor) {
 			this.logger = logger;
 			this.gameRegistry = gameRegistry;
+			this.tickEngine = tickEngine;
+			this.worldStateAccessor = worldStateAccessor;
 		}
 
 		public Task StartAsync(CancellationToken stoppingToken) {
@@ -31,9 +54,11 @@ namespace BrowserGameEngine.FrontendServer {
 				var count = Interlocked.Increment(ref executionCount);
 				var totalSw = Stopwatch.StartNew();
 				foreach (var instance in gameRegistry.GetAllInstances()) {
+					if (instance.IsPaused) continue;
 					var sw = Stopwatch.StartNew();
 					try {
-						instance.TickEngine?.CheckAllTicks();
+						using var scope = worldStateAccessor.PushAmbient(instance.WorldState);
+						tickEngine.CheckAllTicks();
 					} catch (Exception ex) {
 						logger.LogError(ex, "GameTickFailure GameId={GameId}", instance.Record.GameId.Id);
 					} finally {
