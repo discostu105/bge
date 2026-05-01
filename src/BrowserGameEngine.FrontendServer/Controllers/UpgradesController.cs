@@ -1,10 +1,13 @@
+using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace BrowserGameEngine.FrontendServer.Controllers {
 	[ApiController]
@@ -16,18 +19,28 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly UpgradeRepository upgradeRepository;
 		private readonly UpgradeRepositoryWrite upgradeRepositoryWrite;
 		private readonly PlayerRepository playerRepository;
+		private readonly GlobalState globalState;
 
 		public UpgradesController(
 			ILogger<UpgradesController> logger,
 			CurrentUserContext currentUserContext,
 			UpgradeRepository upgradeRepository,
 			UpgradeRepositoryWrite upgradeRepositoryWrite,
-			PlayerRepository playerRepository) {
+			PlayerRepository playerRepository,
+			GlobalState globalState) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.upgradeRepository = upgradeRepository;
 			this.upgradeRepositoryWrite = upgradeRepositoryWrite;
 			this.playerRepository = playerRepository;
+			this.globalState = globalState;
+		}
+
+		private bool IsCurrentGameFinished() {
+			if (HttpContext == null) return false;
+			if (!HttpContext.Items.TryGetValue(CurrentGameMiddleware.GameIdItemKey, out var raw) || raw is not GameId gameId) return false;
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId == gameId);
+			return record?.Status == GameStatus.Finished;
 		}
 
 		/// <summary>Returns the current player's attack and defense upgrade levels, plus costs for the next upgrade tier.</summary>
@@ -56,6 +69,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public ActionResult Research([FromQuery] string upgradeType) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (IsCurrentGameFinished()) return BadRequest("This game has ended.");
 			if (!System.Enum.TryParse<UpgradeType>(upgradeType, ignoreCase: true, out var type) || type == UpgradeType.None) {
 				return BadRequest("Invalid upgradeType. Use 'Attack' or 'Defense'.");
 			}

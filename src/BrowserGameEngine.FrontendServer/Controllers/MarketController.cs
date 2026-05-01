@@ -1,8 +1,10 @@
+using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.Commands;
+using BrowserGameEngine.StatefulGameServer.GameModelInternal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,19 +21,29 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		private readonly MarketRepository marketRepository;
 		private readonly PlayerRepository playerRepository;
 		private readonly GameDef gameDef;
+		private readonly GlobalState globalState;
 
 		public MarketController(
 			ILogger<MarketController> logger,
 			CurrentUserContext currentUserContext,
 			MarketRepository marketRepository,
 			PlayerRepository playerRepository,
-			GameDef gameDef
+			GameDef gameDef,
+			GlobalState globalState
 		) {
 			this.logger = logger;
 			this.currentUserContext = currentUserContext;
 			this.marketRepository = marketRepository;
 			this.playerRepository = playerRepository;
 			this.gameDef = gameDef;
+			this.globalState = globalState;
+		}
+
+		private bool IsCurrentGameFinished() {
+			if (HttpContext == null) return false;
+			if (!HttpContext.Items.TryGetValue(CurrentGameMiddleware.GameIdItemKey, out var raw) || raw is not GameId gameId) return false;
+			var record = globalState.GetGames().FirstOrDefault(g => g.GameId == gameId);
+			return record?.Status == GameStatus.Finished;
 		}
 
 		[HttpGet]
@@ -58,6 +70,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPost("post")]
 		public ActionResult Post([FromBody] CreateMarketOrderRequest request) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (IsCurrentGameFinished()) return BadRequest("This game has ended.");
 
 			if (request.OfferedAmount <= 0 || request.WantedAmount <= 0)
 				return BadRequest("Amounts must be positive.");
@@ -85,6 +98,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpPost("accept")]
 		public ActionResult Accept([FromQuery] Guid orderId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (IsCurrentGameFinished()) return BadRequest("This game has ended.");
 
 			try {
 				marketRepository.AcceptOrder(new AcceptMarketOrderCommand(
@@ -102,6 +116,7 @@ namespace BrowserGameEngine.FrontendServer.Controllers {
 		[HttpDelete("cancel")]
 		public ActionResult Cancel([FromQuery] Guid orderId) {
 			if (!currentUserContext.IsValid) return Unauthorized();
+			if (IsCurrentGameFinished()) return BadRequest("This game has ended.");
 
 			try {
 				marketRepository.CancelOrder(new CancelMarketOrderCommand(

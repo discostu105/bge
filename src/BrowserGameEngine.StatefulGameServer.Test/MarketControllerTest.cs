@@ -1,11 +1,15 @@
 using BrowserGameEngine.FrontendServer;
 using BrowserGameEngine.FrontendServer.Controllers;
+using BrowserGameEngine.FrontendServer.Middleware;
 using BrowserGameEngine.GameDefinition;
 using BrowserGameEngine.GameModel;
 using BrowserGameEngine.Shared;
 using BrowserGameEngine.StatefulGameServer;
 using BrowserGameEngine.StatefulGameServer.GameModelInternal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using Xunit;
@@ -18,8 +22,30 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 				userCtx,
 				game.MarketRepository,
 				game.PlayerRepository,
-				game.GameDef
+				game.GameDef,
+				game.GlobalState
 			);
+		}
+
+		private static void AttachFinishedGameContext(MarketController controller, GlobalState globalState, string gameId) {
+			var record = new GameRecordImmutable(
+				new GameId(gameId),
+				"Finished Game",
+				"sco",
+				GameStatus.Finished,
+				DateTime.UtcNow.AddDays(-2),
+				DateTime.UtcNow.AddDays(-1),
+				TimeSpan.FromSeconds(30)
+			);
+			globalState.AddGame(record);
+
+			var httpCtx = new DefaultHttpContext();
+			httpCtx.Items[CurrentGameMiddleware.GameIdItemKey] = new GameId(gameId);
+			controller.ControllerContext = new ControllerContext {
+				HttpContext = httpCtx,
+				RouteData = new RouteData(),
+				ActionDescriptor = new ActionDescriptor()
+			};
 		}
 
 		private static CurrentUserContext AuthenticatedContext(PlayerId playerId) {
@@ -189,6 +215,61 @@ namespace BrowserGameEngine.StatefulGameServer.Test {
 
 			Assert.IsType<OkResult>(result);
 			Assert.Empty(game.MarketRepository.GetOpenOrders());
+		}
+
+		[Fact]
+		public void Post_WhenGameFinished_ReturnsBadRequest() {
+			var game = new TestGame(playerCount: 1);
+			var player1 = PlayerIdFactory.Create("player0");
+			var ctx = AuthenticatedContext(player1);
+			var controller = MakeController(game, ctx);
+			AttachFinishedGameContext(controller, game.GlobalState, "finished-1");
+
+			var result = controller.Post(Order("res1", 10, "res2", 20));
+
+			var bad = Assert.IsType<BadRequestObjectResult>(result);
+			Assert.Equal("This game has ended.", bad.Value);
+			Assert.Empty(game.MarketRepository.GetOpenOrders());
+		}
+
+		[Fact]
+		public void Accept_WhenGameFinished_ReturnsBadRequest() {
+			var game = new TestGame(playerCount: 2);
+			var seller = PlayerIdFactory.Create("player0");
+			var buyer = PlayerIdFactory.Create("player1");
+			var sellerController = MakeController(game, AuthenticatedContext(seller));
+			var buyerController = MakeController(game, AuthenticatedContext(buyer));
+
+			// Place an order while the game is still active (no HttpContext attached)
+			sellerController.Post(Order("res1", 10, "res2", 20));
+			var orderId = game.MarketRepository.GetOpenOrders()[0].OrderId.Id;
+
+			AttachFinishedGameContext(buyerController, game.GlobalState, "finished-2");
+
+			var result = buyerController.Accept(orderId);
+
+			var bad = Assert.IsType<BadRequestObjectResult>(result);
+			Assert.Equal("This game has ended.", bad.Value);
+			Assert.Single(game.MarketRepository.GetOpenOrders());
+		}
+
+		[Fact]
+		public void Cancel_WhenGameFinished_ReturnsBadRequest() {
+			var game = new TestGame(playerCount: 1);
+			var player1 = PlayerIdFactory.Create("player0");
+			var ctx = AuthenticatedContext(player1);
+			var controller = MakeController(game, ctx);
+
+			controller.Post(Order("res1", 10, "res2", 20));
+			var orderId = game.MarketRepository.GetOpenOrders()[0].OrderId.Id;
+
+			AttachFinishedGameContext(controller, game.GlobalState, "finished-3");
+
+			var result = controller.Cancel(orderId);
+
+			var bad = Assert.IsType<BadRequestObjectResult>(result);
+			Assert.Equal("This game has ended.", bad.Value);
+			Assert.Single(game.MarketRepository.GetOpenOrders());
 		}
 
 		[Fact]
